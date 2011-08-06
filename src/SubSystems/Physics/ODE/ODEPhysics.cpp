@@ -28,11 +28,6 @@ ODEPhysics::ODEPhysics()
 	: id("ODEPhysics"),
 	  type("physics")
 {
-	this->semA = 0;
-	this->semB = 0;
-
-	this->thread = 0;
-
 	this->doProcessing = false;
 	this->runThread = false;
 }
@@ -55,12 +50,9 @@ ODEPhysics::initialize( TiXmlElement* )
 	dWorldSetCFM(this->worldID,1e-5);
 	this->contactGroupID = dJointGroupCreate(0);
 
-	this->semA = new Semaphore();
-	this->semB = new Semaphore();
-
 	//this->semA->grab();
 
-	this->thread = new Thread();
+	this->thread = make_thread();
 	//this->thread->start( ODEPhysics::threadFunc, this );
 
 	cout << "================ ODEPhysics initialized =================" << endl;

@@ -11,8 +11,6 @@
 #include "Event.h"
 #include "IEventListener.h"
 
-#include "../System/Semaphore.h"
-
 #include <map>
 #include <list>
 
@@ -41,9 +39,6 @@ class EventManager
 		};
 
 		static long instances;
-
-		Semaphore* queueSem;
-		Semaphore* registrationSem;
 
 		std::list<Event> eventQueue;
 		std::list<Registration> regQueue;

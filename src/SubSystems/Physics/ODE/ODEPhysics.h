@@ -12,8 +12,7 @@
 
 #include "ODEPhysicsEntity.h"
 
-#include "../../../Core/System/Semaphore.h"
-#include "../../../Core/System/Thread.h"
+#include <boost/thread.hpp>
 
 #include <ode/ode.h>
 
@@ -51,10 +50,7 @@ class ODEPhysics : public IPhysics
 		bool runThread;
 		bool doProcessing;
 
-		Semaphore* semA;
-		Semaphore* semB;
-
-		Thread* thread;
+		boost::thread thread;
 
 		dWorldID worldID;
 		dSpaceID spaceID;

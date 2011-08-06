@@ -3,7 +3,7 @@
 
 #include "../Material/Material.h"
 #include "../Geometry/GeomType.h"
-#include "../../../../Core/Utils/Math/Orientation.h"
+#include "../Orientation/Orientation.h"
 
 class Instance : public Orientation
 {

@@ -3,8 +3,6 @@
 
 #include <ode/ode.h>
 
-#include "../../../../Core/Utils/Math/Vector.h"
-
 class PhysicType
 {
  public:
@@ -20,12 +18,12 @@ class PhysicType
 	 bool isStatic() { return this->staticFlag; };
 	 float getMass() { return this->mass; };
 
-	 void setPosition( const Vector& pos )
+	 void setPosition( double x, double y, double z )
 	 {
 		 if ( this->staticFlag )
-			 dGeomSetPosition(this->geomID, pos[0], pos[1], pos[2]);
+			 dGeomSetPosition(this->geomID, x, y, z);
 		 else
-			 dBodySetPosition(this->bodyID, pos[0], pos[1], pos[2]);
+			 dBodySetPosition(this->bodyID, x, y, z);
 	 };
 
 	 dBodyID getBodyID() { return this->bodyID; };

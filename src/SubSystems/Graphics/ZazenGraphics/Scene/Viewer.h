@@ -9,7 +9,7 @@
 #ifndef VIEWER_H_
 #define VIEWER_H_
 
-#include "../../../../Core/Utils/Math/Orientation.h"
+#include "../Orientation/Orientation.h"
 
 /* Can be used as the view-point of a camera or light
  *

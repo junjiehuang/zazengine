@@ -9,7 +9,7 @@
 #define ZAZENGRAPHICSENTITY_H_
 
 #include "../../../Core/SubSystems/IFaces/IGraphicsEntity.h"
-#include "../../../Core/Utils/Math/Orientation.h"
+#include "Orientation/Orientation.h"
 
 class ZazenGraphicsEntity : public IGraphicsEntity
 {
