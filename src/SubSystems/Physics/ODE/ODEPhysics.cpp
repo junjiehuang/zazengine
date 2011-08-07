@@ -6,7 +6,7 @@
  */
 #include "ODEPhysics.h"
 
-#include "../../../Core/Core.h"
+#include "ICore.h"
 
 #include "types/PhysicPlane.h"
 #include "types/PhysicSphere.h"
@@ -24,9 +24,10 @@
 
 using namespace std;
 
-ODEPhysics::ODEPhysics()
-	: id("ODEPhysics"),
-	  type("physics")
+ODEPhysics::ODEPhysics( const std::string& id, ICore* core )
+	: id( id ),
+	  type("physics"),
+	  core( core )
 {
 	this->doProcessing = false;
 	this->runThread = false;
@@ -160,11 +161,12 @@ ODEPhysics::generateEvents()
 			Event e( "updatePhysics" );
 			e.setTarget( entity->getParent() );
 
-			e.addValue( "pos", Value( pos ) );
-			e.addValue( "rot", Value( rot ) );
-			e.addValue( "vel", Value( vel ) );
+			e.addValue( "pos", boost::any( pos ) );
+			e.addValue( "rot", boost::any( rot ) );
+			e.addValue( "vel", boost::any( vel ) );
 
-			Core::getInstance().getEventManager().postEvent( e );
+			// TODO
+			// this->core->getEventManager().postEvent( e );
 		}
 	}
 }
@@ -419,4 +421,22 @@ ODEPhysics::operator()()
 	}
 
 	cout << "ODEPhysics " << this->id << " finished thread" << endl;
+}
+
+extern "C" ISubSystem*
+createInstance ( const char* id, ICore* core )
+{
+	return new ODEPhysics( id, core );
+}
+
+extern "C" void
+deleteInstance ( ISubSystem* subSys )
+{
+	if ( 0 == subSys )
+		return;
+
+	if ( 0 == dynamic_cast<ODEPhysics*>( subSys ) )
+		return;
+
+	delete subSys;
 }

@@ -7,10 +7,7 @@
 
 #include "Core.h"
 
-#include "ScriptSystem/ScriptSystem.h"
-
-#include "../GameObjects/ZazenGameObjectFactory.h"
-#include "../SubSystems/ZazenSubSystemFactory.h"
+#include "ScriptSystem.h"
 
 #include <sys/time.h>
 
@@ -99,6 +96,9 @@ Core::Core()
 	this->m_runCore = false;
 
 	this->m_eventManager = 0;
+
+	this->m_gameObjectFactory = 0;
+	this->m_subSystemFactory = 0;
 }
 
 Core::~Core()
@@ -188,6 +188,20 @@ Core::stop()
 }
 
 ISubSystem*
+Core::getSubSystemByID( const std::string& id )
+{
+	list<ISubSystem*>::iterator iter = this->m_subSystems.begin();
+	while ( iter != this->m_subSystems.end() )
+	{
+		ISubSystem* subSys = *iter++;
+		if ( subSys->getID() == id )
+			return subSys;
+	}
+
+	return 0;
+}
+
+ISubSystem*
 Core::getSubSystemByType( const std::string& type )
 {
 	list<ISubSystem*>::iterator iter = this->m_subSystems.begin();
@@ -195,9 +209,7 @@ Core::getSubSystemByType( const std::string& type )
 	{
 		ISubSystem* subSys = *iter++;
 		if ( subSys->getType() == type )
-		{
 			return subSys;
-		}
 	}
 
 	return 0;
@@ -383,6 +395,7 @@ Core::loadSubSystem( const std::string& fileName )
 		subSystemType = str;
 	}
 
+	// TODO: file instead of type
 	ISubSystem* subSystem = this->m_subSystemFactory->createSubSystem( subSystemType );
 	if ( 0 == subSystem )
 	{

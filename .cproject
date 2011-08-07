@@ -46,7 +46,6 @@
 									<listOptionValue builtIn="false" value="GLEW"/>
 									<listOptionValue builtIn="false" value="SDL"/>
 									<listOptionValue builtIn="false" value="SDL_image"/>
-									<listOptionValue builtIn="false" value="ode"/>
 									<listOptionValue builtIn="false" value="3ds"/>
 									<listOptionValue builtIn="false" value="fmodex64"/>
 								</option>
@@ -64,7 +63,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/SubSystems/Graphics/ZazenGraphics/Renderer/StandardRenderer.h|src/SubSystems/Graphics/ZazenGraphics/Renderer/StandardRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/SFXRenderer.h|src/SubSystems/Graphics/ZazenGraphics/Renderer/SFXRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/OCRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/OCRenderer.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/SubSystems|src/SubSystems/Graphics/ZazenGraphics/Renderer/StandardRenderer.h|src/SubSystems/Graphics/ZazenGraphics/Renderer/StandardRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/SFXRenderer.h|src/SubSystems/Graphics/ZazenGraphics/Renderer/SFXRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/OCRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/OCRenderer.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -128,7 +127,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/SubSystems/Graphics/ZazenGraphics/Renderer/StandardRenderer.h|src/SubSystems/Graphics/ZazenGraphics/Renderer/StandardRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/SFXRenderer.h|src/SubSystems/Graphics/ZazenGraphics/Renderer/SFXRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/OCRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/OCRenderer.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/SubSystems|src/SubSystems/Graphics/ZazenGraphics/Renderer/StandardRenderer.h|src/SubSystems/Graphics/ZazenGraphics/Renderer/StandardRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/SFXRenderer.h|src/SubSystems/Graphics/ZazenGraphics/Renderer/SFXRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/OCRenderer.cpp|src/SubSystems/Graphics/ZazenGraphics/Renderer/OCRenderer.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

@@ -8,12 +8,11 @@
 #ifndef CORE_H_
 #define CORE_H_
 
-#include "ObjectModel/IFaces/IGameObjectFactory.h"
-#include "SubSystems/IFaces/ISubSystemFactory.h"
+#include "ZazenGameObjectFactory.h"
+#include "ZazenSubSystemFactory.h"
+#include "EventManager.h"
 
-#include "EventSystem/EventManager.h"
-
-#include "Utils/XML/tinyxml.h"
+#include "IFaces/ICore.h"
 
 #include <list>
 
@@ -26,7 +25,7 @@
  * TODO: client-server model for world
  *
  */
-class Core
+class Core : public ICore
 {
 	public:
 		static bool initalize();
@@ -38,9 +37,12 @@ class Core
 
 		double getProcessingFactor() const { return this->m_processingFactor; };
 
+		ISubSystem* getSubSystemByID( const std::string& );
 		ISubSystem* getSubSystemByType( const std::string& );
 
-		EventManager& getEventManager() const { return *this->m_eventManager; };
+		IGameObject* getObjectByName( const std::string& );
+
+		IEventManager& getEventManager() const { return *this->m_eventManager; };
 
 	private:
 		static Core* instance;
@@ -51,16 +53,14 @@ class Core
 
 		EventManager* m_eventManager;
 
-		IGameObjectFactory* m_gameObjectFactory;
-		ISubSystemFactory* m_subSystemFactory;
+		ZazenGameObjectFactory* m_gameObjectFactory;
+		ZazenSubSystemFactory* m_subSystemFactory;
 
 		std::list<ISubSystem*> m_subSystems;
 		std::list<IGameObject*> m_gameObjects;
 
 		Core();
-		~Core();
-
-		IGameObject* getObjectByName( const std::string& );
+		virtual ~Core();
 
 		bool loadConfig();
 		ISubSystem* loadSubSystem( const std::string& );

@@ -8,7 +8,9 @@
 #ifndef ODEPHYSICS_H_
 #define ODEPHYSICS_H_
 
-#include "../../../Core/SubSystems/IFaces/IPhysics.h"
+#include "ICore.h"
+
+#include "../IFaces/IPhysics.h"
 
 #include "ODEPhysicsEntity.h"
 
@@ -21,7 +23,7 @@
 class ODEPhysics : public IPhysics
 {
 	public:
-		ODEPhysics();
+		ODEPhysics( const std::string& id, ICore* core );
 		virtual ~ODEPhysics();
 
 		const std::string& getID() const { return this->id; };
@@ -60,6 +62,8 @@ class ODEPhysics : public IPhysics
 
 		std::list<Event> receivedEvents;
 		std::list<ODEPhysicsEntity*> entities;
+
+		ICore* core;
 
 		void updateEntities();
 		void processEvents();

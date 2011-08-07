@@ -8,7 +8,7 @@
 #ifndef ODEPHYSICSENTITY_H_
 #define ODEPHYSICSENTITY_H_
 
-#include "../../../Core/SubSystems/IFaces/IPhysicsEntity.h"
+#include "../IFaces/IPhysicsEntity.h"
 
 #include "types/PhysicType.h"
 
