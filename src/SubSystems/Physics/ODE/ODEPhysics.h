@@ -43,6 +43,8 @@ class ODEPhysics : public IPhysics
 
 		ODEPhysicsEntity* createEntity( TiXmlElement*, IGameObject* parent );
 
+		void operator()();
+
 	private:
 		std::string id;
 		std::string type;
@@ -65,8 +67,6 @@ class ODEPhysics : public IPhysics
 		void generateEvents();
 
 		static void collisionCallback(void *data, dGeomID o1, dGeomID o2);
-
-		static void* threadFunc(void*);
 };
 
 #endif /* PLAYGROUNDPHYSICS_H_ */

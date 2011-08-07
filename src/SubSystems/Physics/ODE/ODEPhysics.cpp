@@ -50,10 +50,8 @@ ODEPhysics::initialize( TiXmlElement* )
 	dWorldSetCFM(this->worldID,1e-5);
 	this->contactGroupID = dJointGroupCreate(0);
 
-	//this->semA->grab();
-
-	this->thread = make_thread();
-	//this->thread->start( ODEPhysics::threadFunc, this );
+	// TODO: init mutex & condition variable
+	this->thread = boost::thread( boost::ref( *this ) );
 
 	cout << "================ ODEPhysics initialized =================" << endl;
 
@@ -67,18 +65,9 @@ ODEPhysics::shutdown()
 
 	this->doProcessing = false;
 	this->runThread = false;
-	this->semB->release();
-	this->semA->release();
 
-	//this->thread->join();
-	delete this->thread;
-	this->thread = 0;
-
-	delete this->semB;
-	delete this->semA;
-
-	this->semB = 0;
-	this->semA = 0;
+	// TODO release condition variable & mutexe
+	this->thread.join();
 
 	std::list<ODEPhysicsEntity*>::iterator iter = this->entities.begin();
 	while ( iter != this->entities.end() )
@@ -216,26 +205,28 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		typeID = str;
 	}
 
-	Vector v;
+	double posX = 0.0;
+	double posY = 0.0;
+	double posZ = 0.0;
 	float mass = 1.0f;
 	bool staticFlag = false;
 
 	str = typeNode->Attribute( "px" );
 	if ( 0 != str )
 	{
-		v.data[0] = atof( str );
+		posX = atof( str );
 	}
 
 	str = typeNode->Attribute( "py" );
 	if ( 0 != str )
 	{
-		v.data[1] = atof( str );
+		posY = atof( str );
 	}
 
 	str = typeNode->Attribute( "pz" );
 	if ( 0 != str )
 	{
-		v.data[2] = atof( str );
+		posZ = atof( str );
 	}
 
 	str = typeNode->Attribute( "mass" );
@@ -330,7 +321,7 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 	entity->physicType->create( this->worldID, this->spaceID );
 
 	if ( false == entity->physicType->isStatic() )
-		entity->physicType->setPosition( v );
+		entity->physicType->setPosition( posX, posY, posZ );
 
 	this->entities.push_back( entity );
 
@@ -416,20 +407,16 @@ ODEPhysics::collisionCallback(void* data, dGeomID o1, dGeomID o2)
 	}
 }
 
-void*
-ODEPhysics::threadFunc(void* args)
+void
+ODEPhysics::operator()()
 {
-	ODEPhysics* instance = (ODEPhysics*) args;
+	cout << "ODEPhysics " << this->id << " is up and processing" << endl;
 
-	cout << "ODEPhysics " << instance->id << " is up and processing" << endl;
-
-	instance->runThread = true;
-	while ( instance->runThread )
+	this->runThread = true;
+	while ( this->runThread )
 	{
-		instance->doSimulation();
+		this->doSimulation();
 	}
 
-	cout << "ODEPhysics " << instance->id << " finished thread" << endl;
-
-	return 0;
+	cout << "ODEPhysics " << this->id << " finished thread" << endl;
 }

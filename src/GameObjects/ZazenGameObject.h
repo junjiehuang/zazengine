@@ -28,7 +28,7 @@ class ZazenGameObject : public IGameObject
 
 		bool initialize( TiXmlElement* );
 
-		Property getProperty( const std::string& id )  { return this->properties[ id ]; };
+		boost::any getProperty( const std::string& id )  { return this->properties[ id ]; };
 
 	private:
 		static GameObjectID nextID;
@@ -37,7 +37,7 @@ class ZazenGameObject : public IGameObject
 		std::string name;
 
 		std::map<std::string, ISubSystemEntity*> subSystemEntities;
-		std::map<std::string, Property> properties;
+		std::map<std::string, boost::any> properties;
 };
 
 #endif /* ZAZENGAMEOBJECT_H_ */

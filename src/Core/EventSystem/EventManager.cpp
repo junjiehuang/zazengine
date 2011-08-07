@@ -33,21 +33,16 @@ EventManager::EventManager()
 
 	listenerSemName << "EventManager" << EventManager::instances << "ListenerSem";
 	queueSemName << "EventManager" << EventManager::instances << "QueueSem";
-
-	this->registrationSem = new Semaphore();
-	this->queueSem = new Semaphore();
 }
 
 EventManager::~EventManager()
 {
-	delete this->registrationSem;
-	delete this->queueSem;
 }
 
 bool
 EventManager::registerForEvent( EventID eventID, IEventListener* listener )
 {
-	this->registrationSem->grab();
+	this->regMutex.lock();
 
 	Registration reg;
 	reg.listener = listener;
@@ -56,7 +51,7 @@ EventManager::registerForEvent( EventID eventID, IEventListener* listener )
 
 	this->regQueue.push_back( reg );
 
-	this->registrationSem->release();
+	this->regMutex.unlock();
 
 	return true;
 }
@@ -64,7 +59,7 @@ EventManager::registerForEvent( EventID eventID, IEventListener* listener )
 bool
 EventManager::unregisterForEvent( EventID eventID, IEventListener* listener )
 {
-	this->registrationSem->grab();
+	this->regMutex.lock();
 
 	Registration reg;
 	reg.listener = listener;
@@ -73,7 +68,7 @@ EventManager::unregisterForEvent( EventID eventID, IEventListener* listener )
 
 	this->regQueue.push_back( reg );
 
-	this->registrationSem->release();
+	this->regMutex.unlock();
 
 	return true;
 }
@@ -81,9 +76,11 @@ EventManager::unregisterForEvent( EventID eventID, IEventListener* listener )
 bool
 EventManager::postEvent( const Event& e )
 {
-	this->queueSem->grab();
+	this->queueMutex.lock();
+
 	this->eventQueue.push_back( e );
-	this->queueSem->release();
+
+	this->queueMutex.unlock();
 
 	return true;
 }
