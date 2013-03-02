@@ -2,7 +2,7 @@
  * IPhysics.h
  *
  *  Created on: 05.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef IPHYSICS_H_

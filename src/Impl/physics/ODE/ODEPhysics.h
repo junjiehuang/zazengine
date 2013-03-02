@@ -2,22 +2,18 @@
  * ODEPhysics.h
  *
  *  Created on: 06.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef ODEPHYSICS_H_
 #define ODEPHYSICS_H_
 
-#include <core/ICore.h>
-
-#include <physics/IPhysics.h>
-
 #include "ODEPhysicsEntity.h"
 
+#include <core/ICore.h>
+#include <physics/IPhysics.h>
 #include <boost/thread.hpp>
-
 #include <ode/ode.h>
-
 #include <list>
 
 class ODEPhysics : public IPhysics

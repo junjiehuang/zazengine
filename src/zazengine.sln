@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL", "Impl\input\SDL\SDL.v
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ODE", "Impl\physics\ODE\ODE.vcxproj", "{32B2712C-3A6A-401C-A9EF-C40F6757BACF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IFaces", "IFaces\IFaces.vcxproj", "{D63B11F4-1B53-40E5-916F-E24F557718E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -43,6 +45,10 @@ Global
 		{32B2712C-3A6A-401C-A9EF-C40F6757BACF}.Debug|Win32.Build.0 = Debug|Win32
 		{32B2712C-3A6A-401C-A9EF-C40F6757BACF}.Release|Win32.ActiveCfg = Release|Win32
 		{32B2712C-3A6A-401C-A9EF-C40F6757BACF}.Release|Win32.Build.0 = Release|Win32
+		{D63B11F4-1B53-40E5-916F-E24F557718E0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D63B11F4-1B53-40E5-916F-E24F557718E0}.Debug|Win32.Build.0 = Debug|Win32
+		{D63B11F4-1B53-40E5-916F-E24F557718E0}.Release|Win32.ActiveCfg = Release|Win32
+		{D63B11F4-1B53-40E5-916F-E24F557718E0}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

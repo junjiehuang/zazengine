@@ -2,7 +2,7 @@
  * IAIEntity.h
  *
  *  Created on: 15.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef IAIENTITY_H_

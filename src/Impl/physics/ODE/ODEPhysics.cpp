@@ -2,7 +2,7 @@
  * ODEPhysics.cpp
  *
  *  Created on: 06.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 #include "ODEPhysics.h"
 
@@ -240,7 +240,11 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 	str = typeNode->Attribute( "static" );
 	if ( 0 != str )
 	{
-		if ( strcasecmp( "true", str ) == 0 )
+		string caseStr = str;
+		
+		std::transform( caseStr.begin(), caseStr.end(), caseStr.begin(), tolower );
+
+		if ( caseStr == "true" )
 		{
 			staticFlag = true;
 		}

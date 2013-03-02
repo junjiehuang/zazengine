@@ -2,7 +2,7 @@
  * ISubSystemEntity.h
  *
  *  Created on: 07.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef ISUBSYSTEMENTITY_H_

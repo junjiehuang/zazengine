@@ -2,7 +2,7 @@
  * Event.h
  *
  *  Created on: 27.06.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef EVENT_H_

@@ -2,7 +2,7 @@
  * IAudio.h
  *
  *  Created on: 05.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef IAUDIO_H_

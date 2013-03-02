@@ -2,7 +2,7 @@
  * IPhysicsEntity.h
  *
  *  Created on: 15.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef IPHYSICSENTITY_H_

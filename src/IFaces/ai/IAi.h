@@ -2,7 +2,7 @@
  * IAi.h
  *
  *  Created on: 05.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef IAI_H_

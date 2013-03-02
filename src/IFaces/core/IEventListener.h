@@ -2,7 +2,7 @@
  * IEventListener.h
  *
  *  Created on: 02.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef IEVENTLISTENER_H_
