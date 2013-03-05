@@ -21,9 +21,23 @@ typedef std::string EventID;
 class Event
 {
 	public:
-		Event( const std::string& id );
-		Event( const Event& e );
-		~Event();
+		Event( const std::string& id ) 	
+			: id (id)
+		{
+			this->target = 0;
+			this->source = 0;
+		};
+
+		Event( const Event& e )
+			: id ( e.id )
+		{
+			this->source = e.source;
+			this->target = e.target;
+
+			this->values = e.values;
+		};
+
+		~Event() {};
 
 		const EventID getID() const { return this->id; };
 
@@ -34,8 +48,23 @@ class Event
 		bool operator== ( const std::string& str ) const { return this->id == str; };
 		bool operator== ( const char* str ) const { return this->id == str; };
 
-		void addValue( const std::string& id, const boost::any& );
-		boost::any& getValue( const std::string& id );
+		void
+		addValue( const std::string& id, const boost::any& value )
+		{
+			this->values[ id ] = value;
+
+			std::map<std::string, boost::any>::iterator findIter = this->values.find( "" );
+			if ( findIter != this->values.end() )
+			{
+
+			}
+		};
+
+		boost::any&
+		getValue( const std::string& id )
+		{
+			return this->values[ id ];
+		};
 
 	private:
 		const EventID id;

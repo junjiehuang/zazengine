@@ -9,7 +9,7 @@
 #define ZAZENSUBSYSTEMFACTORY_H_
 
 #include <string>
-#include "IFaces/ISubSystem.h"
+#include <core/ISubSystem.h>
 
 class ZazenSubSystemFactory
 {

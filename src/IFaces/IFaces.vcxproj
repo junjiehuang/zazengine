@@ -28,6 +28,7 @@
     <ClInclude Include="core\XML\rapidxml_utils.hpp" />
     <ClInclude Include="core\XML\tinystr.h" />
     <ClInclude Include="core\XML\tinyxml.h" />
+    <ClInclude Include="DLLExport.h" />
     <ClInclude Include="graphics\IGraphics.h" />
     <ClInclude Include="graphics\IGraphicsEntity.h" />
     <ClInclude Include="input\IInput.h" />

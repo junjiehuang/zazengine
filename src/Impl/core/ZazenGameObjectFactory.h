@@ -8,7 +8,7 @@
 #ifndef ZAZENGAMEOBJECTFACTORY_H_
 #define ZAZENGAMEOBJECTFACTORY_H_
 
-#include "IFaces/IGameObject.h"
+#include <core/IGameObject.h>
 
 class ZazenGameObjectFactory
 {

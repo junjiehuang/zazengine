@@ -8,11 +8,17 @@
 #ifndef CORE_H_
 #define CORE_H_
 
+#ifdef DLL_EXPORTS
+#define DLL_API __declspec(dllexport)
+#else
+#define DLL_API __declspec(dllimport)
+#endif
+
 #include "ZazenGameObjectFactory.h"
 #include "ZazenSubSystemFactory.h"
 #include "EventManager.h"
 
-#include "IFaces/ICore.h"
+#include <core/ICore.h>
 
 #include <list>
 
@@ -25,7 +31,7 @@
  * TODO: client-server model for world
  *
  */
-class Core : public ICore
+class DLL_API Core : public ICore
 {
 	public:
 		static bool initalize();

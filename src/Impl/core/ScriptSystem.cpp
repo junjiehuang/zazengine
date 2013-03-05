@@ -10,7 +10,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace luabind;
+//using namespace luabind;
 
 ScriptSystem* ScriptSystem::instance = 0;
 
@@ -21,9 +21,9 @@ ScriptSystem::initialize()
 	{
 		new ScriptSystem();
 
-		ScriptSystem::instance->luaState = luaL_newstate();
-		open ( ScriptSystem::instance->luaState );
-		luaL_openlibs ( ScriptSystem::instance->luaState );
+		//ScriptSystem::instance->luaState = luaL_newstate();
+		//open ( ScriptSystem::instance->luaState );
+		//luaL_openlibs ( ScriptSystem::instance->luaState );
 	}
 
 	return true;
@@ -34,7 +34,7 @@ ScriptSystem::shutdown()
 {
 	if ( ScriptSystem::instance )
 	{
-		lua_close( ScriptSystem::instance->luaState );
+		//lua_close( ScriptSystem::instance->luaState );
 
 		delete ScriptSystem::instance;
 	}
@@ -57,6 +57,7 @@ ScriptSystem::~ScriptSystem()
 bool
 ScriptSystem::loadFile( const std::string& fileName )
 {
+	/*
 	if ( 1 == luaL_dofile( this->luaState, fileName.c_str() ) )
 	{
 		cout << "ERROR ... failed loading script file \"" << fileName << "\"" << endl;
@@ -64,6 +65,7 @@ ScriptSystem::loadFile( const std::string& fileName )
 	}
 
 	cout << "SCRIPT: sucessfully loaded ScriptFile '" << fileName << "'" << endl;
+	*/
 
 	return true;
 }
@@ -71,6 +73,7 @@ ScriptSystem::loadFile( const std::string& fileName )
 bool
 ScriptSystem::callFunc( const std::string& funcName )
 {
+	/*
 	try
 	{
 		call_function<int>( this->luaState, funcName.c_str() );
@@ -79,6 +82,6 @@ ScriptSystem::callFunc( const std::string& funcName )
 		cout << "ERROR ... coulnd't call Script-Function '" << funcName << "' - reason: " << e.what() << endl;
 		return false;
 	}
-
+	*/
 	return true;
 }

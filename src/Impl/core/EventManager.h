@@ -8,8 +8,8 @@
 #ifndef EVENTMANAGER_H_
 #define EVENTMANAGER_H_
 
-#include "IFaces/IEventListener.h"
-#include "IFaces/IEventManager.h"
+#include <core/IEventListener.h>
+#include <core/IEventManager.h>
 
 #include <map>
 #include <list>

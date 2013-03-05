@@ -9,7 +9,7 @@
 
 #include "ScriptSystem.h"
 
-#include <sys/time.h>
+#include <windows.h>
 
 #include <iostream>
 #include <sstream>
@@ -120,7 +120,7 @@ Core::start()
 		}
 	}
 
-	timeval t;
+	FILETIME t;
 	long long startTicks = 0;
 	long long endTicks = 0;
 	
@@ -129,8 +129,8 @@ Core::start()
 	this->m_runCore = true;
 	while ( this->m_runCore )
 	{
-		gettimeofday( &t, NULL );
-		startTicks = t.tv_usec + 1000000 * t.tv_sec;
+		GetSystemTimeAsFileTime( &t );
+		startTicks = 0; // TODO
 		
 		this->m_eventManager->processQueue();
 
@@ -167,8 +167,8 @@ Core::start()
 			subSysIter++;
 		}
 		
-		gettimeofday( &t, NULL );
-		endTicks = t.tv_usec + 1000000 * t.tv_sec;
+		GetSystemTimeAsFileTime( &t );
+		endTicks = 0; // TODO
 		
 		this->m_processingFactor = (double)(endTicks - startTicks) / (double) 1000;
 	};

@@ -8,8 +8,8 @@
 #ifndef SCRIPTSYSTEM_H_
 #define SCRIPTSYSTEM_H_
 
-#include <lua5.1/lua.hpp>
-#include <luabind/luabind.hpp>
+#include <lua/lua.hpp>
+//#include <luabind/luabind.hpp>
 
 #include <string>
 
