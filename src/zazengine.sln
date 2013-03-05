@@ -1,15 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZazenAI", "Impl\ai\ZazenAI\ZazenAI.vcxproj", "{258C0EC7-D8AA-446E-A97A-C46C02B99BFF}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FMod", "Impl\audio\FMod\FMod.vcxproj", "{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "Impl\core\core.vcxproj", "{8703EE33-1839-4945-A60C-CDB0D3668D05}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZazenGraphcis", "Impl\graphics\ZazenGraphcis\ZazenGraphcis.vcxproj", "{C2845903-FA2B-45F5-A7ED-75C6DAAADA5C}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL", "Impl\input\SDL\SDL.vcxproj", "{F9C2B24E-E7A6-408F-B754-588F8719BC6F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zaZenCore", "Impl\core\core.vcxproj", "{8703EE33-1839-4945-A60C-CDB0D3668D05}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ODE", "Impl\physics\ODE\ODE.vcxproj", "{32B2712C-3A6A-401C-A9EF-C40F6757BACF}"
 EndProject
@@ -21,26 +13,10 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{258C0EC7-D8AA-446E-A97A-C46C02B99BFF}.Debug|Win32.ActiveCfg = Debug|Win32
-		{258C0EC7-D8AA-446E-A97A-C46C02B99BFF}.Debug|Win32.Build.0 = Debug|Win32
-		{258C0EC7-D8AA-446E-A97A-C46C02B99BFF}.Release|Win32.ActiveCfg = Release|Win32
-		{258C0EC7-D8AA-446E-A97A-C46C02B99BFF}.Release|Win32.Build.0 = Release|Win32
-		{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}.Debug|Win32.ActiveCfg = Debug|Win32
-		{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}.Debug|Win32.Build.0 = Debug|Win32
-		{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}.Release|Win32.ActiveCfg = Release|Win32
-		{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}.Release|Win32.Build.0 = Release|Win32
 		{8703EE33-1839-4945-A60C-CDB0D3668D05}.Debug|Win32.ActiveCfg = Debug|Win32
 		{8703EE33-1839-4945-A60C-CDB0D3668D05}.Debug|Win32.Build.0 = Debug|Win32
 		{8703EE33-1839-4945-A60C-CDB0D3668D05}.Release|Win32.ActiveCfg = Release|Win32
 		{8703EE33-1839-4945-A60C-CDB0D3668D05}.Release|Win32.Build.0 = Release|Win32
-		{C2845903-FA2B-45F5-A7ED-75C6DAAADA5C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{C2845903-FA2B-45F5-A7ED-75C6DAAADA5C}.Debug|Win32.Build.0 = Debug|Win32
-		{C2845903-FA2B-45F5-A7ED-75C6DAAADA5C}.Release|Win32.ActiveCfg = Release|Win32
-		{C2845903-FA2B-45F5-A7ED-75C6DAAADA5C}.Release|Win32.Build.0 = Release|Win32
-		{F9C2B24E-E7A6-408F-B754-588F8719BC6F}.Debug|Win32.ActiveCfg = Debug|Win32
-		{F9C2B24E-E7A6-408F-B754-588F8719BC6F}.Debug|Win32.Build.0 = Debug|Win32
-		{F9C2B24E-E7A6-408F-B754-588F8719BC6F}.Release|Win32.ActiveCfg = Release|Win32
-		{F9C2B24E-E7A6-408F-B754-588F8719BC6F}.Release|Win32.Build.0 = Release|Win32
 		{32B2712C-3A6A-401C-A9EF-C40F6757BACF}.Debug|Win32.ActiveCfg = Debug|Win32
 		{32B2712C-3A6A-401C-A9EF-C40F6757BACF}.Debug|Win32.Build.0 = Debug|Win32
 		{32B2712C-3A6A-401C-A9EF-C40F6757BACF}.Release|Win32.ActiveCfg = Release|Win32
