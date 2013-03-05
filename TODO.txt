@@ -1,0 +1,2 @@
+- write a loader for the libs
+	-> c-lib with header
