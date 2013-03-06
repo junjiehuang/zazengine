@@ -34,7 +34,7 @@
 class DLL_API Core : public ICore
 {
 	public:
-		static bool initalize();
+		static bool initalize( const std::string& );
 		static bool shutdown();
 		static Core& getInstance() { return *Core::instance; };
 
@@ -68,7 +68,7 @@ class DLL_API Core : public ICore
 		Core();
 		virtual ~Core();
 
-		bool loadConfig();
+		bool loadConfig( const std::string& );
 		ISubSystem* loadSubSystem( const std::string& );
 };
 

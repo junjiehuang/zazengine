@@ -19,7 +19,7 @@ using namespace std;
 Core* Core::instance = 0;
 
 bool
-Core::initalize()
+Core::initalize( const std::string& configPath )
 {
 	if ( 0 == Core::instance )
 	{
@@ -40,7 +40,7 @@ Core::initalize()
 			return false;
 		}
 
-		if ( false == Core::instance->loadConfig() )
+		if ( false == Core::instance->loadConfig( configPath ) )
 		{
 			cout << "ERROR ... failed initializing Core - exit" << endl;
 			return false;
@@ -216,33 +216,33 @@ Core::getSubSystemByType( const std::string& type )
 }
 
 bool
-Core::loadConfig()
+Core::loadConfig( const std::string& configPath )
 {
-	string fullFileName = "media/config.xml";
+	std::string configFileName = configPath + "config.xml";
 
-	TiXmlDocument doc( fullFileName.c_str() );
+	TiXmlDocument doc( configFileName.c_str() );
 
 	if ( false == doc.LoadFile() )
 	{
-		cout << "ERROR ... could not load file " << fullFileName << " - reason = " << doc.ErrorDesc() << " at row = " << doc.ErrorRow() << " col = " << doc.ErrorCol() << endl;
+		cout << "ERROR ... could not load file " << configFileName << " - reason = " << doc.ErrorDesc() << " at row = " << doc.ErrorRow() << " col = " << doc.ErrorCol() << endl;
 		return false;
 	}
 
-	TiXmlElement* rootNode = doc.FirstChildElement("config");
+	TiXmlElement* rootNode = doc.FirstChildElement( "config" );
 	if ( 0 == rootNode )
 	{
-		cout << "ERROR ... root-node \"config\" in " << fullFileName << " not found" << endl;
+		cout << "ERROR ... root-node \"config\" in " << configFileName << " not found" << endl;
 		return false;
 	}
 
-	TiXmlElement* coreScriptNode = rootNode->FirstChildElement("coreScript");
+	TiXmlElement* coreScriptNode = rootNode->FirstChildElement( "coreScript" );
 	if ( 0 == coreScriptNode )
 	{
-		cout << "ERROR ... node \"coreScript\" in " << fullFileName << " not found" << endl;
+		cout << "ERROR ... node \"coreScript\" in " << configFileName << " not found" << endl;
 		return false;
 	}
 
-	string coreScriptFileName = coreScriptNode->Attribute("file");
+	string coreScriptFileName = coreScriptNode->Attribute( "file" );
 
 	if ( false == ScriptSystem::getInstance().loadFile( coreScriptFileName ) )
 	{
@@ -254,10 +254,10 @@ Core::loadConfig()
 		return false;
 	}
 
-	TiXmlElement* subSystemListNode = rootNode->FirstChildElement("subSystemList");
+	TiXmlElement* subSystemListNode = rootNode->FirstChildElement( "subSystemList" );
 	if ( 0 == subSystemListNode )
 	{
-		cout << "ERROR ... node \"subSystemList\" in " << fullFileName << " not found" << endl;
+		cout << "ERROR ... node \"subSystemList\" in " << configFileName << " not found" << endl;
 		return false;
 	}
 
@@ -267,7 +267,7 @@ Core::loadConfig()
 		if (str == 0)
 			continue;
 
-		if ( 0 == strcmp(str, "subSystem") )
+		if ( 0 == strcmp(str, "subSystem" ) )
 		{
 			str = subSystemNode->Attribute( "file" );
 			if ( 0 == str )
@@ -277,7 +277,9 @@ Core::loadConfig()
 			}
 			else
 			{
-				ISubSystem* subSystem = this->loadSubSystem( str );
+				std::string subSystemConfigFile = configPath + str;
+
+				ISubSystem* subSystem = this->loadSubSystem( subSystemConfigFile );
 				if ( subSystem )
 					this->m_subSystems.push_back( subSystem );
 				else
@@ -289,7 +291,7 @@ Core::loadConfig()
 	TiXmlElement* objectListNode = rootNode->FirstChildElement("objectList");
 	if ( 0 == objectListNode )
 	{
-		cout << "ERROR ... node \"objectList\" in " << fullFileName << " not found" << endl;
+		cout << "ERROR ... node \"objectList\" in " << configFileName << " not found" << endl;
 		return false;
 	}
 
