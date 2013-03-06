@@ -427,21 +427,15 @@ ODEPhysics::operator()()
 	cout << "ODEPhysics " << this->id << " finished thread" << endl;
 }
 
-#if defined DLL_EXPORT
-#define DECLDIR __declspec(dllexport)
-#else
-#define DECLDIR __declspec(dllimport)
-#endif
-
 extern "C"
 {	
-	__declspec(dllexport) ISubSystem*
+	__declspec( dllexport ) ISubSystem*
 	createInstance ( const char* id, ICore* core )
 	{
 		return new ODEPhysics( id, core );
 	}
 
-	__declspec(dllexport) void
+	__declspec( dllexport ) void
 	deleteInstance ( ISubSystem* subSys )
 	{
 		if ( 0 == subSys )
