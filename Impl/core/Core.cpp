@@ -21,6 +21,8 @@ Core* Core::instance = 0;
 bool
 Core::initalize( const std::string& configPath )
 {
+	// TODO: use filesystem-utilities of boost to handle path & files
+
 	if ( 0 == Core::instance )
 	{
 		new Core();
@@ -277,9 +279,7 @@ Core::loadConfig( const std::string& configPath )
 			}
 			else
 			{
-				std::string subSystemConfigFile = configPath + str;
-
-				ISubSystem* subSystem = this->loadSubSystem( subSystemConfigFile );
+				ISubSystem* subSystem = this->loadSubSystem( str, configPath );
 				if ( subSystem )
 					this->m_subSystems.push_back( subSystem );
 				else
@@ -368,20 +368,22 @@ Core::getObjectByName( const std::string& name )
 }
 
 ISubSystem*
-Core::loadSubSystem( const std::string& fileName )
+Core::loadSubSystem( const std::string& fileName, const std::string& configPath )
 {
-	TiXmlDocument doc( fileName.c_str() );
+	string fullFileName = configPath + fileName;
+
+	TiXmlDocument doc( fullFileName.c_str() );
 
 	if ( false == doc.LoadFile() )
 	{
-		cout << "ERROR ... could not load file " << fileName << " - reason = " << doc.ErrorDesc() << endl;
+		cout << "ERROR ... could not load file " << fullFileName << " - reason = " << doc.ErrorDesc() << endl;
 		return 0;
 	}
 
 	TiXmlElement* subSystemNode = doc.FirstChildElement( "subSystem" );
 	if ( 0 == subSystemNode )
 	{
-		cout << "ERROR ... no root-node \"subSystem\" defined in " << fileName << " - exit " << endl;
+		cout << "ERROR ... no root-node \"subSystem\" defined in " << fullFileName << " - exit " << endl;
 		return 0;
 	}
 
@@ -397,8 +399,19 @@ Core::loadSubSystem( const std::string& fileName )
 		subSystemType = str;
 	}
 
-	// TODO: file instead of type
-	ISubSystem* subSystem = this->m_subSystemFactory->createSubSystem( subSystemType );
+	string subSystemFile;
+	str = subSystemNode->Attribute( "file" );
+	if ( 0 == str )
+	{
+		cout << "No file defined for subSystem" << endl;
+		return 0;
+	}
+	else
+	{
+		subSystemFile = configPath + str;
+	}
+
+	ISubSystem* subSystem = this->m_subSystemFactory->createSubSystem( subSystemFile, subSystemType );
 	if ( 0 == subSystem )
 	{
 		return 0;

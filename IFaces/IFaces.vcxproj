@@ -22,25 +22,11 @@
     <ClInclude Include="core\IGameObject.h" />
     <ClInclude Include="core\ISubSystem.h" />
     <ClInclude Include="core\ISubSystemEntity.h" />
-    <ClInclude Include="core\XML\rapidxml.hpp" />
-    <ClInclude Include="core\XML\rapidxml_iterators.hpp" />
-    <ClInclude Include="core\XML\rapidxml_print.hpp" />
-    <ClInclude Include="core\XML\rapidxml_utils.hpp" />
-    <ClInclude Include="core\XML\tinystr.h" />
-    <ClInclude Include="core\XML\tinyxml.h" />
-    <ClInclude Include="DLLExport.h" />
     <ClInclude Include="graphics\IGraphics.h" />
     <ClInclude Include="graphics\IGraphicsEntity.h" />
     <ClInclude Include="input\IInput.h" />
     <ClInclude Include="physics\IPhysics.h" />
     <ClInclude Include="physics\IPhysicsEntity.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="core\Event.cpp" />
-    <ClCompile Include="core\XML\tinystr.cpp" />
-    <ClCompile Include="core\XML\tinyxml.cpp" />
-    <ClCompile Include="core\XML\tinyxmlerror.cpp" />
-    <ClCompile Include="core\XML\tinyxmlparser.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D63B11F4-1B53-40E5-916F-E24F557718E0}</ProjectGuid>

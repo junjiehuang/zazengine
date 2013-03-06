@@ -69,7 +69,7 @@ class DLL_API Core : public ICore
 		virtual ~Core();
 
 		bool loadConfig( const std::string& );
-		ISubSystem* loadSubSystem( const std::string& );
+		ISubSystem* loadSubSystem( const std::string&, const std::string& );
 };
 
 #endif /* CORE_H_ */

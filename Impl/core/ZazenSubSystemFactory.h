@@ -14,7 +14,7 @@
 class ZazenSubSystemFactory
 {
 	public:
-		ISubSystem* createSubSystem( const std::string& file );
+		ISubSystem* createSubSystem( const std::string& file, const std::string& type );
 
 		ZazenSubSystemFactory();
 		~ZazenSubSystemFactory();
