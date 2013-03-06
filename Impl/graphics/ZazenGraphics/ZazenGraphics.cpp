@@ -15,8 +15,6 @@
 
 #include "Renderer/DRRenderer.h"
 
-#include "../../../Core/Core.h"
-
 #include <iostream>
 
 #define WINDOW_WIDTH 800
@@ -24,9 +22,10 @@
 
 using namespace std;
 
-ZazenGraphics::ZazenGraphics()
-	: m_id ("ZazenGraphics"),
-	  m_type ("graphics")
+ZazenGraphics::ZazenGraphics( const std::string& id, ICore* core )
+	: m_id ( id ),
+	  m_type ( "graphics" ),
+	  m_core( core )
 {
 }
 
@@ -347,7 +346,7 @@ bool
 ZazenGraphics::initSDL()
 {
 	cout << "Initializing SDL..." << endl;
-	int error = SDL_Init(SDL_INIT_VIDEO);
+	int error = SDL_Init( SDL_INIT_VIDEO );
 	if (error != 0)
 	{
 		cout << "FAILED ... Initializing SDL failed - exit..." << endl;
@@ -358,13 +357,13 @@ ZazenGraphics::initSDL()
 		cout << "OK ... SDL initialized" << endl;
 	}
 
-	if (SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1) == -1)
+	if (SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 ) == -1)
 	{
 		cout << "FAILED ... SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER) failed with " << SDL_GetError() << endl;
 		return false;
 	}
 
-	this->m_drawContext = SDL_SetVideoMode( WINDOW_WIDTH, WINDOW_HEIGHT, 32, SDL_OPENGL /*| SDL_FULLSCREEN*/);
+	this->m_drawContext = SDL_SetVideoMode( WINDOW_WIDTH, WINDOW_HEIGHT, 32, SDL_OPENGL /*| SDL_FULLSCREEN*/ );
 	if ( 0 == this->m_drawContext )
 	{
 		cout << "FAILED ... SDL_SetVideoMode failed with " << SDL_GetError() << endl;
@@ -415,4 +414,25 @@ ZazenGraphics::initGL()
 	}
 
 	return true;
+}
+
+extern "C"
+{	
+	__declspec( dllexport ) ISubSystem*
+	createInstance ( const char* id, ICore* core )
+	{
+		return new ZazenGraphics( id, core );
+	}
+
+	__declspec( dllexport ) void
+	deleteInstance ( ISubSystem* subSys )
+	{
+		if ( 0 == subSys )
+			return;
+
+		if ( 0 == dynamic_cast<ZazenGraphics*>( subSys ) )
+			return;
+
+		delete subSys;
+	}
 }

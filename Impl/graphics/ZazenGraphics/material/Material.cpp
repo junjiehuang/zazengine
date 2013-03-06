@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-#include "../../../../Core/Utils/XML/tinyxml.h"
+#include <core/XML/tinyxml.h>
 
 using namespace std;
 

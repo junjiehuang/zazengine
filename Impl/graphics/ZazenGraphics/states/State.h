@@ -6,7 +6,7 @@
 class State
 {
  public:
-	 State(const std::string& id) :id(id) { this->counter = 0; };
+	 State(const std::string& id) :id( id ) { this->counter = 0; };
 	 virtual ~State() {};
 	 
 	 int counter;

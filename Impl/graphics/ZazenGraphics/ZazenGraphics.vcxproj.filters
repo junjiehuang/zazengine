@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Quelldateien">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Headerdateien">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Ressourcendateien">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Headerdateien\geometry">
+      <UniqueIdentifier>{5f432a46-ce01-4a72-aefe-3c1b6663687b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\lighting">
+      <UniqueIdentifier>{ad319da8-581c-4b07-ba9a-a330c8be25d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\material">
+      <UniqueIdentifier>{3b0e102f-fdff-4734-b5b5-3a25ccb40691}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\scene">
+      <UniqueIdentifier>{05c3688b-89ab-4cde-a905-af875d64cf82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\geometry">
+      <UniqueIdentifier>{f69d07aa-44f9-4ae2-be47-312129b42d15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\lighting">
+      <UniqueIdentifier>{0cb33d78-cfe8-43f8-bc8a-f4546819c9b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\material">
+      <UniqueIdentifier>{4a7cb01f-f308-4f9e-93e1-ebc786fd5bb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\states">
+      <UniqueIdentifier>{3139ad5a-ef10-4209-a7b8-5106e222b3ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\scene">
+      <UniqueIdentifier>{ba1bc969-5579-4e4c-8b5c-89f4b58f7776}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\renderer">
+      <UniqueIdentifier>{1ccf7c53-7953-4e3e-a142-e5cb6502f02c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\orientation">
+      <UniqueIdentifier>{6aafaaae-86b0-4103-b2f0-b08364e5c9c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\orientation">
+      <UniqueIdentifier>{9207d4be-64d6-4455-85a7-9b4671c1078b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\renderer">
+      <UniqueIdentifier>{aef997bd-393a-471c-93ec-7b956401df83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\states">
+      <UniqueIdentifier>{d63827b6-b595-4680-a337-29870a90db8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\geometry\loaders">
+      <UniqueIdentifier>{1e915cda-5d0b-4c83-8671-83f1b9e88ce0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\geometry\loaders\ply">
+      <UniqueIdentifier>{7f5b1df4-6661-4f63-8dea-f516ebb1b2d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\geometry\loaders">
+      <UniqueIdentifier>{acc916bb-2954-40b9-85b0-d30d5e7d11ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\geometry\loaders\ply">
+      <UniqueIdentifier>{35e50876-235c-4045-883c-487001154e6c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ZazenGraphics.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="ZazenGraphicsEntity.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry\GeometryFactory.cpp">
+      <Filter>Quelldateien\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry\GeomType.cpp">
+      <Filter>Quelldateien\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry\GeomMesh.cpp">
+      <Filter>Quelldateien\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry\GeomSkyBox.cpp">
+      <Filter>Quelldateien\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="lighting\Light.cpp">
+      <Filter>Quelldateien\lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="material\Material.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
+    <ClCompile Include="material\UniformBlock.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
+    <ClCompile Include="material\Program.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
+    <ClCompile Include="material\Shader.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
+    <ClCompile Include="material\Texture.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
+    <ClCompile Include="orientation\Orientation.cpp">
+      <Filter>Quelldateien\orientation</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\DRRenderer.cpp">
+      <Filter>Quelldateien\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\Renderer.cpp">
+      <Filter>Quelldateien\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\Instance.cpp">
+      <Filter>Quelldateien\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\Viewer.cpp">
+      <Filter>Quelldateien\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="states\Statemanager.cpp">
+      <Filter>Quelldateien\states</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry\loaders\ply\ply.c">
+      <Filter>Quelldateien\geometry\loaders\ply</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ZazenGraphics.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="ZazenGraphicsEntity.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\GeometryFactory.h">
+      <Filter>Headerdateien\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\GeomType.h">
+      <Filter>Headerdateien\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\GeomMesh.h">
+      <Filter>Headerdateien\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\GeomSkyBox.h">
+      <Filter>Headerdateien\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="lighting\Light.h">
+      <Filter>Headerdateien\lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="material\Material.h">
+      <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="material\UniformBlock.h">
+      <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="material\Program.h">
+      <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="material\Shader.h">
+      <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="material\Texture.h">
+      <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="orientation\Orientation.h">
+      <Filter>Headerdateien\orientation</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\DRRenderer.h">
+      <Filter>Headerdateien\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\Renderer.h">
+      <Filter>Headerdateien\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\Instance.h">
+      <Filter>Headerdateien\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\Viewer.h">
+      <Filter>Headerdateien\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="states\Occlusionquerystate.h">
+      <Filter>Headerdateien\states</Filter>
+    </ClInclude>
+    <ClInclude Include="states\ShadowMappingState.h">
+      <Filter>Headerdateien\states</Filter>
+    </ClInclude>
+    <ClInclude Include="states\State.h">
+      <Filter>Headerdateien\states</Filter>
+    </ClInclude>
+    <ClInclude Include="states\Statemanager.h">
+      <Filter>Headerdateien\states</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\loaders\ply\ply.h">
+      <Filter>Headerdateien\geometry\loaders\ply</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

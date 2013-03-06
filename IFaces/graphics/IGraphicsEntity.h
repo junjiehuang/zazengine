@@ -8,7 +8,7 @@
 #ifndef IGRAPHICSENTITY_H_
 #define IGRAPHICSENTITY_H_
 
-#include "ISubSystemEntity.h"
+#include <core/ISubSystemEntity.h>
 
 class IGraphicsEntity : public ISubSystemEntity
 {

@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="ODEPhysics.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="ODEPhysicsEntity.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="types\PhysicBox.cpp">
+      <Filter>Quelldateien\types</Filter>
+    </ClCompile>
+    <ClCompile Include="types\PhysicMesh.cpp">
+      <Filter>Quelldateien\types</Filter>
+    </ClCompile>
+    <ClCompile Include="types\PhysicPlane.cpp">
+      <Filter>Quelldateien\types</Filter>
+    </ClCompile>
+    <ClCompile Include="types\PhysicSphere.cpp">
+      <Filter>Quelldateien\types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinystr.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlparser.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxml.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlerror.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ODEPhysics.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="ODEPhysicsEntity.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="types\PhysicBox.h">
+      <Filter>Headerdateien\types</Filter>
+    </ClInclude>
+    <ClInclude Include="types\PhysicMesh.h">
+      <Filter>Headerdateien\types</Filter>
+    </ClInclude>
+    <ClInclude Include="types\PhysicPlane.h">
+      <Filter>Headerdateien\types</Filter>
+    </ClInclude>
+    <ClInclude Include="types\PhysicSphere.h">
+      <Filter>Headerdateien\types</Filter>
+    </ClInclude>
+    <ClInclude Include="types\PhysicType.h">
+      <Filter>Headerdateien\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_iterators.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_print.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_utils.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinystr.h">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Headerdateien">
+      <UniqueIdentifier>{c308a633-9c05-4233-adfd-bca6ddf6bc42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien">
+      <UniqueIdentifier>{069e86a4-57de-494f-acfe-9e894b3be600}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\XML">
+      <UniqueIdentifier>{b4aafbfb-e5c0-4f1f-b90d-836734a3e444}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\types">
+      <UniqueIdentifier>{e98236a1-498c-4c09-bdcf-0877ff94107e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\XML">
+      <UniqueIdentifier>{8cf82be8-cfc2-4a94-9cb7-277c5504f4e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\types">
+      <UniqueIdentifier>{aa2ed604-4d44-4325-b08c-427078da853d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -8,7 +8,10 @@
 #ifndef ZAZENGRAPHICS_H_
 #define ZAZENGRAPHICS_H_
 
-#include "../../../Core/SubSystems/IFaces/IGraphics.h"
+#include <core/ICore.h>
+#include <graphics/IGraphics.h>
+
+#include <SDL/SDL.h>
 
 #include "ZazenGraphicsEntity.h"
 
@@ -19,12 +22,10 @@
 
 #include "Renderer/Renderer.h"
 
-#include <SDL/SDL.h>
-
 class ZazenGraphics : public IGraphics
 {
 	public:
-		ZazenGraphics();
+		ZazenGraphics( const std::string& id, ICore* core );
 		virtual ~ZazenGraphics();
 
 		const std::string& getID() const { return this->m_id; };
@@ -49,6 +50,8 @@ class ZazenGraphics : public IGraphics
 	private:
 		std::string m_id;
 		std::string m_type;
+
+		ICore* m_core;
 
 		double m_lastItFact;
 

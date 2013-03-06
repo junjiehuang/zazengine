@@ -8,7 +8,7 @@
 #ifndef ZAZENGRAPHICSENTITY_H_
 #define ZAZENGRAPHICSENTITY_H_
 
-#include "../../../Core/SubSystems/IFaces/IGraphicsEntity.h"
+#include <graphics/IGraphicsEntity.h>
 #include "Orientation/Orientation.h"
 
 class ZazenGraphicsEntity : public IGraphicsEntity

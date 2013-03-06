@@ -24,4 +24,4 @@ class Instance : public Orientation
 
 };
 
-#endif /*GEOMINSTANCENODE_H_*/
+#endif /*INSTANCE_H_*/

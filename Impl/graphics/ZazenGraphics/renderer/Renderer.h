@@ -32,4 +32,4 @@ class Renderer
 	 }
 };
 
-#endif /*STANDARDTRAVERSAL_H_*/
+#endif /*RENDERER_H_*/

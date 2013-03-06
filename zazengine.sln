@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C++ Express 2010
+# Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zaZenCore", "Impl\core\core.vcxproj", "{8703EE33-1839-4945-A60C-CDB0D3668D05}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zaZenODE", "Impl\physics\ODE\ODE.vcxproj", "{32B2712C-3A6A-401C-A9EF-C40F6757BACF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IFaces", "IFaces\IFaces.vcxproj", "{D63B11F4-1B53-40E5-916F-E24F557718E0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZazenGraphics", "Impl\graphics\ZazenGraphics\ZazenGraphics.vcxproj", "{EC9185A7-0994-46A7-8385-6C346CBE99C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,6 +26,10 @@ Global
 		{D63B11F4-1B53-40E5-916F-E24F557718E0}.Debug|Win32.ActiveCfg = Debug|Win32
 		{D63B11F4-1B53-40E5-916F-E24F557718E0}.Release|Win32.ActiveCfg = Release|Win32
 		{D63B11F4-1B53-40E5-916F-E24F557718E0}.Release|Win32.Build.0 = Release|Win32
+		{EC9185A7-0994-46A7-8385-6C346CBE99C9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EC9185A7-0994-46A7-8385-6C346CBE99C9}.Debug|Win32.Build.0 = Debug|Win32
+		{EC9185A7-0994-46A7-8385-6C346CBE99C9}.Release|Win32.ActiveCfg = Release|Win32
+		{EC9185A7-0994-46A7-8385-6C346CBE99C9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
