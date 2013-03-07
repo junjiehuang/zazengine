@@ -96,10 +96,10 @@ GeometryFactory::loadFolder( const std::string& folderName )
 	GeomType* folderGroup = new GeomType();
 
 	filesystem::directory_iterator iter( directory );
-	filesystem::directory_iterator endIter();
+	filesystem::directory_iterator endIter;
 
 	// iterate through directory
-	while ( iter != endIter() )
+	while ( iter != endIter )
 	{
 		filesystem::directory_entry entry = *iter++;
 
@@ -117,9 +117,6 @@ GeometryFactory::loadFolder( const std::string& folderName )
 		else
 		{
 			string ending = entry.path().extension().generic_string();
-			unsigned long index = fullFileName.find_last_of('.');
-			if (index != string::npos)
-				ending = fullFileName.substr(index + 1, fullFileName.length() - index);
 
 			//cout << "subFilePath = " << fullFileName << endl;
 

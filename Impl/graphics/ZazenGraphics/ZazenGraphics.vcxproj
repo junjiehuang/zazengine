@@ -46,8 +46,12 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(BOOST_PATH)/lib/;libs/lib/</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libboost_filesystem-vc100-mt-gd-1_51.lib;glew32.lib;SDL.lib;ILUT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libboost_filesystem-vc100-mt-gd-1_51.lib;glew32.lib;SDL.lib;ILUT.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(ProjectDir)libs\lib\*.dll $(SolutionDir)$(Configuration)
+copy $(ProjectDir)libs\lib\*.pdb $(SolutionDir)$(Configuration)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
