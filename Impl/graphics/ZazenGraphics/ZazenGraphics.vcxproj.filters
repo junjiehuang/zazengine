@@ -55,6 +55,12 @@
     <Filter Include="Headerdateien\states">
       <UniqueIdentifier>{d63827b6-b595-4680-a337-29870a90db8a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headerdateien\XML">
+      <UniqueIdentifier>{a110fdbe-5da2-4732-911a-a7ab19883f9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\XML">
+      <UniqueIdentifier>{9028e165-d757-452a-8aa3-9c8a515b2b97}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -110,6 +116,18 @@
     </ClCompile>
     <ClCompile Include="states\Statemanager.cpp">
       <Filter>Quelldateien\states</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinystr.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxml.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlerror.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlparser.cpp">
+      <Filter>Quelldateien\XML</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +193,24 @@
     </ClInclude>
     <ClInclude Include="states\Statemanager.h">
       <Filter>Headerdateien\states</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_iterators.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_print.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_utils.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinystr.h">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h">
+      <Filter>Headerdateien\XML</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

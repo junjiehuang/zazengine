@@ -11,11 +11,15 @@
 #include "GeomMesh.h"
 
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
+
 #include <iostream>
 
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
+using namespace boost;
 
 map<string, GeomType*> GeometryFactory::meshes;
 
@@ -72,77 +76,77 @@ GeometryFactory::freeAll()
 }
 
 GeomType*
-GeometryFactory::loadFolder(const std::string& folderName)
+GeometryFactory::loadFolder( const std::string& folderName )
 {
-	// TODO use boost filesystem stuff for this instead of system-api
-
 	string fullPath = folderName;
-	DIR* directory = opendir(fullPath.c_str());
-	if (!directory)
+	filesystem::path directory( fullPath.c_str() );
+
+	if ( ! filesystem::exists( directory ) )
 	{
-			cout << "ERROR ... couldn't open Directory \"" << fullPath << "\" in GeometryFactory::loadFolder" << endl;
+			cout << "ERROR ... couldn't open directory \"" << fullPath << "\" in GeometryFactory::loadFolder" << endl;
+			return 0;	
+	}
+
+	if ( ! filesystem::is_directory( directory ) )
+	{
+			cout << "ERROR ... in GeometryFactory::loadFolder: expected directory at \"" << fullPath << "\" but is no directory" << endl;
 			return 0;	
 	}
 	
 	GeomType* folderGroup = new GeomType();
-	
-	struct dirent* entry;
-	struct stat entryStatus;
+
+	filesystem::directory_iterator iter( directory );
+	filesystem::directory_iterator endIter();
 
 	// iterate through directory
-	while ((entry = readdir(directory)) != NULL)
+	while ( iter != endIter() )
 	{
-		string fileName = entry->d_name;
+		filesystem::directory_entry entry = *iter++;
+
+		string fileName = entry.path().filename().generic_string();
 		string fullFileName = fullPath + "/" + fileName;
 		
-		stat(fullFileName.c_str(), &entryStatus);
-
-		// ignore .
-		if(fileName == ".")
-			continue;
-		
-		// ignore
-		if (fileName == "..")
-			continue;
-
 		GeomType* subFolderGeometryFactory = 0;
 		string subFolderPath = folderName + "/" + fileName;
 
-		if (S_ISDIR(entryStatus.st_mode))
+		if ( filesystem::is_directory( entry.path() ) )
 		{
 			//cout << "subFolderPath = " << subFolderPath << endl;
-			subFolderGeometryFactory = GeometryFactory::loadFolder(subFolderPath);
-
+			subFolderGeometryFactory = GeometryFactory::loadFolder( subFolderPath );
 		}
 		else
 		{
-			string ending;
+			string ending = entry.path().extension().generic_string();
 			unsigned long index = fullFileName.find_last_of('.');
 			if (index != string::npos)
 				ending = fullFileName.substr(index + 1, fullFileName.length() - index);
 
 			//cout << "subFilePath = " << fullFileName << endl;
 
-			if (strcasecmp(ending.c_str(), "ply") == 0) {
+			if ( boost::iequals( ending.c_str(), ".ply" ) )
+			{
 				subFolderGeometryFactory = GeometryFactory::loadPly(fullFileName);
-			} else if (strcasecmp(ending.c_str(), "ms3d") == 0) {
+			} 
+			else if ( boost::iequals( ending.c_str(), ".ms3d" ) )
+			{
 				subFolderGeometryFactory = GeometryFactory::loadMs3D(fullFileName);
-			} else if (strcasecmp(ending.c_str(), "3ds") == 0) {
+			}
+			else if ( boost::iequals( ending.c_str(), ".3ds" ) )
+			{
 				subFolderGeometryFactory = GeometryFactory::load3DS(fullFileName);
-			} else {
+			} 
+			else {
 				cout << "bad ending: \"" << ending << "\"" << endl;
 			}
 		}
 		
-		if (subFolderGeometryFactory) {
+		if ( subFolderGeometryFactory ) {
 			subFolderGeometryFactory->parent = folderGroup;
 			
 			folderGroup->compareBB(subFolderGeometryFactory->getBBMin(), subFolderGeometryFactory->getBBMin());
 			folderGroup->children.push_back(subFolderGeometryFactory);
 		}
 	}
-
-	closedir(directory);
 
 	return folderGroup;
 }

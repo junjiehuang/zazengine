@@ -119,15 +119,16 @@ bool
 Shader::readShaderSource(const string& file, string& shaderSource)
 {
 	string fullFileName = file;
+	FILE* shaderSourceFile = NULL;
 
-	FILE* shaderSourceFile = fopen(fullFileName.c_str(), "r");
-	if (shaderSourceFile == 0) {
+	if ( 0 != fopen_s( &shaderSourceFile, fullFileName.c_str(), "r" ) )
+	{
 		cout << "ERROR ... couldn't open Shadersource-File " << fullFileName << endl;
 		return false;
 	}
 
 	char c;
-	while ((c = fgetc(shaderSourceFile)) != EOF)
+	while ( EOF != ( c = fgetc( shaderSourceFile ) ) )
 		shaderSource += c;
 
 	fclose( shaderSourceFile );

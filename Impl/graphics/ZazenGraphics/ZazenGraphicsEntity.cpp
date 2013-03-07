@@ -13,6 +13,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace boost;
 
 ZazenGraphicsEntity::ZazenGraphicsEntity( IGameObject* p )
 	: IGraphicsEntity( p ),
@@ -31,10 +32,10 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 	// process immediately because no call to graphics api, just coping of data (yet)
 	if ( e == "updatePhysics" )
 	{
-		Value& pos = e.getValue( "pos" );
-		Value& rot = e.getValue( "rot" );
+		boost::any& pos = e.getValue( "pos" );
+		boost::any& rot = e.getValue( "rot" );
 
-		this->setOrientation( pos.data, rot.data );
+		this->setOrientation( any_cast<const float*>( pos ), any_cast<const float*>( rot ) );
 
 		return true;
 	}
