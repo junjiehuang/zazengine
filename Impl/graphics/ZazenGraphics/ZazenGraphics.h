@@ -25,6 +25,8 @@
 class ZazenGraphics : public IGraphics
 {
 	public:
+		static ZazenGraphics& getInstance() { return *ZazenGraphics::instance; };
+
 		ZazenGraphics( const std::string& id, ICore* core );
 		virtual ~ZazenGraphics();
 
@@ -47,7 +49,11 @@ class ZazenGraphics : public IGraphics
 
 		ZazenGraphicsEntity* createEntity( TiXmlElement*, IGameObject* parent );
 
+		ICore& getCore() { return *this->m_core; };
+
 	private:
+		static ZazenGraphics* instance;
+
 		std::string m_id;
 		std::string m_type;
 

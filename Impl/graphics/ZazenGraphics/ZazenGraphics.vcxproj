@@ -41,7 +41,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>lib/glew/include/;lib/;../../../libs/include/;../../../IFaces/;$(BOOST_PATH)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/include/;../../../libs/include/;../../../IFaces/;$(BOOST_PATH)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -66,7 +66,6 @@
     <ClCompile Include="geometry\GeomMesh.cpp" />
     <ClCompile Include="geometry\GeomSkyBox.cpp" />
     <ClCompile Include="geometry\GeomType.cpp" />
-    <ClCompile Include="geometry\loaders\ply\ply.c" />
     <ClCompile Include="lighting\Light.cpp" />
     <ClCompile Include="material\Material.cpp" />
     <ClCompile Include="material\Program.cpp" />
@@ -87,7 +86,6 @@
     <ClInclude Include="geometry\GeomMesh.h" />
     <ClInclude Include="geometry\GeomSkyBox.h" />
     <ClInclude Include="geometry\GeomType.h" />
-    <ClInclude Include="geometry\loaders\ply\ply.h" />
     <ClInclude Include="lighting\Light.h" />
     <ClInclude Include="material\Material.h" />
     <ClInclude Include="material\Program.h" />

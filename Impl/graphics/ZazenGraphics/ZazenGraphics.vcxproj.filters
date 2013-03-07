@@ -55,18 +55,6 @@
     <Filter Include="Headerdateien\states">
       <UniqueIdentifier>{d63827b6-b595-4680-a337-29870a90db8a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Headerdateien\geometry\loaders">
-      <UniqueIdentifier>{1e915cda-5d0b-4c83-8671-83f1b9e88ce0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Headerdateien\geometry\loaders\ply">
-      <UniqueIdentifier>{7f5b1df4-6661-4f63-8dea-f516ebb1b2d1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Quelldateien\geometry\loaders">
-      <UniqueIdentifier>{acc916bb-2954-40b9-85b0-d30d5e7d11ad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Quelldateien\geometry\loaders\ply">
-      <UniqueIdentifier>{35e50876-235c-4045-883c-487001154e6c}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -122,9 +110,6 @@
     </ClCompile>
     <ClCompile Include="states\Statemanager.cpp">
       <Filter>Quelldateien\states</Filter>
-    </ClCompile>
-    <ClCompile Include="geometry\loaders\ply\ply.c">
-      <Filter>Quelldateien\geometry\loaders\ply</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -190,9 +175,6 @@
     </ClInclude>
     <ClInclude Include="states\Statemanager.h">
       <Filter>Headerdateien\states</Filter>
-    </ClInclude>
-    <ClInclude Include="geometry\loaders\ply\ply.h">
-      <Filter>Headerdateien\geometry\loaders\ply</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

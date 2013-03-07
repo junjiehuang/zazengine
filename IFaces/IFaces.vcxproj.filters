@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="audio\IAudio.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\IAudioEntity.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\IGraphics.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\IGraphicsEntity.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="ai\IAi.h">
+      <Filter>AI</Filter>
+    </ClInclude>
+    <ClInclude Include="ai\IAIEntity.h">
+      <Filter>AI</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ICore.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\IEventListener.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\IEventManager.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\IGameObject.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ISubSystem.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ISubSystemEntity.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\Event.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="input\IInput.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="physics\IPhysicsEntity.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="physics\IPhysics.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="core">
+      <UniqueIdentifier>{7cf8fbeb-04e9-4e8b-a406-5dc9d72b69d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI">
+      <UniqueIdentifier>{5610c9e4-9979-49eb-a68c-e2042887ebae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{2fc827b2-0ba5-4463-9fd7-55e6cf3353da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio">
+      <UniqueIdentifier>{db31dc82-31bc-4bc8-8110-fa3a3dde6294}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{a2d5a329-95e1-4f90-850c-121b4c615670}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{0458a03d-91e7-4014-ad8a-24440e42873e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

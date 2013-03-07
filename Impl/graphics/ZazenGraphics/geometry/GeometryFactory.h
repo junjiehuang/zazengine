@@ -7,8 +7,8 @@
  *
  */
 
-#ifndef _MODEL_H_
-#define _MODEL_H_
+#ifndef _GEOMETRY_FACTORY_H_
+#define _GEOMETRY_FACTORY_H_
 
 #include <GL/glew.h>
 

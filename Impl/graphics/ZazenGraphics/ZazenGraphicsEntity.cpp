@@ -6,6 +6,7 @@
  */
 
 #include "ZazenGraphicsEntity.h"
+#include "ZazenGraphics.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -39,35 +40,35 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 	}
 	else if  ( e == "SDLK_RIGHT" )
 	{
-		this->m_orientation->changeHeading( -0.1 * Core::getInstance().getProcessingFactor() );
+		this->m_orientation->changeHeading( -0.1 * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
 	else if ( e == "SDLK_LEFT" )
 	{
-		this->m_orientation->changeHeading( 0.1 * Core::getInstance().getProcessingFactor() );
+		this->m_orientation->changeHeading( 0.1 * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
 	else if ( e == "SDLK_UP" )
 	{
-		this->m_orientation->changePitch( -0.1 * Core::getInstance().getProcessingFactor() );
+		this->m_orientation->changePitch( -0.1 * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
 	else if ( e == "SDLK_DOWN" )
 	{
-		this->m_orientation->changePitch( 0.1 * Core::getInstance().getProcessingFactor() );
+		this->m_orientation->changePitch( 0.1 * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
 	else if ( e == "SDLK_w" )
 	{
-		this->m_orientation->strafeForward( -0.1 * Core::getInstance().getProcessingFactor() );
+		this->m_orientation->strafeForward( -0.1 * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
 	else if ( e == "SDLK_s" )
 	{
-		this->m_orientation->strafeForward( 0.1 * Core::getInstance().getProcessingFactor() );
+		this->m_orientation->strafeForward( 0.1 * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
 	else if ( e == "SDLK_d" )
 	{
-		this->m_orientation->changeRoll( -0.1 * Core::getInstance().getProcessingFactor() );
+		this->m_orientation->changeRoll( -0.1 * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
 	else if ( e == "SDLK_a" )
 	{
-		this->m_orientation->changeRoll( 0.1 * Core::getInstance().getProcessingFactor() );
+		this->m_orientation->changeRoll( 0.1 * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
 
 	return false;

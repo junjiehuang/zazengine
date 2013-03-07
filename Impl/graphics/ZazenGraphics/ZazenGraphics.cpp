@@ -22,15 +22,19 @@
 
 using namespace std;
 
+ZazenGraphics* ZazenGraphics::instance = NULL;
+
 ZazenGraphics::ZazenGraphics( const std::string& id, ICore* core )
 	: m_id ( id ),
 	  m_type ( "graphics" ),
 	  m_core( core )
 {
+	ZazenGraphics::instance = this;
 }
 
 ZazenGraphics::~ZazenGraphics()
 {
+	ZazenGraphics::instance = NULL;
 }
 
 bool
@@ -67,7 +71,7 @@ ZazenGraphics::shutdown()
 {
 	cout << endl << "=============== ZazenGraphics shutting down... ===============" << endl;
 
-	Core::getInstance().getEventManager().unregisterForEvent( "SDLK_RIGHT", this );
+	this->m_core->getEventManager().unregisterForEvent( "SDLK_RIGHT", this );
 
 	std::list<ZazenGraphicsEntity*>::iterator iter = this->m_entities.begin();
 	while ( iter != this->m_entities.end() )
