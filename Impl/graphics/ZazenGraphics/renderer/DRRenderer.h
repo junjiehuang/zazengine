@@ -183,6 +183,9 @@ class DRRenderer : public Renderer
 	bool initShadowMapping();
 	bool initUniformBlocks();
 
+	bool initDepthBuffer();
+	bool initMrtBuffer( unsigned int );
+
 	bool renderShadowMap( std::list<Instance*>& instances, std::list<Light*>& lights );
 	bool renderGeometryStage( std::list<Instance*>& instances, std::list<Light*>& lights );
 	bool renderLightingStage( std::list<Instance*>& instances, std::list<Light*>& lights );

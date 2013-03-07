@@ -289,7 +289,7 @@ DRRenderer::initFBO()
 {
 	GLenum status;
 
-	// generate the id of our
+	// generate the id of our frame-buffer-object
 	glGenFramebuffers( 1, &this->m_fbo );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
@@ -297,114 +297,13 @@ DRRenderer::initFBO()
 		return false;
 	}
 
-	// generate and bind depth buffer
-	glGenTextures( 1, &this->m_geometryDepth );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
-	{
-		cout << "ERROR in DRRenderer::initFBO: glGenTextures for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	glBindTexture( GL_TEXTURE_2D, this->m_geometryDepth );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
-	{
-		cout << "ERROR in DRRenderer::initFBO: glBindTexture for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	// GL_LINEAR does not make sense for depth texture.
-	// PercentageCloserFiltering utilizes GL_LINEAR, not yet implemented
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-
-	// Remove artifact on the edges of the depthmap
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-
-	glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE );
-
-	// for now we create shadowmaps in same width and height as their viewing frustum and 32 bit depth
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, this->m_camera->getWidth(), this->m_camera->getHeight(), 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0 );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in DRRenderer::initFBO: glTexImage2D for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	glBindTexture( GL_TEXTURE_2D, 0 );
-
-	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
-	{
-		cout << "ERROR in DRRenderer::initFBO: glBindFramebuffer for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
-	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, this->m_geometryDepth, 0 );
-	CHECK_FRAMEBUFFER_STATUS( status );
-	if ( GL_FRAMEBUFFER_COMPLETE != status )
-	{
-		cout << "ERROR in DRRenderer::initFBO: framebuffer error for depth-buffer: " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-
 	// generate and bind generic color attachements
-	for ( int i = 0; i < MRT_COUNT; i++ )
+	for ( unsigned int i = 0; i < MRT_COUNT; i++ )
 	{
-		this->m_buffers[ i ] = GL_COLOR_ATTACHMENT0 + i;
-
-		glGenTextures( 1, &this->m_colorBuffers[ i ] );
-		if ( GL_NO_ERROR != ( status = glGetError() )  )
-		{
-			cout << "ERROR in DRRenderer::initFBO: glGenTextures failed with " << gluErrorString( status ) << " - exit" << endl;
-			return false;
-		}
-
-		glBindTexture( GL_TEXTURE_2D, this->m_colorBuffers[ i ] );
-		if ( GL_NO_ERROR != ( status = glGetError() )  )
-		{
-			cout << "ERROR in DRRenderer::initFBO: glBindTexture failed with " << gluErrorString( status ) << " - exit" << endl;
-			return false;
-		}
-
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-
-		// Remove artifact on the edges of the shadowmap
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, this->m_camera->getWidth(), this->m_camera->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
-		if ( GL_NO_ERROR != ( status = glGetError() )  )
-		{
-			cout << "ERROR in DRRenderer::initFBO: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
-			return false;
-		}
-
-		glBindTexture( GL_TEXTURE_2D, 0 );
-
-		glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
-		if ( GL_NO_ERROR != ( status = glGetError() )  )
-		{
-			cout << "ERROR in DRRenderer::initFBO: glBindFramebuffer failed with " << gluErrorString( status ) << " - exit" << endl;
-			return false;
-		}
-
-		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->m_colorBuffers[ i ], 0 );
-		CHECK_FRAMEBUFFER_STATUS( status );
-		if ( GL_FRAMEBUFFER_COMPLETE != status )
-		{
-			cout << "ERROR in DRRenderer::initFBO: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
-			return false;
-		}
-
-		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+		this->initMrtBuffer( i );	
 	}
 
-	return true;
+	return this->initDepthBuffer();
 }
 
 bool
@@ -718,6 +617,121 @@ DRRenderer::initUniformBlocks()
 	}
 
 	return true;
+}
+
+bool
+DRRenderer::initDepthBuffer()
+{
+	GLenum status;
+
+	// generate and bind depth buffer
+	glGenTextures( 1, &this->m_geometryDepth );
+	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	{
+		cout << "ERROR in DRRenderer::initDepthBuffer: glGenTextures for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	glBindTexture( GL_TEXTURE_2D, this->m_geometryDepth );
+	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	{
+		cout << "ERROR in DRRenderer::initDepthBuffer: glBindTexture for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	// GL_LINEAR does not make sense for depth texture.
+	// PercentageCloserFiltering utilizes GL_LINEAR, not yet implemented
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+
+	// Remove artifact on the edges of the depthmap
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+
+	glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE );
+
+	// for now we create shadowmaps in same width and height as their viewing frustum and 32 bit depth
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, this->m_camera->getWidth(), this->m_camera->getHeight(), 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0 );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR in DRRenderer::initDepthBuffer: glTexImage2D for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
+	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	{
+		cout << "ERROR in DRRenderer::initDepthBuffer: glBindFramebuffer for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, this->m_geometryDepth, 0 );
+	CHECK_FRAMEBUFFER_STATUS( status );
+	if ( GL_FRAMEBUFFER_COMPLETE != status )
+	{
+		cout << "ERROR in DRRenderer::initDepthBuffer: framebuffer error for depth-buffer: " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+}
+
+bool
+DRRenderer::initMrtBuffer( unsigned int i )
+{
+	GLenum status;
+
+	this->m_buffers[ i ] = GL_COLOR_ATTACHMENT0 + i;
+
+	glGenTextures( 1, &this->m_colorBuffers[ i ] );
+	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	{
+		cout << "ERROR in DRRenderer::initFBO: glGenTextures failed with " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	glBindTexture( GL_TEXTURE_2D, this->m_colorBuffers[ i ] );
+	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	{
+		cout << "ERROR in DRRenderer::initFBO: glBindTexture failed with " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+
+	// Remove artifact on the edges of the shadowmap
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, this->m_camera->getWidth(), this->m_camera->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
+	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	{
+		cout << "ERROR in DRRenderer::initFBO: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
+	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	{
+		cout << "ERROR in DRRenderer::initFBO: glBindFramebuffer failed with " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->m_colorBuffers[ i ], 0 );
+	CHECK_FRAMEBUFFER_STATUS( status );
+	if ( GL_FRAMEBUFFER_COMPLETE != status )
+	{
+		cout << "ERROR in DRRenderer::initFBO: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 }
 
 bool
