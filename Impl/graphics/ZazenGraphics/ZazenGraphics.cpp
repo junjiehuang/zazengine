@@ -20,6 +20,9 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
+#define REQUIRED_MAJOR_OPENGL_VER 3
+#define REQUIRED_MINOR_OPENGL_VER 3
+
 using namespace std;
 
 ZazenGraphics* ZazenGraphics::instance = NULL;
@@ -42,16 +45,17 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 {
 	cout << endl << "=============== ZazenGraphics initializing... ===============" << endl;
 
-	if ( false == this->initSDL() )
+	// important: need to initialize SDL first because only then we have a valid opengl-context
+	if ( false == this->initSDL( configNode ) )
 	{
 		return false;
 	}
 
-	if ( false == this->initGL() )
+	if ( false == this->initGL( configNode ) )
 	{
 		return false;
 	}
-	
+
 	// cannot initialize renderer now because camera not yet loaded
 	this->m_renderer = new DRRenderer();
 
@@ -347,7 +351,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 
 
 bool
-ZazenGraphics::initSDL()
+ZazenGraphics::initSDL( TiXmlElement* configNode )
 {
 	cout << "Initializing SDL..." << endl;
 	int error = SDL_Init( SDL_INIT_VIDEO );
@@ -361,7 +365,7 @@ ZazenGraphics::initSDL()
 		cout << "OK ... SDL initialized" << endl;
 	}
 
-	if (SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 ) == -1)
+	if ( SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 ) == -1)
 	{
 		cout << "FAILED ... SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER) failed with " << SDL_GetError() << endl;
 		return false;
@@ -380,12 +384,10 @@ ZazenGraphics::initSDL()
 }
 
 bool
-ZazenGraphics::initGL()
+ZazenGraphics::initGL( TiXmlElement* configNode )
 {
-	//int argc = 0;
-	//glutInit(&argc, NULL);
-
 	int major, minor;
+
 	GLenum err = glewInit();
 	if ( GLEW_OK != err )
 	{
@@ -399,24 +401,16 @@ ZazenGraphics::initGL()
 
 	cout << "OpenGL Version: " << glGetString(GL_VERSION) << endl;
 
-	glGetIntegerv(GL_MAJOR_VERSION, &major); // major = 3
-	glGetIntegerv(GL_MINOR_VERSION, &minor); // minor = 2
+	glGetIntegerv( GL_MAJOR_VERSION, &major );
+	glGetIntegerv( GL_MINOR_VERSION, &minor );
 
-	// opengl 3.3 minimum
-	if ( 3 > major )
+	if ( REQUIRED_MAJOR_OPENGL_VER > major || 
+		 ( REQUIRED_MAJOR_OPENGL_VER == major && REQUIRED_MINOR_OPENGL_VER > minor ) )
 	{
-		cout << "ERROR ... OpenGL3.3 or above required" << endl;
+		cout << "ERROR ... OpenGL " << REQUIRED_MAJOR_OPENGL_VER << "." << REQUIRED_MINOR_OPENGL_VER << " or above required" << endl;
 		return false;
 	}
-	else if ( 3 == major )
-	{
-		if ( 3 > minor )
-		{
-			cout << "ERROR ... OpenGL3.3 or above required" << endl;
-			return false;
-		}
-	}
-
+	
 	return true;
 }
 

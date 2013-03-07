@@ -19,6 +19,8 @@ class ICore
 
 		virtual double getProcessingFactor() const = 0;
 
+		virtual long long getCurrentMillis() const = 0;
+
 		virtual ISubSystem* getSubSystemByID( const std::string& ) = 0;
 		virtual ISubSystem* getSubSystemByType( const std::string& ) = 0;
 

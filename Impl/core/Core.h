@@ -43,6 +43,8 @@ class DLL_API Core : public ICore
 
 		double getProcessingFactor() const { return this->m_processingFactor; };
 
+		long long getCurrentMillis() const;
+
 		ISubSystem* getSubSystemByID( const std::string& );
 		ISubSystem* getSubSystemByType( const std::string& );
 

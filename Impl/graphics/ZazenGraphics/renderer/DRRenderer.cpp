@@ -336,7 +336,7 @@ DRRenderer::initFBO()
 	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
-		cout << "ERROR in DRRenderer::initFBO: glBindFramebuffer for depth-buffer  failed with " << gluErrorString( status ) << " - exit" << endl;
+		cout << "ERROR in DRRenderer::initFBO: glBindFramebuffer for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
 

@@ -18,11 +18,13 @@ using namespace std;
 
 Core* Core::instance = 0;
 
+// TODO when a lib fails to initialize it needs to be uninitialized and leave now resources
+// this is not implemented yet properly in ODE and Graphics!
+// could cause memory leaks when libs are loaded during runtime and won't cause the whole application to go down when they fail
+
 bool
 Core::initalize( const std::string& configPath )
 {
-	// TODO: use filesystem-utilities of boost to handle path & files
-
 	if ( 0 == Core::instance )
 	{
 		new Core();
@@ -122,7 +124,6 @@ Core::start()
 		}
 	}
 
-	FILETIME t;
 	long long startTicks = 0;
 	long long endTicks = 0;
 	
@@ -131,8 +132,7 @@ Core::start()
 	this->m_runCore = true;
 	while ( this->m_runCore )
 	{
-		GetSystemTimeAsFileTime( &t );
-		startTicks = 0; // TODO
+		startTicks = this->getCurrentMillis();
 		
 		this->m_eventManager->processQueue();
 
@@ -169,16 +169,15 @@ Core::start()
 			subSysIter++;
 		}
 		
-		GetSystemTimeAsFileTime( &t );
-		endTicks = 0; // TODO
+		endTicks = this->getCurrentMillis();
 		
-		this->m_processingFactor = (double)(endTicks - startTicks) / (double) 1000;
+		this->m_processingFactor = ( double ) ( endTicks - startTicks ) / ( double ) 1000;
 	};
 
 	subSysIter = this->m_subSystems.begin();
 	while ( subSysIter != this->m_subSystems.end() )
 	{
-		(*subSysIter)->stop();
+		( *subSysIter )->stop();
 		subSysIter++;
 	}
 }
@@ -201,6 +200,21 @@ Core::getSubSystemByID( const std::string& id )
 	}
 
 	return 0;
+}
+
+long long
+Core::getCurrentMillis() const
+{
+	static LARGE_INTEGER s_frequency;
+    static BOOL s_use_qpc = QueryPerformanceFrequency( &s_frequency );
+
+    if ( s_use_qpc ) {
+        LARGE_INTEGER now;
+        QueryPerformanceCounter( &now );
+        return ( 1000LL * now.QuadPart ) / s_frequency.QuadPart;
+    } else {
+        return GetTickCount();
+    }
 }
 
 ISubSystem*

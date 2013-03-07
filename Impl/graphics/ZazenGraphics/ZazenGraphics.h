@@ -71,8 +71,8 @@ class ZazenGraphics : public IGraphics
 
 		std::list<ZazenGraphicsEntity*> m_entities;
 
-		bool initSDL();
-		bool initGL();
+		bool initSDL( TiXmlElement* );
+		bool initGL( TiXmlElement* );
 };
 
 #endif /* ZAZENGRAPHICS_H_ */

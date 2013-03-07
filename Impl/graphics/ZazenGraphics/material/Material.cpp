@@ -20,7 +20,9 @@ std::map<std::string, Material*> Material::allMaterials;
 bool
 Material::loadAll()
 {
-	string fullFileName = "media/graphics/materials/materials.xml";
+	// TODO make this file configureable
+
+	string fullFileName = "../media/graphics/materials/materials.xml";
 
 	TiXmlDocument doc( fullFileName.c_str() );
 
