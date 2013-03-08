@@ -14,6 +14,8 @@
 
 #include "GeomType.h"
 
+#include <boost/filesystem.hpp>
+
 #include <map>
 #include <string>
 
@@ -27,11 +29,8 @@ class GeometryFactory
 		 GeometryFactory();
 		 ~GeometryFactory();
 
-		 static GeomType* load3DS( const std::string& );
-		 static GeomType* loadMs3D( const std::string&) ;
-		 static GeomType* loadPly( const std::string& ) ;
-	
-		 static GeomType* loadFolder(const std::string&);
+		 static GeomType* loadFolder( const boost::filesystem::path& );
+		 static GeomType* loadFile( const boost::filesystem::path& );
 
 		 static std::map<std::string, GeomType*> meshes;
 };

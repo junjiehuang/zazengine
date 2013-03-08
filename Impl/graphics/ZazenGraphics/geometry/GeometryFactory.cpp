@@ -10,13 +10,11 @@
 
 #include "GeomMesh.h"
 
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <assimp/cimport.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include <iostream>
-
-#include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
 using namespace boost;
@@ -30,31 +28,26 @@ GeometryFactory::get( const std::string& fileName )
 	if ( findIter != GeometryFactory::meshes.end() )
 		return findIter->second;
 
-	string ending;
-	unsigned long index = fileName.find_last_of('.');
-	if (index != string::npos)
-		ending = fileName.substr(index + 1, fileName.length() - index);
+	filesystem::path filePath( fileName.c_str() );
+
+	if ( ! filesystem::exists( filePath ) )
+	{
+		cout << "ERROR ... in GeometryFactory::get: file \"" << fileName << "\" does not exist" << endl;
+		return 0;	
+	}
 
 	GeomType* geomType = 0;
 
-	if ( boost::iequals( ending.c_str(), "ply" ) )
+	if ( filesystem::is_directory( filePath ) )
 	{
-		geomType = GeometryFactory::loadPly(fileName);
-	}
-	else if ( boost::iequals( ending.c_str(), "ms3d" ) )
-	{
-		geomType = GeometryFactory::loadMs3D(fileName);
-	}
-	else if ( boost::iequals( ending.c_str(), "3ds" ) )
-	{
-		geomType = GeometryFactory::load3DS(fileName);
+		geomType = GeometryFactory::loadFolder( filePath );
 	}
 	else
 	{
-		geomType = GeometryFactory::loadFolder(fileName);
+		geomType = GeometryFactory::loadFile( filePath );
 	}
-
-	if ( geomType )
+	
+	if ( NULL != geomType )
 		GeometryFactory::meshes[ fileName ] = geomType;
 
 	return geomType;
@@ -76,72 +69,34 @@ GeometryFactory::freeAll()
 }
 
 GeomType*
-GeometryFactory::loadFolder( const std::string& folderName )
+GeometryFactory::loadFolder( const filesystem::path& folderPath )
 {
-	string fullPath = folderName;
-	filesystem::path directory( fullPath.c_str() );
-
-	if ( ! filesystem::exists( directory ) )
-	{
-			cout << "ERROR ... couldn't open directory \"" << fullPath << "\" in GeometryFactory::loadFolder" << endl;
-			return 0;	
-	}
-
-	if ( ! filesystem::is_directory( directory ) )
-	{
-			cout << "ERROR ... in GeometryFactory::loadFolder: expected directory at \"" << fullPath << "\" but is no directory" << endl;
-			return 0;	
-	}
-	
 	GeomType* folderGroup = new GeomType();
 
-	filesystem::directory_iterator iter( directory );
+	filesystem::directory_iterator iter( folderPath );
 	filesystem::directory_iterator endIter;
 
 	// iterate through directory
 	while ( iter != endIter )
 	{
 		filesystem::directory_entry entry = *iter++;
-
-		string fileName = entry.path().filename().generic_string();
-		string fullFileName = fullPath + "/" + fileName;
 		
 		GeomType* subFolderGeometryFactory = 0;
-		string subFolderPath = folderName + "/" + fileName;
 
 		if ( filesystem::is_directory( entry.path() ) )
 		{
-			//cout << "subFolderPath = " << subFolderPath << endl;
-			subFolderGeometryFactory = GeometryFactory::loadFolder( subFolderPath );
+			subFolderGeometryFactory = GeometryFactory::loadFolder( entry.path() );
 		}
 		else
 		{
-			string ending = entry.path().extension().generic_string();
-
-			//cout << "subFilePath = " << fullFileName << endl;
-
-			if ( boost::iequals( ending.c_str(), ".ply" ) )
-			{
-				subFolderGeometryFactory = GeometryFactory::loadPly(fullFileName);
-			} 
-			else if ( boost::iequals( ending.c_str(), ".ms3d" ) )
-			{
-				subFolderGeometryFactory = GeometryFactory::loadMs3D(fullFileName);
-			}
-			else if ( boost::iequals( ending.c_str(), ".3ds" ) )
-			{
-				subFolderGeometryFactory = GeometryFactory::load3DS(fullFileName);
-			} 
-			else {
-				cout << "bad ending: \"" << ending << "\"" << endl;
-			}
+			subFolderGeometryFactory = GeometryFactory::loadFile( entry.path() );
 		}
 		
 		if ( subFolderGeometryFactory ) {
 			subFolderGeometryFactory->parent = folderGroup;
 			
-			folderGroup->compareBB(subFolderGeometryFactory->getBBMin(), subFolderGeometryFactory->getBBMin());
-			folderGroup->children.push_back(subFolderGeometryFactory);
+			folderGroup->compareBB( subFolderGeometryFactory->getBBMin(), subFolderGeometryFactory->getBBMin() );
+			folderGroup->children.push_back( subFolderGeometryFactory );
 		}
 	}
 
@@ -149,37 +104,21 @@ GeometryFactory::loadFolder( const std::string& folderName )
 }
 
 GeomType*
-GeometryFactory::load3DS(const std::string& fileName)
+GeometryFactory::loadFile( const filesystem::path& filePath )
 {
 	GeomType* geom = 0;
 
-    cout << "LOADING ... " << fileName << endl;
+	cout << "LOADING ... " << filePath << endl;
 
-	cout << "LOADED ... " << fileName << endl;
+	const struct aiScene* scene = aiImportFile( filePath.filename().generic_string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality );
+	if ( NULL == scene )
+	{
+		return 0;
+	}
+
+	aiReleaseImport( scene );
+
+	cout << "LOADED ... " << filePath << endl;
     
     return geom;
-}
-
-GeomType*
-GeometryFactory::loadMs3D(const std::string& fileName)
-{
-	GeomType* geom = 0;
-	
-	cout << "LOADING ... " << fileName << endl;
-
-	cout << "LOADED ... " << fileName << endl;
-
-	return geom;
-}
-
-GeomType*
-GeometryFactory::loadPly(const std::string& fileName)
-{	
-	GeomType* geom = 0;
-
-	cout << "LOADING ... " << fileName << endl;
-
-	cout << "LOADED ... " << fileName << endl;
-
-	return geom;
 }
