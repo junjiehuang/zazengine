@@ -102,7 +102,7 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 		if ( 0 == str )
 			continue;
 
-		ISubSystem* subSystem = Core::getInstance().getSubSystemByType( str );
+		ISubSystem* subSystem = Core::getRef().getSubSystemByType( str );
 		if ( 0 == subSystem )
 		{
 			cout << "ERROR ... no according SubSystem for definition \"" << str << "\" found - object will be ignored" << endl;

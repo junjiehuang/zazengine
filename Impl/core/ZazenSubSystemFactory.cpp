@@ -6,6 +6,7 @@
  */
 
 #include "ZazenSubSystemFactory.h"
+#include "Core.h"
 
 #include <Windows.h>
 
@@ -49,7 +50,7 @@ ZazenSubSystemFactory::createSubSystem( const std::string& file, const std::stri
 		return 0;
 	}
 
-	ISubSystem* subSystemInstance = constrFunc( type.c_str(), NULL );
+	ISubSystem* subSystemInstance = constrFunc( type.c_str(), Core::getInstance() );
 	if ( NULL == subSystemInstance )
 	{
 		cout << "ERROR ... constructor_func returned NULL-instance of SubSystem." << endl;

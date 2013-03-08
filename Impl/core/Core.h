@@ -30,7 +30,8 @@ class DLL_API Core : public ICore
 	public:
 		static bool initalize( const std::string& );
 		static bool shutdown();
-		static Core& getInstance() { return *Core::instance; };
+		static ICore* getInstance() { return Core::instance; };
+		static Core& getRef() { return *Core::instance; };
 
 		void start();
 		void stop();
