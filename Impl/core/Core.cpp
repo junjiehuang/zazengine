@@ -171,7 +171,7 @@ Core::start()
 		
 		endTicks = this->getCurrentMillis();
 		
-		this->m_processingFactor = ( double ) ( endTicks - startTicks ) / ( double ) 1000;
+		this->m_processingFactor = ( float ) ( endTicks - startTicks ) / ( float ) 1000;
 	};
 
 	subSysIter = this->m_subSystems.begin();

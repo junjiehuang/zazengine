@@ -12,12 +12,14 @@
 #include "ISubSystem.h"
 #include "IEventManager.h"
 
-class ICore
+#include "DllExport.h"
+
+class DLL_API ICore
 {
 	public:
 		virtual ~ICore() {};
 
-		virtual double getProcessingFactor() const = 0;
+		virtual float getProcessingFactor() const = 0;
 
 		virtual long long getCurrentMillis() const = 0;
 

@@ -23,44 +23,41 @@ using namespace std;
 {\
  status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT); \
  switch(status) { \
- case GL_FRAMEBUFFER_COMPLETE_EXT: \
+ case GL_FRAMEBUFFER_COMPLETE: \
    break; \
- case GL_FRAMEBUFFER_UNSUPPORTED_EXT: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_UNSUPPORTED_EXT\n");\
+ case GL_FRAMEBUFFER_UNSUPPORTED: \
+   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_UNSUPPORTED\n");\
     /* you gotta choose different formats */ \
    assert(0); \
    break; \
- case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT: \
-   fprintf(stderr,"framebuffer INCOMPLETE_ATTACHMENT\n");\
+ case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: \
+   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n");\
    break; \
- case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT: \
-   fprintf(stderr,"framebuffer FRAMEBUFFER_MISSING_ATTACHMENT\n");\
+ case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: \
+   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\n");\
    break; \
  case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: \
-   fprintf(stderr,"framebuffer FRAMEBUFFER_DIMENSIONS\n");\
+   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n");\
    break; \
   case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: \
-   fprintf(stderr,"framebuffer INCOMPLETE_FORMATS\n");\
+   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n");\
    break; \
- case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT: \
-   fprintf(stderr,"framebuffer INCOMPLETE_DRAW_BUFFER\n");\
+ case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: \
+   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER\n");\
    break; \
- case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT: \
-   fprintf(stderr,"framebuffer INCOMPLETE_READ_BUFFER\n");\
+ case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: \
+   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER\n");\
    break; \
- case GL_FRAMEBUFFER_BINDING_EXT: \
-   fprintf(stderr,"framebuffer BINDING_EXT\n");\
+ case GL_FRAMEBUFFER_BINDING: \
+   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_BINDING\n");\
    break; \
-/*
- case GL_FRAMEBUFFER_STATUS_ERROR_EXT: \
-   fprintf(stderr,"framebuffer STATUS_ERROR\n");\
-   break; \
-*/ \
  default: \
    /* programming error; will fail on all hardware */ \
    assert(0); \
  }\
 }
+
+// TODO move shaders for rendering-pipeline to zazengine-project
 
 DRRenderer::DRRenderer()
 	: Renderer( )
@@ -303,6 +300,7 @@ DRRenderer::initFBO()
 		this->initMrtBuffer( i );	
 	}
 
+	// important: initialize depth buffer AFTER binding color-buffers (MRTs) otherwise would fail on ATI-card
 	return this->initDepthBuffer();
 }
 
@@ -318,14 +316,14 @@ DRRenderer::initGeomStage()
 		return false;
 	}
 
-	this->m_vertGeomStage = Shader::createShader( Shader::VERTEX_SHADER, "media/graphics/dr/stages/geom/geomVert.glsl" );
+	this->m_vertGeomStage = Shader::createShader( Shader::VERTEX_SHADER, "../media/graphics/dr/stages/geom/geomVert.glsl" );
 	if ( 0 == this->m_vertGeomStage )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: coulnd't create vertex-shader - exit" << endl;
 		return false;
 	}
 
-	this->m_fragGeomStage = Shader::createShader( Shader::FRAGMENT_SHADER, "media/graphics/dr/stages/geom/geomFrag.glsl" );
+	this->m_fragGeomStage = Shader::createShader( Shader::FRAGMENT_SHADER, "../media/graphics/dr/stages/geom/geomFrag.glsl" );
 	if ( 0 == this->m_fragGeomStage )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: coulnd't create fragment-shader - exit" << endl;
@@ -412,14 +410,14 @@ DRRenderer::initLightingStage()
 		return false;
 	}
 
-	this->m_vertLightingStage = Shader::createShader( Shader::VERTEX_SHADER, "media/graphics/dr/stages/lighting/lightVert.glsl" );
+	this->m_vertLightingStage = Shader::createShader( Shader::VERTEX_SHADER, "../media/graphics/dr/stages/lighting/lightVert.glsl" );
 	if ( 0 == this->m_vertLightingStage )
 	{
 		cout << "ERROR in DRRenderer::initLightingStage: coulnd't create vertex-shader - exit" << endl;
 		return false;
 	}
 
-	this->m_fragLightingStage = Shader::createShader( Shader::FRAGMENT_SHADER, "media/graphics/dr/stages/lighting/lightFrag.glsl" );
+	this->m_fragLightingStage = Shader::createShader( Shader::FRAGMENT_SHADER, "../media/graphics/dr/stages/lighting/lightFrag.glsl" );
 	if ( 0 == this->m_fragGeomStage )
 	{
 		cout << "ERROR in DRRenderer::initLightingStage: coulnd't create fragment-shader - exit" << endl;
@@ -489,14 +487,14 @@ DRRenderer::initShadowMapping()
 		return false;
 	}
 
-	this->m_vertShadowMapping = Shader::createShader( Shader::VERTEX_SHADER, "media/graphics/dr/stages/shadowing/shadowVert.glsl" );
+	this->m_vertShadowMapping = Shader::createShader( Shader::VERTEX_SHADER, "../media/graphics/dr/stages/shadowing/shadowVert.glsl" );
 	if ( 0 == this->m_vertShadowMapping )
 	{
 		cout << "ERROR in DRRenderer::initShadowMapping: coulnd't create vertex shader - exit" << endl;
 		return false;
 	}
 
-	this->m_fragShadowMapping = Shader::createShader( Shader::FRAGMENT_SHADER, "media/graphics/dr/stages/shadowing/shadowFrag.glsl" );
+	this->m_fragShadowMapping = Shader::createShader( Shader::FRAGMENT_SHADER, "../media/graphics/dr/stages/shadowing/shadowFrag.glsl" );
 	if ( 0 == this->m_fragShadowMapping )
 	{
 		cout << "ERROR in DRRenderer::initShadowMapping: coulnd't create fragment shader - exit" << endl;
@@ -651,7 +649,7 @@ DRRenderer::initDepthBuffer()
 	glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE );
 
 	// for now we create shadowmaps in same width and height as their viewing frustum and 32 bit depth
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, this->m_camera->getWidth(), this->m_camera->getHeight(), 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0 );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0 );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR in DRRenderer::initDepthBuffer: glTexImage2D for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
@@ -677,6 +675,8 @@ DRRenderer::initDepthBuffer()
 	}
 
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+	return true;
 }
 
 bool
@@ -689,14 +689,14 @@ DRRenderer::initMrtBuffer( unsigned int i )
 	glGenTextures( 1, &this->m_colorBuffers[ i ] );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
-		cout << "ERROR in DRRenderer::initFBO: glGenTextures failed with " << gluErrorString( status ) << " - exit" << endl;
+		cout << "ERROR in DRRenderer::initMrtBuffer: glGenTextures failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
 
 	glBindTexture( GL_TEXTURE_2D, this->m_colorBuffers[ i ] );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
-		cout << "ERROR in DRRenderer::initFBO: glBindTexture failed with " << gluErrorString( status ) << " - exit" << endl;
+		cout << "ERROR in DRRenderer::initMrtBuffer: glBindTexture failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
 
@@ -707,10 +707,10 @@ DRRenderer::initMrtBuffer( unsigned int i )
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, this->m_camera->getWidth(), this->m_camera->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
-		cout << "ERROR in DRRenderer::initFBO: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
+		cout << "ERROR in DRRenderer::initMrtBuffer: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
 
@@ -719,7 +719,7 @@ DRRenderer::initMrtBuffer( unsigned int i )
 	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
-		cout << "ERROR in DRRenderer::initFBO: glBindFramebuffer failed with " << gluErrorString( status ) << " - exit" << endl;
+		cout << "ERROR in DRRenderer::initMrtBuffer: glBindFramebuffer failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
 
@@ -727,11 +727,13 @@ DRRenderer::initMrtBuffer( unsigned int i )
 	CHECK_FRAMEBUFFER_STATUS( status );
 	if ( GL_FRAMEBUFFER_COMPLETE != status )
 	{
-		cout << "ERROR in DRRenderer::initFBO: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
+		cout << "ERROR in DRRenderer::initMrtBuffer: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
 
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+	return true;
 }
 
 bool
@@ -951,7 +953,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 			// TODO: bind shadow cubemap
 		}
 
-		lightConfig[ 0 ] = light->getType();
+		lightConfig[ 0 ] = ( float ) light->getType();
 		lightConfig[ 1 ] = light->getFalloff();
 		lightConfig[ 2 ] = light->isShadowCaster();
 
@@ -990,9 +992,9 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		// render quad
 		glBegin( GL_QUADS );
 			glVertex2f( 0, 0 );
-			glVertex2f( 0, this->m_camera->getHeight() );
-			glVertex2f( this->m_camera->getWidth(), this->m_camera->getHeight() );
-			glVertex2f( this->m_camera->getWidth(), 0 );
+			glVertex2f( 0, ( float ) this->m_camera->getHeight() );
+			glVertex2f( ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight() );
+			glVertex2f( ( float ) this->m_camera->getWidth(), 0 );
 		glEnd();
 	}
 
@@ -1129,8 +1131,8 @@ DRRenderer::showTexture( GLuint texID, int quarter )
 	}
 
 	int counter = 0;
-	float height = this->m_camera->getHeight() / 2;
-	float width = this->m_camera->getWidth() / 2;
+	float height = ( float ) this->m_camera->getHeight() / 2.0f;
+	float width = ( float ) this->m_camera->getWidth() / 2.0f;
 
 	for ( int i = 0; i < 2; i++ )
 	{

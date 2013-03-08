@@ -44,7 +44,7 @@ Viewer::setupPerspective()
 void
 Viewer::setupOrtho()
 {
-	this->m_projectionMatrix = glm::ortho( 0.0f, this->width, this->height, 0.0f, -1.0f, 1.0f );
+	this->m_projectionMatrix = glm::ortho( 0.0f, ( float ) this->width, ( float ) this->height, 0.0f, -1.0f, 1.0f );
 
 	// TODO: remove this fixed-function stuff
 	glMatrixMode( GL_PROJECTION );
@@ -59,8 +59,8 @@ Viewer::setupOrtho()
 void
 Viewer::resize( int width, int height )
 {
-	this->width = (float) width;
-	this->height = (float) height;
+	this->width = width;
+	this->height = height;
 }
 
 /* Not correctly working yet ( and pretty slow )

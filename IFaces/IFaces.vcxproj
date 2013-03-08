@@ -15,6 +15,7 @@
     <ClInclude Include="ai\IAIEntity.h" />
     <ClInclude Include="audio\IAudio.h" />
     <ClInclude Include="audio\IAudioEntity.h" />
+    <ClInclude Include="core\DllExport.h" />
     <ClInclude Include="core\Event.h" />
     <ClInclude Include="core\ICore.h" />
     <ClInclude Include="core\IEventListener.h" />

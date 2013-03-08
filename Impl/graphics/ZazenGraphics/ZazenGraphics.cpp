@@ -21,7 +21,7 @@
 #define WINDOW_HEIGHT 600
 
 #define REQUIRED_MAJOR_OPENGL_VER 3
-#define REQUIRED_MINOR_OPENGL_VER 3
+#define REQUIRED_MINOR_OPENGL_VER 0
 
 using namespace std;
 
@@ -250,7 +250,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			}
 			else
 			{
-				fov = atof( str );
+				fov = ( float ) atof( str );
 			}
 
 			str = cameraNode->Attribute( "view" );
@@ -296,19 +296,19 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		const char* str = orientationNode->Attribute( "x" );
 		if ( 0 != str )
 		{
-			v[ 0 ] = atof( str );
+			v[ 0 ] = ( float ) atof( str );
 		}
 
 		str = orientationNode->Attribute( "y" );
 		if ( 0 != str )
 		{
-			v[ 1 ] = atof( str );
+			v[ 1 ] = ( float ) atof( str );
 		}
 
 		str = orientationNode->Attribute( "z" );
 		if ( 0 != str )
 		{
-			v[ 2 ] = atof( str );
+			v[ 2 ] = ( float ) atof( str );
 		}
 
 		str = orientationNode->Attribute( "heading" );
@@ -318,7 +318,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		}
 		else
 		{
-			heading = atof( str );
+			heading = ( float ) atof( str );
 		}
 
 		str = orientationNode->Attribute( "roll" );
@@ -328,7 +328,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		}
 		else
 		{
-			roll = atof( str );
+			roll = ( float ) atof( str );
 		}
 
 		str = orientationNode->Attribute( "pitch" );
@@ -338,7 +338,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		}
 		else
 		{
-			pitch = atof( str );
+			pitch = ( float ) atof( str );
 		}
 
 		entity->m_orientation->set( v, pitch, heading, roll );

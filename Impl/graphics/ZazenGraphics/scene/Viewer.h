@@ -64,8 +64,8 @@ class Viewer : public Orientation
 	virtual void matrixChanged();
 	
  private:
-	float width;
-	float height;
+	int width;
+	int height;
 
 	float fov;
 

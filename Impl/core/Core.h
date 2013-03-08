@@ -8,12 +8,6 @@
 #ifndef CORE_H_
 #define CORE_H_
 
-#ifdef DLL_EXPORTS
-#define DLL_API __declspec(dllexport)
-#else
-#define DLL_API __declspec(dllimport)
-#endif
-
 #include "ZazenGameObjectFactory.h"
 #include "ZazenSubSystemFactory.h"
 #include "EventManager.h"
@@ -41,7 +35,7 @@ class DLL_API Core : public ICore
 		void start();
 		void stop();
 
-		double getProcessingFactor() const { return this->m_processingFactor; };
+		float getProcessingFactor() const { return this->m_processingFactor; };
 
 		long long getCurrentMillis() const;
 
@@ -55,7 +49,7 @@ class DLL_API Core : public ICore
 	private:
 		static Core* instance;
 
-		double m_processingFactor;
+		float m_processingFactor;
 
 		bool m_runCore;
 

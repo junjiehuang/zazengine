@@ -154,19 +154,19 @@ Material::loadAll()
 					str = materialCfgNode->Attribute( "r" );
 					if ( 0 != str )
 					{
-						color.r = atof( str );
+						color.r = ( float ) atof( str );
 					}
 
 					str = materialCfgNode->Attribute( "g" );
 					if ( 0 != str )
 					{
-						color.g = atof( str );
+						color.g = ( float ) atof( str );
 					}
 
 					str = materialCfgNode->Attribute( "b" );
 					if ( 0 != str )
 					{
-						color.b = atof( str );
+						color.b = ( float ) atof( str );
 					}
 
 					material->m_color = color;
@@ -213,9 +213,9 @@ Material::activate( UniformBlock* materialUniforms )
 		this->m_normalMap->bind( 1 );
 
 	glm::vec4 materialCfg;
-	materialCfg[ 0 ] = this->m_type;
-	materialCfg[ 1 ] = this->m_diffuseTexture == 0 ? 0 : 1;
-	materialCfg[ 2 ] = this->m_normalMap == 0 ? 0 : 1;
+	materialCfg[ 0 ] = ( float ) this->m_type;
+	materialCfg[ 1 ] = this->m_diffuseTexture == 0 ? 0.0f : 1.0f;
+	materialCfg[ 2 ] = this->m_normalMap == 0 ? 0.0f : 1.0f;
 
 	if ( false == materialUniforms->updateData( glm::value_ptr( materialCfg ), 0, 16 ) )
 		return false;

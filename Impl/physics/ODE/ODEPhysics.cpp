@@ -46,10 +46,10 @@ ODEPhysics::initialize( TiXmlElement* )
 	dInitODE();
 
 	this->worldID = dWorldCreate();
-	this->spaceID = dHashSpaceCreate(0);
-	dWorldSetGravity(this->worldID, 0.0f, -9.8f, 0.0f);
-	dWorldSetCFM(this->worldID,1e-5);
-	this->contactGroupID = dJointGroupCreate(0);
+	this->spaceID = dHashSpaceCreate( 0 );
+	dWorldSetGravity( this->worldID, 0.0f, -9.8f, 0.0f );
+	dWorldSetCFM( this->worldID, 1e-5f );
+	this->contactGroupID = dJointGroupCreate( 0 );
 
 	// TODO: init mutex & condition variable
 	this->thread = boost::thread( boost::ref( *this ) );
@@ -134,9 +134,9 @@ ODEPhysics::doSimulation()
 {
 	this->processEvents();
 
-	dSpaceCollide(this->spaceID, this, ODEPhysics::collisionCallback);
-	dWorldQuickStep(this->worldID, 0.001);
-	dJointGroupEmpty(this->contactGroupID);
+	dSpaceCollide( this->spaceID, this, ODEPhysics::collisionCallback );
+	dWorldQuickStep( this->worldID, 0.001f );
+	dJointGroupEmpty( this->contactGroupID );
 
 	this->updateEntities();
 }
@@ -207,34 +207,34 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		typeID = str;
 	}
 
-	double posX = 0.0;
-	double posY = 0.0;
-	double posZ = 0.0;
+	float posX = 0.0;
+	float posY = 0.0;
+	float posZ = 0.0;
 	float mass = 1.0f;
 	bool staticFlag = false;
 
 	str = typeNode->Attribute( "px" );
 	if ( 0 != str )
 	{
-		posX = atof( str );
+		posX = ( float ) atof( str );
 	}
 
 	str = typeNode->Attribute( "py" );
 	if ( 0 != str )
 	{
-		posY = atof( str );
+		posY = ( float ) atof( str );
 	}
 
 	str = typeNode->Attribute( "pz" );
 	if ( 0 != str )
 	{
-		posZ = atof( str );
+		posZ = ( float ) atof( str );
 	}
 
 	str = typeNode->Attribute( "mass" );
 	if ( 0 != str )
 	{
-		mass = atof( str );
+		mass = ( float ) atof( str );
 	}
 
 	str = typeNode->Attribute( "static" );
@@ -259,7 +259,7 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		str = typeNode->Attribute( "r" );
 		if ( 0 != str )
 		{
-			r = atof( str );
+			r = ( float ) atof( str );
 		}
 
 		entity->physicType = new PhysicSphere( staticFlag, mass, r );
@@ -273,19 +273,19 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		str = typeNode->Attribute( "sx" );
 		if ( 0 != str )
 		{
-			sx = atof( str );
+			sx = ( float ) atof( str );
 		}
 
 		str = typeNode->Attribute( "sy" );
 		if ( 0 != str )
 		{
-			sy = atof( str );
+			sy = ( float ) atof( str );
 		}
 
 		str = typeNode->Attribute( "sz" );
 		if ( 0 != str )
 		{
-			sz = atof( str );
+			sz = ( float ) atof( str );
 		}
 
 		entity->physicType = new PhysicBox( staticFlag, mass, sx, sy, sz );
@@ -300,25 +300,25 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		str = typeNode->Attribute( "dx" );
 		if ( 0 != str )
 		{
-			dx = atof( str );
+			dx = ( float ) atof( str );
 		}
 
 		str = typeNode->Attribute( "dy" );
 		if ( 0 != str )
 		{
-			dy = atof( str );
+			dy = ( float ) atof( str );
 		}
 
 		str = typeNode->Attribute( "dz" );
 		if ( 0 != str )
 		{
-			dz = atof( str );
+			dz = ( float ) atof( str );
 		}
 
 		str = typeNode->Attribute( "d" );
 		if ( 0 != str )
 		{
-			d = atof( str );
+			d = ( float ) atof( str );
 		}
 
 		entity->physicType = new PhysicPlane( true, mass, dx, dy, dz, d );
@@ -393,9 +393,9 @@ ODEPhysics::collisionCallback(void* data, dGeomID o1, dGeomID o2)
 		contacts[i].surface.mode = dContactBounce | dContactSoftCFM;
 		contacts[i].surface.mu = dInfinity;
 		contacts[i].surface.mu2 = 0;
-		contacts[i].surface.bounce = 0.8;
-		contacts[i].surface.bounce_vel = 0.1;
-		contacts[i].surface.soft_cfm = 0.01;
+		contacts[i].surface.bounce = 0.8f;
+		contacts[i].surface.bounce_vel = 0.1f;
+		contacts[i].surface.soft_cfm = 0.01f;
     }
 
 	if (int totalContacts = dCollide(o1, o2, MAX_CONTACTS, &contacts[0].geom, sizeof(dContactGeom))) {

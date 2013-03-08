@@ -6,7 +6,12 @@
 class PhysicType
 {
  public:
-	 PhysicType(bool staticFlag, float mass) { this->staticFlag = staticFlag; this->mass = mass; };
+	 PhysicType(bool staticFlag, float mass)
+	 { 
+		 this->staticFlag = staticFlag; 
+		 this->mass = mass; 
+	 };
+
 	 virtual ~PhysicType()
 	 { 
 		 if (this->bodyID)
@@ -18,12 +23,12 @@ class PhysicType
 	 bool isStatic() { return this->staticFlag; };
 	 float getMass() { return this->mass; };
 
-	 void setPosition( double x, double y, double z )
+	 void setPosition( float x, float y, float z )
 	 {
 		 if ( this->staticFlag )
-			 dGeomSetPosition(this->geomID, x, y, z);
+			 dGeomSetPosition( this->geomID, x, y, z );
 		 else
-			 dBodySetPosition(this->bodyID, x, y, z);
+			 dBodySetPosition( this->bodyID, x, y, z );
 	 };
 
 	 dBodyID getBodyID() { return this->bodyID; };
