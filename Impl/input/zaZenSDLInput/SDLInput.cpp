@@ -9,9 +9,7 @@
 
 #include "SDLInput.h"
 
-#include "../../../Core/Core.h"
-
-#include "../../../Core/ScriptSystem/ScriptSystem.h"
+#include <core/ICore.h>
 
 #include <iostream>
 
@@ -19,9 +17,10 @@
 
 using namespace std;
 
-SDLInput::SDLInput()
-	: id ( "SDLInput" ),
-	type ("input")
+SDLInput::SDLInput( const std::string& id, ICore* core )
+	: id ( id ),
+	type ( "input" ),
+	m_core( core )
 {
 	
 }
@@ -32,9 +31,14 @@ SDLInput::~SDLInput()
 }
 
 bool
-SDLInput::initialize( TiXmlElement* )
+SDLInput::initialize( TiXmlElement* configNode )
 {
 	cout << endl << "=============== SDLInput initializing... ===============" << endl;
+
+	if ( false == this->initSDL( configNode ) )
+	{
+		return false;
+	}
 
 	cout << "================ SDLInput initialized =================" << endl;
 
@@ -70,37 +74,37 @@ SDLInput::pause()
 }
 
 bool
-SDLInput::process(double factor)
+SDLInput::process( double factor )
 {
 	//cout << "SDLInput::process" << endl;
 
 	SDL_Event event;
 	
-	if (SDL_PollEvent(&event))
+	if ( SDL_PollEvent( &event ) )
 	{
-		if (event.type == SDL_KEYDOWN)
+		if ( SDL_KEYDOWN == event.type )
 		{
-			ScriptSystem::getInstance().callFunc( "onKeyDown" );
+			//ScriptSystem::getInstance().callFunc( "onKeyDown" );
 
-			pressedKeys.push_back(event.key.keysym.sym);
+			pressedKeys.push_back( event.key.keysym.sym );
 			
 		}
-		else if (event.type == SDL_KEYUP)
+		else if ( SDL_KEYUP == event.type )
 		{
-			ScriptSystem::getInstance().callFunc( "onKeyUp" );
+			//ScriptSystem::getInstance().callFunc( "onKeyUp" );
 
-			pressedKeys.remove(event.key.keysym.sym);
+			pressedKeys.remove( event.key.keysym.sym );
 			
 		}
-		else if (event.type == SDL_MOUSEMOTION)
+		else if ( SDL_MOUSEMOTION == event.type )
 		{
 			//this->camera->changeHeading(event.motion.xrel * loopFactor * 0.01);
 			//this->camera->changePitch(event.motion.yrel * loopFactor * 0.01);
 			
 		}
-		else if (event.type == SDL_QUIT)
+		else if ( SDL_QUIT == event.type )
 		{
-			Core::getInstance().stop();
+			this->m_core->stop();
 		}
 	}
 	
@@ -113,45 +117,48 @@ SDLInput::process(double factor)
 		{
 			case SDLK_RIGHT:
 			{
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_RIGHT" ) );
+				this->m_core->getEventManager().postEvent( Event( "SDLK_RIGHT" ) );
 				break;
 			}
 			case SDLK_LEFT:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_LEFT" ) );
+				this->m_core->getEventManager().postEvent( Event( "SDLK_LEFT" ) );
 				break;
 				
 			case SDLK_UP:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_UP" ) );
+				this->m_core->getEventManager().postEvent( Event( "SDLK_UP" ) );
 				break;
 				
 			case SDLK_DOWN:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_DOWN" ) );
+				this->m_core->getEventManager().postEvent( Event( "SDLK_DOWN" ) );
 				break;
 				
 			case SDLK_w:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_w" ) );
+				this->m_core->getEventManager().postEvent( Event( "SDLK_w" ) );
 				break;
 				
 			case SDLK_s:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_s" ) );
+				this->m_core->getEventManager().postEvent( Event( "SDLK_s" ) );
 				break;
 				
 			case SDLK_d:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_d" ) );
+				this->m_core->getEventManager().postEvent( Event( "SDLK_d" ) );
 				break;
 				
 			case SDLK_a:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_a" ) );
+				this->m_core->getEventManager().postEvent( Event( "SDLK_a" ) );
 				break;
 
 			case SDLK_q:
-				Core::getInstance().stop();
+				this->m_core->stop();
 				
 			default:
 				break;
 		}
 	}
 	
+	// TODO only do when not already initialized e.g. by graphics-system
+	SDL_PumpEvents();
+
 	//cout << "SDL_process end" << endl;
 
 	return true;
@@ -173,4 +180,44 @@ ISubSystemEntity*
 SDLInput::createEntity( TiXmlElement* cfgNode, IGameObject* parent )
 {
 	return 0;
+}
+
+bool
+SDLInput::initSDL( TiXmlElement* configNode )
+{
+	cout << "Initializing SDL..." << endl;
+
+	int error = SDL_Init( SDL_INIT_JOYSTICK );
+	if (error != 0)
+	{
+		cout << "ERROR ... in SDLInput::initSDL: initializing SDL-Joystick failed" << endl;
+		return false;
+	}
+	else
+	{
+		cout << "OK ... SDL-Joystick initialized" << endl;
+	}
+
+	return true;
+}
+
+extern "C"
+{	
+	__declspec( dllexport ) ISubSystem*
+	createInstance ( const char* id, ICore* core )
+	{
+		return new SDLInput( id, core );
+	}
+
+	__declspec( dllexport ) void
+	deleteInstance ( ISubSystem* subSys )
+	{
+		if ( 0 == subSys )
+			return;
+
+		if ( 0 == dynamic_cast<SDLInput*>( subSys ) )
+			return;
+
+		delete subSys;
+	}
 }

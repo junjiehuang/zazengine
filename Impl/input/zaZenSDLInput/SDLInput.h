@@ -10,14 +10,14 @@
 #ifndef SDLINPUT_H_
 #define SDLINPUT_H_
 
-#include "../../../Core/SubSystems/IFaces/IInput.h"
+#include <input/IInput.h>
 
 #include <list>
 
 class SDLInput : public IInput
 {
 	public:
-		SDLInput();
+		SDLInput( const std::string&, ICore* );
 		virtual ~SDLInput();
 		
 		const std::string& getID() const { return this->id; };
@@ -44,6 +44,10 @@ class SDLInput : public IInput
 		std::string type;
 	
 		std::list<int> pressedKeys;
+
+		ICore* m_core;
+
+		bool initSDL( TiXmlElement* );
 		
 };
 

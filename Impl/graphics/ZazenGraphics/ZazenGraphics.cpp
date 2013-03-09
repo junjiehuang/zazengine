@@ -154,6 +154,7 @@ ZazenGraphics::process( double iterationFactor )
 	this->m_lastItFact = iterationFactor;
 	flag = this->m_renderer->renderFrame( this->m_instances, this->m_lights );
 
+	// TODO only do when not already initialized e.g. by input-system
 	SDL_PumpEvents();
 
 	//cout << "ZazenGraphics::process leave" << endl;

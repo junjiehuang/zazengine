@@ -1,8 +1,12 @@
+- make OIS run (depends on DirectInput8 unfortunately :( )
+- subsystem-constructor which gets passed in: id, type & core-instance
 - fix problem with assetimporter
 - transform data from assetimporter to geomtype
-- integrate OIS
 - compile without warnings
 - project buildable as RELEASE
+- find out how to handle double-init of SDL in graphics & input (need SDL_PumpEvents in each loop & need init always? or works only with window?)
 - move pipeline-shaders required for deferred renderer from zazensquares to zazengine
-- always up and running
+- prevent initialization of two subsystems of same type
 - A GOOD SOLUTION FOR THE PROBLEM OF INCLUDING TINY-XML IN ALL SUBSYSTEMS
+
+- always up and running

@@ -1,4 +1,4 @@
-﻿Der Buildvorgang wurde am 09.03.2013 10:31:06 gestartet.
+﻿Der Buildvorgang wurde am 09.03.2013 20:03:16 gestartet.
      1>Projekt "C:\Users\Jonathan\Development\zazengine\Impl\input\zaZenOIS\zaZenOIS.vcxproj" auf Knoten "2", build Ziel(e).
      1>InitializeBuildStatus:
          Aktualisieren des Timestamps von "Debug\zaZenOIS.unsuccessfulbuild".
@@ -35,4 +35,4 @@ C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets(11
 
 Fehler beim Erstellen
 
-Verstrichene Zeit 00:00:01.80
+Verstrichene Zeit 00:00:03.07

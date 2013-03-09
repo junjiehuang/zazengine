@@ -14,7 +14,7 @@ using namespace std;
 
 ZazenOIS::ZazenOIS( const std::string& id, ICore* core )
 	: id ( id ),
-	type ( "input"),
+	type ( "input" ),
 	m_core( core )
 {
 	
@@ -64,91 +64,9 @@ ZazenOIS::pause()
 }
 
 bool
-ZazenOIS::process(double factor)
+ZazenOIS::process( double factor )
 {
-	//cout << "SDLInput::process" << endl;
-	/*
-
-	SDL_Event event;
-	
-	if (SDL_PollEvent(&event))
-	{
-		if (event.type == SDL_KEYDOWN)
-		{
-			ScriptSystem::getInstance().callFunc( "onKeyDown" );
-
-			pressedKeys.push_back(event.key.keysym.sym);
-			
-		}
-		else if (event.type == SDL_KEYUP)
-		{
-			ScriptSystem::getInstance().callFunc( "onKeyUp" );
-
-			pressedKeys.remove(event.key.keysym.sym);
-			
-		}
-		else if (event.type == SDL_MOUSEMOTION)
-		{
-			//this->camera->changeHeading(event.motion.xrel * loopFactor * 0.01);
-			//this->camera->changePitch(event.motion.yrel * loopFactor * 0.01);
-			
-		}
-		else if (event.type == SDL_QUIT)
-		{
-			Core::getInstance().stop();
-		}
-	}
-	
-	list<int>::iterator pressedKeysIter = pressedKeys.begin();
-	while ( pressedKeysIter != pressedKeys.end() )
-	{
-		int key = *pressedKeysIter++;
-		
-		switch( key )
-		{
-			case SDLK_RIGHT:
-			{
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_RIGHT" ) );
-				break;
-			}
-			case SDLK_LEFT:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_LEFT" ) );
-				break;
-				
-			case SDLK_UP:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_UP" ) );
-				break;
-				
-			case SDLK_DOWN:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_DOWN" ) );
-				break;
-				
-			case SDLK_w:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_w" ) );
-				break;
-				
-			case SDLK_s:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_s" ) );
-				break;
-				
-			case SDLK_d:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_d" ) );
-				break;
-				
-			case SDLK_a:
-				Core::getInstance().getEventManager().postEvent( Event( "SDLK_a" ) );
-				break;
-
-			case SDLK_q:
-				Core::getInstance().stop();
-				
-			default:
-				break;
-		}
-	}
-	*/
-
-	//cout << "SDL_process end" << endl;
+	// TODO implement using OIS
 
 	return true;
 }

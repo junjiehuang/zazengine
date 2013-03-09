@@ -19,6 +19,8 @@ class DLL_API ICore
 	public:
 		virtual ~ICore() {};
 
+		virtual void stop() = 0;
+
 		virtual float getProcessingFactor() const = 0;
 
 		virtual long long getCurrentMillis() const = 0;
