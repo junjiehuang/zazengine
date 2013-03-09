@@ -19,10 +19,10 @@ GeomMesh::GeomMesh( int faceCount, int vertexCount, VertexData* data, GLuint* in
 
 GeomMesh::~GeomMesh()
 {
-	if (this->dataVBO )
+	if ( this->dataVBO )
 		glDeleteBuffers( 1, &this->dataVBO );
 
-	if (this->indexVBO )
+	if ( this->indexVBO )
 		glDeleteBuffers( 1, &this->indexVBO );
 
 	if ( this->data )

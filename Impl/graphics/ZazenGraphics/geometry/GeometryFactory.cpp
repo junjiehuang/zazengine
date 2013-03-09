@@ -110,13 +110,15 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 
 	cout << "LOADING ... " << filePath << endl;
 
-	const struct aiScene* scene = aiImportFile( filePath.filename().generic_string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality );
+	/*const struct aiScene* scene = aiImportFile( filePath.filename().generic_string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality );
 	if ( NULL == scene )
 	{
 		return 0;
 	}
 
 	aiReleaseImport( scene );
+
+	*/
 
 	cout << "LOADED ... " << filePath << endl;
     

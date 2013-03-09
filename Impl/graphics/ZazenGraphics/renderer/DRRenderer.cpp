@@ -566,23 +566,6 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
-	// bind uniform blocks
-	if ( false == this->m_transformsBlock->bind() )
-	{
-		cout << "ERROR in DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" << endl;
-		return false;
-	}
-	if ( false == this->m_lightBlock->bind() )
-	{
-		cout << "ERROR in DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" << endl;
-		return false;
-	}
-	if ( false == this->m_materialBlock->bind() )
-	{
-		cout << "ERROR in DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" << endl;
-		return false;
-	}
-
 	// bind mvp-transformation to all programs
 	if ( false == this->m_progShadowMapping->bindUniformBlock( this->m_transformsBlock ) )
 	{
@@ -611,6 +594,37 @@ DRRenderer::initUniformBlocks()
 	if ( false == this->m_progGeomStage->bindUniformBlock( this->m_materialBlock ) )
 	{
 		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
+		return false;
+	}
+
+	/* IMPORTANT: found this in forums: 
+		On ATI hardware, you have to call
+
+		glGetUniformBlockIndex( program, blockName )
+		glUniformBlockBinding( program, blockIndex, slot )
+
+		BEFORE
+
+		glBindBufferBase( GL_UNIFORM_BUFFER, slot, UBO )
+
+		On NVIDIA hardware, the other way around is fine.
+
+		THIS IMPLIES: call bind() method on UniformBlock AFTER calling bindUniformBlock() on programm
+	*/
+	// bind uniform blocks
+	if ( false == this->m_transformsBlock->bind() )
+	{
+		cout << "ERROR in DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" << endl;
+		return false;
+	}
+	if ( false == this->m_lightBlock->bind() )
+	{
+		cout << "ERROR in DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" << endl;
+		return false;
+	}
+	if ( false == this->m_materialBlock->bind() )
+	{
+		cout << "ERROR in DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" << endl;
 		return false;
 	}
 

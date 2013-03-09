@@ -1,2 +1,7 @@
-- write a loader for the libs
-	-> c-lib with header
+- fix problem with assetimporter
+- transform data from assetimporter to geomtype
+- integrate OIS
+- compile without warnings
+- project buildable as RELEASE
+- move pipeline-shaders required for deferred renderer from zazensquares to zazengine
+- up and running

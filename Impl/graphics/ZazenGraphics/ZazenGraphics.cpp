@@ -187,17 +187,28 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		if ( 0 != str )
 		{
 			instance->geom = GeometryFactory::get( str );
+			if ( NULL == instance->geom )
+			{
+				// TODO ignore
+			}
 		}
 
 		str = instanceNode->Attribute( "material" );
 		if ( 0 != str )
 		{
 			instance->material = Material::get( str );
+			if ( NULL == instance->material )
+			{
+				// TODO ignore
+			}
 		}
 
-		entity->m_orientation = instance;
+		if ( NULL != instance->geom && NULL != instance->material )
+		{
+			entity->m_orientation = instance;
 
-		this->m_instances.push_back( instance );
+			this->m_instances.push_back( instance );
+		}
 	}
 
 	if ( 0 == entity->m_orientation )
@@ -282,6 +293,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 	if ( 0 == entity->m_orientation )
 	{
 		cout << "No valid entity defined in ZazenGraphics for Object \"" << parent->getName() << "\" - error " << endl;
+		// TODO cleanup memory!
 		return 0;
 	}
 

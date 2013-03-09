@@ -10,8 +10,6 @@
 #ifndef _GEOMETRY_FACTORY_H_
 #define _GEOMETRY_FACTORY_H_
 
-#include <GL/glew.h>
-
 #include "GeomType.h"
 
 #include <boost/filesystem.hpp>
