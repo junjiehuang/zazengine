@@ -10,33 +10,13 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ai\IAi.h" />
-    <ClInclude Include="ai\IAIEntity.h" />
-    <ClInclude Include="audio\IAudio.h" />
-    <ClInclude Include="audio\IAudioEntity.h" />
-    <ClInclude Include="core\DllExport.h" />
-    <ClInclude Include="core\Event.h" />
-    <ClInclude Include="core\ICore.h" />
-    <ClInclude Include="core\IEventListener.h" />
-    <ClInclude Include="core\IEventManager.h" />
-    <ClInclude Include="core\IGameObject.h" />
-    <ClInclude Include="core\ISubSystem.h" />
-    <ClInclude Include="core\ISubSystemEntity.h" />
-    <ClInclude Include="graphics\IGraphics.h" />
-    <ClInclude Include="graphics\IGraphicsEntity.h" />
-    <ClInclude Include="input\IInput.h" />
-    <ClInclude Include="input\IInputEntity.h" />
-    <ClInclude Include="physics\IPhysics.h" />
-    <ClInclude Include="physics\IPhysicsEntity.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D63B11F4-1B53-40E5-916F-E24F557718E0}</ProjectGuid>
-    <RootNamespace>IFaces</RootNamespace>
+    <ProjectGuid>{609F1AC9-88E1-4302-9B89-D8115F1499E1}</ProjectGuid>
+    <RootNamespace>zaZenOIS</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -61,10 +41,15 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../../../IFaces/;$(BOOST_PATH)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(ProjectDir)lib\lib\*.dll $(SolutionDir)$(Configuration)
+copy $(ProjectDir)lib\lib\*.pdb $(SolutionDir)$(Configuration)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -79,6 +64,24 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml.hpp" />
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_iterators.hpp" />
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_print.hpp" />
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_utils.hpp" />
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinystr.h" />
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h" />
+    <ClInclude Include="ZazenOIS.h" />
+    <ClInclude Include="ZazenOISEntity.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinystr.cpp" />
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxml.cpp" />
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlerror.cpp" />
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlparser.cpp" />
+    <ClCompile Include="ZazenOIS.cpp" />
+    <ClCompile Include="ZazenOISEntity.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

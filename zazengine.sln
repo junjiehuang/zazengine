@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IFaces", "IFaces\IFaces.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZazenGraphics", "Impl\graphics\ZazenGraphics\ZazenGraphics.vcxproj", "{EC9185A7-0994-46A7-8385-6C346CBE99C9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zaZenOIS", "Impl\input\zaZenOIS\zaZenOIS.vcxproj", "{609F1AC9-88E1-4302-9B89-D8115F1499E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -30,6 +32,10 @@ Global
 		{EC9185A7-0994-46A7-8385-6C346CBE99C9}.Debug|Win32.Build.0 = Debug|Win32
 		{EC9185A7-0994-46A7-8385-6C346CBE99C9}.Release|Win32.ActiveCfg = Release|Win32
 		{EC9185A7-0994-46A7-8385-6C346CBE99C9}.Release|Win32.Build.0 = Release|Win32
+		{609F1AC9-88E1-4302-9B89-D8115F1499E1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{609F1AC9-88E1-4302-9B89-D8115F1499E1}.Debug|Win32.Build.0 = Debug|Win32
+		{609F1AC9-88E1-4302-9B89-D8115F1499E1}.Release|Win32.ActiveCfg = Release|Win32
+		{609F1AC9-88E1-4302-9B89-D8115F1499E1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

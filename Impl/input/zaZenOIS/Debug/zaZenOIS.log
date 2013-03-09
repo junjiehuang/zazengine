@@ -1,0 +1,38 @@
+﻿Der Buildvorgang wurde am 09.03.2013 10:31:06 gestartet.
+     1>Projekt "C:\Users\Jonathan\Development\zazengine\Impl\input\zaZenOIS\zaZenOIS.vcxproj" auf Knoten "2", build Ziel(e).
+     1>InitializeBuildStatus:
+         Aktualisieren des Timestamps von "Debug\zaZenOIS.unsuccessfulbuild".
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I../../../IFaces/ /IC:\Users\Jonathan\Development\boost\boost_1_51 /ZI /nologo /W3 /WX- /Od /Oy- /D _WINDLL /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\..\IFaces\core\XML\tinystr.cpp ..\..\..\IFaces\core\XML\tinyxml.cpp ..\..\..\IFaces\core\XML\tinyxmlerror.cpp ..\..\..\IFaces\core\XML\tinyxmlparser.cpp ZazenOIS.cpp ZazenOISEntity.cpp
+         ZazenOISEntity.cpp
+         ZazenOIS.cpp
+         tinyxmlparser.cpp
+         tinyxmlerror.cpp
+         tinyxml.cpp
+         tinystr.cpp
+         Code wird generiert...
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Jonathan\Development\zazengine\Debug\zaZenOIS.dll" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\zaZenOIS.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Jonathan\Development\zazengine\Debug\zaZenOIS.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Jonathan\Development\zazengine\Debug\zaZenOIS.lib" /MACHINE:X86 /DLL Debug\tinystr.obj
+         Debug\tinyxml.obj
+         Debug\tinyxmlerror.obj
+         Debug\tinyxmlparser.obj
+         Debug\ZazenOIS.obj
+         Debug\ZazenOISEntity.obj
+            Bibliothek "C:\Users\Jonathan\Development\zazengine\Debug\zaZenOIS.lib" und Objekt "C:\Users\Jonathan\Development\zazengine\Debug\zaZenOIS.exp" werden erstellt.
+         zaZenOIS.vcxproj -> C:\Users\Jonathan\Development\zazengine\Debug\zaZenOIS.dll
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Users\Jonathan\Development\zazengine\Debug\zaZenOIS.dll;#2" /manifest Debug\zaZenOIS.dll.intermediate.manifest
+       PostBuildEvent:
+         copy C:\Users\Jonathan\Development\zazengine\Impl\input\zaZenOIS\lib\lib\*.dll C:\Users\Jonathan\Development\zazengine\Debug
+         copy C:\Users\Jonathan\Development\zazengine\Impl\input\zaZenOIS\lib\lib\*.pdb C:\Users\Jonathan\Development\zazengine\Debug
+         :VCEnd
+         Das System kann den angegebenen Pfad nicht finden.
+         Das System kann den angegebenen Pfad nicht finden.
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets(113,5): error MSB3073: Der Befehl "copy C:\Users\Jonathan\Development\zazengine\Impl\input\zaZenOIS\lib\lib\*.dll C:\Users\Jonathan\Development\zazengine\Debug
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets(113,5): error MSB3073: copy C:\Users\Jonathan\Development\zazengine\Impl\input\zaZenOIS\lib\lib\*.pdb C:\Users\Jonathan\Development\zazengine\Debug
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets(113,5): error MSB3073: :VCEnd" wurde mit dem Code 1 beendet.
+     1>Die Erstellung des Projekts "C:\Users\Jonathan\Development\zazengine\Impl\input\zaZenOIS\zaZenOIS.vcxproj" ist abgeschlossen, build Ziel(e) -- FEHLER.
+
+Fehler beim Erstellen
+
+Verstrichene Zeit 00:00:01.80

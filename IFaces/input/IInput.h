@@ -10,7 +10,7 @@
 #ifndef IINPUT_H_
 #define IINPUT_H_
 
-#include "ISubSystem.h"
+#include <core/ISubSystem.h>
 
 class IInput : public ISubSystem
 {

@@ -5,3 +5,4 @@
 - project buildable as RELEASE
 - move pipeline-shaders required for deferred renderer from zazensquares to zazengine
 - always up and running
+- A GOOD SOLUTION FOR THE PROBLEM OF INCLUDING TINY-XML IN ALL SUBSYSTEMS

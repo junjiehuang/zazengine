@@ -52,6 +52,9 @@
     <ClInclude Include="core\DllExport.h">
       <Filter>Headerdateien\Core</Filter>
     </ClInclude>
+    <ClInclude Include="input\IInputEntity.h">
+      <Filter>Headerdateien\Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headerdateien">
