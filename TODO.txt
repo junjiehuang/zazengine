@@ -1,3 +1,5 @@
+!!! FROM NOW ON: always compileable & runnable when checked in !!!
+
 - make OIS run (depends on DirectInput8 unfortunately :( )
 - subsystem-constructor which gets passed in: id, type & core-instance
 - fix problem with assetimporter
@@ -8,5 +10,4 @@
 - move pipeline-shaders required for deferred renderer from zazensquares to zazengine
 - prevent initialization of two subsystems of same type
 - A GOOD SOLUTION FOR THE PROBLEM OF INCLUDING TINY-XML IN ALL SUBSYSTEMS
-
-- always up and running
+- make physics processing async
