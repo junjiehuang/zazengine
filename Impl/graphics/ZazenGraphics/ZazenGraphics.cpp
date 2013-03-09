@@ -154,6 +154,8 @@ ZazenGraphics::process( double iterationFactor )
 	this->m_lastItFact = iterationFactor;
 	flag = this->m_renderer->renderFrame( this->m_instances, this->m_lights );
 
+	SDL_PumpEvents();
+
 	//cout << "ZazenGraphics::process leave" << endl;
 
 	return flag;

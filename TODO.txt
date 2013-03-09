@@ -4,4 +4,4 @@
 - compile without warnings
 - project buildable as RELEASE
 - move pipeline-shaders required for deferred renderer from zazensquares to zazengine
-- up and running
+- always up and running
