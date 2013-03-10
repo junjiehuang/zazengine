@@ -11,8 +11,6 @@
 #include <core/ICore.h>
 #include <graphics/IGraphics.h>
 
-#include <SDL/SDL.h>
-
 #include "ZazenGraphicsEntity.h"
 
 #include "Scene/Viewer.h"
@@ -52,6 +50,7 @@ class ZazenGraphics : public IGraphics
 		ICore& getCore() { return *this->m_core; };
 
 		void* getWindowHandle();
+		bool toggleFullscreen();
 
 	private:
 		static ZazenGraphics* instance;
@@ -61,8 +60,6 @@ class ZazenGraphics : public IGraphics
 
 		ICore* m_core;
 
-		SDL_Surface* m_drawContext;
-
 		Viewer* m_camera;
 		Renderer* m_renderer;
 
@@ -71,7 +68,6 @@ class ZazenGraphics : public IGraphics
 
 		std::list<ZazenGraphicsEntity*> m_entities;
 
-		bool initSDL( TiXmlElement* );
 		bool createWindow( TiXmlElement* );
 		bool initGL( TiXmlElement* );
 };

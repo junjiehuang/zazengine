@@ -16,8 +16,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <SDL/SDL_syswm.h>
-
 #include <Windows.h>
 
 #include <iostream>
@@ -30,8 +28,6 @@
 #define REQUIRED_MINOR_OPENGL_VER 0
 
 using namespace std;
-
-SDL_SysWMinfo g_sysInfo;
 
 HDC			hDC=NULL;		// Private GDI Device Context
 HGLRC		hRC=NULL;		// Permanent Rendering Context
@@ -111,7 +107,6 @@ ZazenGraphics::shutdown()
 	Texture::freeAll();
 	GeometryFactory::freeAll();
 	
-	//SDL_Quit();
 	KillGLWindow();
 
 	cout << "================ ZazenGraphics shutdown =================" << endl;
@@ -189,9 +184,6 @@ ZazenGraphics::process( double iterationFactor )
 			SwapBuffers( hDC );				// Swap Buffers (Double Buffering)
 		}
 	}
-
-	// TODO only do when not already initialized e.g. by input-system
-	// SDL_PumpEvents();
 
 	//cout << "ZazenGraphics::process leave" << endl;
 
@@ -407,42 +399,15 @@ ZazenGraphics::getWindowHandle()
 }
 
 bool
-ZazenGraphics::initSDL( TiXmlElement* configNode )
+ZazenGraphics::toggleFullscreen()
 {
-	cout << "Initializing SDL..." << endl;
-	int error = SDL_Init( SDL_INIT_VIDEO );
-	if (error != 0)
+	KillGLWindow();
+	fullscreen=!fullscreen;
+	// Recreate Our OpenGL Window
+	if ( !CreateGLWindow( "zaZengine", WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_BITS_PER_PIXEL, fullscreen ) )
 	{
-		cout << "FAILED ... Initializing SDL failed - exit..." << endl;
 		return false;
 	}
-	else
-	{
-		cout << "OK ... SDL initialized" << endl;
-	}
-
-	SDL_VERSION( &g_sysInfo.version );
-  
-	if( SDL_GetWMInfo( &g_sysInfo ) <= 0 )
-	{
-		cout << "ERROR ... in ZazenGraphics::initSDL: SDL_GetWMInfo failed with " << SDL_GetError() << endl;
-		return 0;
-	}
-
-	if ( SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 ) == -1)
-	{
-		cout << "ERROR ... in ZazenGraphics::initSDL: SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER) failed with " << SDL_GetError() << endl;
-		return false;
-	}
-
-	this->m_drawContext = SDL_SetVideoMode( WINDOW_WIDTH, WINDOW_HEIGHT, 32, SDL_OPENGL /*| SDL_FULLSCREEN*/ );
-	if ( 0 == this->m_drawContext )
-	{
-		cout << "ERROR ... in ZazenGraphics::initSDL: SDL_SetVideoMode failed with " << SDL_GetError() << endl;
-		return false;
-	}
-
-	cout << "OK ... Videocontext created" << endl;
 
 	return true;
 }
@@ -459,7 +424,7 @@ ZazenGraphics::createWindow( TiXmlElement* configNode )
 	return true;
 }
 
-BOOL CreateGLWindow(char* title, int width, int height, int bits, bool fullscreenflag)
+BOOL CreateGLWindow( char* title, int width, int height, int bits, bool fullscreenflag )
 {
 	GLuint		PixelFormat;			// Holds The Results After Searching For A Match
 	WNDCLASS	wc;						// Windows Class Structure

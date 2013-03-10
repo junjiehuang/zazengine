@@ -17,6 +17,7 @@ class IGraphics : public ISubSystem
 		virtual ~IGraphics() {};
 
 		virtual void* getWindowHandle() = 0;
+		virtual bool toggleFullscreen() = 0;
 
 		virtual IGraphicsEntity* createEntity( TiXmlElement*, IGameObject* parent ) = 0;
 

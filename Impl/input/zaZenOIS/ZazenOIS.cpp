@@ -144,7 +144,11 @@ bool
 ZazenOIS::keyReleased( const KeyEvent &arg ) {
 	if( arg.key == KC_ESCAPE || arg.key == KC_Q ) {
 		this->m_core->stop();
+	} else if (  arg.key == KC_F1 ) {
+		// TODO remove dependency here for future
+		this->m_core->getGraphics()->toggleFullscreen();
 	}
+
 	std::cout << "KeyReleased {" << ((Keyboard*)(arg.device))->getAsString(arg.key) << "}\n";
 	return true;
 }
