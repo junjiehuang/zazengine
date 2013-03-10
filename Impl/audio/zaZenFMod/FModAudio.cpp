@@ -11,14 +11,16 @@
 #include <stdio.h>
 
 using namespace std;
+using namespace boost;
 
-FModAudio::FModAudio()
-	: id ("FModAudio"),
-	type ("audio")
+FModAudio::FModAudio( const std::string& id, ICore* core )
+	: id ( id ),
+	type ( "audio" ),
+	m_core( core )
 {
-	this->system = 0;
-	this->bgMusic = 0;
-	this->bgMusicCh = 0;
+	this->m_system = 0;
+	this->m_bgMusic = 0;
+	this->m_bgMusicCh = 0;
 }
 
 FModAudio::~FModAudio()
@@ -27,22 +29,22 @@ FModAudio::~FModAudio()
 }
 
 bool
-FModAudio::initialize( TiXmlElement* )
+FModAudio::initialize( TiXmlElement* configElem )
 {
 	cout << endl << "=============== FModAudio initializing... ===============" << endl;
 
 	FMOD_RESULT result;
 	unsigned int version;
 
-	result = FMOD::System_Create( &this->system );
-    if (result != FMOD_OK)
+	result = FMOD::System_Create( &this->m_system );
+    if ( FMOD_OK != result )
     {
         printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
        	return false;
     }
 
-    result = this->system->getVersion( &version );
-    if (result != FMOD_OK)
+    result = this->m_system->getVersion( &version );
+    if ( FMOD_OK != result )
     {
         printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
        	return false;
@@ -54,15 +56,15 @@ FModAudio::initialize( TiXmlElement* )
         return false;
     }
 
-    result = this->system->init( 10, FMOD_INIT_NORMAL, 0 );
-    if (result != FMOD_OK)
+    result = this->m_system->init( 10, FMOD_INIT_NORMAL, 0 );
+    if ( FMOD_OK != result )
     {
         printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
        	return false;
     }
 
-    result = system->createSound("media/audio/getout.ogg", FMOD_SOFTWARE | FMOD_2D, 0, &this->bgMusic );
-    if (result != FMOD_OK)
+    result = m_system->createSound( "../media/audio/getout.ogg", FMOD_SOFTWARE | FMOD_2D, 0, &this->m_bgMusic );
+    if ( FMOD_OK != result )
     {
     	printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
     	return false;
@@ -86,7 +88,7 @@ FModAudio::shutdown()
 		FModAudioEntity* entity = *iter++;
 
 		result = entity->sound->release();
-		if (result != FMOD_OK)
+		if ( FMOD_OK != result )
 		{
 			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
 		}
@@ -96,25 +98,25 @@ FModAudio::shutdown()
 
 	this->entities.clear();
 
-	if ( this->bgMusic )
+	if ( this->m_bgMusic )
 	{
-		result = this->bgMusic->release();
-		if (result != FMOD_OK)
+		result = this->m_bgMusic->release();
+		if ( FMOD_OK != result )
 		{
 			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
 		}
 	}
 
-	if ( this->system )
+	if ( this->m_system )
 	{
-		result = this->system->close();
-		if (result != FMOD_OK)
+		result = this->m_system->close();
+		if ( FMOD_OK != result )
 		{
 			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
 		}
 
-		result = this->system->release();
-		if (result != FMOD_OK)
+		result = this->m_system->release();
+		if ( FMOD_OK != result )
 		{
 			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
 		}
@@ -130,8 +132,8 @@ FModAudio::start()
 {
 	FMOD_RESULT result;
 
-    result = this->system->playSound( FMOD_CHANNEL_FREE, this->bgMusic, false, &this->bgMusicCh );
-    if (result != FMOD_OK)
+    result = this->m_system->playSound( FMOD_CHANNEL_FREE, this->m_bgMusic, false, &this->m_bgMusicCh );
+    if ( FMOD_OK != result )
 	{
     	printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
     	return false;
@@ -142,8 +144,8 @@ FModAudio::start()
 	{
 		FModAudioEntity* entity = *iter++;
 
-		result = this->system->playSound( FMOD_CHANNEL_FREE, entity->sound, false, &entity->channel );
-		if (result != FMOD_OK)
+		result = this->m_system->playSound( FMOD_CHANNEL_FREE, entity->sound, false, &entity->channel );
+		if ( FMOD_OK != result )
 		{
 			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
 		    return false;
@@ -185,10 +187,10 @@ FModAudio::process(double factor)
 
 			if ( e == "updatePhysics" )
 			{
-				const Value& pos = e.getValue( "pos" );
-				const Value& vel = e.getValue( "vel" );
+				boost::any& pos = e.getValue( "pos" );
+				boost::any& vel = e.getValue( "vel" );
 
-				entity->setPosVel( pos.data, vel.data );
+				entity->setPosVel( any_cast<const float*>( pos ), any_cast<const float*>( vel )  );
 			}
 		}
 
@@ -230,8 +232,8 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			str = soundNode->Attribute( "file" );
 
 			FMOD_RESULT result = FMOD_OK;
-		    result = this->system->createSound( str, FMOD_SOFTWARE | FMOD_3D, 0, &entity->sound );
-		    if (result != FMOD_OK)
+		    result = this->m_system->createSound( str, FMOD_SOFTWARE | FMOD_3D, 0, &entity->sound );
+		    if ( FMOD_OK != result )
 		    {
 		    	cout << "ERROR ... loading sound from file \"" << str << ": " << FMOD_ErrorString( result ) << endl;
 		    	delete entity;
@@ -244,4 +246,25 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 	this->entities.push_back( entity );
 
 	return entity;
+}
+
+extern "C"
+{	
+	__declspec( dllexport ) ISubSystem*
+	createInstance ( const char* id, ICore* core )
+	{
+		return new FModAudio( id, core );
+	}
+
+	__declspec( dllexport ) void
+	deleteInstance ( ISubSystem* subSys )
+	{
+		if ( 0 == subSys )
+			return;
+
+		if ( 0 == dynamic_cast<FModAudio*>( subSys ) )
+			return;
+
+		delete subSys;
+	}
 }

@@ -8,7 +8,7 @@
 #ifndef IAUDIO_H_
 #define IAUDIO_H_
 
-#include "ISubSystem.h"
+#include "../core/ISubSystem.h"
 #include "IAudioEntity.h"
 
 class IAudio : public ISubSystem

@@ -1,12 +1,12 @@
 !!! FROM NOW ON: always compileable & runnable when checked in !!!
 
-- include audio
 - fix problem with assetimporter
 - transform data from assetimporter to geomtype
 - compile without warnings
 - project buildable as RELEASE
 - subsystems no more typed by string, but fixed by dynamic-type => expose each subsystem through ICore e.g. getGraphics, getPhysics,... instead of getSubsystemByType
 - subsystem-constructor which gets passed in: id, type & core-instance
+- cleanup code in ois & graphics
 - move pipeline-shaders required for deferred renderer from zazensquares to zazengine. pipeline is then copied to bin of squares
 - move config of subsystems of zazengine from zazensquares to zazengine. config is then copied to bin of squares
 - check if everything is cleaned up when a subsystem cannot be initialized

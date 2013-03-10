@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZazenGraphics", "Impl\graph
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zaZenOIS", "Impl\input\zaZenOIS\zaZenOIS.vcxproj", "{609F1AC9-88E1-4302-9B89-D8115F1499E1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zaZenFMod", "Impl\audio\zaZenFMod\FMod.vcxproj", "{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -36,6 +38,10 @@ Global
 		{609F1AC9-88E1-4302-9B89-D8115F1499E1}.Debug|Win32.Build.0 = Debug|Win32
 		{609F1AC9-88E1-4302-9B89-D8115F1499E1}.Release|Win32.ActiveCfg = Release|Win32
 		{609F1AC9-88E1-4302-9B89-D8115F1499E1}.Release|Win32.Build.0 = Release|Win32
+		{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}.Debug|Win32.Build.0 = Debug|Win32
+		{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}.Release|Win32.ActiveCfg = Release|Win32
+		{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

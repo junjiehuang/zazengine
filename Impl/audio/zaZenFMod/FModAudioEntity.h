@@ -8,7 +8,7 @@
 #ifndef FMODAUDIOENTITY_H_
 #define FMODAUDIOENTITY_H_
 
-#include "../../../Core/SubSystems/IFaces/IAudioEntity.h"
+#include <audio/IAudioEntity.h>
 
 #include <fmodex/fmod.hpp>
 

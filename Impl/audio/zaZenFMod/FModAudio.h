@@ -8,7 +8,7 @@
 #ifndef FMODAUDIO_H_
 #define FMODAUDIO_H_
 
-#include "../../../Core/SubSystems/IFaces/IAudio.h"
+#include <audio/IAudio.h>
 
 #include "FModAudioEntity.h"
 
@@ -20,7 +20,7 @@
 class FModAudio : public IAudio
 {
 	public:
-		FModAudio();
+		FModAudio( const std::string&, ICore* );
 		virtual ~FModAudio();
 
 		const std::string& getID() const { return this->id; };
@@ -46,9 +46,11 @@ class FModAudio : public IAudio
 		std::string id;
 		std::string type;
 
-		FMOD::System* system;
-		FMOD::Sound* bgMusic;
-		FMOD::Channel* bgMusicCh;
+		ICore* m_core;
+
+		FMOD::System* m_system;
+		FMOD::Sound* m_bgMusic;
+		FMOD::Channel* m_bgMusicCh;
 
 		std::list<FModAudioEntity*> entities;
 

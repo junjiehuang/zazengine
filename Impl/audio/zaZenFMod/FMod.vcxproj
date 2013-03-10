@@ -14,6 +14,7 @@
     <ProjectGuid>{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>FMod</RootNamespace>
+    <ProjectName>zaZenFMod</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -50,11 +51,17 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;FMOD_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../../IFaces/;$(BOOST_PATH);lib/include/;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>lib/;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>fmodex_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(ProjectDir)lib\*.dll $(SolutionDir)$(Configuration)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -74,6 +81,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinystr.cpp" />
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxml.cpp" />
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlerror.cpp" />
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlparser.cpp" />
+    <ClCompile Include="FModAudio.cpp" />
+    <ClCompile Include="FModAudioEntity.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml.hpp" />
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_iterators.hpp" />
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_print.hpp" />
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_utils.hpp" />
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinystr.h" />
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h" />
+    <ClInclude Include="FModAudio.h" />
+    <ClInclude Include="FModAudioEntity.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -8,7 +8,7 @@
 #ifndef IAUDIOENTITY_H_
 #define IAUDIOENTITY_H_
 
-#include "ISubSystemEntity.h"
+#include <core/ISubSystemEntity.h>
 
 class IAudioEntity : public ISubSystemEntity
 {
