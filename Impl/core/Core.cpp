@@ -103,6 +103,12 @@ Core::Core()
 
 	this->m_gameObjectFactory = 0;
 	this->m_subSystemFactory = 0;
+
+	this->m_ai = 0;
+	this->m_audio = 0;
+	this->m_graphics = 0;
+	this->m_input = 0;
+	this->m_physics = 0;
 }
 
 Core::~Core()
@@ -431,6 +437,12 @@ Core::loadSubSystem( const std::string& fileName, const std::string& configPath 
 		return 0;
 	}
 
+	if ( false == this->checkSubSystemType( subSystem ) )
+	{
+		subSystem->m_libStruct->destructorFunc( subSystem );
+		return 0;
+	}
+
 	if ( false == subSystem->initialize( subSystemNode ) )
 	{
 		cout << "Initializing " << subSystemType << " Subsystem failed - exit" << endl;
@@ -440,4 +452,60 @@ Core::loadSubSystem( const std::string& fileName, const std::string& configPath 
 
 
 	return subSystem;
+}
+
+bool
+Core::checkSubSystemType( ISubSystem* subSystem )
+{
+	if ( dynamic_cast<IAi*>( subSystem ) )
+	{
+		if ( NULL != this->m_ai )
+		{
+			cout << "ERROR ... trying to load Ai-Subsystem but is already present, it is not allowed to have two SubSystems of same type" << endl;
+		}
+
+		this->m_ai = ( IAi* ) subSystem;
+	}
+
+	if ( dynamic_cast<IAudio*>( subSystem ) )
+	{
+		if ( NULL != this->m_audio )
+		{
+			cout << "ERROR ... trying to load Audio-Subsystem but is already present, it is not allowed to have two SubSystems of same type" << endl;
+		}
+
+		this->m_audio = ( IAudio* ) subSystem;
+	}
+
+	if ( dynamic_cast<IGraphics*>( subSystem ) )
+	{
+		if ( NULL != this->m_graphics )
+		{
+			cout << "ERROR ... trying to load Graphics-Subsystem but is already present, it is not allowed to have two SubSystems of same type" << endl;
+		}
+
+		this->m_graphics = ( IGraphics* ) subSystem;
+	}
+
+	if ( dynamic_cast<IInput*>( subSystem ) )
+	{
+		if ( NULL != this->m_input )
+		{
+			cout << "ERROR ... trying to load Input-Subsystem but is already present, it is not allowed to have two SubSystems of same type" << endl;
+		}
+
+		this->m_input = ( IInput* ) subSystem;
+	}
+
+	if ( dynamic_cast<IPhysics*>( subSystem ) )
+	{
+		if ( NULL != this->m_physics )
+		{
+			cout << "ERROR ... trying to load Physics-Subsystem but is already present, it is not allowed to have two SubSystems of same type" << endl;
+		}
+
+		this->m_physics = ( IPhysics* ) subSystem;
+	}
+
+	return true;
 }

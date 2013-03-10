@@ -16,6 +16,8 @@ class IGraphics : public ISubSystem
 	public:
 		virtual ~IGraphics() {};
 
+		virtual void* getWindowHandle() = 0;
+
 		virtual IGraphicsEntity* createEntity( TiXmlElement*, IGameObject* parent ) = 0;
 
 };

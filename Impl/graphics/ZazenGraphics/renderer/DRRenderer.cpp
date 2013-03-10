@@ -6,7 +6,6 @@
  */
 
 #include <GL/glew.h>
-#include "SDL/SDL.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -120,9 +119,6 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	if ( false == this->showTexture( this->m_geometryDepth, 2 ) )
 		return false;
-
-	// swap buffers
-	SDL_GL_SwapBuffers();
 
 	this->frame++;
 

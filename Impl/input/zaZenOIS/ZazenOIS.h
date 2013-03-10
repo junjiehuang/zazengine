@@ -13,10 +13,12 @@
 
 #include "ZazenOISEntity.h"
 
+#include <OIS.h>
+
 #include <list>
 #include <string>
 
-class ZazenOIS : public IInput
+class ZazenOIS : public IInput, public OIS::KeyListener, public OIS::MouseListener, public OIS::JoyStickListener
 {
 	public:
 		ZazenOIS( const std::string&, ICore* );
@@ -41,6 +43,20 @@ class ZazenOIS : public IInput
 		
 		ZazenOISEntity* createEntity( TiXmlElement*, IGameObject* parent);
 		
+		bool keyPressed( const OIS::KeyEvent &arg );
+		bool keyReleased( const OIS::KeyEvent &arg );
+
+		bool mouseMoved( const OIS::MouseEvent &arg );
+		bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+		bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+	
+		bool buttonPressed( const OIS::JoyStickEvent &arg, int button );
+		bool buttonReleased( const OIS::JoyStickEvent &arg, int button );
+
+		bool axisMoved( const OIS::JoyStickEvent &arg, int axis );
+		bool povMoved( const OIS::JoyStickEvent &arg, int pov );
+		bool vector3Moved( const OIS::JoyStickEvent &arg, int index );
+
 	private:
 		std::string id;
 		std::string type;
@@ -48,7 +64,17 @@ class ZazenOIS : public IInput
 		std::list<int> pressedKeys;
 
 		ICore* m_core;
-		
+
+		OIS::InputManager* m_inputManager;
+		OIS::Keyboard* m_keyBoard;
+		OIS::Mouse* m_mouse;
+		OIS::JoyStick* m_joys[4];
+
+		bool initOIS( TiXmlElement* );
+
+		void handleNonBufferedKeys();
+		void handleNonBufferedMouse();
+		void handleNonBufferedJoy( OIS::JoyStick* );
 };
 
 #endif /* SDLINPUT_H_ */

@@ -40,6 +40,12 @@ class DLL_API Core : public ICore
 
 		long long getCurrentMillis() const;
 
+		IAi* getAi() { return this->m_ai; };
+		IAudio* getAudio() { return this->m_audio; };
+		IGraphics* getGraphics() { return this->m_graphics; };
+		IInput* getInput() { return this->m_input; };
+		IPhysics* getPhysics() { return this->m_physics; };
+
 		ISubSystem* getSubSystemByID( const std::string& );
 		ISubSystem* getSubSystemByType( const std::string& );
 
@@ -56,6 +62,12 @@ class DLL_API Core : public ICore
 
 		EventManager* m_eventManager;
 
+		IAi* m_ai;
+		IAudio* m_audio;
+		IGraphics* m_graphics;
+		IInput* m_input;
+		IPhysics* m_physics;
+
 		ZazenGameObjectFactory* m_gameObjectFactory;
 		ZazenSubSystemFactory* m_subSystemFactory;
 
@@ -67,6 +79,7 @@ class DLL_API Core : public ICore
 
 		bool loadConfig( const std::string& );
 		ISubSystem* loadSubSystem( const std::string&, const std::string& );
+		bool checkSubSystemType( ISubSystem* ); 
 };
 
 #endif /* CORE_H_ */

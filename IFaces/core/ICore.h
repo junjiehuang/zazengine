@@ -12,6 +12,12 @@
 #include "ISubSystem.h"
 #include "IEventManager.h"
 
+#include "../ai/IAi.h"
+#include "../audio/IAudio.h"
+#include "../graphics/IGraphics.h"
+#include "../input/IInput.h"
+#include "../physics/IPhysics.h"
+
 #include "DllExport.h"
 
 class DLL_API ICore
@@ -25,6 +31,13 @@ class DLL_API ICore
 
 		virtual long long getCurrentMillis() const = 0;
 
+		virtual IAi* getAi() = 0;
+		virtual IAudio* getAudio() = 0;
+		virtual IGraphics* getGraphics() = 0;
+		virtual IInput* getInput() = 0;
+		virtual IPhysics* getPhysics() = 0;
+
+		// TODO do we need those two?
 		virtual ISubSystem* getSubSystemByID( const std::string& ) = 0;
 		virtual ISubSystem* getSubSystemByType( const std::string& ) = 0;
 

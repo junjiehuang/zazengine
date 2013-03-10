@@ -51,6 +51,8 @@ class ZazenGraphics : public IGraphics
 
 		ICore& getCore() { return *this->m_core; };
 
+		void* getWindowHandle();
+
 	private:
 		static ZazenGraphics* instance;
 
@@ -58,8 +60,6 @@ class ZazenGraphics : public IGraphics
 		std::string m_type;
 
 		ICore* m_core;
-
-		double m_lastItFact;
 
 		SDL_Surface* m_drawContext;
 
@@ -72,6 +72,7 @@ class ZazenGraphics : public IGraphics
 		std::list<ZazenGraphicsEntity*> m_entities;
 
 		bool initSDL( TiXmlElement* );
+		bool createWindow( TiXmlElement* );
 		bool initGL( TiXmlElement* );
 };
 
