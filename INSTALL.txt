@@ -1,0 +1,1 @@
+- install boost 1.51 and add the path to install directory by setting BOOST_PATH
