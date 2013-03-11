@@ -23,20 +23,24 @@ class Shader
 
 	static Shader* createShader( Shader::ShaderType type, const std::string& file );
 
+	bool compile();
+
 	void printInfoLog();
 
-	GLuint getObject() const { return this->shaderObject; };
+	const std::string& getFileName() { return this->m_fileName; };
 
-	bool compile();
+	GLuint getObject() const { return this->m_shaderObject; };
 
 	~Shader();
 
  private:
-	Shader( GLuint shaderObject );
+	Shader( GLuint shaderObject, const std::string& );
 
-	GLuint shaderObject;
+	std::string m_fileName;
 
-	static bool readShaderSource(const std::string&, std::string&);
+	GLuint m_shaderObject;
+
+	static bool readShaderSource( const std::string&, std::string& );
 };
 
 #endif /* SHADER_H_ */

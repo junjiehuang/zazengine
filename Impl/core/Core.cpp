@@ -2,7 +2,7 @@
  * Core.cpp
  *
  *  Created on: 27.06.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #include "Core.h"

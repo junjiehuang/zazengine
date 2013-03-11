@@ -31,7 +31,7 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 		shaderObject = glCreateShader( GL_VERTEX_SHADER );
 		if (0 == shaderObject )
 		{
-			cout << "glCreateShader for GL_VERTEX_SHADER \"" << file << "\" failed with " << gluErrorString(glGetError()) << endl;
+			cout << "ERROR ... in Shader::createShader: glCreateShader for GL_VERTEX_SHADER \"" << file << "\" failed with " << gluErrorString( glGetError() ) << endl;
 			return 0;
 		}
 	}
@@ -40,7 +40,7 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 		shaderObject = glCreateShader( GL_FRAGMENT_SHADER );
 		if ( 0 == shaderObject )
 		{
-			cout << "glCreateShader for GL_FRAGMENT_SHADER \"" << file << "\" failed with " << gluErrorString(glGetError()) << endl;
+			cout << "ERROR ... in Shader::createShader: glCreateShader for GL_FRAGMENT_SHADER \"" << file << "\" failed with " << gluErrorString( glGetError() ) << endl;
 			return 0;
 		}
 	}
@@ -49,32 +49,33 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 		shaderObject = glCreateShader( GL_GEOMETRY_SHADER_EXT );
 		if ( 0 == shaderObject )
 		{
-			cout << "glCreateShader for GL_GEOMETRY_SHADER_EXT \"" << file << "\" failed with " << gluErrorString(glGetError()) << endl;
+			cout << "ERROR ... in Shader::createShader: glCreateShader for GL_GEOMETRY_SHADER_EXT \"" << file << "\" failed with " << gluErrorString( glGetError() ) << endl;
 			return 0;
 		}
 	}
 
 	sourcePtr = source.c_str();
-	glShaderSource( shaderObject, 1, (const GLchar**) &sourcePtr, NULL);
+	glShaderSource( shaderObject, 1, ( const GLchar** ) &sourcePtr, NULL);
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "glShaderSource for \"" << file << "\" failed with " << gluErrorString( status ) << endl;
+		cout << "ERROR ... Shader::createShader: glShaderSource for \"" << file << "\" failed with " << gluErrorString( status ) << endl;
 		return 0;
 	}
 
 
-	return new Shader( shaderObject );
+	return new Shader( shaderObject, file );
 }
 
-Shader::Shader( GLuint shaderObject )
+Shader::Shader( GLuint shaderObject, const std::string& fileName )
 {
-	this->shaderObject = shaderObject;
+	this->m_shaderObject = shaderObject;
+	this->m_fileName = fileName;
 }
 
 Shader::~Shader()
 {
-	glDeleteShader( this->shaderObject );
+	glDeleteShader( this->m_shaderObject );
 }
 
 void
@@ -84,13 +85,13 @@ Shader::printInfoLog()
 	GLint infoLogLen = 0;
 	GLint charsWritten  = 0;
 
-	glGetShaderiv( this->shaderObject  , GL_INFO_LOG_LENGTH, &infoLogLen );
+	glGetShaderiv( this->m_shaderObject  , GL_INFO_LOG_LENGTH, &infoLogLen );
 	if (infoLogLen > 0)
 	{
-		infoLog = (GLchar*) malloc( ( infoLogLen + 1 ) * sizeof( GLchar ) );
+		infoLog = ( GLchar* ) malloc( ( infoLogLen + 1 ) * sizeof( GLchar ) );
 		memset( infoLog, 0, infoLogLen + 1 );
 
-		glGetShaderInfoLog( this->shaderObject , infoLogLen, &charsWritten, infoLog );
+		glGetShaderInfoLog( this->m_shaderObject , infoLogLen, &charsWritten, infoLog );
 
 	    if ( charsWritten )
 	    	cout << infoLog << endl;
@@ -104,10 +105,11 @@ Shader::compile()
 {
 	GLint status;
 
-	glCompileShader( this->shaderObject );
-	glGetShaderiv( this->shaderObject, GL_COMPILE_STATUS, &status );
+	glCompileShader( this->m_shaderObject );
+	glGetShaderiv( this->m_shaderObject, GL_COMPILE_STATUS, &status );
 	if ( GL_TRUE != status )
 	{
+		cout << "ERROR ... in Shader::compile for shader " << this->m_fileName << ": failed compilation of shader. Error-Log:" << endl;
 		this->printInfoLog();
 		return false;
 	}
@@ -116,14 +118,14 @@ Shader::compile()
 }
 
 bool
-Shader::readShaderSource(const string& file, string& shaderSource)
+Shader::readShaderSource( const string& file, string& shaderSource )
 {
 	string fullFileName = file;
 	FILE* shaderSourceFile = NULL;
 
 	if ( 0 != fopen_s( &shaderSourceFile, fullFileName.c_str(), "r" ) )
 	{
-		cout << "ERROR ... couldn't open Shadersource-File " << fullFileName << endl;
+		cout << "ERROR ... in Shader::readShaderSource: couldn't open Shadersource-File " << fullFileName << endl;
 		return false;
 	}
 

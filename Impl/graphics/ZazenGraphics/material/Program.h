@@ -16,7 +16,7 @@ class Program
  public:
 	~Program();
 
-	static Program* createProgram();
+	static Program* createProgram( const std::string& );
 
 	void printInfoLog();
 
@@ -40,9 +40,10 @@ class Program
 	bool use();
 
  private:
-	Program( GLuint programObject );
+	Program( GLuint programObject, const std::string& programName );
 
-	GLuint programObject;
+	std::string m_programName;
+	GLuint m_programObject;
 
 	GLuint getUniformBlockIndex( const std::string& name );
 	GLint getUniformLocation( const std::string& name );

@@ -2,7 +2,7 @@
  * FModAudio.h
  *
  *  Created on: 06.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef FMODAUDIO_H_

@@ -2,7 +2,7 @@
  * ZazenGameObject.h
  *
  *  Created on: 27.06.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef ZAZENGAMEOBJECT_H_

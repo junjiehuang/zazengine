@@ -2,7 +2,7 @@
  * FModAudioEntity.h
  *
  *  Created on: 08.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef FMODAUDIOENTITY_H_

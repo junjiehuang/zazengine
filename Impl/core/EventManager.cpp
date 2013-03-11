@@ -2,7 +2,7 @@
  * EventManager.cpp
  *
  *  Created on: 02.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #include "EventManager.h"

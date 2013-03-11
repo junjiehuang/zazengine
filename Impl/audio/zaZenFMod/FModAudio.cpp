@@ -2,7 +2,7 @@
  * FModAudio.cpp
  *
  *  Created on: 06.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #include "FModAudio.h"

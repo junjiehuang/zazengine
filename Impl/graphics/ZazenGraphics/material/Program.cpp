@@ -16,7 +16,7 @@
 using namespace std;
 
 Program*
-Program::createProgram()
+Program::createProgram( const std::string& programName )
 {
 	GLint status;
 	GLuint programObject = 0;
@@ -25,22 +25,23 @@ Program::createProgram()
 	if ( 0 == programObject )
 	{
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
-			cout << "glCreateProgram failed with " << gluErrorString( status ) << endl;
+			cout << "ERROR ... in Program::createProgram for programm " << programName << ": glCreateProgram failed with " << gluErrorString( status ) << endl;
 
 		return 0;
 	}
 
-	return new Program( programObject );
+	return new Program( programObject, programName );
 }
 
-Program::Program( GLuint programObject )
+Program::Program( GLuint programObject, const std::string& programName )
 {
-	this->programObject = programObject;
+	this->m_programObject = programObject;
+	this->m_programName = programName;
 }
 
 Program::~Program()
 {
-	glDeleteProgram( this->programObject );
+	glDeleteProgram( this->m_programObject );
 }
 
 void
@@ -50,13 +51,13 @@ Program::printInfoLog()
 	GLint infoLogLen = 0;
 	GLint charsWritten  = 0;
 
-	glGetProgramiv( this->programObject , GL_INFO_LOG_LENGTH, &infoLogLen );
+	glGetProgramiv( this->m_programObject , GL_INFO_LOG_LENGTH, &infoLogLen );
 	if (infoLogLen > 0)
 	{
 		infoLog = (GLchar*) malloc( ( infoLogLen + 1 ) * sizeof( GLchar ) );
 		memset( infoLog, 0, infoLogLen + 1 );
 
-		glGetProgramInfoLog( this->programObject, infoLogLen, &charsWritten, infoLog );
+		glGetProgramInfoLog( this->m_programObject, infoLogLen, &charsWritten, infoLog );
 
 	    if ( charsWritten )
 			cout << infoLog << endl;
@@ -70,10 +71,10 @@ Program::attachShader( Shader* shader )
 {
 	GLint status;
 
-	glAttachShader( this->programObject, shader->getObject() );
+	glAttachShader( this->m_programObject, shader->getObject() );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "glAttachShader failed with " << gluErrorString( status ) << endl;
+		cout << "ERROR ... in Program::attachShader for programm " << this->m_programName << ": glAttachShader failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
@@ -86,10 +87,10 @@ Program::detachShader( Shader* shader )
 {
 	GLint status;
 
-	glDetachShader( this->programObject, shader->getObject() );
+	glDetachShader( this->m_programObject, shader->getObject() );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "glDetachShader failed with " << gluErrorString( status ) << endl;
+		cout << "ERROR ... in Program::detachShader for programm " << this->m_programName << ": glDetachShader failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
@@ -101,11 +102,11 @@ Program::link()
 {
 	GLint status;
 
-	glLinkProgram( this->programObject );
-	glGetProgramiv( this->programObject, GL_LINK_STATUS, &status);
+	glLinkProgram( this->m_programObject );
+	glGetProgramiv( this->m_programObject, GL_LINK_STATUS, &status);
 	if ( GL_TRUE != status )
 	{
-		cout << "ERROR linking of program failed" << endl;
+		cout << "ERROR ... in Program::link for programm " << this->m_programName << ": linking of program failed. Error-Log:" << endl;
 		this->printInfoLog();
 		return false;
 	}
@@ -123,7 +124,7 @@ Program::bindUniformBlock( UniformBlock* block )
 	if ( GL_INVALID_INDEX == index )
 		return false;
 
-	glGetActiveUniformBlockiv( this->programObject, index, GL_UNIFORM_BLOCK_DATA_SIZE, &uniformBlockSize );
+	glGetActiveUniformBlockiv( this->m_programObject, index, GL_UNIFORM_BLOCK_DATA_SIZE, &uniformBlockSize );
 
 	// create the UBO
 	if ( false == block->updateData( 0, uniformBlockSize ) )
@@ -132,10 +133,10 @@ Program::bindUniformBlock( UniformBlock* block )
 	//if ( false == block->bind( index ) )
 	//	return false;
 
-	glUniformBlockBinding( this->programObject, index,  block->getBindIndex() );
+	glUniformBlockBinding( this->m_programObject, index,  block->getBindIndex() );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "glUniformBlockBinding failed for name \"" << block->getName() << "\": " << gluErrorString( status )  << endl;
+		cout << "ERROR ... in Program::bindUniformBlock for programm " << this->m_programName << ": glUniformBlockBinding failed for name \"" << block->getName() << "\": " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -147,10 +148,10 @@ Program::bindAttribLocation( GLuint index, const std::string& name )
 {
 	GLint status;
 
-	glBindAttribLocation( this->programObject, index, name.c_str() );
+	glBindAttribLocation( this->m_programObject, index, name.c_str() );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "glBindAttribLocation failed for name \"" << name << "\": " << gluErrorString( status )  << endl;
+		cout << "ERROR ... in Program::bindAttribLocation for programm " << this->m_programName << ": glBindAttribLocation failed for name \"" << name << "\": " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -162,9 +163,9 @@ Program::getAttribLocation( const std::string& name )
 {
 	GLint location = 0;
 
-	location = glGetAttribLocation( this->programObject, name.c_str() );
+	location = glGetAttribLocation( this->m_programObject, name.c_str() );
 	if ( -1 == location )
-		cout << "Coulnd't glGetAttribLocation location for name \"" << name << "\". OpenGL-Error: " << gluErrorString(glGetError())  << endl;
+		cout << "ERROR ... in Program::getAttribLocation for programm " << this->m_programName << ": coulnd't glGetAttribLocation location for name \"" << name << "\": " << gluErrorString( glGetError() )  << endl;
 
 	return location;
 }
@@ -174,10 +175,10 @@ Program::bindFragDataLocation( GLuint index, const std::string& name )
 {
 	GLint status;
 
-	glBindFragDataLocation( this->programObject, index, name.c_str() );
+	glBindFragDataLocation( this->m_programObject, index, name.c_str() );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "glBindFragDataLocation failed for name \"" << name << "\": " << gluErrorString( status )  << endl;
+		cout << "ERROR ... in Program::bindFragDataLocation for programm " << this->m_programName << ": glBindFragDataLocation failed for name \"" << name << "\": " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -189,9 +190,9 @@ Program::getFragDataLocation( const std::string& name )
 {
 	GLint location = 0;
 
-	location = glGetFragDataLocation( this->programObject, name.c_str() );
+	location = glGetFragDataLocation( this->m_programObject, name.c_str() );
 	if ( -1 == location )
-		cout << "Coulnd't glGetFragDataLocation location for name \"" << name << "\". OpenGL-Error: " << gluErrorString(glGetError())  << endl;
+		cout << "ERROR ... in Program::getFragDataLocation for programm " << this->m_programName << ": coulnd't glGetFragDataLocation location for name \"" << name << "\": " << gluErrorString(glGetError())  << endl;
 
 	return location;
 }
@@ -201,10 +202,10 @@ Program::use()
 {
 	GLint status;
 
-	glUseProgram( this->programObject );
+	glUseProgram( this->m_programObject );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "glUseProgram failed: " << gluErrorString( status )  << endl;
+		cout << "ERROR ... in Program::use for programm " << this->m_programName << ": glUseProgram failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -222,7 +223,7 @@ Program::setUniform4( const std::string& name, const float* value )
 	glUniform4fv( location, 4, value );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "glUniform4fv failed for " << name << ": " << gluErrorString( status )  << endl;
+		cout << "ERROR ... in Program::setUniform4 for programm " << this->m_programName << ": glUniform4fv failed for " << name << ": " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -240,7 +241,7 @@ Program::setUniformInt( const std::string& name, int value )
 	glUniform1i( location, value );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "glUniform1i failed for " << name << ": " << gluErrorString( status )  << endl;
+		cout << "ERROR ... in Program::setUniformInt for programm " << this->m_programName << ": glUniform1i failed for " << name << ": " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -259,7 +260,7 @@ Program::setUniformMatrix4( const std::string& name, const float* value )
 	glUniformMatrix4fv( location, 1, GL_FALSE, value );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "glUniformMatrix4fv failed for " << name << ": " << gluErrorString( status )  << endl;
+		cout << "ERROR ... in Program::setUniformMatrix4 for programm " << this->m_programName << ": glUniformMatrix4fv failed for " << name << ": " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -271,9 +272,9 @@ Program::getUniformBlockIndex( const std::string& name )
 {
 	GLuint index = 0;
 
-	index = glGetUniformBlockIndex( this->programObject, name.c_str() );
+	index = glGetUniformBlockIndex( this->m_programObject, name.c_str() );
 	if ( GL_INVALID_INDEX == index )
-		cout << "glGetUniformBlockIndex failed for name \"" << name << "\". OpenGL-Error: GL_INVALID_INDEX" << endl;
+		cout << "ERROR ... in Program::getUniformBlockIndex for programm " << this->m_programName << ": glGetUniformBlockIndex failed for name \"" << name << "\". OpenGL-Error: GL_INVALID_INDEX" << endl;
 
 	return index;
 }
@@ -283,9 +284,9 @@ Program::getUniformLocation( const std::string& name )
 {
 	GLint location = 0;
 
-	location = glGetUniformLocation( this->programObject, name.c_str() );
+	location = glGetUniformLocation( this->m_programObject, name.c_str() );
 	if ( -1 == location )
-		cout << "Coulnd't get Uniform Location for name \"" << name << "\". OpenGL-Error: " << gluErrorString(glGetError())  << endl;
+		cout << "ERROR ... in Program::getUniformLocation for programm " << this->m_programName << ": coulnd't get Uniform Location for name \"" << name << "\": " << gluErrorString( glGetError() )  << endl;
 
 	return location;
 }

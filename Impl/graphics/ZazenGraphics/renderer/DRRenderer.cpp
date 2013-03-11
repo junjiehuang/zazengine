@@ -305,7 +305,7 @@ DRRenderer::initGeomStage()
 {
 	cout << "Initializing Deferred Rendering Geometry-Stage..." << endl;
 
-	this->m_progGeomStage = Program::createProgram( );
+	this->m_progGeomStage = Program::createProgram( "GeometryStageProgramm" );
 	if ( 0 == this->m_progGeomStage )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: coulnd't create program - exit" << endl;
@@ -399,7 +399,7 @@ DRRenderer::initLightingStage()
 {
 	cout << "Initializing Deferred Rendering Lighting-Stage..." << endl;
 
-	this->m_progLightingStage = Program::createProgram( );
+	this->m_progLightingStage = Program::createProgram( "LightingStageProgramm" );
 	if ( 0 == this->m_progLightingStage )
 	{
 		cout << "ERROR in DRRenderer::initLightingStage: coulnd't create program - exit" << endl;
@@ -476,7 +476,7 @@ DRRenderer::initShadowMapping()
 		return false;
 	}
 
-	this->m_progShadowMapping = Program::createProgram( );
+	this->m_progShadowMapping = Program::createProgram( "ShadowingStageProgramm" );
 	if ( 0 == this->m_progShadowMapping )
 	{
 		cout << "ERROR in DRRenderer::initShadowMapping: coulnd't create program - exit" << endl;

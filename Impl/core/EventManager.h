@@ -2,7 +2,7 @@
  * EventManager.h
  *
  *  Created on: 02.07.2010
- *      Author: joni
+ *      Author: Jonathan Thaler
  */
 
 #ifndef EVENTMANAGER_H_
