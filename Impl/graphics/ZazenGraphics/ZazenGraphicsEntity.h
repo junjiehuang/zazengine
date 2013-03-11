@@ -21,12 +21,22 @@ class ZazenGraphicsEntity : public IGraphicsEntity
 
 		const std::string& getType() const { return this->m_type; };
 
-		virtual void setOrientation( const float* pos, const float* rot);
+		virtual void setOrientation( const float* pos, const float* rot );
+		virtual void setAnimation( float heading, float roll, float pitch );
+
+		virtual void doAnimation();
+
+		virtual bool isAnimated() { return m_isAnimated; };
 
 		virtual bool sendEvent( Event& e );
 
 	private:
 		std::string m_type;
+
+		bool m_isAnimated;
+		float m_animRoll;
+		float m_animPitch;
+		float m_heading;
 
 		Orientation* m_orientation;
 };

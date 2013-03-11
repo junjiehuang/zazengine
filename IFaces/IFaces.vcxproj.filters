@@ -55,6 +55,12 @@
     <ClInclude Include="input\IInputEntity.h">
       <Filter>Headerdateien\Input</Filter>
     </ClInclude>
+    <ClInclude Include="animations\IAnimations.h">
+      <Filter>Headerdateien\Animations</Filter>
+    </ClInclude>
+    <ClInclude Include="animations\IAnimationsEntity.h">
+      <Filter>Headerdateien\Animations</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headerdateien">
@@ -77,6 +83,9 @@
     </Filter>
     <Filter Include="Headerdateien\Physics">
       <UniqueIdentifier>{73264658-7adc-497b-b3a3-c4fc197bce71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Animations">
+      <UniqueIdentifier>{da3cf9c4-2a53-4df4-83c2-85d923972393}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

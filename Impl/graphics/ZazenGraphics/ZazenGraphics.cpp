@@ -158,17 +158,10 @@ ZazenGraphics::process( double iterationFactor )
 	while ( iter != this->m_entities.end() )
 	{
 		ZazenGraphicsEntity* entity = *iter++;
-
-		std::list<Event>::iterator eventsIter = entity->queuedEvents.begin();
-		while ( eventsIter != entity->queuedEvents.end() )
+	
+		if ( entity->isAnimated() )
 		{
-			Event& e = *eventsIter++;
-			if  ( e == "TOGGLE_FULLSCREEN" )
-			{
-				this->toggleFullscreen();
-			}
-
-			cout << "received Event '" << e.getID() << "' in ZazenGraphics from GO '" << entity->getParent()->getName() << endl;
+			entity->doAnimation();
 		}
 
 		entity->queuedEvents.clear();
@@ -207,6 +200,11 @@ ZazenGraphics::finalizeProcess()
 bool
 ZazenGraphics::sendEvent( Event& e )
 {
+	if  ( e == "TOGGLE_FULLSCREEN" )
+	{
+		this->toggleFullscreen();
+	}
+
 	return true;
 }
 
@@ -391,6 +389,44 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		}
 
 		entity->m_orientation->set( v, pitch, heading, roll );
+	}
+
+	TiXmlElement* animationNode = objectNode->FirstChildElement( "animation" );
+	if ( animationNode )
+	{
+		glm::vec3 animRot;
+
+		const char* str = animationNode->Attribute( "heading" );
+		if ( 0 == str )
+		{
+			cout << "INFO ... heading attribute missing in animation - use default " << endl;
+		}
+		else
+		{
+			animRot[ 0 ] = ( float ) atof( str );
+		}
+
+		str = animationNode->Attribute( "roll" );
+		if ( 0 == str )
+		{
+			cout << "INFO ... roll attribute missing in animation - use default " << endl;
+		}
+		else
+		{
+			animRot[ 1 ] = ( float ) atof( str );
+		}
+
+		str = animationNode->Attribute( "pitch" );
+		if ( 0 == str )
+		{
+			cout << "INFO ... pitch attribute missing in animation - use default " << endl;
+		}
+		else
+		{
+			animRot[ 2 ] = ( float ) atof( str );
+		}
+
+		entity->setAnimation( animRot[ 0 ], animRot[ 1 ], animRot[ 2 ] ); 
 	}
 
 	this->m_entities.push_back( entity );

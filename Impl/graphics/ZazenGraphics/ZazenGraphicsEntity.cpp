@@ -20,10 +20,34 @@ ZazenGraphicsEntity::ZazenGraphicsEntity( IGameObject* p )
 	m_type( "graphics" )
 {
 	this->m_orientation = 0;
+
+	this->m_isAnimated = false;
+	this->m_animRoll = 0;
+	this->m_animPitch = 0;
+	this->m_heading = 0;
 }
 
 ZazenGraphicsEntity::~ZazenGraphicsEntity()
 {
+}
+
+void
+ZazenGraphicsEntity::doAnimation()
+{
+	if ( 0.0f != this->m_heading )
+	{
+		this->m_orientation->changeHeading( this->m_heading * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+	}
+
+	if ( 0.0f != this->m_animRoll )
+	{
+		this->m_orientation->changeRoll( this->m_animRoll * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+	}
+	
+	if ( 0.0f != this->m_animPitch )
+	{
+		this->m_orientation->changePitch( this->m_animPitch * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+	}
 }
 
 bool
@@ -76,7 +100,16 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 }
 
 void
-ZazenGraphicsEntity::setOrientation( const float* pos, const float* rot)
+ZazenGraphicsEntity::setOrientation( const float* pos, const float* rot )
 {
 	this->m_orientation->setRaw( rot, pos );
+}
+
+void
+ZazenGraphicsEntity::setAnimation( float heading, float roll, float pitch )
+{
+	this->m_isAnimated = true;
+	this->m_heading = heading;
+	this->m_animRoll = roll;
+	this->m_animPitch = pitch;
 }
