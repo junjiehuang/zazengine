@@ -82,6 +82,8 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 		return false;
 	}
 
+	this->m_core->getEventManager().registerForEvent( "TOGGLE_FULLSCREEN", this );
+
 	cout << "================ ZazenGraphics initialized =================" << endl;
 	
 	return true;
@@ -92,7 +94,7 @@ ZazenGraphics::shutdown()
 {
 	cout << endl << "=============== ZazenGraphics shutting down... ===============" << endl;
 
-	this->m_core->getEventManager().unregisterForEvent( "SDLK_RIGHT", this );
+	this->m_core->getEventManager().unregisterForEvent( "TOGGLE_FULLSCREEN", this );
 
 	std::list<ZazenGraphicsEntity*>::iterator iter = this->m_entities.begin();
 	while ( iter != this->m_entities.end() )
@@ -160,9 +162,13 @@ ZazenGraphics::process( double iterationFactor )
 		std::list<Event>::iterator eventsIter = entity->queuedEvents.begin();
 		while ( eventsIter != entity->queuedEvents.end() )
 		{
-			//Event& e = *eventsIter++;
+			Event& e = *eventsIter++;
+			if  ( e == "TOGGLE_FULLSCREEN" )
+			{
+				this->toggleFullscreen();
+			}
 
-			//cout << "received Event '" << e.getID() << "' in ZazenGraphics from GO '" << entity->getParent()->getName() << endl;
+			cout << "received Event '" << e.getID() << "' in ZazenGraphics from GO '" << entity->getParent()->getName() << endl;
 		}
 
 		entity->queuedEvents.clear();

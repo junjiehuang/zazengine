@@ -39,37 +39,37 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 
 		return true;
 	}
-	else if  ( e == "SDLK_RIGHT" )
+	else if ( e == "KEY_PRE_Q" )
 	{
-		this->m_orientation->changeHeading( -0.1f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->m_orientation->changeRoll( 50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
-	else if ( e == "SDLK_LEFT" )
+	else if ( e == "KEY_PRE_E" )
 	{
-		this->m_orientation->changeHeading( 0.1f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->m_orientation->changeRoll( -50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
-	else if ( e == "SDLK_UP" )
+	else if ( e == "KEY_PRE_W" )
 	{
-		this->m_orientation->changePitch( -0.1f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->m_orientation->strafeForward( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
-	else if ( e == "SDLK_DOWN" )
+	else if ( e == "KEY_PRE_S" )
 	{
-		this->m_orientation->changePitch( 0.1f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->m_orientation->strafeForward( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
-	else if ( e == "SDLK_w" )
+	else if ( e == "KEY_PRE_A" )
 	{
-		this->m_orientation->strafeForward( -0.1f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->m_orientation->strafeRight( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
-	else if ( e == "SDLK_s" )
+	else if ( e == "KEY_PRE_D" )
 	{
-		this->m_orientation->strafeForward( 0.1f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->m_orientation->strafeRight( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
-	else if ( e == "SDLK_d" )
+	else if ( e == "MOUSE_MOVE" )
 	{
-		this->m_orientation->changeRoll( -0.1f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-	}
-	else if ( e == "SDLK_a" )
-	{
-		this->m_orientation->changeRoll( 0.1f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		int x = any_cast<int>( e.getValue( "x" ) );
+		int y = any_cast<int>( e.getValue( "y" ) );
+
+		this->m_orientation->changeHeading( -50.0f * x * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->m_orientation->changePitch( 50.0f * y * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
 
 	return false;

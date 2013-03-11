@@ -108,6 +108,42 @@ ZazenOIS::process( double factor )
 		}
 	}
 
+	list<int>::iterator pressedKeysIter = pressedKeys.begin();
+	while ( pressedKeysIter != pressedKeys.end() )
+	{
+		int key = *pressedKeysIter++;
+		
+		switch( key )
+		{
+			case KC_Q:
+				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_Q" ) );
+				break;
+
+			case KC_E:
+				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_E" ) );
+				break;
+
+			case KC_W:
+				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_W" ) );
+				break;
+				
+			case KC_S:
+				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_S" ) );
+				break;
+				
+			case KC_A:
+				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_A" ) );
+				break;
+				
+			case KC_D:
+				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_D" ) );
+				break;
+
+			default:
+				break;
+		}
+	}
+	
 	return true;
 }
 
@@ -130,63 +166,93 @@ ZazenOIS::createEntity( TiXmlElement* cfgNode, IGameObject* parent )
 }
 
 bool
-ZazenOIS::keyPressed( const KeyEvent &arg ) {
+ZazenOIS::keyPressed( const KeyEvent &arg )
+{
+	pressedKeys.push_back( arg.key );
+	/*
 	std::cout << " KeyPressed {" << arg.key
 		<< ", " << ((Keyboard*)(arg.device))->getAsString(arg.key)
 		<< "} || Character (" << (char)arg.text << ")" << std::endl;
+		*/
 	return true;
 }
 
 bool
-ZazenOIS::keyReleased( const KeyEvent &arg ) {
-	if( arg.key == KC_ESCAPE || arg.key == KC_Q ) {
+ZazenOIS::keyReleased( const KeyEvent &arg )
+{
+	if( arg.key == KC_ESCAPE )
+	{
 		this->m_core->stop();
-	} else if (  arg.key == KC_F1 ) {
-		// TODO remove dependency here for future
-		// TODO do not do a direct call but send an event!
-		this->m_core->getGraphics()->toggleFullscreen();
 	}
-
-	std::cout << "KeyReleased {" << ((Keyboard*)(arg.device))->getAsString(arg.key) << "}\n";
+	else if (  arg.key == KC_F1 )
+	{
+		this->m_core->getEventManager().postEvent( Event( "TOGGLE_FULLSCREEN" ) );
+	}
+	else
+	{
+		pressedKeys.remove( arg.key );
+	}
+	
+	//std::cout << "KeyReleased {" << ((Keyboard*)(arg.device))->getAsString(arg.key) << "}\n";
+	
 	return true;
 }
 
 bool
-ZazenOIS::mouseMoved( const MouseEvent &arg ) {
+ZazenOIS::mouseMoved( const MouseEvent &arg )
+{
+	/*
 	const OIS::MouseState& s = arg.state;
 	std::cout << "\nMouseMoved: Abs("
 				<< s.X.abs << ", " << s.Y.abs << ", " << s.Z.abs << ") Rel("
 				<< s.X.rel << ", " << s.Y.rel << ", " << s.Z.rel << ")";
+				*/
+	const OIS::MouseState& s = arg.state;
+
+	Event e( "MOUSE_MOVE" );
+	e.addValue( "x", s.X.rel );
+	e.addValue( "y", s.Y.rel );
+
+	this->m_core->getEventManager().postEvent( e );
+
 	return true;
 }
 
 bool
-ZazenOIS::mousePressed( const MouseEvent &arg, MouseButtonID id ) {
+ZazenOIS::mousePressed( const MouseEvent &arg, MouseButtonID id )
+{
+	/*
 	const OIS::MouseState& s = arg.state;
 	std::cout << "\nMouse button #" << id << " pressed. Abs("
 				<< s.X.abs << ", " << s.Y.abs << ", " << s.Z.abs << ") Rel("
 				<< s.X.rel << ", " << s.Y.rel << ", " << s.Z.rel << ")";
+				*/
 	return true;
 }
 
 bool
-ZazenOIS::mouseReleased( const MouseEvent &arg, MouseButtonID id ) {
+ZazenOIS::mouseReleased( const MouseEvent &arg, MouseButtonID id )
+{
+	/*
 	const OIS::MouseState& s = arg.state;
 	std::cout << "\nMouse button #" << id << " released. Abs("
 				<< s.X.abs << ", " << s.Y.abs << ", " << s.Z.abs << ") Rel("
 				<< s.X.rel << ", " << s.Y.rel << ", " << s.Z.rel << ")";
+				*/
 	return true;
 }
 
 bool
-ZazenOIS::buttonPressed( const JoyStickEvent &arg, int button ) {
-	std::cout << std::endl << arg.device->vendor() << ". Button Pressed # " << button;
+ZazenOIS::buttonPressed( const JoyStickEvent &arg, int button )
+{
+	//std::cout << std::endl << arg.device->vendor() << ". Button Pressed # " << button;
 	return true;
 }
 
 bool
-ZazenOIS::buttonReleased( const JoyStickEvent &arg, int button ) {
-	std::cout << std::endl << arg.device->vendor() << ". Button Released # " << button;
+ZazenOIS::buttonReleased( const JoyStickEvent &arg, int button )
+{
+	//std::cout << std::endl << arg.device->vendor() << ". Button Released # " << button;
 	return true;
 }
 
@@ -194,14 +260,16 @@ bool
 ZazenOIS::axisMoved( const JoyStickEvent &arg, int axis )
 {
 	//Provide a little dead zone
-	if( arg.state.mAxes[axis].abs > 2500 || arg.state.mAxes[axis].abs < -2500 )
-		std::cout << std::endl << arg.device->vendor() << ". Axis # " << axis << " Value: " << arg.state.mAxes[axis].abs;
+	/*if( arg.state.mAxes[axis].abs > 2500 || arg.state.mAxes[axis].abs < -2500 )
+		std::cout << std::endl << arg.device->vendor() << ". Axis # " << axis << " Value: " << arg.state.mAxes[axis].abs
+		*/
 	return true;
 }
 
 bool
 ZazenOIS::povMoved( const JoyStickEvent &arg, int pov )
 {
+	/*
 	std::cout << std::endl << arg.device->vendor() << ". POV" << pov << " ";
 
 	if( arg.state.mPOV[pov].direction & Pov::North ) //Going up
@@ -216,12 +284,14 @@ ZazenOIS::povMoved( const JoyStickEvent &arg, int pov )
 
 	if( arg.state.mPOV[pov].direction == Pov::Centered ) //stopped/centered out
 		std::cout << "Centered";
+		*/
 	return true;
 }
 
 bool
 ZazenOIS::vector3Moved( const JoyStickEvent &arg, int index)
 {
+	/*
 	std::cout.precision(2);
 	std::cout.flags(std::ios::fixed | std::ios::right);
 	std::cout << std::endl << arg.device->vendor() << ". Orientation # " << index 
@@ -230,14 +300,14 @@ ZazenOIS::vector3Moved( const JoyStickEvent &arg, int index)
 		<< " Z Value: " << arg.state.mVectors[index].z;
 	std::cout.precision();
 	std::cout.flags();
+	*/
 	return true;
 }
-
 
 void
 ZazenOIS::handleNonBufferedKeys()
 {
-	if( m_keyBoard->isKeyDown( KC_ESCAPE ) || m_keyBoard->isKeyDown( KC_Q ) )
+	if( m_keyBoard->isKeyDown( KC_ESCAPE ) )
 	{
 		this->m_core->stop();
 	}
@@ -253,21 +323,24 @@ ZazenOIS::handleNonBufferedKeys()
 void
 ZazenOIS::handleNonBufferedMouse()
 {
+	/*
 	//Just dump the current mouse state
 	const MouseState &ms = m_mouse->getMouseState();
 	std::cout << "\nMouse: Abs(" << ms.X.abs << " " << ms.Y.abs << " " << ms.Z.abs
 		<< ") B: " << ms.buttons << " Rel(" << ms.X.rel << " " << ms.Y.rel << " " << ms.Z.rel << ")";
+		*/
 }
 
 void
 ZazenOIS::handleNonBufferedJoy( JoyStick* js )
 {
+	/*
 	//Just dump the current joy state
 	const JoyStickState &joy = js->getJoyStickState();
 	for( unsigned int i = 0; i < joy.mAxes.size(); ++i )
 		std::cout << "\nAxis " << i << " X: " << joy.mAxes[i].abs;
+		*/
 }
-
 
 bool
 ZazenOIS::initOIS( TiXmlElement* element )
