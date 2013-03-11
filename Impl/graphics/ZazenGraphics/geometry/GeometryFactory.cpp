@@ -11,7 +11,6 @@
 #include "GeomMesh.h"
 
 #include <assimp/cimport.h>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include <iostream>
@@ -106,21 +105,99 @@ GeometryFactory::loadFolder( const filesystem::path& folderPath )
 GeomType*
 GeometryFactory::loadFile( const filesystem::path& filePath )
 {
-	GeomType* geom = 0;
+	GeomType* geomRoot = 0;
+	glm::vec3 geomGroupBBmin;
+	glm::vec3 geomGroupBBmax;
 
 	cout << "LOADING ... " << filePath << endl;
 
-	/*const struct aiScene* scene = aiImportFile( filePath.filename().generic_string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality );
+	const std::string& fileName = filePath.generic_string();
+
+	const struct aiScene* scene = aiImportFile( fileName.c_str(), aiProcessPreset_TargetRealtime_MaxQuality );
 	if ( NULL == scene )
 	{
 		return 0;
 	}
+	
+	geomRoot = new GeomType();
+	geomRoot->name = fileName;
 
+	const struct aiNode* rootNode = scene->mRootNode;
+
+	GeometryFactory::processNodeChildren( geomRoot, rootNode, scene );
+	
 	aiReleaseImport( scene );
-
-	*/
 
 	cout << "LOADED ... " << filePath << endl;
     
-    return geom;
+    return geomRoot;
+}
+
+void
+GeometryFactory::processNodeChildren( GeomType* geomParent, const struct aiNode* node, const struct aiScene* scene )
+{
+	for ( unsigned int i = 0; i < node->mNumChildren; i++ )
+	{
+		GeomType* geomChildNode = GeometryFactory::processNode( node->mChildren[ i ], scene );
+		if ( NULL != geomChildNode )
+		{
+			geomParent->children.push_back( geomChildNode );
+		}
+	}
+}
+
+GeomType*
+GeometryFactory::processNode( const struct aiNode* node, const struct aiScene* scene )
+{
+	GeomType* geomParent = new GeomType();
+
+	for ( unsigned int i = 0; i < node->mNumMeshes; ++i )
+	{
+		const struct aiMesh* mesh = scene->mMeshes[ node->mMeshes[ i ] ];
+
+		GeomType* geomMesh = GeometryFactory::processMesh( mesh );
+		geomParent->children.push_back( geomMesh );
+	}
+
+	GeometryFactory::processNodeChildren( geomParent, node, scene );
+
+	return geomParent;
+}
+
+GeomType*
+GeometryFactory::processMesh( const struct aiMesh* mesh )
+{
+	// TODO take transformation of nodes into account
+
+	// indexbuffer for faces
+	GLuint* indexBuffer = new GLuint[ mesh->mNumFaces * 3 ];
+	memset( indexBuffer, 0, mesh->mNumFaces * 3 * sizeof( GLuint ) );
+
+	// allocate vertexdata
+	GeomMesh::VertexData* vertexData = new GeomMesh::VertexData[ mesh->mNumVertices ];
+	memset( vertexData, 0, mesh->mNumVertices * sizeof( GeomMesh::VertexData ) );
+		
+	glm::vec3 meshBBmin;
+	glm::vec3 meshBBmax;
+
+	// TODO calculate bounding-box
+
+	for ( unsigned int j = 0; j < mesh->mNumFaces; ++j ) {
+		const struct aiFace* face = &mesh->mFaces[ j ];
+	
+		for( unsigned int k = 0; k < face->mNumIndices; k++ ) {
+			int index = face->mIndices[ k ];
+
+			indexBuffer[ j * 3 + k ] = index;
+
+			memcpy( vertexData[ index ].position, &mesh->mVertices[ index ].x, sizeof( GeomMesh::Vertex ) );
+			memcpy( vertexData[ index ].normal, &mesh->mNormals[ index ].x, sizeof( GeomMesh::Normal ) );
+		}
+	}
+
+	GeomMesh* geomMesh = new GeomMesh( mesh->mNumFaces, mesh->mNumVertices, vertexData, indexBuffer );
+	geomMesh->setBB( meshBBmin, meshBBmax );
+	geomMesh->name = mesh->mName.C_Str();
+
+	return geomMesh;
 }

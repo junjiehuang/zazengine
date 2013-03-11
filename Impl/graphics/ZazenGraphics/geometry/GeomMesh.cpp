@@ -7,7 +7,7 @@ using namespace std;
 #define BUFFER_OFFSET( i ) ( ( char* ) NULL + ( i ) )
 
 GeomMesh::GeomMesh( int faceCount, int vertexCount, VertexData* data, GLuint* indices )
-	: faceCount(faceCount),
+	: faceCount( faceCount ),
 	  vertexCount( vertexCount )
 {
 	this->dataVBO = 0;

@@ -84,8 +84,6 @@ ZazenOIS::pause()
 bool
 ZazenOIS::process( double factor )
 {
-	// TODO implement using OIS
-
 	if( m_keyBoard )
 	{
 		m_keyBoard->capture();
@@ -128,7 +126,6 @@ ZazenOIS::sendEvent( Event& e )
 ZazenOISEntity*
 ZazenOIS::createEntity( TiXmlElement* cfgNode, IGameObject* parent )
 {
-	// TODO implement when necessary
 	return 0;
 }
 
@@ -146,6 +143,7 @@ ZazenOIS::keyReleased( const KeyEvent &arg ) {
 		this->m_core->stop();
 	} else if (  arg.key == KC_F1 ) {
 		// TODO remove dependency here for future
+		// TODO do not do a direct call but send an event!
 		this->m_core->getGraphics()->toggleFullscreen();
 	}
 

@@ -409,6 +409,11 @@ ZazenGraphics::toggleFullscreen()
 		return false;
 	}
 
+	/* TODO fix it, not yet working
+	this->m_renderer->shutdown();
+	this->m_renderer->initialize();
+	*/
+
 	return true;
 }
 
@@ -589,9 +594,10 @@ GLvoid ReSizeGLScene(GLsizei width, GLsizei height)		// Resize And Initialize Th
 		height=1;										// Making Height Equal One
 	}
 
-	// TODO call viewer
-
 	glViewport(0,0,width,height);						// Reset The Current Viewport
+
+	// TODO resize viewer
+	// TODO reinit renderer
 }
 
 GLvoid KillGLWindow(GLvoid)								// Properly Kill The Window

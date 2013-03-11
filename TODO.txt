@@ -1,8 +1,6 @@
 !!! FROM NOW ON: always compileable & runnable when checked in !!!
 
 Basic Functionality
-- fix problem with assetimporter
-- transform data from assetimporter to geomtype
 - make physics processing async
 
 Code-Quality

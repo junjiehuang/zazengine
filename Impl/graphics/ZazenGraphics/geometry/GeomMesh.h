@@ -8,8 +8,8 @@
 class GeomMesh : public GeomType
 {
  public:
-	typedef float Vertex [3];
-	typedef float Normal [3];
+	typedef float Vertex [ 3 ];
+	typedef float Normal [ 3 ];
 
 	struct VertexData
 	{

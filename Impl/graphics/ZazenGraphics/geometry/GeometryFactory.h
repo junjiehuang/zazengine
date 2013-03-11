@@ -12,6 +12,8 @@
 
 #include "GeomType.h"
 
+#include <assimp/scene.h>
+
 #include <boost/filesystem.hpp>
 
 #include <map>
@@ -31,6 +33,10 @@ class GeometryFactory
 		 static GeomType* loadFile( const boost::filesystem::path& );
 
 		 static std::map<std::string, GeomType*> meshes;
+
+		 static void processNodeChildren( GeomType* geomParent, const struct aiNode*, const struct aiScene* );
+		 static GeomType* processNode( const struct aiNode*, const struct aiScene* );		 
+		 static GeomType* processMesh( const struct aiMesh* );
 };
 
 #endif
