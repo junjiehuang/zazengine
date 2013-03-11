@@ -38,6 +38,7 @@ class Program
 	bool link();
 
 	bool use();
+	static bool unuse();
 
  private:
 	Program( GLuint programObject, const std::string& programName );

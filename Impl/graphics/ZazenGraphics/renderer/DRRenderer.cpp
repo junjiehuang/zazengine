@@ -167,18 +167,7 @@ DRRenderer::shutdown()
 {
 	cout << "Shutting down Deferred Renderer..." << endl;
 
-	// cleaning up uniform blocks
-	if ( this->m_transformsBlock )
-		delete this->m_transformsBlock;
-
-	if ( this->m_lightBlock )
-		delete this->m_lightBlock;
-
-	if ( this->m_materialBlock )
-		delete this->m_materialBlock;
-
-	if ( this->m_shadowMappingFB )
-		glDeleteFramebuffers( 1, &this->m_shadowMappingFB );
+	Program::unuse();
 
 	// cleaning up shadow mapping
 	if ( this->m_progShadowMapping )
@@ -225,16 +214,16 @@ DRRenderer::shutdown()
 		delete this->m_progLightingStage;
 		this->m_progLightingStage = NULL;
 	}
-
+	
 	// cleaning up geometry-stage
 	if ( this->m_progGeomStage )
 	{
-		if ( this->m_vertLightingStage )
+		if ( this->m_vertGeomStage )
 		{
-			this->m_progGeomStage->detachShader( this->m_vertLightingStage );
+			this->m_progGeomStage->detachShader( this->m_vertGeomStage );
 
-			delete this->m_vertLightingStage;
-			this->m_vertLightingStage = NULL;
+			delete this->m_vertGeomStage;
+			this->m_vertGeomStage = NULL;
 		}
 
 		if ( this->m_fragGeomStage )
@@ -249,11 +238,29 @@ DRRenderer::shutdown()
 		this->m_progGeomStage = NULL;
 	}
 
-	// cleaning up framebuffer
-	if ( this->m_fbo )
+	// cleaning up uniform blocks
+	if ( this->m_transformsBlock )
 	{
-		glDeleteFramebuffers( 1, &this->m_fbo );
-		this->m_fbo = 0;
+		delete this->m_transformsBlock;
+		this->m_transformsBlock = NULL;
+	}
+
+	if ( this->m_lightBlock )
+	{
+		delete this->m_lightBlock;
+		this->m_lightBlock = NULL;
+	}
+
+	if ( this->m_materialBlock )
+	{
+		delete this->m_materialBlock;
+		this->m_materialBlock = NULL;
+	}
+
+	if ( this->m_shadowMappingFB )
+	{
+		glDeleteFramebuffers( 1, &this->m_shadowMappingFB );
+		this->m_shadowMappingFB = 0;
 	}
 
 	if ( this->m_geometryDepth )
@@ -272,6 +279,13 @@ DRRenderer::shutdown()
 		}
 	}
 
+	// cleaning up framebuffer
+	if ( this->m_fbo )
+	{
+		glDeleteFramebuffers( 1, &this->m_fbo );
+		this->m_fbo = 0;
+	}
+
 	cout << "Shutting down Deferred Renderer finished" << endl;
 
 	return true;
@@ -286,7 +300,7 @@ DRRenderer::initFBO()
 	glGenFramebuffers( 1, &this->m_fbo );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
-		cout << "ERROR in DRRenderer::initFBO: glGenFramebuffersEXT failed with " << gluErrorString( status ) << " - exit" << endl;
+		cout << "ERROR in DRRenderer::initFBO: glGenFramebuffers failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
 

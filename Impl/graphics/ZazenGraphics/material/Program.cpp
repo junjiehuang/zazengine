@@ -213,6 +213,21 @@ Program::use()
 }
 
 bool
+Program::unuse()
+{
+	GLint status;
+
+	glUseProgram( 0 );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR ... in Program::unuse: glUseProgram( 0 ) failed: " << gluErrorString( status )  << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool
 Program::setUniform4( const std::string& name, const float* value )
 {
 	GLint status;

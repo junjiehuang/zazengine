@@ -451,10 +451,9 @@ ZazenGraphics::toggleFullscreen()
 		return false;
 	}
 
-	/* TODO fix it, not yet working
+	/* TODO fix it, not yet working */
 	this->m_renderer->shutdown();
 	this->m_renderer->initialize();
-	*/
 
 	return true;
 }
