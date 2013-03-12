@@ -1,10 +1,12 @@
 !!! FROM NOW ON: always compileable & runnable when checked in !!!
 
-For Qualcomm presentation
-- sphere is bouncing
-- generate spheres dropping above the floor
-- when sphere hits the floor: audio-output
-- deferred renderer combined: F12 toggles between MRTs and combined deferred rendering
+For Qualcomm presentation (implementation deadline saturday)
+- physics: sphere is bouncing
+
+- custom game-objects: generate spheres dropping above the floor
+- custom game-objects: when sphere hits the floor: audio-output
+
+- graphics: deferred renderer combined: F12 toggles between MRTs and combined deferred rendering
 - bonus: toggle fullscreen
 
 Advanced
