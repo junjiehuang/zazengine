@@ -1,10 +1,11 @@
 !!! FROM NOW ON: always compileable & runnable when checked in !!!
 
-Basic Functionality
-- for qualcomm: sphere is bouncing
-- for qualcomm: toggle fullscreen
-- for qualcomm: deferred renderer combined?
-- for qualcomm: some noise
+For Qualcomm presentation
+- sphere is bouncing
+- generate spheres dropping above the floor
+- when sphere hits the floor: audio-output
+- deferred renderer combined: F12 toggles between MRTs and combined deferred rendering
+- bonus: toggle fullscreen
 
 Advanced
 - make physics processing async
