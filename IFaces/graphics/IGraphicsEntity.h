@@ -18,8 +18,6 @@ class IGraphicsEntity : public ISubSystemEntity
 
 		virtual void setOrientation( const float* pos, const float* rot) = 0;
 		
-		virtual void doAnimation() = 0;
-		virtual bool isAnimated() = 0;
 		virtual void setAnimation( float heading, float roll, float pitch ) = 0;
 };
 

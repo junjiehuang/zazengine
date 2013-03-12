@@ -2,9 +2,11 @@
 
 Basic Functionality
 - for qualcomm: sphere is bouncing
-- for qualcomm: some noise
 - for qualcomm: toggle fullscreen
 - for qualcomm: deferred renderer combined?
+- for qualcomm: some noise
+
+Advanced
 - make physics processing async
 
 Code-Quality

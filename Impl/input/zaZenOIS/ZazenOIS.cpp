@@ -107,42 +107,6 @@ ZazenOIS::process( double factor )
 				handleNonBufferedJoy( m_joys[i] );
 		}
 	}
-
-	list<int>::iterator pressedKeysIter = pressedKeys.begin();
-	while ( pressedKeysIter != pressedKeys.end() )
-	{
-		int key = *pressedKeysIter++;
-		
-		switch( key )
-		{
-			case KC_Q:
-				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_Q" ) );
-				break;
-
-			case KC_E:
-				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_E" ) );
-				break;
-
-			case KC_W:
-				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_W" ) );
-				break;
-				
-			case KC_S:
-				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_S" ) );
-				break;
-				
-			case KC_A:
-				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_A" ) );
-				break;
-				
-			case KC_D:
-				this->m_core->getEventManager().postEvent( Event( "KEY_PRE_D" ) );
-				break;
-
-			default:
-				break;
-		}
-	}
 	
 	return true;
 }
@@ -168,7 +132,11 @@ ZazenOIS::createEntity( TiXmlElement* cfgNode, IGameObject* parent )
 bool
 ZazenOIS::keyPressed( const KeyEvent &arg )
 {
-	pressedKeys.push_back( arg.key );
+	Event e( "KEY_PRESSED" );
+	e.addValue( "key", ( int ) arg.key );
+
+	this->m_core->getEventManager().postEvent( e );
+
 	/*
 	std::cout << " KeyPressed {" << arg.key
 		<< ", " << ((Keyboard*)(arg.device))->getAsString(arg.key)
@@ -190,7 +158,10 @@ ZazenOIS::keyReleased( const KeyEvent &arg )
 	}
 	else
 	{
-		pressedKeys.remove( arg.key );
+		Event e( "KEY_RELEASED" );
+		e.addValue( "key", ( int ) arg.key );
+
+		this->m_core->getEventManager().postEvent( e );
 	}
 	
 	//std::cout << "KeyReleased {" << ((Keyboard*)(arg.device))->getAsString(arg.key) << "}\n";
@@ -209,7 +180,7 @@ ZazenOIS::mouseMoved( const MouseEvent &arg )
 				*/
 	const OIS::MouseState& s = arg.state;
 
-	Event e( "MOUSE_MOVE" );
+	Event e( "MOUSE_MOVED" );
 	e.addValue( "x", s.X.rel );
 	e.addValue( "y", s.Y.rel );
 

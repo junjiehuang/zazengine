@@ -24,14 +24,14 @@ class ZazenGraphicsEntity : public IGraphicsEntity
 		virtual void setOrientation( const float* pos, const float* rot );
 		virtual void setAnimation( float heading, float roll, float pitch );
 
-		virtual void doAnimation();
-
-		virtual bool isAnimated() { return m_isAnimated; };
+		virtual void update();
 
 		virtual bool sendEvent( Event& e );
 
 	private:
 		std::string m_type;
+
+		std::list<int> m_keyDown;
 
 		bool m_isAnimated;
 		float m_animRoll;

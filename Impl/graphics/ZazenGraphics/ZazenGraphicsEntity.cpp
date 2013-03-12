@@ -32,21 +32,60 @@ ZazenGraphicsEntity::~ZazenGraphicsEntity()
 }
 
 void
-ZazenGraphicsEntity::doAnimation()
+ZazenGraphicsEntity::update()
 {
-	if ( 0.0f != this->m_heading )
+	if ( this->m_isAnimated )
 	{
-		this->m_orientation->changeHeading( this->m_heading * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		if ( 0.0f != this->m_heading )
+		{
+			this->m_orientation->changeHeading( this->m_heading * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		}
+
+		if ( 0.0f != this->m_animRoll )
+		{
+			this->m_orientation->changeRoll( this->m_animRoll * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		}
+	
+		if ( 0.0f != this->m_animPitch )
+		{
+			this->m_orientation->changePitch( this->m_animPitch * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		}
 	}
 
-	if ( 0.0f != this->m_animRoll )
+	list<int>::iterator pressedKeysIter = this->m_keyDown.begin();
+	while ( pressedKeysIter != this->m_keyDown.end() )
 	{
-		this->m_orientation->changeRoll( this->m_animRoll * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-	}
-	
-	if ( 0.0f != this->m_animPitch )
-	{
-		this->m_orientation->changePitch( this->m_animPitch * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		int keyCode = *pressedKeysIter++;
+		
+		switch( keyCode )
+		{
+			case 16: // Q
+				this->m_orientation->changeRoll( 50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+				break;
+
+			case 18: // E
+				this->m_orientation->changeRoll( -50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+				break;
+
+			case 17: // W
+				this->m_orientation->strafeForward( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+				break;
+				
+			case 31: // S
+				this->m_orientation->strafeForward( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+				break;
+				
+			case 30: // A
+				this->m_orientation->strafeRight( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+				break;
+				
+			case 32: // D
+				this->m_orientation->strafeRight( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+				break;
+
+			default:
+				break;
+		}
 	}
 }
 
@@ -63,31 +102,19 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 
 		return true;
 	}
-	else if ( e == "KEY_PRE_Q" )
+	else if ( e == "KEY_PRESSED" )
 	{
-		this->m_orientation->changeRoll( 50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		int keyCode = any_cast<int>( e.getValue( "key" ) );
+
+		this->m_keyDown.push_back( keyCode );
 	}
-	else if ( e == "KEY_PRE_E" )
+	else if ( e == "KEY_RELEASED" )
 	{
-		this->m_orientation->changeRoll( -50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		int keyCode = any_cast<int>( e.getValue( "key" ) );
+
+		this->m_keyDown.remove( keyCode );
 	}
-	else if ( e == "KEY_PRE_W" )
-	{
-		this->m_orientation->strafeForward( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-	}
-	else if ( e == "KEY_PRE_S" )
-	{
-		this->m_orientation->strafeForward( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-	}
-	else if ( e == "KEY_PRE_A" )
-	{
-		this->m_orientation->strafeRight( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-	}
-	else if ( e == "KEY_PRE_D" )
-	{
-		this->m_orientation->strafeRight( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-	}
-	else if ( e == "MOUSE_MOVE" )
+	else if ( e == "MOUSE_MOVED" )
 	{
 		int x = any_cast<int>( e.getValue( "x" ) );
 		int y = any_cast<int>( e.getValue( "y" ) );

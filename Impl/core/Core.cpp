@@ -356,13 +356,9 @@ Core::loadConfig( const std::string& configPath )
 		IGameObject* inputTarget = getObjectByName( target );
 		if ( inputTarget )
 		{
-			this->m_eventManager->registerForEvent( "KEY_PRE_Q", inputTarget );
-			this->m_eventManager->registerForEvent( "KEY_PRE_E", inputTarget );
-			this->m_eventManager->registerForEvent( "KEY_PRE_W", inputTarget );
-			this->m_eventManager->registerForEvent( "KEY_PRE_S", inputTarget );
-			this->m_eventManager->registerForEvent( "KEY_PRE_A", inputTarget );
-			this->m_eventManager->registerForEvent( "KEY_PRE_D", inputTarget );
-			this->m_eventManager->registerForEvent( "MOUSE_MOVE", inputTarget );
+			this->m_eventManager->registerForEvent( "KEY_PRESSED", inputTarget );
+			this->m_eventManager->registerForEvent( "KEY_RELEASED", inputTarget );
+			this->m_eventManager->registerForEvent( "MOUSE_MOVED", inputTarget );
 		}
 	}
 

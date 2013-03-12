@@ -158,12 +158,7 @@ ZazenGraphics::process( double iterationFactor )
 	while ( iter != this->m_entities.end() )
 	{
 		ZazenGraphicsEntity* entity = *iter++;
-	
-		if ( entity->isAnimated() )
-		{
-			entity->doAnimation();
-		}
-
+		entity->update();
 		entity->queuedEvents.clear();
 	}
 

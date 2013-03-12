@@ -60,8 +60,6 @@ class ZazenOIS : public IInput, public OIS::KeyListener, public OIS::MouseListen
 	private:
 		std::string id;
 		std::string type;
-	
-		std::list<int> pressedKeys;
 
 		ICore* m_core;
 
