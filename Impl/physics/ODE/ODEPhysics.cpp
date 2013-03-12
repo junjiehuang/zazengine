@@ -38,15 +38,41 @@ ODEPhysics::~ODEPhysics()
 }
 
 bool
-ODEPhysics::initialize( TiXmlElement* )
+ODEPhysics::initialize( TiXmlElement* configElem )
 {
 	cout << endl << "=============== ODEPhysics initializing... ===============" << endl;
+
+	float gravX = 0.0f;
+	float gravY = -9.8f;
+	float gravZ = 0.0f;
+
+	TiXmlElement* gravityNode = configElem->FirstChildElement( "gravity" );
+	if ( 0 != gravityNode )
+	{
+		const char* str = gravityNode->Attribute( "x" );
+		if ( 0 != str)
+		{
+			gravX = ( float ) atof( str );
+		}
+
+		str = gravityNode->Attribute( "y" );
+		if ( 0 != str)
+		{
+			gravY = ( float ) atof( str );
+		}
+
+		str = gravityNode->Attribute( "z" );
+		if ( 0 != str)
+		{
+			gravZ = ( float ) atof( str );
+		}
+	}
 
 	dInitODE();
 
 	this->worldID = dWorldCreate();
 	this->spaceID = dHashSpaceCreate( 0 );
-	dWorldSetGravity( this->worldID, 0.0f, -9.8f, 0.0f );
+	dWorldSetGravity( this->worldID, gravX, gravY, gravZ );
 	dWorldSetCFM( this->worldID, 1e-5f );
 	this->contactGroupID = dJointGroupCreate( 0 );
 
@@ -77,8 +103,8 @@ ODEPhysics::shutdown()
 		delete entity;
 	}
 
-	dWorldDestroy(this->worldID);
-	dSpaceDestroy(this->spaceID);
+	dWorldDestroy( this->worldID );
+	dSpaceDestroy( this->spaceID );
 	dCloseODE();
 
 	cout << "================ ODEPhysics shutdown =================" << endl;
@@ -151,8 +177,6 @@ ODEPhysics::generateEvents()
 
 		if ( false == entity->isStatic() )
 		{
-			//cout << "enqueued setOrientation in ODEPhysics targeted at GO '" << entity->getParent()->getName() << endl;
-
 			const float* pos = entity->getPos();
 			const float* rot = entity->getRot();
 			const float* vel = entity->getVel();
@@ -164,8 +188,7 @@ ODEPhysics::generateEvents()
 			e.addValue( "rot", boost::any( rot ) );
 			e.addValue( "vel", boost::any( vel ) );
 
-			// TODO
-			// this->core->getEventManager().postEvent( e );
+			this->core->getEventManager().postEvent( e );
 		}
 	}
 }
@@ -391,11 +414,10 @@ ODEPhysics::collisionCallback( void* data, dGeomID o1, dGeomID o2 )
     dBodyID b2 = dGeomGetBody( o2 );
 
 	// ignore bodyless geometry (e.g. static)
-	/*if ( !( b1 || b2 ) )
+	if ( !( b1 || b2 ) )
 	{
 		return;
 	}
-	*/
 
 	dContact contacts [ MAX_CONTACTS ];
 	for ( int i = 0; i < MAX_CONTACTS; i++ )
