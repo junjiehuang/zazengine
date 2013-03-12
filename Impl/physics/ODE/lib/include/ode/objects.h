@@ -119,57 +119,213 @@ ODE_API dReal dWorldGetCFM (dWorldID);
 
 
 /**
+ * @brief Set the world to use shared working memory along with another world.
+ *
+ * The worlds allocate working memory internally for simulation stepping. This
+ * memory is cached among the calls to @c dWordStep and @c dWorldQuickStep. 
+ * Similarly, several worlds can be set up to share this memory caches thus 
+ * reducing overall memory usage by cost of making worlds inappropriate for 
+ * simultaneous simulation in multiple threads.
+ *
+ * If null value is passed for @a from_world parameter the world is detached from 
+ * sharing and returns to defaults for working memory, reservation policy and 
+ * memory manager as if just created. This can also be used to enable use of shared 
+ * memory for a world that has already had working memory allocated privately.
+ * Normally using shared memory after a world has its private working memory allocated
+ * is prohibited.
+ *
+ * Allocation policy used can only increase world's internal reserved memory size
+ * and never decreases it. @c dWorldCleanupWorkingMemory can be used to release 
+ * working memory for a world in case if number of objects/joint decreases 
+ * significantly in it.
+ *
+ * With sharing working memory worlds also automatically share memory reservation 
+ * policy and memory manager. Thus, these parameters need to be customized for
+ * initial world to be used as sharing source only.
+ *
+ * Failure result status means a memory allocation failure.
+ *
+ * @param w The world to use the shared memory with.
+ * @param from_world Null or the world the shared memory is to be used from.
+ * @returns 1 for success and 0 for failure.
+ *
+ * @ingroup world
+ * @see dWorldCleanupWorkingMemory
+ * @see dWorldSetStepMemoryReservationPolicy
+ * @see dWorldSetStepMemoryManager
+ */
+ODE_API int dWorldUseSharedWorkingMemory(dWorldID w, dWorldID from_world/*=NULL*/);
+
+/**
+ * @brief Release internal working memory allocated for world
+ *
+ * The worlds allocate working memory internally for simulation stepping. This 
+ * function can be used to free world's internal memory cache in case if number of
+ * objects/joints in the world decreases significantly. By default, internal 
+ * allocation policy is used to only increase cache size as necessary and never 
+ * decrease it.
+ *
+ * If a world shares its working memory with other worlds the cache deletion 
+ * affects all the linked worlds. However the shared status itself remains intact.
+ *
+ * The function call does affect neither memory reservation policy nor memory manager.
+ *
+ * @param w The world to release working memory for.
+ *
+ * @ingroup world
+ * @see dWorldUseSharedWorkingMemory
+ * @see dWorldSetStepMemoryReservationPolicy
+ * @see dWorldSetStepMemoryManager
+ */
+ODE_API void dWorldCleanupWorkingMemory(dWorldID w);
+
+#define dWORLDSTEP_RESERVEFACTOR_DEFAULT    1.2f
+#define dWORLDSTEP_RESERVESIZE_DEFAULT      65536U
+
+/**
+ * @struct dWorldStepReserveInfo
+ * @brief Memory reservation policy descriptor structure for world stepping functions.
+ *
+ * @c struct_size should be assigned the size of the structure.
+ *
+ * @c reserve_factor is a quotient that is multiplied by required memory size
+ *  to allocate extra reserve whenever reallocation is needed.
+ *
+ * @c reserve_minimum is a minimum size that is checked against whenever reallocation 
+ * is needed to allocate expected working memory minimum at once without extra 
+ * reallocations as number of bodies/joints grows.
+ *
+ * @ingroup world
+ * @see dWorldSetStepMemoryReservationPolicy
+ */
+typedef struct
+{
+  unsigned struct_size;
+  float reserve_factor; // Use float as precision does not matter here
+  unsigned reserve_minimum;
+
+} dWorldStepReserveInfo;
+
+/**
+ * @brief Set memory reservation policy for world to be used with simulation stepping functions
+ *
+ * The function allows to customize reservation policy to be used for internal
+ * memory which is allocated to aid simulation for a world. By default, values
+ * of @c dWORLDSTEP_RESERVEFACTOR_DEFAULT and @c dWORLDSTEP_RESERVESIZE_DEFAULT
+ * are used.
+ *
+ * Passing @a policyinfo argument as NULL results in reservation policy being
+ * reset to defaults as if the world has been just created. The content of 
+ * @a policyinfo structure is copied internally and does not need to remain valid
+ * after the call returns.
+ *
+ * If the world uses working memory sharing, changing memory reservation policy
+ * affects all the worlds linked together.
+ *
+ * Failure result status means a memory allocation failure.
+ *
+ * @param w The world to change memory reservation policy for.
+ * @param policyinfo Null or a pointer to policy descriptor structure.
+ * @returns 1 for success and 0 for failure.
+ *
+ * @ingroup world
+ * @see dWorldUseSharedWorkingMemory
+ */
+ODE_API int dWorldSetStepMemoryReservationPolicy(dWorldID w, const dWorldStepReserveInfo *policyinfo/*=NULL*/);
+
+/**
+* @struct dWorldStepMemoryFunctionsInfo
+* @brief World stepping memory manager descriptor structure
+*
+* This structure is intended to define the functions of memory manager to be used
+* with world stepping functions.
+*
+* @c struct_size should be assigned the size of the structure
+*
+* @c alloc_block is a function to allocate memory block of given size.
+*
+* @c shrink_block is a function to shrink existing memory block to a smaller size.
+* It must preserve the contents of block head while shrinking. The new block size
+* is guaranteed to be always less than the existing one.
+*
+* @c free_block is a function to delete existing memory block.
+*
+* @ingroup init
+* @see dWorldSetStepMemoryManager
+*/
+typedef struct 
+{
+  unsigned struct_size;
+  void *(*alloc_block)(size_t block_size);
+  void *(*shrink_block)(void *block_pointer, size_t block_current_size, size_t block_smaller_size);
+  void (*free_block)(void *block_pointer, size_t block_current_size);
+
+} dWorldStepMemoryFunctionsInfo;
+
+/**
+* @brief Set memory manager for world to be used with simulation stepping functions
+*
+* The function allows to customize memory manager to be used for internal
+* memory allocation during simulation for a world. By default, @c dAlloc/@c dRealloc/@c dFree
+* based memory manager is used.
+*
+* Passing @a memfuncs argument as NULL results in memory manager being
+* reset to default one as if the world has been just created. The content of 
+* @a memfuncs structure is copied internally and does not need to remain valid
+* after the call returns.
+*
+* If the world uses working memory sharing, changing memory manager
+* affects all the worlds linked together. 
+*
+* Failure result status means a memory allocation failure.
+*
+* @param w The world to change memory reservation policy for.
+* @param memfuncs Null or a pointer to memory manager descriptor structure.
+* @returns 1 for success and 0 for failure.
+*
+* @ingroup world
+* @see dWorldUseSharedWorkingMemory
+*/
+ODE_API int dWorldSetStepMemoryManager(dWorldID w, const dWorldStepMemoryFunctionsInfo *memfuncs);
+
+/**
  * @brief Step the world.
  *
  * This uses a "big matrix" method that takes time on the order of m^3
  * and memory on the order of m^2, where m is the total number of constraint
  * rows. For large systems this will use a lot of memory and can be very slow,
  * but this is currently the most accurate method.
- * @ingroup world
+ *
+ * Failure result status means that the memory allocation has failed for operation.
+ * In such a case all the objects remain in unchanged state and simulation can be
+ * retried as soon as more memory is available.
+ *
+ * @param w The world to be stepped
  * @param stepsize The number of seconds that the simulation has to advance.
+ * @returns 1 for success and 0 for failure
+ *
+ * @ingroup world
  */
-ODE_API void dWorldStep (dWorldID, dReal stepsize);
-
+ODE_API int dWorldStep (dWorldID w, dReal stepsize);
 
 /**
- * @brief Converts an impulse to a force.
- * @ingroup world
- * @remarks
- * If you want to apply a linear or angular impulse to a rigid body,
- * instead of a force or a torque, then you can use this function to convert
- * the desired impulse into a force/torque vector before calling the
- * BodyAdd... function.
- * The current algorithm simply scales the impulse by 1/stepsize,
- * where stepsize is the step size for the next step that will be taken.
- * This function is given a dWorldID because, in the future, the force
- * computation may depend on integrator parameters that are set as
- * properties of the world.
- */
-ODE_API void dWorldImpulseToForce
-(
-  dWorldID, dReal stepsize,
-  dReal ix, dReal iy, dReal iz, dVector3 force
-);
-
-
-/**
- * @brief Step the world.
- * @ingroup world
- * @remarks
+ * @brief Quick-step the world.
+ *
  * This uses an iterative method that takes time on the order of m*N
  * and memory on the order of m, where m is the total number of constraint
  * rows N is the number of iterations.
  * For large systems this is a lot faster than dWorldStep(),
  * but it is less accurate.
- * @remarks
+ *
  * QuickStep is great for stacks of objects especially when the
  * auto-disable feature is used as well.
  * However, it has poor accuracy for near-singular systems.
  * Near-singular systems can occur when using high-friction contacts, motors,
  * or certain articulated structures. For example, a robot with multiple legs
  * sitting on the ground may be near-singular.
- * @remarks
+ *
  * There are ways to help overcome QuickStep's inaccuracy problems:
+ *
  * \li Increase CFM.
  * \li Reduce the number of contacts in your system (e.g. use the minimum
  *     number of contacts for the feet of a robot or creature).
@@ -182,8 +338,39 @@ ODE_API void dWorldImpulseToForce
  *
  * Increasing the number of QuickStep iterations may help a little bit, but
  * it is not going to help much if your system is really near singular.
+ *
+ * Failure result status means that the memory allocation has failed for operation.
+ * In such a case all the objects remain in unchanged state and simulation can be
+ * retried as soon as more memory is available.
+ *
+ * @param w The world to be stepped
+ * @param stepsize The number of seconds that the simulation has to advance.
+ * @returns 1 for success and 0 for failure
+ *
+ * @ingroup world
  */
-ODE_API void dWorldQuickStep (dWorldID w, dReal stepsize);
+ODE_API int dWorldQuickStep (dWorldID w, dReal stepsize);
+
+
+/**
+* @brief Converts an impulse to a force.
+* @ingroup world
+* @remarks
+* If you want to apply a linear or angular impulse to a rigid body,
+* instead of a force or a torque, then you can use this function to convert
+* the desired impulse into a force/torque vector before calling the
+* BodyAdd... function.
+* The current algorithm simply scales the impulse by 1/stepsize,
+* where stepsize is the step size for the next step that will be taken.
+* This function is given a dWorldID because, in the future, the force
+* computation may depend on integrator parameters that are set as
+* properties of the world.
+*/
+ODE_API void dWorldImpulseToForce
+(
+ dWorldID, dReal stepsize,
+ dReal ix, dReal iy, dReal iz, dVector3 force
+ );
 
 
 /**
@@ -259,16 +446,6 @@ ODE_API void dWorldSetContactSurfaceLayer (dWorldID, dReal depth);
  */
 ODE_API dReal dWorldGetContactSurfaceLayer (dWorldID);
 
-/* StepFast1 functions */
-
-/**
- * @brief Step the world using the StepFast1 algorithm.
- * @param stepsize the nr of seconds to advance the simulation.
- * @param maxiterations The number of iterations to perform.
- * @ingroup world
- */
-ODE_API void dWorldStepFast1(dWorldID, dReal stepsize, int maxiterations);
-
 
 /**
  * @defgroup disable Automatic Enabling and Disabling
@@ -301,18 +478,6 @@ ODE_API void dWorldStepFast1(dWorldID, dReal stepsize, int maxiterations);
  *
  * Newly created bodies get these parameters from world.
  */
-
-/**
- * @brief Set the AutoEnableDepth parameter used by the StepFast1 algorithm.
- * @ingroup disable
- */
-ODE_API void dWorldSetAutoEnableDepthSF1(dWorldID, int autoEnableDepth);
-
-/**
- * @brief Get the AutoEnableDepth parameter used by the StepFast1 algorithm.
- * @ingroup disable
- */
-ODE_API int dWorldGetAutoEnableDepthSF1(dWorldID);
 
 /**
  * @brief Get auto disable linear threshold for newly created bodies.

@@ -6,10 +6,10 @@
 class PhysicSphere : public PhysicType
 {
 public:
-	PhysicSphere(bool, float, float);
+	PhysicSphere( bool, float, float );
 	virtual ~PhysicSphere();
 	
-	virtual bool create(dWorldID, dSpaceID);
+	virtual bool create( dWorldID, dSpaceID );
 	
  private:
 	 float radius;

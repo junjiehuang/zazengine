@@ -26,7 +26,7 @@ using namespace std;
 
 ODEPhysics::ODEPhysics( const std::string& id, ICore* core )
 	: id( id ),
-	  type("physics"),
+	  type( "physics" ),
 	  core( core )
 {
 	this->doProcessing = false;
@@ -35,7 +35,6 @@ ODEPhysics::ODEPhysics( const std::string& id, ICore* core )
 
 ODEPhysics::~ODEPhysics()
 {
-
 }
 
 bool
@@ -52,7 +51,7 @@ ODEPhysics::initialize( TiXmlElement* )
 	this->contactGroupID = dJointGroupCreate( 0 );
 
 	// TODO: init mutex & condition variable
-	this->thread = boost::thread( boost::ref( *this ) );
+	//this->thread = boost::thread( boost::ref( *this ) );
 
 	cout << "================ ODEPhysics initialized =================" << endl;
 
@@ -106,13 +105,13 @@ ODEPhysics::pause()
 }
 
 bool
-ODEPhysics::process(double factor)
+ODEPhysics::process( double factor )
 {
-	//cout << "ODEPhysics::process enter" << endl;
+	cout << "ODEPhysics::process enter" << endl;
 
 	this->doSimulation();
 
-	//cout << "ODEPhysics::process leave" << endl;
+	cout << "ODEPhysics::process leave" << endl;
 
 	return true;
 }
@@ -120,11 +119,11 @@ ODEPhysics::process(double factor)
 bool
 ODEPhysics::finalizeProcess()
 {
-	//cout << "ODEPhysics::finalizeProcess enter" << endl;
+	cout << "ODEPhysics::finalizeProcess enter" << endl;
 
 	this->generateEvents();
 
-	//cout << "ODEPhysics::finalizeProcess leave" << endl;
+	cout << "ODEPhysics::finalizeProcess leave" << endl;
 
 	return true;
 }
@@ -295,7 +294,7 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		float dx = 0;
 		float dy = 0;
 		float dz = 0;
-		float d = 0;
+		float d = 1;
 
 		str = typeNode->Attribute( "dx" );
 		if ( 0 != str )
@@ -384,32 +383,45 @@ ODEPhysics::processEvents()
 }
 
 void
-ODEPhysics::collisionCallback(void* data, dGeomID o1, dGeomID o2)
+ODEPhysics::collisionCallback( void* data, dGeomID o1, dGeomID o2 )
 {
-	ODEPhysics* instance = (ODEPhysics*) data;
+	ODEPhysics* instance = ( ODEPhysics* ) data;
 
-	dContact contacts[MAX_CONTACTS];
-	for (int i = 0; i < MAX_CONTACTS; i++) {
-		contacts[i].surface.mode = dContactBounce | dContactSoftCFM;
-		contacts[i].surface.mu = dInfinity;
-		contacts[i].surface.mu2 = 0;
-		contacts[i].surface.bounce = 0.8f;
-		contacts[i].surface.bounce_vel = 0.1f;
-		contacts[i].surface.soft_cfm = 0.01f;
+	dBodyID b1 = dGeomGetBody( o1 );
+    dBodyID b2 = dGeomGetBody( o2 );
+
+	// ignore bodyless geometry (e.g. static)
+	if ( !( b1 || b2 ) )
+	{
+		return;
+	}
+
+	dContact contacts [ MAX_CONTACTS ];
+	for ( int i = 0; i < MAX_CONTACTS; i++ )
+	{
+		contacts[ i ].surface.mode = dContactBounce | dContactSoftCFM;
+		contacts[ i ].surface.mu = dInfinity;
+		contacts[ i ].surface.mu2 = 0;
+		contacts[ i ].surface.bounce = 0.8f;
+		contacts[ i ].surface.bounce_vel = 0.1f;
+		contacts[ i ].surface.soft_cfm = 0.01f;
     }
 
-	if (int totalContacts = dCollide(o1, o2, MAX_CONTACTS, &contacts[0].geom, sizeof(dContactGeom))) {
-		dBodyID b1 = dGeomGetBody(o1);
-		dBodyID b2 = dGeomGetBody(o2);
+	int totalContacts = dCollide( o1, o2, MAX_CONTACTS, &contacts[ 0 ].geom, sizeof( dContact ) );
+	
+	// no contacts
+	if ( 0 == totalContacts )
+	{
+		return;
+	}
 
-		for (int i = 0; i < totalContacts; i++) {
-			// dJointCreateContact needs to know which world and joint group to work with as well as the dContact
-			// object itself. It returns a new dJointID which we then use with dJointAttach to finally create the
-			// temporary contact joint between the two geom bodies.
-			dJointID c = dJointCreateContact(instance->worldID, instance->contactGroupID, contacts + i);
-
-			dJointAttach(c, b1, b2);
-		}
+	for ( int i = 0; i < totalContacts; i++ )
+	{
+		// dJointCreateContact needs to know which world and joint group to work with as well as the dContact
+		// object itself. It returns a new dJointID which we then use with dJointAttach to finally create the
+		// temporary contact joint between the two geom bodies.
+		dJointID c = dJointCreateContact( instance->worldID, instance->contactGroupID, contacts + i );
+		dJointAttach( c, b1, b2 );
 	}
 }
 

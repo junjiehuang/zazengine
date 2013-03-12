@@ -1,13 +1,9 @@
 #ifndef ODECONFIG_H
 #define ODECONFIG_H
 
-#ifndef dDOUBLE
-#ifndef dSINGLE
-#define dSINGLE
-#endif
-#endif
-
 /* Pull in the standard headers */
+#include <stddef.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -15,7 +11,8 @@
 #include <string.h>
 #include <float.h>
 
-#if defined(ODE_DLL) || defined(ODE_LIB) || !defined(_MSC_VER)
+
+#if defined(ODE_DLL) || defined(ODE_LIB)
 #define __ODE__
 #endif
 
@@ -47,21 +44,26 @@
   typedef unsigned int    uint32;
   typedef short           int16;
   typedef unsigned short  uint16;
-  typedef char            int8;
+  typedef signed char     int8;
   typedef unsigned char   uint8;
 #else
   typedef int             int32;
   typedef unsigned int    uint32;
   typedef short           int16;
   typedef unsigned short  uint16;
-  typedef char            int8;
+  typedef signed char     int8;
   typedef unsigned char   uint8;
 #endif
 
 /* Visual C does not define these functions */
 #if defined(_MSC_VER)
-  #define copysignf _copysign
-  #define copysign _copysign
+  #define copysignf(x, y) ((float)_copysign(x, y))
+  #define copysign(x, y) _copysign(x, y)
+  #define nextafterf(x, y) _nextafterf(x, y)
+  #define nextafter(x, y) _nextafter(x, y)
+  #if !defined(_WIN64)
+    #define _ODE__NEXTAFTERF_REQUIRED
+  #endif
 #endif
 
 

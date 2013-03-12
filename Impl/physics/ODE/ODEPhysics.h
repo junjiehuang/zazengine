@@ -66,7 +66,7 @@ class ODEPhysics : public IPhysics
 		void doSimulation();
 		void generateEvents();
 
-		static void collisionCallback(void *data, dGeomID o1, dGeomID o2);
+		static void collisionCallback( void *data, dGeomID o1, dGeomID o2 );
 };
 
 #endif /* PLAYGROUNDPHYSICS_H_ */

@@ -6,7 +6,7 @@
 class PhysicType
 {
  public:
-	 PhysicType(bool staticFlag, float mass)
+	 PhysicType( bool staticFlag, float mass )
 	 { 
 		 this->staticFlag = staticFlag; 
 		 this->mass = mass; 
@@ -14,10 +14,10 @@ class PhysicType
 
 	 virtual ~PhysicType()
 	 { 
-		 if (this->bodyID)
-			dBodyDestroy(this->bodyID);
+		 if ( this->bodyID )
+			dBodyDestroy( this->bodyID );
 		 
-		 dGeomDestroy(this->geomID);
+		 dGeomDestroy( this->geomID );
 	 };
 	 
 	 bool isStatic() { return this->staticFlag; };
