@@ -19,7 +19,6 @@
 /* BIG TARGET: Discrete Realtime Autonomus Entity Simulation
  *
  * TODO: clear, powerful and flexible event-system
- * TODO: solve how input moves around
  * TODO: integrate event-system with LUA-scripting
  *
  * TODO: client-server model for world
@@ -52,6 +51,8 @@ class DLL_API Core : public ICore
 		IGameObject* getObjectByName( const std::string& );
 
 		IEventManager& getEventManager() const { return *this->m_eventManager; };
+
+		ZazenGameObjectFactory& getGameObjectFactory() { return *this->m_gameObjectFactory; };
 
 	private:
 		static Core* instance;

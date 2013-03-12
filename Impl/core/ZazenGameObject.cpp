@@ -16,8 +16,9 @@ using namespace std;
 
 ZazenGameObject::GameObjectID ZazenGameObject::nextID = 0;
 
-ZazenGameObject::ZazenGameObject( )
-	: id ( ZazenGameObject::nextID++ )
+ZazenGameObject::ZazenGameObject( const std::string& objectClass )
+	: m_id ( ZazenGameObject::nextID++ ),
+	m_objectClass( objectClass )
 {
 }
 
@@ -30,15 +31,16 @@ ZazenGameObject::sendEvent( Event& e )
 {
 	//cout << "Processing event " << e.id << " in EventProcessor " << this->id << endl;
 
-	map<string, ISubSystemEntity*>::iterator iter = this->subSystemEntities.begin();
-	while ( iter != this->subSystemEntities.end() )
+	map<string, ISubSystemEntity*>::iterator iter = this->m_subSystemEntities.begin();
+	while ( iter != this->m_subSystemEntities.end() )
 	{
 		ISubSystemEntity* entity = iter->second;
 		iter++;
 
 		if ( e == "collidesWith" )
 		{
-		} else {
+		} else 
+		{
 			entity->sendEvent( e );
 		}
 	}
@@ -62,7 +64,7 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 	}
 	else
 	{
-		this->name = str;
+		this->m_name = str;
 	}
 
 	str = objectNode->Attribute( "script" );
@@ -117,7 +119,7 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 				return false;
 			}
 
-			this->subSystemEntities.insert( make_pair( subSystemEntity->getType(), subSystemEntity ) );
+			this->m_subSystemEntities.insert( make_pair( subSystemEntity->getType(), subSystemEntity ) );
 		}
 	}
 

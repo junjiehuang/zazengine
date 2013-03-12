@@ -16,7 +16,12 @@ class ZazenGameObjectFactory
 		ZazenGameObjectFactory();
 		~ZazenGameObjectFactory();
 
+		void registerPrototype( IGameObject* );
+
 		IGameObject* createObject( const std::string& );
+
+	private:
+		std::map<std::string, IGameObject*> m_prototypes;
 };
 
 #endif /* ZAZENGAMEOBJECTFACTORY_H_ */
