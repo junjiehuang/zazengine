@@ -1,13 +1,14 @@
 !!! FROM NOW ON: always compileable & runnable when checked in !!!
 
 For Qualcomm presentation (implementation deadline saturday)
-- physics: sphere is bouncing
+- graphics: make combination of deferred renderer work
+- graphics: shadow - mapping
+- audio entity for game-object: play rotating sound 
+- custom game-objects: when sphere hits the floor: audio-output
 - input: increase/decrease animation-speed
 - input: start/stop animation
-- custom game-objects: when sphere hits the floor: audio-output
-- custom game-objects: generate spheres dropping above the floor
-- graphics: deferred renderer combined: F12 toggles between MRTs and combined deferred rendering
 - bonus: toggle fullscreen
+
 
 Advanced
 - make physics processing async

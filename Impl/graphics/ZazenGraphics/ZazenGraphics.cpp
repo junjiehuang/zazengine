@@ -28,6 +28,7 @@
 #define REQUIRED_MINOR_OPENGL_VER 1
 
 using namespace std;
+using namespace boost;
 
 HDC			hDC=NULL;		// Private GDI Device Context
 HGLRC		hRC=NULL;		// Permanent Rendering Context
@@ -82,7 +83,7 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 		return false;
 	}
 
-	this->m_core->getEventManager().registerForEvent( "TOGGLE_FULLSCREEN", this );
+	this->m_core->getEventManager().registerForEvent( "KEY_RELEASED", this );
 
 	cout << "================ ZazenGraphics initialized =================" << endl;
 	
@@ -94,7 +95,7 @@ ZazenGraphics::shutdown()
 {
 	cout << endl << "=============== ZazenGraphics shutting down... ===============" << endl;
 
-	this->m_core->getEventManager().unregisterForEvent( "TOGGLE_FULLSCREEN", this );
+	this->m_core->getEventManager().unregisterForEvent( "KEY_RELEASED", this );
 
 	std::list<ZazenGraphicsEntity*>::iterator iter = this->m_entities.begin();
 	while ( iter != this->m_entities.end() )
@@ -195,9 +196,13 @@ ZazenGraphics::finalizeProcess()
 bool
 ZazenGraphics::sendEvent( Event& e )
 {
-	if  ( e == "TOGGLE_FULLSCREEN" )
+	if  ( e == "KEY_RELEASED" )
 	{
-		this->toggleFullscreen();
+		int keyCode = any_cast<int>( e.getValue( "key" ) );
+		if ( 59 == keyCode )
+		{
+			this->m_renderer->toggleDisplay();
+		}
 	}
 
 	return true;

@@ -137,6 +137,8 @@ class DRRenderer : public Renderer
 	virtual bool initialize();
 	virtual bool shutdown();
 
+	virtual bool toggleDisplay();
+
 	// renders this list of geominstances which must be in front-to-back order
 	bool renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights );
 
@@ -176,6 +178,8 @@ class DRRenderer : public Renderer
 
 	// utils matrix
 	glm::mat4 m_unitCubeMatrix;
+
+	bool m_displayMRT;
 
 	bool initFBO();
 	bool initGeomStage();

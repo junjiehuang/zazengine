@@ -152,10 +152,6 @@ ZazenOIS::keyReleased( const KeyEvent &arg )
 	{
 		this->m_core->stop();
 	}
-	else if (  arg.key == KC_F1 )
-	{
-		this->m_core->getEventManager().postEvent( Event( "TOGGLE_FULLSCREEN" ) );
-	}
 	else
 	{
 		Event e( "KEY_RELEASED" );

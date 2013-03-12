@@ -92,6 +92,8 @@ DRRenderer::DRRenderer()
 		0.5, 0.5, 0.5, 1.0};
 
 	memcpy( glm::value_ptr( this->m_unitCubeMatrix ), unitCube, sizeof( unitCube ) );
+
+	this->m_displayMRT = false;
 }
 
 DRRenderer::~DRRenderer()
@@ -113,14 +115,25 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 	if ( false == this->renderTransparencyStage( instances, lights ) )
 		return false;
 
-	if ( false == this->showTexture( this->m_colorBuffers[ 0 ], 0 ) )
-		return false;
-	if ( false == this->showTexture( this->m_colorBuffers[ 1 ], 1 ) )
-		return false;
-	if ( false == this->showTexture( this->m_geometryDepth, 2 ) )
-		return false;
+	if ( this->m_displayMRT )
+	{
+		if ( false == this->showTexture( this->m_colorBuffers[ 0 ], 0 ) )
+			return false;
+		if ( false == this->showTexture( this->m_colorBuffers[ 1 ], 1 ) )
+			return false;
+		if ( false == this->showTexture( this->m_geometryDepth, 2 ) )
+			return false;
+	}
 
 	this->frame++;
+
+	return true;
+}
+
+bool
+DRRenderer::toggleDisplay()
+{
+	this->m_displayMRT = !this->m_displayMRT;
 
 	return true;
 }
