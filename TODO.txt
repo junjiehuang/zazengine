@@ -2,10 +2,10 @@
 
 For Qualcomm presentation (implementation deadline saturday)
 - physics: sphere is bouncing
-
-- custom game-objects: generate spheres dropping above the floor
+- input: increase/decrease animation-speed
+- input: start/stop animation
 - custom game-objects: when sphere hits the floor: audio-output
-
+- custom game-objects: generate spheres dropping above the floor
 - graphics: deferred renderer combined: F12 toggles between MRTs and combined deferred rendering
 - bonus: toggle fullscreen
 

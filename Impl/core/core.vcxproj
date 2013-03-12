@@ -19,7 +19,6 @@
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="ScriptSystem.cpp" />
     <ClCompile Include="ZazenGameObject.cpp" />
-    <ClCompile Include="ZazenGameObjectFactory.cpp" />
     <ClCompile Include="ZazenSubSystemFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -33,7 +32,6 @@
     <ClInclude Include="EventManager.h" />
     <ClInclude Include="ScriptSystem.h" />
     <ClInclude Include="ZazenGameObject.h" />
-    <ClInclude Include="ZazenGameObjectFactory.h" />
     <ClInclude Include="ZazenSubSystemFactory.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

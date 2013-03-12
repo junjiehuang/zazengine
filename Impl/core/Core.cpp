@@ -7,6 +7,7 @@
 
 #include "Core.h"
 
+#include "ZazenGameObject.h"
 #include "ScriptSystem.h"
 
 #include <windows.h>
@@ -23,7 +24,7 @@ Core* Core::instance = 0;
 // could cause memory leaks when libs are loaded during runtime and won't cause the whole application to go down when they fail
 
 bool
-Core::initalize( const std::string& configPath )
+Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFactory )
 {
 	if ( 0 == Core::instance )
 	{
@@ -33,7 +34,7 @@ Core::initalize( const std::string& configPath )
 		cout << "***************** Initializing Core... *****************" << endl;
 		cout << "********************************************************" << endl;
 
-		Core::instance->m_gameObjectFactory = new ZazenGameObjectFactory();
+		Core::instance->m_gameObjectFactory = gameObjectFactory;
 		Core::instance->m_subSystemFactory = new ZazenSubSystemFactory();
 
 		Core::instance->m_eventManager = new EventManager();
@@ -77,9 +78,6 @@ Core::shutdown()
 
 		if ( Core::instance->m_eventManager )
 			delete Core::instance->m_eventManager;
-
-		if ( Core::instance->m_gameObjectFactory )
-			delete Core::instance->m_gameObjectFactory;
 
 		if ( Core::instance->m_subSystemFactory )
 			delete Core::instance->m_subSystemFactory;
@@ -308,7 +306,7 @@ Core::loadConfig( const std::string& configPath )
 		}
 	}
 
-	TiXmlElement* objectListNode = rootNode->FirstChildElement("objectList");
+	TiXmlElement* objectListNode = rootNode->FirstChildElement( "objectList" );
 	if ( 0 == objectListNode )
 	{
 		cout << "ERROR ... node \"objectList\" in " << configFileName << " not found" << endl;
@@ -323,7 +321,25 @@ Core::loadConfig( const std::string& configPath )
 
 		if ( 0 == strcmp( str, "object" ) )
 		{
-			IGameObject* object = this->m_gameObjectFactory->createObject( "" );
+			std::string objectClass;
+			IGameObject* object = NULL;
+
+			const char* str = objectNode->Attribute( "class" );
+			if ( 0 != str )
+			{
+				objectClass = str;
+			}
+
+			if ( false == objectClass.empty() )
+			{
+				object = this->m_gameObjectFactory->createObject( objectClass );
+			}
+
+			if ( NULL == object )
+			{
+				object = new ZazenGameObject( "ZaZenGameObject" );
+			}
+
 			if ( object->initialize( objectNode ) )
 				this->m_gameObjects.push_back( object );
 			else
@@ -353,7 +369,7 @@ Core::loadConfig( const std::string& configPath )
 
 	if ( false == target.empty() )
 	{
-		IGameObject* inputTarget = getObjectByName( target );
+		IGameObject* inputTarget = this->getObjectByName( target );
 		if ( inputTarget )
 		{
 			this->m_eventManager->registerForEvent( "KEY_PRESSED", inputTarget );

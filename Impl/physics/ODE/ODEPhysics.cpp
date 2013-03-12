@@ -107,11 +107,11 @@ ODEPhysics::pause()
 bool
 ODEPhysics::process( double factor )
 {
-	cout << "ODEPhysics::process enter" << endl;
+	//cout << "ODEPhysics::process enter" << endl;
 
 	this->doSimulation();
 
-	cout << "ODEPhysics::process leave" << endl;
+	//cout << "ODEPhysics::process leave" << endl;
 
 	return true;
 }
@@ -119,11 +119,11 @@ ODEPhysics::process( double factor )
 bool
 ODEPhysics::finalizeProcess()
 {
-	cout << "ODEPhysics::finalizeProcess enter" << endl;
+	//cout << "ODEPhysics::finalizeProcess enter" << endl;
 
 	this->generateEvents();
 
-	cout << "ODEPhysics::finalizeProcess leave" << endl;
+	//cout << "ODEPhysics::finalizeProcess leave" << endl;
 
 	return true;
 }
@@ -391,10 +391,11 @@ ODEPhysics::collisionCallback( void* data, dGeomID o1, dGeomID o2 )
     dBodyID b2 = dGeomGetBody( o2 );
 
 	// ignore bodyless geometry (e.g. static)
-	if ( !( b1 || b2 ) )
+	/*if ( !( b1 || b2 ) )
 	{
 		return;
 	}
+	*/
 
 	dContact contacts [ MAX_CONTACTS ];
 	for ( int i = 0; i < MAX_CONTACTS; i++ )

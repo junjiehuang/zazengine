@@ -61,6 +61,9 @@
     <ClInclude Include="animations\IAnimationsEntity.h">
       <Filter>Headerdateien\Animations</Filter>
     </ClInclude>
+    <ClInclude Include="core\IGameObjectFactory.h">
+      <Filter>Headerdateien\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headerdateien">

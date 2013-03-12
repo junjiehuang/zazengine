@@ -8,11 +8,11 @@
 #ifndef CORE_H_
 #define CORE_H_
 
-#include "ZazenGameObjectFactory.h"
 #include "ZazenSubSystemFactory.h"
 #include "EventManager.h"
 
 #include <core/ICore.h>
+#include <core/IGameObjectFactory.h>
 
 #include <list>
 
@@ -27,7 +27,7 @@
 class DLL_API Core : public ICore
 {
 	public:
-		static bool initalize( const std::string& );
+		static bool initalize( const std::string&, IGameObjectFactory* );
 		static bool shutdown();
 		static ICore* getInstance() { return Core::instance; };
 		static Core& getRef() { return *Core::instance; };
@@ -52,8 +52,6 @@ class DLL_API Core : public ICore
 
 		IEventManager& getEventManager() const { return *this->m_eventManager; };
 
-		ZazenGameObjectFactory& getGameObjectFactory() { return *this->m_gameObjectFactory; };
-
 	private:
 		static Core* instance;
 
@@ -69,7 +67,7 @@ class DLL_API Core : public ICore
 		IInput* m_input;
 		IPhysics* m_physics;
 
-		ZazenGameObjectFactory* m_gameObjectFactory;
+		IGameObjectFactory* m_gameObjectFactory;
 		ZazenSubSystemFactory* m_subSystemFactory;
 
 		std::list<ISubSystem*> m_subSystems;
