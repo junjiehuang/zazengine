@@ -16,6 +16,7 @@ class IAudioEntity : public ISubSystemEntity
 		IAudioEntity( IGameObject* p ) : ISubSystemEntity( p ) {};
 		virtual ~IAudioEntity() {};
 
+		virtual bool playSound() = 0;
 		virtual void setPosVel( const float* pos, const float* vel ) = 0;
 };
 

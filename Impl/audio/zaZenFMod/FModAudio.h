@@ -13,13 +13,14 @@
 #include "FModAudioEntity.h"
 
 #include <fmodex/fmod.hpp>
-#include <fmodex/fmod_errors.h>
 
 #include <list>
 
 class FModAudio : public IAudio
 {
 	public:
+		static FModAudio& getInstance() { return *FModAudio::instance; };
+
 		FModAudio( const std::string&, ICore* );
 		virtual ~FModAudio();
 
@@ -42,7 +43,11 @@ class FModAudio : public IAudio
 
 		FModAudioEntity* createEntity( TiXmlElement*, IGameObject* parent );
 
+		FMOD::System* getSystem() { return this->m_system; };
+
 	private:
+		static FModAudio* instance;
+
 		std::string id;
 		std::string type;
 

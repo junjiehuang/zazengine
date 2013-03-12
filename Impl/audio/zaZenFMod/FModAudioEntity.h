@@ -15,22 +15,21 @@
 class FModAudioEntity : public IAudioEntity
 {
 	public:
-		friend class FModAudio;
-
-		FModAudioEntity( IGameObject* p );
+		FModAudioEntity( FMOD::Sound*, IGameObject* );
 		virtual ~FModAudioEntity();
 
 		const std::string& getType() const { return this->type; };
 
-		virtual bool sendEvent( Event& e );
+		bool sendEvent( Event& e );
 
+		bool playSound();
 		void setPosVel( const float* pos, const float* vel );
 
 	private:
 		std::string type;
 
-		FMOD::Sound* sound;
-		FMOD::Channel* channel;
+		FMOD::Sound* m_sound;
+		FMOD::Channel* m_channel;
 };
 
 #endif /* FMODAUDIOENTITY_H_ */
