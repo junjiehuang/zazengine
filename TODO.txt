@@ -3,7 +3,6 @@
 For Qualcomm presentation (implementation deadline saturday)
 - graphics: make combination of deferred renderer work
 - graphics: shadow - mapping
-- custom game-objects: when sphere hits the floor: audio-output
 
 Graphics:
 - add transformations to models when loaded!
@@ -12,6 +11,8 @@ Advanced
 - make physics processing async
 
 Code-Quality
+- add const to inline methods were appropriate
+- remove friend-initialisation bullshit from entities
 - replace all strcmp with boost:iequals
 - compile without warnings
 - project buildable as RELEASE

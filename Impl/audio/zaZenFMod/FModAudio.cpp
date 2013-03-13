@@ -195,9 +195,12 @@ FModAudio::start()
 	while ( iter != this->entities.end() )
 	{
 		FModAudioEntity* entity = *iter++;
-		if ( false == entity->playSound() )
+		if ( entity->isImmediatePlayback() )
 		{
-			return false;
+			if ( false == entity->playSound() )
+			{
+				return false;
+			}
 		}
 	}
 
@@ -279,11 +282,11 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			}
 
 			entity = new FModAudioEntity( parent );
-			this->m_core->getEventManager().registerForEvent( "POSITION_CHANGED", entity );
 		}
 		else if ( 0 == strcmp( str, "sound" ) )
 		{
 			bool loop = false;
+			bool immediatePlayback = true;
 			float posX = 0.0f;
 			float posY = 0.0f;
 			float posZ = 0.0f;
@@ -340,6 +343,17 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 				}
 			}
 
+			str = soundNode->Attribute( "immediatePlayback" );
+			if ( 0 != str )
+			{
+				string caseStr = str;
+				std::transform( caseStr.begin(), caseStr.end(), caseStr.begin(), tolower );
+				if ( caseStr == "false" )
+				{
+					immediatePlayback = false;
+				}
+			}
+
 			FMOD::Sound* sound = 0;
 			FMOD_RESULT result = this->m_system->createSound( fileName.c_str(), FMOD_SOFTWARE | FMOD_3D, 0, &sound );
 		    if ( FMOD_OK != result )
@@ -368,6 +382,7 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			entity = new FModAudioEntity( parent );
 			entity->setSound( sound );
 			entity->setPosition( posX, posY, posZ );
+			entity->setImmediatePlayback( immediatePlayback );
 		}
 	}
 

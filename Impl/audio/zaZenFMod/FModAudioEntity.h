@@ -25,11 +25,16 @@ class FModAudioEntity : public IAudioEntity
 		bool playSound();
 		void updatePosVel( const float* pos, const float* vel );
 
+		void setImmediatePlayback( bool );
+		bool isImmediatePlayback() { return this->m_immediatePlayback; };
+
 		void setSound( FMOD::Sound* );
 		void setPosition( float x, float y, float z );
 
 	private:
 		std::string type;
+
+		bool m_immediatePlayback;
 
 		FMOD_VECTOR m_pos;
 		FMOD_VECTOR m_vel;

@@ -13,9 +13,9 @@ using namespace std;
 
 ODEPhysicsEntity::ODEPhysicsEntity( IGameObject* p )
 	: IPhysicsEntity( p ),
-	entityType( "physics" )
+	m_entityType( "physics" )
 {
-	this->physicType = 0;
+	this->m_physicType = 0;
 }
 
 ODEPhysicsEntity::~ODEPhysicsEntity()
@@ -26,9 +26,9 @@ ODEPhysicsEntity::~ODEPhysicsEntity()
 void
 ODEPhysicsEntity::update()
 {
-	dBodyCopyPosition( this->physicType->getBodyID(), this->pos );
-	dBodyCopyRotation( this->physicType->getBodyID(), this->rot );
-	memcpy( this->vel, dBodyGetLinearVel( this->physicType->getBodyID() ), 3 * sizeof( float ) );
+	dBodyCopyPosition( this->m_physicType->getBodyID(), this->m_pos );
+	dBodyCopyRotation( this->m_physicType->getBodyID(), this->m_rot );
+	memcpy( this->m_vel, dBodyGetLinearVel( this->m_physicType->getBodyID() ), 3 * sizeof( float ) );
 
 	//cout << "Physics:" << this->getParent()->getName() << " has position of (" << this->pos[0] << "/" << this->pos[1] << "/" << this->pos[2] << ")" << endl;
 }

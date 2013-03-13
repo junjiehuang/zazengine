@@ -87,8 +87,18 @@ FModAudioEntity::sendEvent( Event& e )
 			return false;
 		}
 	}
+	else if ( e == "COLLIDES_WITH" ) 
+	{
+		this->playSound();
+	}
 
 	return false;
+}
+
+void
+FModAudioEntity::setImmediatePlayback( bool flag )
+{
+	this->m_immediatePlayback = flag;
 }
 
 void

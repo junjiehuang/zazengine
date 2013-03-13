@@ -282,7 +282,7 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			r = ( float ) atof( str );
 		}
 
-		entity->physicType = new PhysicSphere( staticFlag, mass, r );
+		entity->m_physicType = new PhysicSphere( staticFlag, mass, r );
 	}
 	else if ( "BOX" == typeID )
 	{
@@ -308,7 +308,7 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			sz = ( float ) atof( str );
 		}
 
-		entity->physicType = new PhysicBox( staticFlag, mass, sx, sy, sz );
+		entity->m_physicType = new PhysicBox( staticFlag, mass, sx, sy, sz );
 	}
 	else if ( "PLANE" == typeID )
 	{
@@ -341,13 +341,13 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			d = ( float ) atof( str );
 		}
 
-		entity->physicType = new PhysicPlane( true, mass, dx, dy, dz, d );
+		entity->m_physicType = new PhysicPlane( true, mass, dx, dy, dz, d );
 	}
 
-	entity->physicType->create( this->worldID, this->spaceID );
+	entity->m_physicType->create( this->worldID, this->spaceID );
 
-	if ( false == entity->physicType->isStatic() )
-		entity->physicType->setPosition( posX, posY, posZ );
+	if ( false == entity->m_physicType->isStatic() )
+		entity->m_physicType->setPosition( posX, posY, posZ );
 
 	this->entities.push_back( entity );
 
@@ -443,6 +443,20 @@ ODEPhysics::collisionCallback( void* data, dGeomID o1, dGeomID o2 )
 		// temporary contact joint between the two geom bodies.
 		dJointID c = dJointCreateContact( instance->worldID, instance->contactGroupID, contacts + i );
 		dJointAttach( c, b1, b2 );
+	}
+
+	std::list<ODEPhysicsEntity*>::iterator iter = instance->entities.begin();
+	while ( iter != instance->entities.end() )
+	{
+		ODEPhysicsEntity* entity = *iter++;
+
+		if ( b1 == entity->getBodyId() )
+		{
+			Event e( "COLLIDES_WITH" );
+			e.setTarget( entity->getParent() );
+
+			instance->core->getEventManager().postEvent( e );
+		}
 	}
 }
 

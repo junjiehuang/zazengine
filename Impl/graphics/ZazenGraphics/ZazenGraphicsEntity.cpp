@@ -39,6 +39,8 @@ ZazenGraphicsEntity::postPositionChangedEvent()
 {
 	Event e( "POSITION_CHANGED" );
 	e.addValue( "matrix", ( const float* ) &this->m_orientation->getMatrix()[ 0 ] );
+	e.setTarget( this->getParent() );
+
 	ZazenGraphics::getInstance().getCore().getEventManager().postEvent( e );
 }
 
