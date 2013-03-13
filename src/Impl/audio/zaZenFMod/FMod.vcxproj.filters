@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Headerdateien">
+      <UniqueIdentifier>{710714a6-dac8-43de-b620-4e641ecca18d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien">
+      <UniqueIdentifier>{cd788415-28cd-4580-bff9-339feb8dd6c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\XML">
+      <UniqueIdentifier>{b7223e86-64a7-4e9e-9db9-fb8997e15561}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\XML">
+      <UniqueIdentifier>{e05fa1e3-7e61-4b3e-a9b5-4c5bdb7f7fe7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="FModAudio.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="FModAudioEntity.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinystr.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxml.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlerror.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlparser.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FModAudio.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="FModAudioEntity.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_iterators.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_print.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_utils.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinystr.h">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

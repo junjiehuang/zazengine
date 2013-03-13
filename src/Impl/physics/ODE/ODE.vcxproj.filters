@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="ODEPhysics.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="ODEPhysicsEntity.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlparser.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlerror.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinyxml.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\IFaces\core\XML\tinystr.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="types\PhysicBox.cpp">
+      <Filter>Quelldateien\types</Filter>
+    </ClCompile>
+    <ClCompile Include="types\PhysicSphere.cpp">
+      <Filter>Quelldateien\types</Filter>
+    </ClCompile>
+    <ClCompile Include="types\PhysicMesh.cpp">
+      <Filter>Quelldateien\types</Filter>
+    </ClCompile>
+    <ClCompile Include="types\PhysicPlane.cpp">
+      <Filter>Quelldateien\types</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ODEPhysics.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="ODEPhysicsEntity.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinystr.h">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="types\PhysicBox.h">
+      <Filter>Headerdateien\types</Filter>
+    </ClInclude>
+    <ClInclude Include="types\PhysicType.h">
+      <Filter>Headerdateien\types</Filter>
+    </ClInclude>
+    <ClInclude Include="types\PhysicMesh.h">
+      <Filter>Headerdateien\types</Filter>
+    </ClInclude>
+    <ClInclude Include="types\PhysicPlane.h">
+      <Filter>Headerdateien\types</Filter>
+    </ClInclude>
+    <ClInclude Include="types\PhysicSphere.h">
+      <Filter>Headerdateien\types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_utils.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_iterators.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_print.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Headerdateien">
+      <UniqueIdentifier>{d31b4412-a2a7-4a81-ae08-e6549e153b33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\XML">
+      <UniqueIdentifier>{9a36c7d2-ef2e-4eac-9284-0f34700345fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien">
+      <UniqueIdentifier>{ae6b85d1-be23-4973-8def-f2edca7e6d24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\XML">
+      <UniqueIdentifier>{854810fa-4ff6-4af7-bb8b-65e4caac3791}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\types">
+      <UniqueIdentifier>{bb0ef0e6-faad-48d5-98f5-3c7ff1e81954}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\types">
+      <UniqueIdentifier>{09754523-a26f-4bb9-99dd-6ef0ce0b9d10}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

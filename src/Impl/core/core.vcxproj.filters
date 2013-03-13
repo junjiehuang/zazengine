@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Core.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="EventManager.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="ZazenGameObject.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="ZazenSubSystemFactory.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptSystem.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IFaces\core\XML\tinystr.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IFaces\core\XML\tinyxml.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IFaces\core\XML\tinyxmlerror.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IFaces\core\XML\tinyxmlparser.cpp">
+      <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Core.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="ZazenSubSystemFactory.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="EventManager.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptSystem.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="ZazenGameObject.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IFaces\core\XML\rapidxml.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IFaces\core\XML\rapidxml_iterators.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IFaces\core\XML\rapidxml_print.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IFaces\core\XML\rapidxml_utils.hpp">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IFaces\core\XML\tinystr.h">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IFaces\core\XML\tinyxml.h">
+      <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Quelldateien">
+      <UniqueIdentifier>{e4ca9505-64b5-4451-ac31-a27145b33edc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien">
+      <UniqueIdentifier>{e285cacf-6b5b-4bd4-ab25-4a36a542c7e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\XML">
+      <UniqueIdentifier>{99a6ff07-7150-423e-8812-1b173752976a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\XML">
+      <UniqueIdentifier>{15b09b08-b286-480c-b74d-e22ed74f3687}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
