@@ -64,7 +64,14 @@ FModAudio::initialize( TiXmlElement* configElem )
         return false;
     }
 
-    result = this->m_system->init( 100, FMOD_INIT_3D_RIGHTHANDED, 0 );
+    result = this->m_system->init( 100, FMOD_INIT_NORMAL, 0 );
+    if ( FMOD_OK != result )
+    {
+        printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+       	return false;
+    }
+
+	result = this->m_system->set3DSettings( 1.0, 100.0f, 1.0f );
     if ( FMOD_OK != result )
     {
         printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
@@ -305,7 +312,7 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			}
 
 			FMOD::Sound* sound = 0;
-			FMOD_RESULT result = this->m_system->createSound( fileName.c_str(), FMOD_SOFTWARE | FMOD_3D, 0, &sound );
+			FMOD_RESULT result = this->m_system->createSound( fileName.c_str(), FMOD_3D, 0, &sound );
 		    if ( FMOD_OK != result )
 		    {
 		    	cout << "ERROR ... loading sound from file \"" << fileName << ": " << FMOD_ErrorString( result ) << endl;

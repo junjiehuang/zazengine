@@ -139,6 +139,8 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 
 		this->m_orientation->changeHeading( -50.0f * x * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		this->m_orientation->changePitch( 50.0f * y * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+
+		this->postPositionChangedEvent();
 	}
 
 	return false;

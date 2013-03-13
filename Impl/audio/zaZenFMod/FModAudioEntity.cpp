@@ -29,8 +29,8 @@ FModAudioEntity::FModAudioEntity( IGameObject* p )
 	this->m_pos.z = 0.0f;
 
 	this->m_vel.x = 0.0f;
-	this->m_vel.x = 0.0f;
-	this->m_vel.x = 0.0f;
+	this->m_vel.y = 0.0f;
+	this->m_vel.z = 0.0f;
 }
 
 FModAudioEntity::~FModAudioEntity()
@@ -80,7 +80,7 @@ FModAudioEntity::sendEvent( Event& e )
 		pos.y = matrixValues[ 13 ];
 		pos.z = matrixValues[ 14 ];
 
-		FModAudio::getInstance().getSystem()->set3DListenerAttributes(0, &pos, &vel, &forward, &up);
+		FModAudio::getInstance().getSystem()->set3DListenerAttributes( 0, &pos, &vel, &forward, &up );
 	}
 
 	return false;
@@ -113,13 +113,6 @@ FModAudioEntity::playSound()
 		}
 
 		result = this->m_channel->set3DAttributes( &this->m_pos, &this->m_vel );
-		if ( FMOD_OK != result )
-		{
-			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
-			return false;
-		}
-
-		result = this->m_channel->set3DSpread( 40.0f );
 		if ( FMOD_OK != result )
 		{
 			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );

@@ -16,12 +16,12 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <boost/algorithm/string.hpp>
+
 #include <Windows.h>
 
 #include <iostream>
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
 #define WINDOW_BITS_PER_PIXEL 32
 
 #define REQUIRED_MAJOR_OPENGL_VER 3
@@ -29,6 +29,9 @@
 
 using namespace std;
 using namespace boost;
+
+int windowWidth = 800;
+int windowHeight= 600;
 
 HDC			hDC=NULL;		// Private GDI Device Context
 HGLRC		hRC=NULL;		// Permanent Rendering Context
@@ -263,17 +266,17 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 
 			if ( lightType == "DIRECTIONAL" )
 			{
-				light = Light::createDirectionalLight( WINDOW_WIDTH, WINDOW_HEIGHT );
+				light = Light::createDirectionalLight( windowWidth, windowHeight );
 
 			}
 			else if ( lightType == "POINT" )
 			{
-				light = Light::createPointLight( WINDOW_HEIGHT );
+				light = Light::createPointLight( windowHeight );
 			}
 			// default is spot
 			else
 			{
-				light = Light::createSpoptLight( 90, WINDOW_WIDTH, WINDOW_HEIGHT );
+				light = Light::createSpoptLight( 90, windowWidth, windowHeight );
 			}
 
 			entity->m_orientation = light;
@@ -309,7 +312,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 				mode = str;
 			}
 
-			Viewer* camera = new Viewer( WINDOW_WIDTH, WINDOW_HEIGHT );
+			Viewer* camera = new Viewer( windowWidth, windowHeight );
 			if ( mode == "PROJ" )
 			{
 				camera->setFov( fov );
@@ -446,7 +449,7 @@ ZazenGraphics::toggleFullscreen()
 	KillGLWindow();
 	fullscreen=!fullscreen;
 	// Recreate Our OpenGL Window
-	if ( !CreateGLWindow( "zaZengine", WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_BITS_PER_PIXEL, fullscreen ) )
+	if ( !CreateGLWindow( "zaZengine", windowWidth, windowHeight, WINDOW_BITS_PER_PIXEL, fullscreen ) )
 	{
 		return false;
 	}
@@ -461,7 +464,34 @@ ZazenGraphics::toggleFullscreen()
 bool
 ZazenGraphics::createWindow( TiXmlElement* configNode )
 {
-	if ( ! CreateGLWindow( "zaZengine", WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_BITS_PER_PIXEL, false ) )
+	bool fullScreenFlag = false;
+	
+	TiXmlElement* windowNode = configNode->FirstChildElement( "window" );
+	if ( 0 != windowNode )
+	{
+		const char* str = windowNode->Attribute( "fullscreen" );
+		if ( 0 != str )
+		{
+			if ( boost::iequals( str, "true" ) )
+			{
+				fullScreenFlag = true;
+			}
+		}
+
+		str = windowNode->Attribute( "width" );
+		if ( 0 != str )
+		{
+			windowWidth = atoi( str );
+		}
+
+		str = windowNode->Attribute( "height" );
+		if ( 0 != str )
+		{
+			windowHeight = atoi( str );
+		}
+	}
+
+	if ( ! CreateGLWindow( "zaZengine", windowWidth, windowHeight, WINDOW_BITS_PER_PIXEL, fullScreenFlag ) )
 	{
 		cout << "ERROR ... in ZazenGraphics::createWindow: failed creating window" << endl;
 		return false;

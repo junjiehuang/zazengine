@@ -15,9 +15,6 @@
 // 4th = genericParams 2
 #define MRT_COUNT 4
 
-#define SHADOW_MAP_WIDTH 	800
-#define SHADOW_MAP_HEIGHT	600
-
 #include "Renderer.h"
 
 #include "../Material/UniformBlock.h"

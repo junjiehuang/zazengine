@@ -3,17 +3,16 @@
 For Qualcomm presentation (implementation deadline saturday)
 - graphics: make combination of deferred renderer work
 - graphics: shadow - mapping
-- audio entity for game-object: play rotating sound 
 - custom game-objects: when sphere hits the floor: audio-output
-- input: increase/decrease animation-speed
-- input: start/stop animation
-- bonus: toggle fullscreen
 
+Graphics:
+- add transformations to models when loaded!
 
 Advanced
 - make physics processing async
 
 Code-Quality
+- replace all strcmp with boost:iequals
 - compile without warnings
 - project buildable as RELEASE
 - remove paths in access to files in code, only file-name access anymore, paths configurable
@@ -25,6 +24,6 @@ Code-Quality
 - A GOOD SOLUTION FOR THE PROBLEM OF INCLUDING TINY-XML IN ALL SUBSYSTEMS
 - UNIT-Tests?
 
-Game-Object creation and Level-Loading/Level-Creation
-- think of a practical solution how to inject gameobjects and game-logic into the engine from squares
-- ifaces: creation of gameentities in subsystem through api, not only through xml ?
+Hacks
+- fmod should be initialized as 3D_RIGHTHANDED
+- ode now y-axis as z-achsis because of 3ds models 

@@ -263,9 +263,7 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 	if ( 0 != str )
 	{
 		string caseStr = str;
-		
 		std::transform( caseStr.begin(), caseStr.end(), caseStr.begin(), tolower );
-
 		if ( caseStr == "true" )
 		{
 			staticFlag = true;
