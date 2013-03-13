@@ -17,6 +17,15 @@
 using namespace std;
 using namespace boost;
 
+bool FMOD_ERRCHECK( FMOD_RESULT result )
+{
+    if ( FMOD_OK != result )
+    {
+        printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+        return false;
+    }
+}
+
 FModAudio* FModAudio::instance = NULL;
 
 FModAudio::FModAudio( const std::string& id, ICore* core )
@@ -45,23 +54,42 @@ FModAudio::initialize( TiXmlElement* configElem )
 	unsigned int version;
 
 	result = FMOD::System_Create( &this->m_system );
-    if ( FMOD_OK != result )
-    {
-        printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
-       	return false;
-    }
+    FMOD_ERRCHECK( result );
 
     result = this->m_system->getVersion( &version );
-    if ( FMOD_OK != result )
-    {
-        printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
-       	return false;
-    }
+    FMOD_ERRCHECK( result );
 
     if ( FMOD_VERSION > version )
     {
         printf( "Error!  You are using an old version of FMOD %08x.  This program requires %08x\n", version, FMOD_VERSION );
         return false;
+    }
+
+	int numDrivers = 0;
+	FMOD_SPEAKERMODE speakermode;
+    FMOD_CAPS caps;
+
+	result = this->m_system->getNumDrivers( &numDrivers);
+    FMOD_ERRCHECK(result);
+
+    if ( 0 == numDrivers )
+    {
+        result = this->m_system->setOutput( FMOD_OUTPUTTYPE_NOSOUND );
+        FMOD_ERRCHECK( result );
+    }
+    else
+    {
+        result = this->m_system->getDriverCaps( 0, &caps, 0, &speakermode );
+        FMOD_ERRCHECK( result );
+
+        result = this->m_system->setSpeakerMode( speakermode ); 
+        FMOD_ERRCHECK( result );
+
+        if ( caps & FMOD_CAPS_HARDWARE_EMULATED )
+        { 
+            result = this->m_system->setDSPBufferSize( 1024, 10 );
+            FMOD_ERRCHECK( result );
+        }
     }
 
     result = this->m_system->init( 100, FMOD_INIT_NORMAL, 0 );
@@ -71,12 +99,34 @@ FModAudio::initialize( TiXmlElement* configElem )
        	return false;
     }
 
-	result = this->m_system->set3DSettings( 1.0, 100.0f, 1.0f );
-    if ( FMOD_OK != result )
-    {
-        printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
-       	return false;
-    }
+	TiXmlElement* windowNode = configElem->FirstChildElement( "settings3d" );
+	if ( 0 != windowNode )
+	{
+		float dopplerScale = 1.0f;
+		float distanceFactor = 1.0f;
+		float rollOffScale = 1.0f;
+
+		const char* str = windowNode->Attribute( "dopplerScale" );
+		if ( 0 != str )
+		{
+			dopplerScale = ( float ) atof( str );
+		}
+
+		str = windowNode->Attribute( "distanceFactor" );
+		if ( 0 != str )
+		{
+			distanceFactor = ( float ) atof( str );
+		}
+
+		str = windowNode->Attribute( "rollOffScale" );
+		if ( 0 != str )
+		{
+			rollOffScale = ( float ) atof( str );
+		}
+
+		result = this->m_system->set3DSettings( dopplerScale, distanceFactor, rollOffScale );
+		FMOD_ERRCHECK( result );
+	}
 
 	TiXmlElement* musicNode = configElem->FirstChildElement( "music" );
 	if ( 0 != musicNode )
@@ -85,11 +135,7 @@ FModAudio::initialize( TiXmlElement* configElem )
 		if ( 0 != str )
 		{
 			result = m_system->createSound( str, FMOD_SOFTWARE | FMOD_2D, 0, &this->m_bgMusic );
-			if ( FMOD_OK != result )
-			{
-    			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
-    			return false;
-			}
+			FMOD_ERRCHECK( result );
 		}
 	}
 
@@ -117,25 +163,16 @@ FModAudio::shutdown()
 	if ( this->m_bgMusic )
 	{
 		result = this->m_bgMusic->release();
-		if ( FMOD_OK != result )
-		{
-			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
-		}
+		FMOD_ERRCHECK( result );
 	}
 
 	if ( this->m_system )
 	{
 		result = this->m_system->close();
-		if ( FMOD_OK != result )
-		{
-			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
-		}
+		FMOD_ERRCHECK( result );
 
 		result = this->m_system->release();
-		if ( FMOD_OK != result )
-		{
-			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
-		}
+		FMOD_ERRCHECK( result );
 	}
 
 	cout << "================ FModAudio shutdown =================" << endl;
@@ -151,11 +188,7 @@ FModAudio::start()
 	if ( this->m_bgMusic )
 	{
 		result = this->m_system->playSound( FMOD_CHANNEL_FREE, this->m_bgMusic, false, &this->m_bgMusicCh );
-		if ( FMOD_OK != result )
-		{
-    		printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
-    		return false;
-		}
+		FMOD_ERRCHECK( result );
 	}
 
 	std::list<FModAudioEntity*>::iterator iter = this->entities.begin();
@@ -189,11 +222,7 @@ FModAudio::process( double factor )
 	//cout << "FModAudio::process enter" << endl;
 
 	FMOD_RESULT result = this->m_system->update();
-	if ( FMOD_OK != result )
-	{
-    	printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
-    	return false;
-	}
+	FMOD_ERRCHECK( result );
 
 	//cout << "FModAudio::process leave" << endl;
 
@@ -312,7 +341,7 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			}
 
 			FMOD::Sound* sound = 0;
-			FMOD_RESULT result = this->m_system->createSound( fileName.c_str(), FMOD_3D, 0, &sound );
+			FMOD_RESULT result = this->m_system->createSound( fileName.c_str(), FMOD_SOFTWARE | FMOD_3D, 0, &sound );
 		    if ( FMOD_OK != result )
 		    {
 		    	cout << "ERROR ... loading sound from file \"" << fileName << ": " << FMOD_ErrorString( result ) << endl;

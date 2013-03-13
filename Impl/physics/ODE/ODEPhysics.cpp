@@ -181,7 +181,7 @@ ODEPhysics::generateEvents()
 			const float* rot = entity->getRot();
 			const float* vel = entity->getVel();
 
-			Event e( "updatePhysics" );
+			Event e( "UPDATE_PHYSICS" );
 			e.setTarget( entity->getParent() );
 
 			e.addValue( "pos", boost::any( pos ) );

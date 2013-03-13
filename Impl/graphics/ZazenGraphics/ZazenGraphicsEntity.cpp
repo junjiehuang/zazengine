@@ -111,7 +111,7 @@ bool
 ZazenGraphicsEntity::sendEvent( Event& e )
 {
 	// process immediately because no call to graphics api, just coping of data (yet)
-	if ( e == "updatePhysics" )
+	if ( e == "UPDATE_PHYSICS" )
 	{
 		boost::any& pos = e.getValue( "pos" );
 		boost::any& rot = e.getValue( "rot" );

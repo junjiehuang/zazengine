@@ -51,7 +51,7 @@ FModAudioEntity::~FModAudioEntity()
 bool
 FModAudioEntity::sendEvent( Event& e )
 {
-	if ( e == "updatePhysics" )
+	if ( e == "UPDATE_PHYSICS" )
 	{
 		boost::any& pos = e.getValue( "pos" );
 		boost::any& vel = e.getValue( "vel" );
@@ -80,7 +80,12 @@ FModAudioEntity::sendEvent( Event& e )
 		pos.y = matrixValues[ 13 ];
 		pos.z = matrixValues[ 14 ];
 
-		FModAudio::getInstance().getSystem()->set3DListenerAttributes( 0, &pos, &vel, &forward, &up );
+		FMOD_RESULT result = FModAudio::getInstance().getSystem()->set3DListenerAttributes( 0, &pos, &vel, &forward, &up );
+		if ( FMOD_OK != result )
+		{
+			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+			return false;
+		}
 	}
 
 	return false;
@@ -145,6 +150,10 @@ FModAudioEntity::updatePosVel( const float* pos, const float* vel )
 
 		//cout << "Audio:" << this->getParent()->getName() << " has position of (" << pos[0] << "/" << pos[1] << "/" << pos[2] << ")" << endl;
 
-		this->m_channel->set3DAttributes( &this->m_pos, &this->m_vel );
+		FMOD_RESULT result = this->m_channel->set3DAttributes( &this->m_pos, &this->m_vel );
+		if ( FMOD_OK != result )
+		{
+			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+		}
 	}
 }
