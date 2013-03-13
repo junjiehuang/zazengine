@@ -52,8 +52,8 @@ class Viewer : public Orientation
 
     void setFov( float fov ) { this->fov = fov; };
 
-	void setNear( float near ) { this->nearDist = near; };
-	void setFar( float far ) { this->farDist = far; };
+	void setNear( float nearDist ) { this->nearDist = nearDist; };
+	void setFar( float farDist ) { this->farDist = farDist; };
 	
 	void resize( int, int );
 

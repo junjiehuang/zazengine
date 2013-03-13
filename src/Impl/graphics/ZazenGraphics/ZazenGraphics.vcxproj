@@ -87,6 +87,7 @@
     <ClCompile Include="scene\Instance.cpp" />
     <ClCompile Include="scene\Viewer.cpp" />
     <ClCompile Include="states\Statemanager.cpp" />
+    <ClCompile Include="window\RenderingWindow.cpp" />
     <ClCompile Include="ZazenGraphics.cpp" />
     <ClCompile Include="ZazenGraphicsEntity.cpp" />
   </ItemGroup>
@@ -116,6 +117,7 @@
     <ClInclude Include="states\ShadowMappingState.h" />
     <ClInclude Include="states\State.h" />
     <ClInclude Include="states\Statemanager.h" />
+    <ClInclude Include="window\RenderingWindow.h" />
     <ClInclude Include="ZazenGraphics.h" />
     <ClInclude Include="ZazenGraphicsEntity.h" />
   </ItemGroup>

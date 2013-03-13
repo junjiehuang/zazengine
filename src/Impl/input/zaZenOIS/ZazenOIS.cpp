@@ -25,12 +25,10 @@ ZazenOIS::ZazenOIS( const std::string& id, ICore* core )
 	type ( "input" ),
 	m_core( core )
 {
-	
 }
 
 ZazenOIS::~ZazenOIS()
 {
-	
 }
 
 bool
@@ -84,27 +82,21 @@ ZazenOIS::pause()
 bool
 ZazenOIS::process( double factor )
 {
-	if( m_keyBoard )
+	if ( this->m_keyBoard )
 	{
-		m_keyBoard->capture();
-		if( !m_keyBoard->buffered() )
-			handleNonBufferedKeys();
+		this->m_keyBoard->capture();
 	}
 
-	if( m_mouse )
+	if ( this->m_mouse )
 	{
-		m_mouse->capture();
-		if( !m_mouse->buffered() )
-			handleNonBufferedMouse();
+		this->m_mouse->capture();
 	}
 
-	for( int i = 0; i < 4 ; ++i )
+	for ( int i = 0; i < 4 ; ++i )
 	{
-		if( m_joys[i] )
+		if ( this->m_joys[i] )
 		{
-			m_joys[i]->capture();
-			if( !m_joys[i]->buffered() )
-				handleNonBufferedJoy( m_joys[i] );
+			this->m_joys[i]->capture();
 		}
 	}
 	
@@ -137,11 +129,6 @@ ZazenOIS::keyPressed( const KeyEvent &arg )
 
 	this->m_core->getEventManager().postEvent( e );
 
-	/*
-	std::cout << " KeyPressed {" << arg.key
-		<< ", " << ((Keyboard*)(arg.device))->getAsString(arg.key)
-		<< "} || Character (" << (char)arg.text << ")" << std::endl;
-		*/
 	return true;
 }
 
@@ -160,20 +147,12 @@ ZazenOIS::keyReleased( const KeyEvent &arg )
 		this->m_core->getEventManager().postEvent( e );
 	}
 	
-	//std::cout << "KeyReleased {" << ((Keyboard*)(arg.device))->getAsString(arg.key) << "}\n";
-	
 	return true;
 }
 
 bool
 ZazenOIS::mouseMoved( const MouseEvent &arg )
 {
-	/*
-	const OIS::MouseState& s = arg.state;
-	std::cout << "\nMouseMoved: Abs("
-				<< s.X.abs << ", " << s.Y.abs << ", " << s.Z.abs << ") Rel("
-				<< s.X.rel << ", " << s.Y.rel << ", " << s.Z.rel << ")";
-				*/
 	const OIS::MouseState& s = arg.state;
 
 	Event e( "MOUSE_MOVED" );
@@ -188,125 +167,43 @@ ZazenOIS::mouseMoved( const MouseEvent &arg )
 bool
 ZazenOIS::mousePressed( const MouseEvent &arg, MouseButtonID id )
 {
-	/*
-	const OIS::MouseState& s = arg.state;
-	std::cout << "\nMouse button #" << id << " pressed. Abs("
-				<< s.X.abs << ", " << s.Y.abs << ", " << s.Z.abs << ") Rel("
-				<< s.X.rel << ", " << s.Y.rel << ", " << s.Z.rel << ")";
-				*/
 	return true;
 }
 
 bool
 ZazenOIS::mouseReleased( const MouseEvent &arg, MouseButtonID id )
 {
-	/*
-	const OIS::MouseState& s = arg.state;
-	std::cout << "\nMouse button #" << id << " released. Abs("
-				<< s.X.abs << ", " << s.Y.abs << ", " << s.Z.abs << ") Rel("
-				<< s.X.rel << ", " << s.Y.rel << ", " << s.Z.rel << ")";
-				*/
 	return true;
 }
 
 bool
 ZazenOIS::buttonPressed( const JoyStickEvent &arg, int button )
 {
-	//std::cout << std::endl << arg.device->vendor() << ". Button Pressed # " << button;
 	return true;
 }
 
 bool
 ZazenOIS::buttonReleased( const JoyStickEvent &arg, int button )
 {
-	//std::cout << std::endl << arg.device->vendor() << ". Button Released # " << button;
 	return true;
 }
 
 bool
 ZazenOIS::axisMoved( const JoyStickEvent &arg, int axis )
 {
-	//Provide a little dead zone
-	/*if( arg.state.mAxes[axis].abs > 2500 || arg.state.mAxes[axis].abs < -2500 )
-		std::cout << std::endl << arg.device->vendor() << ". Axis # " << axis << " Value: " << arg.state.mAxes[axis].abs
-		*/
 	return true;
 }
 
 bool
 ZazenOIS::povMoved( const JoyStickEvent &arg, int pov )
 {
-	/*
-	std::cout << std::endl << arg.device->vendor() << ". POV" << pov << " ";
-
-	if( arg.state.mPOV[pov].direction & Pov::North ) //Going up
-		std::cout << "North";
-	else if( arg.state.mPOV[pov].direction & Pov::South ) //Going down
-		std::cout << "South";
-
-	if( arg.state.mPOV[pov].direction & Pov::East ) //Going right
-		std::cout << "East";
-	else if( arg.state.mPOV[pov].direction & Pov::West ) //Going left
-		std::cout << "West";
-
-	if( arg.state.mPOV[pov].direction == Pov::Centered ) //stopped/centered out
-		std::cout << "Centered";
-		*/
 	return true;
 }
 
 bool
 ZazenOIS::vector3Moved( const JoyStickEvent &arg, int index)
 {
-	/*
-	std::cout.precision(2);
-	std::cout.flags(std::ios::fixed | std::ios::right);
-	std::cout << std::endl << arg.device->vendor() << ". Orientation # " << index 
-		<< " X Value: " << arg.state.mVectors[index].x
-		<< " Y Value: " << arg.state.mVectors[index].y
-		<< " Z Value: " << arg.state.mVectors[index].z;
-	std::cout.precision();
-	std::cout.flags();
-	*/
 	return true;
-}
-
-void
-ZazenOIS::handleNonBufferedKeys()
-{
-	if( m_keyBoard->isKeyDown( KC_ESCAPE ) )
-	{
-		this->m_core->stop();
-	}
-
-	if( m_keyBoard->isModifierDown(Keyboard::Shift) )
-		std::cout << "Shift is down..\n";
-	if( m_keyBoard->isModifierDown(Keyboard::Alt) )
-		std::cout << "Alt is down..\n";
-	if( m_keyBoard->isModifierDown(Keyboard::Ctrl) )
-		std::cout << "Ctrl is down..\n";
-}
-
-void
-ZazenOIS::handleNonBufferedMouse()
-{
-	/*
-	//Just dump the current mouse state
-	const MouseState &ms = m_mouse->getMouseState();
-	std::cout << "\nMouse: Abs(" << ms.X.abs << " " << ms.Y.abs << " " << ms.Z.abs
-		<< ") B: " << ms.buttons << " Rel(" << ms.X.rel << " " << ms.Y.rel << " " << ms.Z.rel << ")";
-		*/
-}
-
-void
-ZazenOIS::handleNonBufferedJoy( JoyStick* js )
-{
-	/*
-	//Just dump the current joy state
-	const JoyStickState &joy = js->getJoyStickState();
-	for( unsigned int i = 0; i < joy.mAxes.size(); ++i )
-		std::cout << "\nAxis " << i << " X: " << joy.mAxes[i].abs;
-		*/
 }
 
 bool
@@ -363,7 +260,7 @@ ZazenOIS::initOIS( TiXmlElement* element )
 	try
 	{
 		//This demo uses at most 4 joysticks - use old way to create (i.e. disregard vendor)
-		int numSticks = m_inputManager->getNumberOfDevices(OISJoyStick);
+		int numSticks = m_inputManager->getNumberOfDevices( OISJoyStick );
 		if ( numSticks >= 4 )
 			numSticks = 4;
 
@@ -371,14 +268,14 @@ ZazenOIS::initOIS( TiXmlElement* element )
 
 		for( int i = 0; i < numSticks; ++i )
 		{
-			m_joys[i] = (JoyStick*)m_inputManager->createInputObject( OISJoyStick, true );
-			m_joys[i]->setEventCallback( this );
-			std::cout << "\n\nCreating Joystick " << (i + 1)
-				<< "\n\tAxes: " << m_joys[i]->getNumberOfComponents(OIS_Axis)
-				<< "\n\tSliders: " << m_joys[i]->getNumberOfComponents(OIS_Slider)
-				<< "\n\tPOV/HATs: " << m_joys[i]->getNumberOfComponents(OIS_POV)
-				<< "\n\tButtons: " << m_joys[i]->getNumberOfComponents(OIS_Button)
-				<< "\n\tVector3: " << m_joys[i]->getNumberOfComponents(OIS_Vector3)
+			m_joys[ i ] = ( JoyStick* )m_inputManager->createInputObject( OISJoyStick, true );
+			m_joys[ i ]->setEventCallback( this );
+			std::cout << "\n\nCreating Joystick " << ( i + 1 )
+				<< "\n\tAxes: " << m_joys[ i ]->getNumberOfComponents( OIS_Axis )
+				<< "\n\tSliders: " << m_joys[ i ]->getNumberOfComponents( OIS_Slider )
+				<< "\n\tPOV/HATs: " << m_joys[ i ]->getNumberOfComponents( OIS_POV )
+				<< "\n\tButtons: " << m_joys[ i ]->getNumberOfComponents( OIS_Button )
+				<< "\n\tVector3: " << m_joys[ i] ->getNumberOfComponents( OIS_Vector3 )
 				<< endl;
 		}
 	}

@@ -1068,12 +1068,12 @@ DRRenderer::renderInstances( Viewer* viewer, std::list<Instance*>& instances, bo
 		{
 			if ( transparencyPass )
 			{
-				if ( instance->material->getType() != Material::TRANSPARENT )
+				if ( instance->material->getType() != Material::MATERIAL_TRANSPARENT )
 					continue;
 			}
 			else
 			{
-				if ( instance->material->getType() == Material::TRANSPARENT )
+				if ( instance->material->getType() == Material::MATERIAL_TRANSPARENT )
 					continue;
 			}
 

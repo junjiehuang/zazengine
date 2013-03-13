@@ -69,10 +69,6 @@ class ZazenOIS : public IInput, public OIS::KeyListener, public OIS::MouseListen
 		OIS::JoyStick* m_joys[4];
 
 		bool initOIS( TiXmlElement* );
-
-		void handleNonBufferedKeys();
-		void handleNonBufferedMouse();
-		void handleNonBufferedJoy( OIS::JoyStick* );
 };
 
 #endif /* SDLINPUT_H_ */

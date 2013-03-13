@@ -4,14 +4,15 @@ For Qualcomm presentation (implementation deadline saturday)
 - graphics: make combination of deferred renderer work
 - graphics: shadow - mapping
 
-- split initialize-methods of subsystems in submethods: they are all too long
-- add const to inline methods were appropriate
-- remove friend-initialisation bullshit from entities
+- texture: singleton (pass in texturedatapath)
+- materials: singleton (pass materialdatapath)
+- format all header-files same (see Zazengraphcis)
+- keep id, type & core in ISubSystem as readable
+- cleanup header-includes
 - replace all strcmp with boost:iequals
 - compile without warnings
-- subsystem-constructor which gets passed in: id, type & core-instance
-- cleanup code in ois & graphics
-- cleanup header-includes
+- add const to inline methods were appropriate
+- remove friend-initialisation bullshit from entities
 
 Graphics:
 - add transformations to models when loaded!

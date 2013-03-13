@@ -12,7 +12,6 @@
 
 #include <core/ICore.h>
 #include <physics/IPhysics.h>
-#include <boost/thread.hpp>
 #include <ode/ode.h>
 #include <list>
 
@@ -41,16 +40,9 @@ class ODEPhysics : public IPhysics
 
 		ODEPhysicsEntity* createEntity( TiXmlElement*, IGameObject* parent );
 
-		void operator()();
-
 	private:
 		std::string id;
 		std::string type;
-
-		bool runThread;
-		bool doProcessing;
-
-		boost::thread thread;
 
 		dWorldID worldID;
 		dSpaceID spaceID;
@@ -60,6 +52,8 @@ class ODEPhysics : public IPhysics
 		std::list<ODEPhysicsEntity*> entities;
 
 		ICore* core;
+
+		bool initODE( TiXmlElement* );
 
 		void updateEntities();
 		void processEvents();

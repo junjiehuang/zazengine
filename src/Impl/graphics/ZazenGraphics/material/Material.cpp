@@ -48,7 +48,7 @@ Material::loadAll( const filesystem::path& path )
 		{
 			std::string name;
 			std::string typeID;
-			Material::MaterialType materialType = Material::DIFFUSE;
+			Material::MaterialType materialType = Material::MATERIAL_DIFFUSE;
 
 			str = materialNode->Attribute( "name" );
 			if ( 0 == str )
@@ -81,31 +81,31 @@ Material::loadAll( const filesystem::path& path )
 
 			if ( "LAMBERTIAN" == typeID )
 			{
-				materialType = Material::LAMBERTIAN;
+				materialType = Material::MATERIAL_LAMBERTIAN;
 			}
 			else if ( "PHONG" == typeID )
 			{
-				materialType = Material::PHONG;
+				materialType = Material::MATERIAL_PHONG;
 			}
 			else if ( "ORENNAYAR" == typeID )
 			{
-				materialType = Material::ORENNAYAR;
+				materialType = Material::MATERIAL_ORENNAYAR;
 			}
 			else if ( "SSS" == typeID )
 			{
-				materialType = Material::SSS;
+				materialType = Material::MATERIAL_SSS;
 			}
 			else if ( "WARDS" == typeID )
 			{
-				materialType = Material::WARDS;
+				materialType = Material::MATERIAL_WARDS;
 			}
 			else if ( "TORRANCESPARROW" == typeID )
 			{
-				materialType = Material::TORRANCESPARROW;
+				materialType = Material::MATERIAL_TORRANCESPARROW;
 			}
 			else if ( "TRANSPARENT" == typeID )
 			{
-				materialType = Material::TRANSPARENT;
+				materialType = Material::MATERIAL_TRANSPARENT;
 			}
 
 			Material* material = new Material( name, materialType );

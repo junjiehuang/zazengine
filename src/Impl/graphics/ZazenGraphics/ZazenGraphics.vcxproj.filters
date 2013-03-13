@@ -85,6 +85,12 @@
     <Filter Include="Ressourcendateien\Config">
       <UniqueIdentifier>{cdb83d25-5d08-471f-86de-93e1c461edd0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headerdateien\window">
+      <UniqueIdentifier>{33c9a16b-2315-454b-a3f1-54d93807a5bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\window">
+      <UniqueIdentifier>{9d306254-532c-4838-b309-901d01a895e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -152,6 +158,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlparser.cpp">
       <Filter>Quelldateien\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="window\RenderingWindow.cpp">
+      <Filter>Quelldateien\window</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -235,6 +244,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h">
       <Filter>Headerdateien\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="window\RenderingWindow.h">
+      <Filter>Headerdateien\window</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

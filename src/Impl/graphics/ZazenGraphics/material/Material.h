@@ -24,14 +24,14 @@ class Material
  public:
 	enum MaterialType
 	{
-		DIFFUSE = 0,
-		LAMBERTIAN,
-		PHONG,
-		ORENNAYAR,
-		SSS,
-		WARDS,
-		TORRANCESPARROW,
-		TRANSPARENT = 99
+		MATERIAL_DIFFUSE = 0,
+		MATERIAL_LAMBERTIAN,
+		MATERIAL_PHONG,
+		MATERIAL_ORENNAYAR,
+		MATERIAL_SSS,
+		MATERIAL_WARDS,
+		MATERIAL_TORRANCESPARROW,
+		MATERIAL_TRANSPARENT = 99
 	};
 
 	static bool loadAll( const boost::filesystem::path& );

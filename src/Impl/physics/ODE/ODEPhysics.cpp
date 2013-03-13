@@ -29,8 +29,6 @@ ODEPhysics::ODEPhysics( const std::string& id, ICore* core )
 	  type( "physics" ),
 	  core( core )
 {
-	this->doProcessing = false;
-	this->runThread = false;
 }
 
 ODEPhysics::~ODEPhysics()
@@ -42,42 +40,10 @@ ODEPhysics::initialize( TiXmlElement* configElem )
 {
 	cout << endl << "=============== ODEPhysics initializing... ===============" << endl;
 
-	float gravX = 0.0f;
-	float gravY = -9.8f;
-	float gravZ = 0.0f;
-
-	TiXmlElement* gravityNode = configElem->FirstChildElement( "gravity" );
-	if ( 0 != gravityNode )
+	if ( false == this->initODE( configElem ) )
 	{
-		const char* str = gravityNode->Attribute( "x" );
-		if ( 0 != str)
-		{
-			gravX = ( float ) atof( str );
-		}
-
-		str = gravityNode->Attribute( "y" );
-		if ( 0 != str)
-		{
-			gravY = ( float ) atof( str );
-		}
-
-		str = gravityNode->Attribute( "z" );
-		if ( 0 != str)
-		{
-			gravZ = ( float ) atof( str );
-		}
+		return false;
 	}
-
-	dInitODE();
-
-	this->worldID = dWorldCreate();
-	this->spaceID = dHashSpaceCreate( 0 );
-	dWorldSetGravity( this->worldID, gravX, gravY, gravZ );
-	dWorldSetCFM( this->worldID, 1e-5f );
-	this->contactGroupID = dJointGroupCreate( 0 );
-
-	// TODO: init mutex & condition variable
-	//this->thread = boost::thread( boost::ref( *this ) );
 
 	cout << "================ ODEPhysics initialized =================" << endl;
 
@@ -88,12 +54,6 @@ bool
 ODEPhysics::shutdown()
 {
 	cout << endl << "=============== ODEPhysics shutting down... ===============" << endl;
-
-	this->doProcessing = false;
-	this->runThread = false;
-
-	// TODO release condition variable & mutexe
-	this->thread.join();
 
 	std::list<ODEPhysicsEntity*>::iterator iter = this->entities.begin();
 	while ( iter != this->entities.end() )
@@ -133,11 +93,7 @@ ODEPhysics::pause()
 bool
 ODEPhysics::process( double factor )
 {
-	//cout << "ODEPhysics::process enter" << endl;
-
 	this->doSimulation();
-
-	//cout << "ODEPhysics::process leave" << endl;
 
 	return true;
 }
@@ -145,11 +101,7 @@ ODEPhysics::process( double factor )
 bool
 ODEPhysics::finalizeProcess()
 {
-	//cout << "ODEPhysics::finalizeProcess enter" << endl;
-
 	this->generateEvents();
-
-	//cout << "ODEPhysics::finalizeProcess leave" << endl;
 
 	return true;
 }
@@ -403,6 +355,46 @@ ODEPhysics::processEvents()
 	}
 }
 
+bool
+ODEPhysics::initODE( TiXmlElement* configElem )
+{
+	float gravX = 0.0f;
+	float gravY = -9.8f;
+	float gravZ = 0.0f;
+
+	TiXmlElement* gravityNode = configElem->FirstChildElement( "gravity" );
+	if ( 0 != gravityNode )
+	{
+		const char* str = gravityNode->Attribute( "x" );
+		if ( 0 != str)
+		{
+			gravX = ( float ) atof( str );
+		}
+
+		str = gravityNode->Attribute( "y" );
+		if ( 0 != str)
+		{
+			gravY = ( float ) atof( str );
+		}
+
+		str = gravityNode->Attribute( "z" );
+		if ( 0 != str)
+		{
+			gravZ = ( float ) atof( str );
+		}
+	}
+
+	dInitODE();
+
+	this->worldID = dWorldCreate();
+	this->spaceID = dHashSpaceCreate( 0 );
+	dWorldSetGravity( this->worldID, gravX, gravY, gravZ );
+	dWorldSetCFM( this->worldID, 1e-5f );
+	this->contactGroupID = dJointGroupCreate( 0 );
+
+	return true;
+}
+
 void
 ODEPhysics::collisionCallback( void* data, dGeomID o1, dGeomID o2 )
 {
@@ -458,20 +450,6 @@ ODEPhysics::collisionCallback( void* data, dGeomID o1, dGeomID o2 )
 			instance->core->getEventManager().postEvent( e );
 		}
 	}
-}
-
-void
-ODEPhysics::operator()()
-{
-	cout << "ODEPhysics " << this->id << " is up and processing" << endl;
-
-	this->runThread = true;
-	while ( this->runThread )
-	{
-		this->doSimulation();
-	}
-
-	cout << "ODEPhysics " << this->id << " finished thread" << endl;
 }
 
 extern "C"
