@@ -61,6 +61,30 @@
     <Filter Include="Quelldateien\XML">
       <UniqueIdentifier>{9028e165-d757-452a-8aa3-9c8a515b2b97}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien\Pipeline">
+      <UniqueIdentifier>{5f3757c8-927d-4dae-9adc-34a8d40216c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer">
+      <UniqueIdentifier>{bcf0f4b5-8d17-471b-b1db-331cc0a3c0b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages">
+      <UniqueIdentifier>{c294f6dc-6149-4a66-92ed-5942eb150466}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing">
+      <UniqueIdentifier>{fca5ab89-8bdc-4d06-9ece-053ec25ee437}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry">
+      <UniqueIdentifier>{4d01025f-51d4-4a81-9bae-79474d847b8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting">
+      <UniqueIdentifier>{a1091841-2dba-4d21-9be3-7e30aa13eccb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency">
+      <UniqueIdentifier>{ec99c432-f94e-4bcc-a47b-58564f3e6fa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Config">
+      <UniqueIdentifier>{cdb83d25-5d08-471f-86de-93e1c461edd0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -212,5 +236,52 @@
     <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h">
       <Filter>Headerdateien\XML</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag_backup.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert_backup.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag_backup.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag_new.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert_backup.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert_new.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowFrag.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpGeom.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
+    </None>
+    <None Include="..\..\..\..\config\graphics\config.xml">
+      <Filter>Ressourcendateien\Config</Filter>
+    </None>
   </ItemGroup>
 </Project>

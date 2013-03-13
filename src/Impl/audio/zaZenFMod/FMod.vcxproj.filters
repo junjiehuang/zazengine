@@ -13,6 +13,9 @@
     <Filter Include="Quelldateien\XML">
       <UniqueIdentifier>{e05fa1e3-7e61-4b3e-a9b5-4c5bdb7f7fe7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien">
+      <UniqueIdentifier>{f1fe4e10-e30f-41a2-a8f0-1c11bc0c4365}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FModAudio.cpp">
@@ -59,5 +62,10 @@
     <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h">
       <Filter>Headerdateien\XML</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\config\audio\config.xml">
+      <Filter>Ressourcendateien</Filter>
+    </None>
   </ItemGroup>
 </Project>

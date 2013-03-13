@@ -111,6 +111,9 @@ copy $(ProjectDir)lib\*.pdb $(SolutionDir)$(Configuration)</Command>
     <ClInclude Include="types\PhysicSphere.h" />
     <ClInclude Include="types\PhysicType.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\config\physics\config.xml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -66,4 +66,9 @@
       <Filter>Quelldateien\XML</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\config\input\config.xml">
+      <Filter>Ressourcendateien</Filter>
+    </None>
+  </ItemGroup>
 </Project>

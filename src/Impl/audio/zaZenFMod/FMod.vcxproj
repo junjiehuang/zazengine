@@ -98,6 +98,9 @@
     <ClInclude Include="FModAudio.h" />
     <ClInclude Include="FModAudioEntity.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\config\audio\config.xml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

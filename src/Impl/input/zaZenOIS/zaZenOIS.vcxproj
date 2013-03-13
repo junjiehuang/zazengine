@@ -84,6 +84,9 @@
     <ClCompile Include="ZazenOIS.cpp" />
     <ClCompile Include="ZazenOISEntity.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\config\input\config.xml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

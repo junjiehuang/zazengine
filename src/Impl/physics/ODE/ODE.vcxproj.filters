@@ -92,5 +92,13 @@
     <Filter Include="Quelldateien\types">
       <UniqueIdentifier>{09754523-a26f-4bb9-99dd-6ef0ce0b9d10}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien">
+      <UniqueIdentifier>{4b31b245-5268-42c2-94f0-7f91938a21f9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\config\physics\config.xml">
+      <Filter>Ressourcendateien</Filter>
+    </None>
   </ItemGroup>
 </Project>
