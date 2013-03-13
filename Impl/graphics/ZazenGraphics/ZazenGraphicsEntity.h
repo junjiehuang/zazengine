@@ -39,6 +39,8 @@ class ZazenGraphicsEntity : public IGraphicsEntity
 		float m_heading;
 
 		Orientation* m_orientation;
+
+		void postPositionChangedEvent();
 };
 
 #endif /* ZAZENGRAPHICSENTITY_H_ */

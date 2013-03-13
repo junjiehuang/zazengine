@@ -51,6 +51,8 @@ class Orientation
 	void set( const glm::vec3& pos, float pitch, float heading, float roll );
 	void setRaw( const float* rotation, const float* position );
 
+	const glm::mat4& getMatrix() { return this->m_matrix; };
+
  protected:
 	// this method is called always when one of the upper methods is invoded
 	// this can be overridden by subclasses to react to matrix changes

@@ -7,6 +7,8 @@
 
 #include "FModAudio.h"
 
+#include <core/ICore.h>
+
 #include <fmodex/fmod_errors.h>
 
 #include <iostream>
@@ -62,7 +64,7 @@ FModAudio::initialize( TiXmlElement* configElem )
         return false;
     }
 
-    result = this->m_system->init( 10, FMOD_INIT_NORMAL, 0 );
+    result = this->m_system->init( 100, FMOD_INIT_3D_RIGHTHANDED, 0 );
     if ( FMOD_OK != result )
     {
         printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
@@ -179,32 +181,11 @@ FModAudio::process( double factor )
 {
 	//cout << "FModAudio::process enter" << endl;
 
-	// process events of entities
-	std::list<FModAudioEntity*>::iterator iter = this->entities.begin();
-	while ( iter != this->entities.end() )
+	FMOD_RESULT result = this->m_system->update();
+	if ( FMOD_OK != result )
 	{
-		FModAudioEntity* entity = *iter++;
-
-		// TODO handle
-		/* 
-		std::list<Event>::iterator eventsIter = entity->queuedEvents.begin();
-		while ( eventsIter != entity->queuedEvents.end() )
-		{
-			Event& e = *eventsIter++;
-
-			//cout << "received Event '" << e.getID() << "' in FModAudio from GO '" << entity->getParent()->getName() << endl;
-
-			if ( e == "updatePhysics" )
-			{
-				boost::any& pos = e.getValue( "pos" );
-				boost::any& vel = e.getValue( "vel" );
-
-				entity->setPosVel( any_cast<const float*>( pos ), any_cast<const float*>( vel )  );
-			}
-		}
-
-		entity->queuedEvents.clear();
-		*/
+    	printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+    	return false;
 	}
 
 	//cout << "FModAudio::process leave" << endl;
@@ -237,15 +218,43 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		if ( 0 == str )
 			continue;
 
-		if ( 0 == strcmp( str, "sound" ) )
+		if ( 0 == strcmp( str, "listener" ) )
 		{
-			bool loop = false;
-			std::string fileName;
 			float posX = 0.0f;
 			float posY = 0.0f;
 			float posZ = 0.0f;
-			FMOD_MODE mode = FMOD_SOFTWARE | FMOD_3D;
 
+			str = soundNode->Attribute( "x" );
+			if ( 0 != str )
+			{
+				posX = ( float ) atof( str );
+			}
+
+			str = soundNode->Attribute( "y" );
+			if ( 0 != str )
+			{
+				posY = ( float ) atof( str );
+			}
+
+			str = soundNode->Attribute( "z" );
+			if ( 0 != str )
+			{
+				posZ = ( float ) atof( str );
+			}
+
+			entity = new FModAudioEntity( parent );
+			this->m_core->getEventManager().registerForEvent( "POSITION_CHANGED", entity );
+		}
+		else if ( 0 == strcmp( str, "sound" ) )
+		{
+			bool loop = false;
+			float posX = 0.0f;
+			float posY = 0.0f;
+			float posZ = 0.0f;
+			float minDist = 1.0f;
+			float maxDist = 1.0f;
+			std::string fileName;
+			
 			str = soundNode->Attribute( "file" );
 			if ( 0 == str )
 			{
@@ -272,6 +281,18 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 				posZ = ( float ) atof( str );
 			}
 
+			str = soundNode->Attribute( "minDist" );
+			if ( 0 != str )
+			{
+				minDist = ( float ) atof( str );
+			}
+
+			str = soundNode->Attribute( "maxDist" );
+			if ( 0 != str )
+			{
+				maxDist = ( float ) atof( str );
+			}
+
 			str = soundNode->Attribute( "loop" );
 			if ( 0 != str )
 			{
@@ -280,20 +301,37 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 				if ( caseStr == "true" )
 				{
 					loop = true;
-					mode |= FMOD_LOOP_NORMAL;
 				}
 			}
 
 			FMOD::Sound* sound = 0;
-			FMOD_RESULT result = this->m_system->createSound( fileName.c_str(), mode, 0, &sound );
+			FMOD_RESULT result = this->m_system->createSound( fileName.c_str(), FMOD_SOFTWARE | FMOD_3D, 0, &sound );
 		    if ( FMOD_OK != result )
 		    {
 		    	cout << "ERROR ... loading sound from file \"" << fileName << ": " << FMOD_ErrorString( result ) << endl;
-		    	delete entity;
 		    	return 0;
 		    }
 
-			entity = new FModAudioEntity( sound, parent );
+			result = sound->set3DMinMaxDistance( minDist, maxDist );
+			if ( FMOD_OK != result )
+			{
+		    	cout << "ERROR ... setting min-max distance for sound \"" << fileName << ": " << FMOD_ErrorString( result ) << endl;
+		    	return 0;
+			}
+
+			if ( loop )
+			{
+				result = sound->setMode( FMOD_LOOP_NORMAL );
+				if ( FMOD_OK != result )
+				{
+		    		cout << "ERROR ... setting loop for sound \"" << fileName << ": " << FMOD_ErrorString( result ) << endl;
+		    		return 0;
+				}
+			}
+
+			entity = new FModAudioEntity( parent );
+			entity->setSound( sound );
+			entity->setPosition( posX, posY, posZ );
 		}
 	}
 

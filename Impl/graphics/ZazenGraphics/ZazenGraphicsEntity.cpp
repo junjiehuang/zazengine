@@ -8,6 +8,8 @@
 #include "ZazenGraphicsEntity.h"
 #include "ZazenGraphics.h"
 
+#include <core/ICore.h>
+
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
@@ -29,6 +31,15 @@ ZazenGraphicsEntity::ZazenGraphicsEntity( IGameObject* p )
 
 ZazenGraphicsEntity::~ZazenGraphicsEntity()
 {
+}
+
+
+void
+ZazenGraphicsEntity::postPositionChangedEvent()
+{
+	Event e( "POSITION_CHANGED" );
+	e.addValue( "matrix", ( const float* ) &this->m_orientation->getMatrix()[ 0 ] );
+	ZazenGraphics::getInstance().getCore().getEventManager().postEvent( e );
 }
 
 void
@@ -57,34 +68,41 @@ ZazenGraphicsEntity::update()
 	{
 		int keyCode = *pressedKeysIter++;
 		
-		switch( keyCode )
+		// Q
+		if ( 16 == keyCode )
 		{
-			case 16: // Q
-				this->m_orientation->changeRoll( 50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-				break;
-
-			case 18: // E
-				this->m_orientation->changeRoll( -50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-				break;
-
-			case 17: // W
-				this->m_orientation->strafeForward( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-				break;
-				
-			case 31: // S
-				this->m_orientation->strafeForward( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-				break;
-				
-			case 30: // A
-				this->m_orientation->strafeRight( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-				break;
-				
-			case 32: // D
-				this->m_orientation->strafeRight( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-				break;
-
-			default:
-				break;
+			this->m_orientation->changeRoll( 50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->postPositionChangedEvent();
+		}
+		// E
+		else if ( 18 == keyCode )
+		{
+			this->m_orientation->changeRoll( -50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->postPositionChangedEvent();
+		}
+		// W
+		else if ( 17 == keyCode )
+		{
+			this->m_orientation->strafeForward( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->postPositionChangedEvent();
+		}
+		// S
+		else if ( 31 == keyCode )
+		{
+			this->m_orientation->strafeForward( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->postPositionChangedEvent();
+		}
+		// A
+		else if ( 30 == keyCode )
+		{
+			this->m_orientation->strafeRight( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->postPositionChangedEvent();
+		}
+		// D
+		else if ( 32 == keyCode )
+		{
+			this->m_orientation->strafeRight( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->postPositionChangedEvent();
 		}
 	}
 }
