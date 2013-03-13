@@ -66,6 +66,26 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 {
 	cout << endl << "=============== ZazenGraphics initializing... ===============" << endl;
 
+	if ( false == this->initPipelinePath( configNode ) )
+	{
+		return false;
+	}
+
+	if ( false == this->initModelDataPath( configNode ) )
+	{
+		return false;
+	}
+
+	if ( false == this->initTextureDataPath( configNode ) )
+	{
+		return false;
+	}
+
+	if ( false == this->initMaterialDataPath( configNode ) )
+	{
+		return false;
+	}
+
 	// important: need to initialize window first because only then we have a valid opengl-context
 	if ( false == this->createWindow( configNode ) )
 	{
@@ -77,16 +97,18 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 		return false;
 	}
 
-	// cannot initialize renderer now because camera not yet loaded
-	this->m_renderer = new DRRenderer();
-
-	if ( false == Material::loadAll() )
+	if ( false == Material::loadAll( this->m_materialDataPath ) )
 	{
 		cout << "Coulnd't load materials - exit" << endl;
 		return false;
 	}
 
+	GeometryFactory::init( this->m_modelDataPath );
+
 	this->m_core->getEventManager().registerForEvent( "KEY_RELEASED", this );
+
+	// cannot initialize renderer now because camera not yet loaded
+	this->m_renderer = new DRRenderer();
 
 	cout << "================ ZazenGraphics initialized =================" << endl;
 	
@@ -111,7 +133,7 @@ ZazenGraphics::shutdown()
 
 	Material::freeAll();
 	Texture::freeAll();
-	GeometryFactory::freeAll();
+	GeometryFactory::getInstance().freeAll();
 	
 	KillGLWindow();
 
@@ -130,7 +152,7 @@ ZazenGraphics::start()
 	}
 
 	this->m_renderer->setCamera( this->m_camera );
-	if ( false == this->m_renderer->initialize() )
+	if ( false == this->m_renderer->initialize( this->m_pipelinePath ) )
 	{
 		cout << "ERROR ... initializing renderer failed - exit" << endl;
 		return false;
@@ -224,7 +246,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		const char* str = instanceNode->Attribute( "mesh" );
 		if ( 0 != str )
 		{
-			instance->geom = GeometryFactory::get( str );
+			instance->geom = GeometryFactory::getInstance().get( str );
 			if ( NULL == instance->geom )
 			{
 				// TODO ignore
@@ -456,7 +478,7 @@ ZazenGraphics::toggleFullscreen()
 
 	/* TODO fix it, not yet working */
 	this->m_renderer->shutdown();
-	this->m_renderer->initialize();
+	this->m_renderer->initialize( this->m_pipelinePath );
 
 	return true;
 }
@@ -494,6 +516,138 @@ ZazenGraphics::createWindow( TiXmlElement* configNode )
 	if ( ! CreateGLWindow( "zaZengine", windowWidth, windowHeight, WINDOW_BITS_PER_PIXEL, fullScreenFlag ) )
 	{
 		cout << "ERROR ... in ZazenGraphics::createWindow: failed creating window" << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool
+ZazenGraphics::initPipelinePath( TiXmlElement* configElem )
+{
+	TiXmlElement* pipelineNode = configElem->FirstChildElement( "pipeline" );
+	if ( 0 == pipelineNode )
+	{
+		cout << "ERROR ... missing pipeline-config in graphics-config" << endl;
+		return false;
+	}
+
+	const char* str = pipelineNode->Attribute( "path" );
+	if ( 0 == str )
+	{
+		cout << "ERROR ... missing pipeline-path in graphics-config" << endl;
+		return false;
+	}
+
+	this->m_pipelinePath = filesystem::path( str );
+	if ( ! filesystem::exists( this->m_pipelinePath ) )
+	{
+		cout << "ERROR ... pipeline-path " << this->m_pipelinePath << " does not exist" << endl;
+		return false;
+	}
+
+	if ( false == filesystem::is_directory( this->m_pipelinePath ) )
+	{
+		cout << "ERROR ... pipeline-path " << this->m_pipelinePath << " is not a directory" << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool
+ZazenGraphics::initModelDataPath( TiXmlElement* configElem )
+{
+	TiXmlElement* modelDataNode = configElem->FirstChildElement( "modelData" );
+	if ( 0 == modelDataNode )
+	{
+		cout << "ERROR ... missing modelData-config in graphics-config" << endl;
+		return false;
+	}
+
+	const char* str = modelDataNode->Attribute( "path" );
+	if ( 0 == str )
+	{
+		cout << "ERROR ... missing modelData-path in graphics-config" << endl;
+		return false;
+	}
+
+	this->m_modelDataPath = filesystem::path( str );
+	if ( ! filesystem::exists( this->m_modelDataPath ) )
+	{
+		cout << "ERROR ... modelData-path " << this->m_modelDataPath << " does not exist" << endl;
+		return false;
+	}
+
+	if ( false == filesystem::is_directory( this->m_modelDataPath ) )
+	{
+		cout << "ERROR ... modelData-path " << this->m_modelDataPath << " is not a directory" << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool
+ZazenGraphics::initTextureDataPath( TiXmlElement* configElem )
+{
+	TiXmlElement* textureDataNode = configElem->FirstChildElement( "textureData" );
+	if ( 0 == textureDataNode )
+	{
+		cout << "ERROR ... missing textureData-config in graphics-config" << endl;
+		return false;
+	}
+
+	const char* str = textureDataNode->Attribute( "path" );
+	if ( 0 == str )
+	{
+		cout << "ERROR ... missing textureData-path in graphics-config" << endl;
+		return false;
+	}
+
+	this->m_textureDataPath = filesystem::path( str );
+	if ( ! filesystem::exists( this->m_textureDataPath ) )
+	{
+		cout << "ERROR ... textureData-path " << this->m_textureDataPath << " does not exist" << endl;
+		return false;
+	}
+
+	if ( false == filesystem::is_directory( this->m_textureDataPath ) )
+	{
+		cout << "ERROR ... textureData-path " << this->m_textureDataPath << " is not a directory" << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool
+ZazenGraphics::initMaterialDataPath( TiXmlElement* configElem )
+{
+	TiXmlElement* materialDataNode = configElem->FirstChildElement( "materialData" );
+	if ( 0 == materialDataNode )
+	{
+		cout << "ERROR ... missing materialData-config in graphics-config" << endl;
+		return false;
+	}
+
+	const char* str = materialDataNode->Attribute( "path" );
+	if ( 0 == str )
+	{
+		cout << "ERROR ... missing materialData-path in graphics-config" << endl;
+		return false;
+	}
+
+	this->m_materialDataPath = filesystem::path( str );
+	if ( ! filesystem::exists( this->m_materialDataPath ) )
+	{
+		cout << "ERROR ... materialData-path " << this->m_materialDataPath << " does not exist" << endl;
+		return false;
+	}
+
+	if ( false == filesystem::is_directory( this->m_materialDataPath ) )
+	{
+		cout << "ERROR ... materialData-path " << this->m_materialDataPath << " is not a directory" << endl;
 		return false;
 	}
 

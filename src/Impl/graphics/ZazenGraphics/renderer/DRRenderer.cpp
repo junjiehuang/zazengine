@@ -139,7 +139,7 @@ DRRenderer::toggleDisplay()
 }
 
 bool
-DRRenderer::initialize()
+DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Renderer..." << endl;
 
@@ -158,13 +158,13 @@ DRRenderer::initialize()
 	if ( false == this->initFBO() )
 		return false;
 
-	if ( false == this->initGeomStage() )
+	if ( false == this->initGeomStage( pipelinePath ) )
 		return false;
 
-	if ( false == this->initLightingStage() )
+	if ( false == this->initLightingStage( pipelinePath ) )
 		return false;
 
-	if ( false == this->initShadowMapping() )
+	if ( false == this->initShadowMapping( pipelinePath ) )
 		return false;
 
 	if ( false == this->initUniformBlocks() )
@@ -328,7 +328,7 @@ DRRenderer::initFBO()
 }
 
 bool
-DRRenderer::initGeomStage()
+DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Rendering Geometry-Stage..." << endl;
 
@@ -339,14 +339,14 @@ DRRenderer::initGeomStage()
 		return false;
 	}
 
-	this->m_vertGeomStage = Shader::createShader( Shader::VERTEX_SHADER, "../media/graphics/dr/stages/geom/geomVert.glsl" );
+	this->m_vertGeomStage = Shader::createShader( Shader::VERTEX_SHADER, pipelinePath.generic_string() + "/dr/stages/geom/geomVert.glsl" );
 	if ( 0 == this->m_vertGeomStage )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: coulnd't create vertex-shader - exit" << endl;
 		return false;
 	}
 
-	this->m_fragGeomStage = Shader::createShader( Shader::FRAGMENT_SHADER, "../media/graphics/dr/stages/geom/geomFrag.glsl" );
+	this->m_fragGeomStage = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/geom/geomFrag.glsl" );
 	if ( 0 == this->m_fragGeomStage )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: coulnd't create fragment-shader - exit" << endl;
@@ -422,7 +422,7 @@ DRRenderer::initGeomStage()
 }
 
 bool
-DRRenderer::initLightingStage()
+DRRenderer::initLightingStage( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Rendering Lighting-Stage..." << endl;
 
@@ -433,14 +433,14 @@ DRRenderer::initLightingStage()
 		return false;
 	}
 
-	this->m_vertLightingStage = Shader::createShader( Shader::VERTEX_SHADER, "../media/graphics/dr/stages/lighting/lightVert.glsl" );
+	this->m_vertLightingStage = Shader::createShader( Shader::VERTEX_SHADER, pipelinePath.generic_string() + "/dr/stages/lighting/lightVert.glsl" );
 	if ( 0 == this->m_vertLightingStage )
 	{
 		cout << "ERROR in DRRenderer::initLightingStage: coulnd't create vertex-shader - exit" << endl;
 		return false;
 	}
 
-	this->m_fragLightingStage = Shader::createShader( Shader::FRAGMENT_SHADER, "../media/graphics/dr/stages/lighting/lightFrag.glsl" );
+	this->m_fragLightingStage = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/lighting/lightFrag.glsl" );
 	if ( 0 == this->m_fragGeomStage )
 	{
 		cout << "ERROR in DRRenderer::initLightingStage: coulnd't create fragment-shader - exit" << endl;
@@ -489,7 +489,7 @@ DRRenderer::initLightingStage()
 }
 
 bool
-DRRenderer::initShadowMapping()
+DRRenderer::initShadowMapping( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Rendering Shadow-Mapping..." << endl;
 
@@ -510,14 +510,14 @@ DRRenderer::initShadowMapping()
 		return false;
 	}
 
-	this->m_vertShadowMapping = Shader::createShader( Shader::VERTEX_SHADER, "../media/graphics/dr/stages/shadowing/shadowVert.glsl" );
+	this->m_vertShadowMapping = Shader::createShader( Shader::VERTEX_SHADER, pipelinePath.generic_string() + "/dr/stages/shadowing/shadowVert.glsl" );
 	if ( 0 == this->m_vertShadowMapping )
 	{
 		cout << "ERROR in DRRenderer::initShadowMapping: coulnd't create vertex shader - exit" << endl;
 		return false;
 	}
 
-	this->m_fragShadowMapping = Shader::createShader( Shader::FRAGMENT_SHADER, "../media/graphics/dr/stages/shadowing/shadowFrag.glsl" );
+	this->m_fragShadowMapping = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/shadowing/shadowFrag.glsl" );
 	if ( 0 == this->m_fragShadowMapping )
 	{
 		cout << "ERROR in DRRenderer::initShadowMapping: coulnd't create fragment shader - exit" << endl;

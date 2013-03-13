@@ -56,8 +56,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>lib/;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>fmodex_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>lib/;$(BOOST_PATH)/lib/</AdditionalLibraryDirectories>
+      <AdditionalDependencies>fmodex_vc.lib;libboost_filesystem-vc100-mt-gd-1_51.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy $(ProjectDir)lib\*.dll $(SolutionDir)$(Configuration)</Command>
@@ -99,7 +99,9 @@
     <ClInclude Include="FModAudioEntity.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\config\audio\config.xml" />
+    <None Include="..\..\..\..\config\audio\config.xml">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

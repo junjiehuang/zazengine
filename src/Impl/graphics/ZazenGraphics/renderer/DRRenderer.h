@@ -131,7 +131,7 @@ class DRRenderer : public Renderer
 	DRRenderer();
 	virtual ~DRRenderer();
 
-	virtual bool initialize();
+	virtual bool initialize( const boost::filesystem::path& );
 	virtual bool shutdown();
 
 	virtual bool toggleDisplay();
@@ -179,9 +179,9 @@ class DRRenderer : public Renderer
 	bool m_displayMRT;
 
 	bool initFBO();
-	bool initGeomStage();
-	bool initLightingStage();
-	bool initShadowMapping();
+	bool initGeomStage( const boost::filesystem::path& );
+	bool initLightingStage( const boost::filesystem::path& );
+	bool initShadowMapping( const boost::filesystem::path& );
 	bool initUniformBlocks();
 
 	bool initDepthBuffer();

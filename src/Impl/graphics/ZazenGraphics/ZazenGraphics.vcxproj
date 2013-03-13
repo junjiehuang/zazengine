@@ -120,7 +120,9 @@
     <ClInclude Include="ZazenGraphicsEntity.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\config\graphics\config.xml" />
+    <None Include="..\..\..\..\config\graphics\config.xml">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag_backup.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl" />

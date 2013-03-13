@@ -12,6 +12,8 @@
 
 #include "FModAudioEntity.h"
 
+#include <boost/filesystem.hpp>
+
 #include <fmodex/fmod.hpp>
 
 #include <list>
@@ -51,6 +53,8 @@ class FModAudio : public IAudio
 		std::string id;
 		std::string type;
 
+		boost::filesystem::path m_audioDataPath;
+
 		ICore* m_core;
 
 		FMOD::System* m_system;
@@ -59,6 +63,10 @@ class FModAudio : public IAudio
 
 		std::list<FModAudioEntity*> entities;
 
+		bool initFMod( TiXmlElement* );
+		bool initAudioDataPath( TiXmlElement* );
+		bool init3dSettings( TiXmlElement* );
+		bool loadBackgroundMusic( TiXmlElement* );
 };
 
 #endif /* PLAYGROUNDAUDIO_H_ */

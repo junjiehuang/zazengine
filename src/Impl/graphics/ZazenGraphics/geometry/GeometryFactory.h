@@ -21,22 +21,29 @@
 
 class GeometryFactory
 {
- 	 public:
-		 static GeomType* get( const std::string& fileName );
-		 static void freeAll();
+public:
+	static void init( const boost::filesystem::path& );
+	static GeometryFactory& getInstance() { return *GeometryFactory::instance; };
+
+	GeomType* get( const std::string& fileName );
+	void freeAll();
  	 
- 	 private:
-		 GeometryFactory();
-		 ~GeometryFactory();
+private:
+	static GeometryFactory* instance;
 
-		 static GeomType* loadFolder( const boost::filesystem::path& );
-		 static GeomType* loadFile( const boost::filesystem::path& );
+	GeometryFactory( const boost::filesystem::path& );
+	~GeometryFactory();
 
-		 static std::map<std::string, GeomType*> meshes;
+	const boost::filesystem::path& m_modelDataPath;
 
-		 static void processNodeChildren( GeomType* geomParent, const struct aiNode*, const struct aiScene* );
-		 static GeomType* processNode( const struct aiNode*, const struct aiScene* );		 
-		 static GeomType* processMesh( const struct aiMesh* );
+	std::map<std::string, GeomType*> meshes;
+
+	GeomType* loadFolder( const boost::filesystem::path& );
+	GeomType* loadFile( const boost::filesystem::path& );
+
+	void processNodeChildren( GeomType* geomParent, const struct aiNode*, const struct aiScene* );
+	GeomType* processNode( const struct aiNode*, const struct aiScene* );		 
+	GeomType* processMesh( const struct aiMesh* );
 };
 
 #endif

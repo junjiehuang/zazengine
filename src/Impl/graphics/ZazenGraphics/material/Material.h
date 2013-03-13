@@ -11,6 +11,8 @@
 #include "UniformBlock.h"
 #include "Texture.h"
 
+#include <boost/filesystem.hpp>
+
 #include <glm/glm.hpp>
 
 #include <string>
@@ -32,7 +34,7 @@ class Material
 		TRANSPARENT = 99
 	};
 
-	static bool loadAll();
+	static bool loadAll( const boost::filesystem::path& );
 	static void freeAll();
 
 	static Material* get( const std::string& );

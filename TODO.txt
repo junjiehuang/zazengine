@@ -4,6 +4,15 @@ For Qualcomm presentation (implementation deadline saturday)
 - graphics: make combination of deferred renderer work
 - graphics: shadow - mapping
 
+- split initialize-methods of subsystems in submethods: they are all too long
+- add const to inline methods were appropriate
+- remove friend-initialisation bullshit from entities
+- replace all strcmp with boost:iequals
+- compile without warnings
+- subsystem-constructor which gets passed in: id, type & core-instance
+- cleanup code in ois & graphics
+- cleanup header-includes
+
 Graphics:
 - add transformations to models when loaded!
 
@@ -11,18 +20,10 @@ Advanced
 - make physics processing async
 
 Code-Quality
-- add const to inline methods were appropriate
-- remove friend-initialisation bullshit from entities
-- replace all strcmp with boost:iequals
-- compile without warnings
 - project buildable as RELEASE
-- remove paths in access to files in code, only file-name access anymore, paths configurable
-- subsystem-constructor which gets passed in: id, type & core-instance
-- cleanup code in ois & graphics
-- move pipeline-shaders required for deferred renderer from zazensquares to zazengine. pipeline is then copied to bin of squares: pipeline/graphics, pipeline/audio,...
-- move config of subsystems of zazengine from zazensquares to zazengine. config is then copied to bin of squares: config/graphics, config/audio,...
 - check if everything is cleaned up when a subsystem cannot be initialized
 - A GOOD SOLUTION FOR THE PROBLEM OF INCLUDING TINY-XML IN ALL SUBSYSTEMS
+- fmod-subsystem should do a proper loading and managing of its loaded sound
 - UNIT-Tests?
 
 Hacks

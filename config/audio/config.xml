@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <subSystem type="audio" file="../bin/zaZenFMod.dll">
-  <!--<music file="../media/audio/firestarter.mp3"/>-->
+  <!--<backgroundMusic file="../media/audio/firestarter.mp3"/>-->
   <settings3d dopplerScale="1.0" distanceFactor="1000.0" rollOffScale="1.0"/>
 
   <audioData path="../media/audio/"/>

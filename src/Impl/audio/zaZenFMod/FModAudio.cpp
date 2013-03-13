@@ -50,93 +50,24 @@ FModAudio::initialize( TiXmlElement* configElem )
 {
 	cout << endl << "=============== FModAudio initializing... ===============" << endl;
 
-	FMOD_RESULT result;
-	unsigned int version;
-
-	result = FMOD::System_Create( &this->m_system );
-    FMOD_ERRCHECK( result );
-
-    result = this->m_system->getVersion( &version );
-    FMOD_ERRCHECK( result );
-
-    if ( FMOD_VERSION > version )
-    {
-        printf( "Error!  You are using an old version of FMOD %08x.  This program requires %08x\n", version, FMOD_VERSION );
-        return false;
-    }
-
-	int numDrivers = 0;
-	FMOD_SPEAKERMODE speakermode;
-    FMOD_CAPS caps;
-
-	result = this->m_system->getNumDrivers( &numDrivers);
-    FMOD_ERRCHECK(result);
-
-    if ( 0 == numDrivers )
-    {
-        result = this->m_system->setOutput( FMOD_OUTPUTTYPE_NOSOUND );
-        FMOD_ERRCHECK( result );
-    }
-    else
-    {
-        result = this->m_system->getDriverCaps( 0, &caps, 0, &speakermode );
-        FMOD_ERRCHECK( result );
-
-        result = this->m_system->setSpeakerMode( speakermode ); 
-        FMOD_ERRCHECK( result );
-
-        if ( caps & FMOD_CAPS_HARDWARE_EMULATED )
-        { 
-            result = this->m_system->setDSPBufferSize( 1024, 10 );
-            FMOD_ERRCHECK( result );
-        }
-    }
-
-    result = this->m_system->init( 100, FMOD_INIT_NORMAL, 0 );
-    if ( FMOD_OK != result )
-    {
-        printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
-       	return false;
-    }
-
-	TiXmlElement* windowNode = configElem->FirstChildElement( "settings3d" );
-	if ( 0 != windowNode )
+	if ( false == this->initAudioDataPath( configElem ) )
 	{
-		float dopplerScale = 1.0f;
-		float distanceFactor = 1.0f;
-		float rollOffScale = 1.0f;
-
-		const char* str = windowNode->Attribute( "dopplerScale" );
-		if ( 0 != str )
-		{
-			dopplerScale = ( float ) atof( str );
-		}
-
-		str = windowNode->Attribute( "distanceFactor" );
-		if ( 0 != str )
-		{
-			distanceFactor = ( float ) atof( str );
-		}
-
-		str = windowNode->Attribute( "rollOffScale" );
-		if ( 0 != str )
-		{
-			rollOffScale = ( float ) atof( str );
-		}
-
-		result = this->m_system->set3DSettings( dopplerScale, distanceFactor, rollOffScale );
-		FMOD_ERRCHECK( result );
+		return false;
 	}
 
-	TiXmlElement* musicNode = configElem->FirstChildElement( "music" );
-	if ( 0 != musicNode )
+	if ( false == this->initFMod( configElem ) )
 	{
-		const char* str = musicNode->Attribute( "file" );
-		if ( 0 != str )
-		{
-			result = m_system->createSound( str, FMOD_SOFTWARE | FMOD_2D, 0, &this->m_bgMusic );
-			FMOD_ERRCHECK( result );
-		}
+		return false;
+	}
+
+	if ( false == this->init3dSettings( configElem ) )
+	{
+		return false;
+	}
+
+	if ( false == this->loadBackgroundMusic( configElem ) )
+	{
+		return false;
 	}
 
 	cout << "================ FModAudio initialized =================" << endl;
@@ -300,7 +231,7 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 				continue;
 			}
 
-			fileName = str;
+			fileName = this->m_audioDataPath.generic_string() + str;
 
 			str = soundNode->Attribute( "x" );
 			if ( 0 != str )
@@ -392,6 +323,147 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 	}
 
 	return entity;
+}
+
+
+bool
+FModAudio::initFMod( TiXmlElement* configElem )
+{
+	FMOD_RESULT result;
+	unsigned int version;
+
+	result = FMOD::System_Create( &this->m_system );
+    FMOD_ERRCHECK( result );
+
+    result = this->m_system->getVersion( &version );
+    FMOD_ERRCHECK( result );
+
+    if ( FMOD_VERSION > version )
+    {
+        printf( "Error!  You are using an old version of FMOD %08x.  This program requires %08x\n", version, FMOD_VERSION );
+        return false;
+    }
+
+	int numDrivers = 0;
+	FMOD_SPEAKERMODE speakermode;
+    FMOD_CAPS caps;
+
+	result = this->m_system->getNumDrivers( &numDrivers);
+    FMOD_ERRCHECK(result);
+
+    if ( 0 == numDrivers )
+    {
+        result = this->m_system->setOutput( FMOD_OUTPUTTYPE_NOSOUND );
+        FMOD_ERRCHECK( result );
+    }
+    else
+    {
+        result = this->m_system->getDriverCaps( 0, &caps, 0, &speakermode );
+        FMOD_ERRCHECK( result );
+
+        result = this->m_system->setSpeakerMode( speakermode ); 
+        FMOD_ERRCHECK( result );
+
+        if ( caps & FMOD_CAPS_HARDWARE_EMULATED )
+        { 
+            result = this->m_system->setDSPBufferSize( 1024, 10 );
+            FMOD_ERRCHECK( result );
+        }
+    }
+
+    result = this->m_system->init( 100, FMOD_INIT_NORMAL, 0 );
+    if ( FMOD_OK != result )
+    {
+        printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+       	return false;
+    }
+
+	return true;
+}
+
+bool
+FModAudio::loadBackgroundMusic( TiXmlElement* configElem )
+{
+	TiXmlElement* musicNode = configElem->FirstChildElement( "backgroundMusic" );
+	if ( 0 != musicNode )
+	{
+		const char* str = musicNode->Attribute( "file" );
+		if ( 0 != str )
+		{
+			FMOD_RESULT result = m_system->createSound( str, FMOD_SOFTWARE | FMOD_2D, 0, &this->m_bgMusic );
+			FMOD_ERRCHECK( result );
+		}
+	}
+
+	return true;
+}
+
+bool
+FModAudio::initAudioDataPath( TiXmlElement* configElem )
+{
+	TiXmlElement* audioDataNode = configElem->FirstChildElement( "audioData" );
+	if ( 0 == audioDataNode )
+	{
+		cout << "ERROR ... missing audioData-config in audio-config" << endl;
+		return false;
+	}
+
+	const char* str = audioDataNode->Attribute( "path" );
+	if ( 0 == str )
+	{
+		cout << "ERROR ... missing audioData-path in audio-config" << endl;
+		return false;
+	}
+
+	this->m_audioDataPath = filesystem::path( str );
+	if ( ! filesystem::exists( this->m_audioDataPath ) )
+	{
+		cout << "ERROR ... audioData-path " << this->m_audioDataPath << " does not exist" << endl;
+		return false;
+	}
+
+	if ( false == filesystem::is_directory( this->m_audioDataPath ) )
+	{
+		cout << "ERROR ... audioData-path " << this->m_audioDataPath << " is not a directory" << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool
+FModAudio::init3dSettings( TiXmlElement* configElem )
+{
+	TiXmlElement* settings3dNode = configElem->FirstChildElement( "settings3d" );
+	if ( 0 != settings3dNode )
+	{
+		float dopplerScale = 1.0f;
+		float distanceFactor = 1.0f;
+		float rollOffScale = 1.0f;
+
+		const char* str = settings3dNode->Attribute( "dopplerScale" );
+		if ( 0 != str )
+		{
+			dopplerScale = ( float ) atof( str );
+		}
+
+		str = settings3dNode->Attribute( "distanceFactor" );
+		if ( 0 != str )
+		{
+			distanceFactor = ( float ) atof( str );
+		}
+
+		str = settings3dNode->Attribute( "rollOffScale" );
+		if ( 0 != str )
+		{
+			rollOffScale = ( float ) atof( str );
+		}
+
+		FMOD_RESULT result = this->m_system->set3DSettings( dopplerScale, distanceFactor, rollOffScale );
+		FMOD_ERRCHECK( result );
+	}
+
+	return true;
 }
 
 extern "C"

@@ -20,6 +20,8 @@
 
 #include "Renderer/Renderer.h"
 
+#include <boost/filesystem.hpp>
+
 class ZazenGraphics : public IGraphics
 {
 	public:
@@ -58,6 +60,11 @@ class ZazenGraphics : public IGraphics
 		std::string m_id;
 		std::string m_type;
 
+		boost::filesystem::path m_pipelinePath;
+		boost::filesystem::path m_modelDataPath;
+		boost::filesystem::path m_textureDataPath;
+		boost::filesystem::path m_materialDataPath;
+
 		ICore* m_core;
 
 		Viewer* m_camera;
@@ -67,6 +74,11 @@ class ZazenGraphics : public IGraphics
 		std::list<Instance*> m_instances;
 
 		std::list<ZazenGraphicsEntity*> m_entities;
+
+		bool initPipelinePath( TiXmlElement* );
+		bool initModelDataPath( TiXmlElement* );
+		bool initTextureDataPath( TiXmlElement* );
+		bool initMaterialDataPath( TiXmlElement* );
 
 		bool createWindow( TiXmlElement* );
 		bool initGL( TiXmlElement* );

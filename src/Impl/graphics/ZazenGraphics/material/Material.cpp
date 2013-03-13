@@ -14,15 +14,14 @@
 #include <core/XML/tinyxml.h>
 
 using namespace std;
+using namespace boost;
 
 std::map<std::string, Material*> Material::allMaterials;
 
 bool
-Material::loadAll()
+Material::loadAll( const filesystem::path& path )
 {
-	// TODO make this file configureable
-
-	string fullFileName = "../media/graphics/materials/materials.xml";
+	string fullFileName = path.generic_string() + "materials.xml";
 
 	TiXmlDocument doc( fullFileName.c_str() );
 

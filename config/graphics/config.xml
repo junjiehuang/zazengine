@@ -7,5 +7,5 @@
   
   <modelData path="../media/models/"/>
   <textureData path="../media/textures/"/>
-  <materialsData path="../media/materials/"/>
+  <materialData path="../media/materials/"/>
 </subSystem>

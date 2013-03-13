@@ -18,7 +18,27 @@
 using namespace std;
 using namespace boost;
 
-map<string, GeomType*> GeometryFactory::meshes;
+GeometryFactory* GeometryFactory::instance = NULL;
+
+void
+GeometryFactory::init( const boost::filesystem::path& modelDataPath )
+{
+	if ( NULL == GeometryFactory::instance )
+	{
+		new GeometryFactory( modelDataPath );
+	}
+}
+
+GeometryFactory::GeometryFactory( const boost::filesystem::path& modelDataPath )
+	: m_modelDataPath( modelDataPath )
+{
+	GeometryFactory::instance = this;
+}
+
+GeometryFactory::~GeometryFactory()
+{
+	GeometryFactory::instance = NULL;
+}
 
 GeomType*
 GeometryFactory::get( const std::string& fileName )
@@ -27,23 +47,23 @@ GeometryFactory::get( const std::string& fileName )
 	if ( findIter != GeometryFactory::meshes.end() )
 		return findIter->second;
 
-	filesystem::path filePath( fileName.c_str() );
+	filesystem::path fullFileName( this->m_modelDataPath.generic_string() + fileName );
 
-	if ( ! filesystem::exists( filePath ) )
+	if ( ! filesystem::exists( fullFileName ) )
 	{
-		cout << "ERROR ... in GeometryFactory::get: file \"" << fileName << "\" does not exist" << endl;
+		cout << "ERROR ... in GeometryFactory::get: file \"" << fullFileName << "\" does not exist" << endl;
 		return 0;	
 	}
 
 	GeomType* geomType = 0;
 
-	if ( filesystem::is_directory( filePath ) )
+	if ( filesystem::is_directory( fullFileName ) )
 	{
-		geomType = GeometryFactory::loadFolder( filePath );
+		geomType = GeometryFactory::loadFolder( fullFileName );
 	}
 	else
 	{
-		geomType = GeometryFactory::loadFile( filePath );
+		geomType = GeometryFactory::loadFile( fullFileName );
 	}
 	
 	if ( NULL != geomType )
