@@ -148,18 +148,16 @@ FModAudioEntity::playSound()
 void
 FModAudioEntity::updatePosVel( const float* pos, const float* vel )
 {
+	this->m_pos.x = pos[ 0 ];
+	this->m_pos.y = pos[ 1 ];
+	this->m_pos.z = pos[ 2 ];
+
+	this->m_vel.x = vel[ 0 ];
+	this->m_vel.y = vel[ 1 ];
+	this->m_vel.z = vel[ 2 ];
+
 	if ( this->m_channel )
 	{
-		this->m_pos.x = pos[ 0 ];
-		this->m_pos.y = pos[ 1 ];
-		this->m_pos.z = pos[ 2 ];
-
-		this->m_vel.x = vel[ 0 ];
-		this->m_vel.y = vel[ 1 ];
-		this->m_vel.z = vel[ 2 ];
-
-		//cout << "Audio:" << this->getParent()->getName() << " has position of (" << pos[0] << "/" << pos[1] << "/" << pos[2] << ")" << endl;
-
 		FMOD_RESULT result = this->m_channel->set3DAttributes( &this->m_pos, &this->m_vel );
 		if ( FMOD_OK != result )
 		{
