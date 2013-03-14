@@ -929,6 +929,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	// tell lighting program that normalmap is bound to texture-unit 1
 	if ( false == this->m_progLightingStage->setUniformInt( "NormalMap", 1 ) )
 		return false;
+	// TODO when used in future uncomment
 	/*
 	// tell lighting program that generic map is bound to texture-unit 2
 	if ( false == this->m_progLightingStage->setUniformInt( "GenericMap1", 2 ) )
@@ -936,25 +937,26 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	// tell lighting program that generic map is bound to texture-unit 3
 	if ( false == this->m_progLightingStage->setUniformInt( "GenericMap2", 3 ) )
 		return false;
+		*/
 	// tell lighting program that depth-map of scene is bound to texture-unit MRT_COUNT
 	if ( false == this->m_progLightingStage->setUniformInt( "DepthMap", MRT_COUNT ) )
 		return false;
-	
 	// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
 	if ( false == this->m_progLightingStage->setUniformInt( "ShadowMap", MRT_COUNT + 1 ) )
 		return false;
+	/*
 	// tell program that the cubic shadowmap of a point-light will be available at texture unit MRT_COUNT + 1
 	if ( false == this->m_progLightingStage->setUniformInt( "ShadowCubeMap", MRT_COUNT + 1 ) )
 		return false;
-	 */
+	*/
 
 	// calculate the inverse projection matrix - is needed for reconstructing world-position from screen-space
 	// update the inverse projection ( could also be carried out on the GPU but we calculate it once on the cpu )
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr(  glm::inverse( this->m_camera->m_projectionMatrix ) ), 448, 64) )
+	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( glm::inverse( this->m_camera->m_projectionMatrix ) ), 448, 64) )
 		return false;
 	// calculate the inverse viewing matrix - is needed for reconstructing world-position from screen-space
 	// update the inverse projection ( could also be carried out on the GPU but we calculate it once on the cpu )
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr(  glm::inverse( this->m_camera->m_viewMatrix ) ), 512, 64) )
+	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( glm::inverse( this->m_camera->m_viewMatrix ) ), 512, 64) )
 		return false;
 
 	// change to ortho to render the screen quad
