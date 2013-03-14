@@ -1,9 +1,11 @@
 #version 330 core
 
-//#define MAX_DIFFUSE_TEXT 4
-
-//in vec2 ex_textureCoord;
 in vec4 ex_normal;
+
+// provided by OpenGL
+in vec4 gl_FragCoord;
+out float gl_FragDepth;
+///////////////////////
 
 layout( location = 0 ) out vec4 out_diffuse;
 layout( location = 1 ) out vec4 out_normal;
@@ -52,4 +54,7 @@ void main()
 
     out_generic1 = genericMaterialAttrib1;
     out_generic2 = genericMaterialAttrib2;
+
+	gl_FragDepth = gl_FragCoord.z;
+	//gl_FragDepth = gl_FragCoord.x / gl_FragCoord.y;
 }

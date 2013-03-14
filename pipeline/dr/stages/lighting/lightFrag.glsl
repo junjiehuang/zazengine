@@ -34,8 +34,12 @@ layout(shared) uniform light
 	mat4 lightSpaceUniform;
 };
 
-vec4 worldPosFromDepth( const vec2 screenCoord, const float depth )
+
+vec3
+worldPosFromDepth( const vec2 screenCoord )
 {
+	// stored as luminance floating point 32bit
+	float depth = texture( DepthMap, screenCoord ).x;
     // Get x/w and y/w (NDC) from the viewport position
     // after perspective division through w we are in the normaliced device coordinages 
     // which are in the range from -1 to +1.
@@ -48,15 +52,9 @@ vec4 worldPosFromDepth( const vec2 screenCoord, const float depth )
     vec4 pos = projectionInv_Matrix * vProjectedPos;
     
     // Divide by w to get the view-space position
-    vec4 modelSpace = pos / pos.w;
+    vec3 viewSpace = pos.xyz / pos.w;
     
-    return modelSpace; 
-}
-
-float
-shadowLookup( const vec4 shadowCoord, const float offsetX, const float offsetY )
-{
-	return textureProj( ShadowMap, shadowCoord + vec4( offsetX, offsetY, 0.0, 0.0 ) );
+    return viewSpace; 
 }
 
 vec4
@@ -72,19 +70,16 @@ void main()
 	// screen-space ( 0 – 1 ) 
 	// TODO problem: what if screen-resolution changes??
 	vec2 screenCoord = vec2( gl_FragCoord.x / 1024, gl_FragCoord.y / 768 );
-
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
 	vec4 normal = texture( NormalMap, screenCoord );
-	// stored as luminance floating point 32bit
-	float depth = texture( DepthMap, screenCoord ).x;
-    
-	float shadow = 0.0f;
-
+	
 	// worldCoord = modelCoord
-	vec4 worldCoord = worldPosFromDepth( screenCoord, depth );
+	vec4 worldCoord = vec4( worldPosFromDepth( screenCoord ), 1.0 );
 	// transform worldCoord to lightspace & fit from NDC (lightSpace matrix includes viewing-projection) 
 	// into the unit-cube 0-1 to be able to access the shadow-map
 	vec4 shadowCoord = lightSpaceUniform * worldCoord;
+
+	float shadow = 0.0f;
 
 	// spot-light is projective – shadowlookup must be projective
 	if ( 0 == lightConfig.x )

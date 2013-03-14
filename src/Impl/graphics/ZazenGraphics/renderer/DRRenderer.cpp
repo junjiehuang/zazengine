@@ -924,26 +924,17 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	}
 
 	// tell lighting program that diffusemap is bound to texture-unit 0
-	if ( false == this->m_progLightingStage->setUniformInt( "DiffuseMap", 0 ) )
-		return false;
+	this->m_progLightingStage->setUniformInt( "DiffuseMap", 0 );
 	// tell lighting program that normalmap is bound to texture-unit 1
-	if ( false == this->m_progLightingStage->setUniformInt( "NormalMap", 1 ) )
-		return false;
-	// TODO when used in future uncomment
-	/*
+	this->m_progLightingStage->setUniformInt( "NormalMap", 1 );
 	// tell lighting program that generic map is bound to texture-unit 2
-	if ( false == this->m_progLightingStage->setUniformInt( "GenericMap1", 2 ) )
-		return false;
+	this->m_progLightingStage->setUniformInt( "GenericMap1", 2 );
 	// tell lighting program that generic map is bound to texture-unit 3
-	if ( false == this->m_progLightingStage->setUniformInt( "GenericMap2", 3 ) )
-		return false;
-		*/
+	this->m_progLightingStage->setUniformInt( "GenericMap2", 3 );
 	// tell lighting program that depth-map of scene is bound to texture-unit MRT_COUNT
-	if ( false == this->m_progLightingStage->setUniformInt( "DepthMap", MRT_COUNT ) )
-		return false;
+	this->m_progLightingStage->setUniformInt( "DepthMap", MRT_COUNT );
 	// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
-	if ( false == this->m_progLightingStage->setUniformInt( "ShadowMap", MRT_COUNT + 1 ) )
-		return false;
+	this->m_progLightingStage->setUniformInt( "ShadowMap", MRT_COUNT + 1 );
 	/*
 	// tell program that the cubic shadowmap of a point-light will be available at texture unit MRT_COUNT + 1
 	if ( false == this->m_progLightingStage->setUniformInt( "ShadowCubeMap", MRT_COUNT + 1 ) )

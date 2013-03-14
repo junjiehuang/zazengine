@@ -233,7 +233,9 @@ Program::setUniform4( const std::string& name, const float* value )
 	GLint status;
 	GLint location = this->getUniformLocation( name );
 	if ( -1 == location )
+	{
 		return false;
+	}
 
 	glUniform4fv( location, 4, value );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
@@ -256,7 +258,7 @@ Program::setUniformInt( const std::string& name, int value )
 	glUniform1i( location, value );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "ERROR ... in Program::setUniformInt for programm " << this->m_programName << ": glUniform1i failed for " << name << ": " << gluErrorString( status )  << endl;
+		//cout << "ERROR ... in Program::setUniformInt for programm " << this->m_programName << ": glUniform1i failed for " << name << ": " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -301,7 +303,9 @@ Program::getUniformLocation( const std::string& name )
 
 	location = glGetUniformLocation( this->m_programObject, name.c_str() );
 	if ( -1 == location )
-		cout << "ERROR ... in Program::getUniformLocation for programm " << this->m_programName << ": coulnd't get Uniform Location for name \"" << name << "\": " << gluErrorString( glGetError() )  << endl;
+	{
+		//cout << "ERROR ... in Program::getUniformLocation for programm " << this->m_programName << ": coulnd't get Uniform Location for name \"" << name << "\": " << gluErrorString( glGetError() )  << endl;
+	}
 
 	return location;
 }
