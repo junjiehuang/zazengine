@@ -187,13 +187,13 @@ class DRRenderer : public Renderer
 	bool initDepthBuffer();
 	bool initMrtBuffer( unsigned int );
 
-	bool renderShadowMap( std::list<Instance*>& instances, std::list<Light*>& lights );
-	bool renderGeometryStage( std::list<Instance*>& instances, std::list<Light*>& lights );
-	bool renderLightingStage( std::list<Instance*>& instances, std::list<Light*>& lights );
-	bool renderTransparencyStage( std::list<Instance*>& instances, std::list<Light*>& lights );
+	bool renderShadowMap( std::list<Instance*>&, std::list<Light*>& );
+	bool renderGeometryStage( std::list<Instance*>&, std::list<Light*>& );
+	bool renderLightingStage( std::list<Instance*>&, std::list<Light*>& );
+	bool renderTransparencyStage( std::list<Instance*>&, std::list<Light*>& );
 
-	bool renderInstances( Viewer* viewer, std::list<Instance*>& instances, bool, bool );
-	bool renderGeom( Viewer* viewer, Instance* parent, GeomType* geom );
+	bool renderInstances( Viewer*, std::list<Instance*>&, Program*, bool, bool );
+	bool renderGeom( Viewer*, Instance*, GeomType* );
 
 	bool showTexture( GLuint texID, int quarter );
 

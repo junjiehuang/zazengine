@@ -821,7 +821,7 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 		glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
 
 		// render scene from view of camera - don't apply material, don't render transparency
-		if ( false == this->renderInstances( light, instances, false, false ) )
+		if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, false ) )
 			return false;
 	}
 
@@ -880,7 +880,7 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	// draw all geometry - apply materials but don't render transparency
-	if ( false == this->renderInstances( this->m_camera, instances, true, false ) )
+	if ( false == this->renderInstances( this->m_camera, instances, this->m_progGeomStage, true, false ) )
 		return false;
 
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
@@ -940,27 +940,29 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	this->m_progLightingStage->setUniformInt( "DepthMap", MRT_COUNT );
 	// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
 	this->m_progLightingStage->setUniformInt( "ShadowMap", MRT_COUNT + 1 );
-	/*
-	// tell program that the cubic shadowmap of a point-light will be available at texture unit MRT_COUNT + 1
-	if ( false == this->m_progLightingStage->setUniformInt( "ShadowCubeMap", MRT_COUNT + 1 ) )
-		return false;
-	*/
 
 	// calculate the inverse projection matrix - is needed for reconstructing world-position from screen-space
 	// update the inverse projection ( could also be carried out on the GPU but we calculate it once on the cpu )
 	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( glm::inverse( this->m_camera->m_projectionMatrix ) ), 448, 64) )
+	{
 		return false;
+	}
+
 	// calculate the inverse viewing matrix - is needed for reconstructing world-position from screen-space
 	// update the inverse projection ( could also be carried out on the GPU but we calculate it once on the cpu )
 	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( glm::inverse( this->m_camera->m_viewMatrix ) ), 512, 64) )
+	{
 		return false;
+	}
 
 	// change to ortho to render the screen quad
 	this->m_camera->setupOrtho();
 
 	// update projection-matrix because changed to orthogonal-projection
 	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( this->m_camera->m_projectionMatrix ), 320, 64 ) )
+	{
 		return false;
+	}
 
 	glm::vec4 lightConfig;
 	glm::vec4 lightPosition;
@@ -1052,16 +1054,25 @@ DRRenderer::renderTransparencyStage( std::list<Instance*>& instances, std::list<
 }
 
 bool
-DRRenderer::renderInstances( Viewer* viewer, std::list<Instance*>& instances, bool applyMaterial, bool transparencyPass )
+DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program* currentProgramm, 
+		bool applyMaterial, bool transparencyPass )
 {
 	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( viewer->m_projectionMatrix ), 320, 64 ) )
+	{
 		return false;
+	}
 	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( viewer->m_viewMatrix ), 384, 64 ) )
+	{
 		return false;
+	}
 	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( glm::inverse( viewer->m_projectionMatrix ) ), 448, 64 ) )
+	{
 		return false;
+	}
 	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( glm::inverse( viewer->m_viewMatrix ) ), 512, 64 ) )
+	{
 		return false;
+	}
 
 	list<Instance*>::iterator iter = instances.begin();
 	while ( iter != instances.end() )
@@ -1073,20 +1084,28 @@ DRRenderer::renderInstances( Viewer* viewer, std::list<Instance*>& instances, bo
 			if ( transparencyPass )
 			{
 				if ( instance->material->getType() != Material::MATERIAL_TRANSPARENT )
+				{
 					continue;
+				}
 			}
 			else
 			{
 				if ( instance->material->getType() == Material::MATERIAL_TRANSPARENT )
+				{
 					continue;
+				}
 			}
 
-			if ( false == instance->material->activate( this->m_materialBlock ) )
+			if ( false == instance->material->activate( this->m_materialBlock, currentProgramm ) )
+			{
 				return false;
+			}
 		}
 
 		if ( false == this->renderGeom( viewer, instance, instance->geom ) )
+		{
 			return false;
+		}
 	}
 
 	return true;

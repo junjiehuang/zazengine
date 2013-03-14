@@ -29,6 +29,5 @@ void main()
 	// lighting is applied in world-space (model-space)
 	ex_normal = normalsModel_Matrix * vec4( in_vertNorm, 0.0 );
 
-	// TODO do transformation of texture-coordinates
 	ex_texCoord = in_texCoord;
 }

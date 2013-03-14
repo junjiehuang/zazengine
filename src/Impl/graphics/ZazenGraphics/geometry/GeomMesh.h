@@ -30,11 +30,11 @@ class GeomMesh : public GeomType
 	int faceCount;
 	int vertexCount;
 
-	VertexData* data;
-	GLuint* indexBuffer;
+	VertexData* m_vertexData;
+	GLuint* m_indexBuffer;
 
-	GLuint dataVBO;
-	GLuint indexVBO;
+	GLuint m_dataVBO;
+	GLuint m_indexVBO;
 
 };
 

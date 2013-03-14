@@ -83,7 +83,7 @@ FModAudioEntity::sendEvent( Event& e )
 		FMOD_RESULT result = FModAudio::getInstance().getSystem()->set3DListenerAttributes( 0, &pos, &vel, &forward, &up );
 		if ( FMOD_OK != result )
 		{
-			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+			//printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
 			return false;
 		}
 	}
@@ -161,7 +161,7 @@ FModAudioEntity::updatePosVel( const float* pos, const float* vel )
 		FMOD_RESULT result = this->m_channel->set3DAttributes( &this->m_pos, &this->m_vel );
 		if ( FMOD_OK != result )
 		{
-			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+			//printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
 		}
 	}
 }

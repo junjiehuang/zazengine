@@ -10,26 +10,26 @@ GeomMesh::GeomMesh( int faceCount, int vertexCount, VertexData* data, GLuint* in
 	: faceCount( faceCount ),
 	  vertexCount( vertexCount )
 {
-	this->dataVBO = 0;
-	this->indexVBO = 0;
+	this->m_dataVBO = 0;
+	this->m_indexVBO = 0;
 
-	this->data = data;
-	this->indexBuffer = indices;
+	this->m_vertexData = data;
+	this->m_indexBuffer = indices;
 }
 
 GeomMesh::~GeomMesh()
 {
-	if ( this->dataVBO )
-		glDeleteBuffers( 1, &this->dataVBO );
+	if ( this->m_dataVBO )
+		glDeleteBuffers( 1, &this->m_dataVBO );
 
-	if ( this->indexVBO )
-		glDeleteBuffers( 1, &this->indexVBO );
+	if ( this->m_indexVBO )
+		glDeleteBuffers( 1, &this->m_indexVBO );
 
-	if ( this->data )
-		delete[] this->data;
+	if ( this->m_vertexData )
+		delete[] this->m_vertexData;
 
-	if ( this->indexBuffer )
-		delete[] this->indexBuffer;
+	if ( this->m_indexBuffer )
+		delete[] this->m_indexBuffer;
 }
 
 bool
@@ -40,10 +40,10 @@ GeomMesh::render()
 	//GeomType::render();
 	
 	// lazy loading
-	if ( 0 == this->dataVBO )
+	if ( 0 == this->m_dataVBO )
 	{
 		// generate and setup data vbo
-		glGenBuffers( 1, &this->dataVBO );
+		glGenBuffers( 1, &this->m_dataVBO );
 		status = glGetError();
 		if ( GL_NO_ERROR != status )
 		{
@@ -51,7 +51,7 @@ GeomMesh::render()
 			return false;
 		}
 
-		glBindBuffer( GL_ARRAY_BUFFER, this->dataVBO );
+		glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );
 		status = glGetError();
 		if ( GL_NO_ERROR != status )
 		{
@@ -59,7 +59,7 @@ GeomMesh::render()
 			return false;
 		}
 
-		glBufferData( GL_ARRAY_BUFFER, sizeof( VertexData ) * this->vertexCount, this->data, GL_STATIC_DRAW );
+		glBufferData( GL_ARRAY_BUFFER, sizeof( VertexData ) * this->vertexCount, this->m_vertexData, GL_STATIC_DRAW );
 		status = glGetError();
 		if ( GL_NO_ERROR != status )
 		{
@@ -76,7 +76,7 @@ GeomMesh::render()
 		}
 
 		// generate and setup index vbo
-		glGenBuffers( 1, &this->indexVBO );
+		glGenBuffers( 1, &this->m_indexVBO );
 		status = glGetError();
 		if ( GL_NO_ERROR != status )
 		{
@@ -84,7 +84,7 @@ GeomMesh::render()
 			return false;
 		}
 
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->indexVBO );
+		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->m_indexVBO );
 		status = glGetError();
 		if ( GL_NO_ERROR != status )
 		{
@@ -92,7 +92,7 @@ GeomMesh::render()
 			return false;
 		}
 
-		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( GLuint ) * this->faceCount * 3, this->indexBuffer, GL_STATIC_DRAW );
+		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( GLuint ) * this->faceCount * 3, this->m_indexBuffer, GL_STATIC_DRAW );
 		status = glGetError();
 		if ( GL_NO_ERROR != status )
 		{
@@ -109,7 +109,7 @@ GeomMesh::render()
 		}
 	}
 
-	glBindBuffer( GL_ARRAY_BUFFER, this->dataVBO );
+	glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -121,7 +121,7 @@ GeomMesh::render()
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "GeomMesh::render: glEnableVertexAttribArray(0) failed: " << gluErrorString( status )  << endl;
+		cout << "GeomMesh::render: glEnableVertexAttribArray( 0 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -129,7 +129,15 @@ GeomMesh::render()
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "GeomMesh::render: glEnableVertexAttribArray(1) failed: " << gluErrorString( status )  << endl;
+		cout << "GeomMesh::render: glEnableVertexAttribArray( 1 ) failed: " << gluErrorString( status )  << endl;
+		return false;
+	}
+
+	glEnableVertexAttribArray( 2 );
+	status = glGetError();
+	if ( GL_NO_ERROR != status )
+	{
+		cout << "GeomMesh::render: glEnableVertexAttribArray( 2 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -157,7 +165,7 @@ GeomMesh::render()
 		return false;
 	}
 
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->indexVBO );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->m_indexVBO );
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -177,7 +185,7 @@ GeomMesh::render()
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "GeomMesh::render: glBindBuffer(0) GL_ELEMENT_ARRAY_BUFFER - render - failed: " << gluErrorString( status )  << endl;
+		cout << "GeomMesh::render: glBindBuffer( 0 ) GL_ELEMENT_ARRAY_BUFFER - render - failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -185,7 +193,7 @@ GeomMesh::render()
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "GeomMesh::render: glBindBuffer(0) GL_ELEMENT_ARRAY_BUFFER - render - failed: " << gluErrorString( status )  << endl;
+		cout << "GeomMesh::render: glBindBuffer( 0 ) GL_ELEMENT_ARRAY_BUFFER - render - failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -193,7 +201,7 @@ GeomMesh::render()
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "GeomMesh::render: glDisableVertexAttribArray(1) failed: " << gluErrorString( status )  << endl;
+		cout << "GeomMesh::render: glDisableVertexAttribArray( 0 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -201,7 +209,15 @@ GeomMesh::render()
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "GeomMesh::render: glDisableVertexAttribArray(1) failed: " << gluErrorString( status )  << endl;
+		cout << "GeomMesh::render: glDisableVertexAttribArray( 1 ) failed: " << gluErrorString( status )  << endl;
+		return false;
+	}
+
+	glDisableVertexAttribArray( 2 );
+	status = glGetError();
+	if ( GL_NO_ERROR != status )
+	{
+		cout << "GeomMesh::render: glDisableVertexAttribArray( 2 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
 

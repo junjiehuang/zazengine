@@ -3,8 +3,8 @@
 in vec4 ex_normal;
 in vec2 ex_texCoord;
 
-uniform sampler2D diffuseTexture;
-uniform sampler2D normalMap;
+uniform sampler2D DiffuseTexture;
+uniform sampler2D NormalMap;
 
 layout( location = 0 ) out vec4 out_diffuse;
 layout( location = 1 ) out vec4 out_normal;
@@ -30,13 +30,13 @@ void main()
 	// use diffuse-texture for color
 	if ( 1.0 == materialConfig.y )
 	{
-		out_diffuse.rgb += texture( diffuseTexture, ex_texCoord ).rgb;
+		out_diffuse.rgb = texture( DiffuseTexture, ex_texCoord ).rgb;
 	}
 
     // normal-mapping enabled – fetch from texture
 	if ( 1.0 == materialConfig.z )
 	{
-		out_normal.xyz = texture( normalMap, ex_texCoord ).xyz;
+		out_normal.xyz = texture( NormalMap, ex_texCoord ).xyz;
 	}
 	else
 	{
@@ -45,7 +45,7 @@ void main()
 
     // set alpha component of normal to 0
 	out_normal.xyz = ex_normal.xyz;
-	out_normal.a = 0.0;
+	out_normal.a = 1.0;
 
     out_generic1 = genericMaterialAttrib1;
     out_generic2 = genericMaterialAttrib2;

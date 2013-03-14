@@ -203,13 +203,19 @@ Material::get( const std::string& name )
 }
 
 bool
-Material::activate( UniformBlock* materialUniforms )
+Material::activate( UniformBlock* materialUniforms, Program* currentProgramm )
 {
 	if ( this->m_diffuseTexture )
+	{
 		this->m_diffuseTexture->bind( 0 );
+		currentProgramm->setUniformInt( "DiffuseTexture", 0 );
+	}
 
 	if ( this->m_normalMap )
+	{
 		this->m_normalMap->bind( 1 );
+		currentProgramm->setUniformInt( "NormalMap", 1 );
+	}
 
 	glm::vec4 materialCfg;
 	materialCfg[ 0 ] = ( float ) this->m_type;
@@ -217,16 +223,24 @@ Material::activate( UniformBlock* materialUniforms )
 	materialCfg[ 2 ] = this->m_normalMap == 0 ? 0.0f : 1.0f;
 
 	if ( false == materialUniforms->updateData( glm::value_ptr( materialCfg ), 0, 16 ) )
+	{
 		return false;
+	}
 
 	if ( false == materialUniforms->updateData( glm::value_ptr( this->m_genericParams1 ), 16, 16 ) )
+	{
 		return false;
+	}
 
 	if ( false == materialUniforms->updateData( glm::value_ptr( this->m_genericParams1 ), 32, 16 ) )
+	{
 		return false;
+	}
 
 	if ( false == materialUniforms->updateData( glm::value_ptr( this->m_color ), 48, 16 ) )
+	{
 		return false;
+	}
 
 	return true;
 }

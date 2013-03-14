@@ -8,6 +8,7 @@
 #ifndef MATERIAL_H_
 #define MATERIAL_H_
 
+#include "Program.h"
 #include "UniformBlock.h"
 #include "Texture.h"
 
@@ -44,7 +45,7 @@ class Material
 	const std::string& getName() const { return this->m_name; };
 	MaterialType getType() const { return this->m_type; };
 
-	bool activate( UniformBlock* );
+	bool activate( UniformBlock*, Program* );
 
  private:
 	static std::map<std::string, Material*> allMaterials;

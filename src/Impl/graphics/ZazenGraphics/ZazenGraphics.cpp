@@ -239,7 +239,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			instance->geom = GeometryFactory::get( str );
 			if ( NULL == instance->geom )
 			{
-				// TODO ignore
+				cout << "WARNING ... couldn't get mesh " << str << " - will be ignored" << endl;
 			}
 		}
 
@@ -249,7 +249,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			instance->material = Material::get( str );
 			if ( NULL == instance->material )
 			{
-				// TODO ignore
+				cout << "WARNING ... couldn't get material " << str << " - will be ignored" << endl;
 			}
 		}
 
@@ -340,21 +340,10 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		}
 	}
 
-	TiXmlElement* sceneNode = objectNode->FirstChildElement( "scene" );
-	if ( sceneNode )
-	{
-		TiXmlElement* skyBoxNode = sceneNode->FirstChildElement( "skybox" );
-		if ( skyBoxNode )
-		{
-			Instance* instance = new Instance();
-			instance->geom = new GeomSkyBox();
-		}
-	}
-
 	if ( 0 == entity->m_orientation )
 	{
 		cout << "No valid entity defined in ZazenGraphics for Object \"" << parent->getName() << "\" - error " << endl;
-		// TODO cleanup memory!
+		delete entity;
 		return 0;
 	}
 

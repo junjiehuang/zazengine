@@ -94,22 +94,53 @@ Texture::~Texture()
 void
 Texture::bind( int textureUnit )
 {
-	if ( this->m_textureUnit != - 1)
+	if ( -1 != this->m_textureUnit )
+	{
 		return;
+	}
 
 	this->m_textureUnit = textureUnit;
 
+	GLenum status;
+
 	glActiveTexture( GL_TEXTURE0 + this->m_textureUnit );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR ... in Texture::bind: failed glActiveTexture with " << gluErrorString( status ) << endl;
+		return;
+	}
+
 	glBindTexture( GL_TEXTURE_2D, this->m_textureID );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR ... in Texture::bind: failed glBindTexture with " << gluErrorString( status ) << endl;
+		return;
+	}
 }
 
-void Texture::unbind()
+void
+Texture::unbind()
 {
-	if (this->m_textureUnit == -1)
+	if ( -1 == this->m_textureUnit )
+	{
 		return;
+	}
+
+	GLenum status;
 
 	glActiveTexture( GL_TEXTURE0 + this->m_textureUnit );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR ... in Texture::unbind: failed glActiveTexture with " << gluErrorString( status ) << endl;
+		return;
+	}
+
 	glBindTexture( GL_TEXTURE_2D, 0 );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR ... in Texture::unbind: failed glBindTexture with " << gluErrorString( status ) << endl;
+		return;
+	}
 
 	this->m_textureUnit = -1;
 }
@@ -161,9 +192,9 @@ Texture::createGLTexture( const filesystem::path& fileName )
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 
 		// Set texture interpolation method to use linear interpolation (no MIPMAPS)
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		
 		// Specify the texture specification
 		glTexImage2D(GL_TEXTURE_2D, 				// Type of texture
 					 0,				// Pyramid level (for mip-mapping) - 0 is the top level
@@ -174,6 +205,9 @@ Texture::createGLTexture( const filesystem::path& fileName )
 					 ilGetInteger( IL_IMAGE_FORMAT ),	// Image format (i.e. RGB, RGBA, BGR etc.)
 					 GL_UNSIGNED_BYTE,		// Image data type
 					 ilGetData() );			// The actual image data itself
+
+		// Bind the texture to a name
+		glBindTexture( GL_TEXTURE_2D, 0 );
  	}
   	else // If we failed to open the image file in the first place...
   	{
