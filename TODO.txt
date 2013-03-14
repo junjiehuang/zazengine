@@ -4,9 +4,6 @@ For Qualcomm presentation (implementation deadline saturday)
 Graphics
 - texture-mapping
 - normal-mapping
-- phong-illumination
-- ambient lighting
-- skyp-box?
 
 Bugfixing:
 soundplayback
@@ -25,6 +22,7 @@ For myself
 Graphics:
 - add transformations to models when loaded!
 - graphics: shadow - mapping solve it!
+- skyp-box
 
 Advanced
 - make physics processing async

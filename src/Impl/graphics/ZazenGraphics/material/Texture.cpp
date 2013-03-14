@@ -56,6 +56,8 @@ Texture::get( const std::string& file )
 		return NULL;
 	}
 
+	cout << "INFO ... successfully loaded texture from " << fullFileName << endl;
+
 	Texture* newTexture = new Texture( textureID );
 	
 	Texture::allTextures[ file ] = newTexture;

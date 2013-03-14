@@ -12,19 +12,16 @@
 
 #include "GeomType.h"
 #include "../Material/Texture.h"
-#include "../Scene/Viewer.h"
 
 class GeomSkyBox : public GeomType
 {
  public:
-	GeomSkyBox( Viewer& cam, std::string& textures );
+	GeomSkyBox();
 	virtual ~GeomSkyBox();
 	
 	bool render();
 	
  private:
-	Viewer& cam;
-
 	Texture* east;
 	Texture* west;
 	Texture* up;

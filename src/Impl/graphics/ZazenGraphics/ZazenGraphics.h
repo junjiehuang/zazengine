@@ -50,6 +50,7 @@ class ZazenGraphics : public IGraphics
 		ZazenGraphicsEntity* createEntity( TiXmlElement*, IGameObject* parent );
 
 		ICore& getCore() { return *this->m_core; };
+		Viewer& getCamera() { return *this->m_camera; };
 
 		void* getWindowHandle();
 		bool toggleFullscreen();

@@ -8,6 +8,8 @@
 #include "ZazenGraphics.h"
 
 #include "Geometry/GeometryFactory.h"
+#include "Geometry/GeomSkyBox.h"
+
 #include "Material/Material.h"
 
 #include "Renderer/DRRenderer.h"
@@ -335,6 +337,17 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 
 			entity->m_orientation = camera;
 			this->m_camera = camera;
+		}
+	}
+
+	TiXmlElement* sceneNode = objectNode->FirstChildElement( "scene" );
+	if ( sceneNode )
+	{
+		TiXmlElement* skyBoxNode = sceneNode->FirstChildElement( "skybox" );
+		if ( skyBoxNode )
+		{
+			Instance* instance = new Instance();
+			instance->geom = new GeomSkyBox();
 		}
 	}
 
