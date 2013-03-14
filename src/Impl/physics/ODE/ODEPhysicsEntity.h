@@ -29,6 +29,9 @@ class ODEPhysicsEntity : public IPhysicsEntity
 		const float* getPos() const { return this->m_pos; };
 		const float* getRot() const { return this->m_rot; };
 		const float* getVel() const { return this->m_vel; };
+		
+		long long getLastCollTs() { return this->m_lastCollTs; };
+		void setLastCollTs( long long lastCollTs ) { this->m_lastCollTs = lastCollTs; };
 
 		virtual void update();
 
@@ -36,6 +39,8 @@ class ODEPhysicsEntity : public IPhysicsEntity
 
 	private:
 		std::string m_entityType;
+
+		long long m_lastCollTs;
 
 		PhysicType* m_physicType;
 

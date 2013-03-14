@@ -437,6 +437,8 @@ ODEPhysics::collisionCallback( void* data, dGeomID o1, dGeomID o2 )
 		dJointAttach( c, b1, b2 );
 	}
 
+	long long currentMillis = instance->core->getCurrentMillis();
+
 	std::list<ODEPhysicsEntity*>::iterator iter = instance->entities.begin();
 	while ( iter != instance->entities.end() )
 	{
@@ -444,10 +446,22 @@ ODEPhysics::collisionCallback( void* data, dGeomID o1, dGeomID o2 )
 
 		if ( b1 == entity->getBodyId() )
 		{
-			Event e( "COLLIDES_WITH" );
-			e.setTarget( entity->getParent() );
+			const float* vel = entity->getVel();
+			long long lastCollDelta = currentMillis - entity->getLastCollTs();
+			float velLength = sqrt( pow( vel[ 0 ], 2 ) + pow( vel[ 1 ], 2 ) + pow( vel[ 2 ], 2 ) );
 
-			instance->core->getEventManager().postEvent( e );
+			// only create collision-event when there was enough time since the last and the object is already moving
+			if ( lastCollDelta > 250 && velLength > 0.1 )
+			{
+				entity->setLastCollTs( currentMillis );
+
+				Event e( "COLLIDES_WITH" );
+				e.setTarget( entity->getParent() );
+
+				instance->core->getEventManager().postEvent( e );
+			}
+
+			break;
 		}
 	}
 }

@@ -1,13 +1,6 @@
 !!! FROM NOW ON: always compileable & runnable when checked in !!!
 
 For Qualcomm presentation (implementation deadline saturday)
-Graphics
-- texture-mapping
-- normal-mapping
-
-Bugfixing:
-soundplayback
-
 Code-Quality
 - format all header-files same (see Zazengraphcis)
 - keep id, type & core in ISubSystem as readable
@@ -20,6 +13,8 @@ Code-Quality
 
 For myself
 Graphics:
+- texture-mapping
+- normal-mapping
 - add transformations to models when loaded!
 - graphics: shadow - mapping solve it!
 - skyp-box
