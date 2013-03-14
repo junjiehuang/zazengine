@@ -6,13 +6,12 @@ Graphics
 - normal-mapping
 - phong-illumination
 - ambient lighting
+- skyp-box?
 
 Bugfixing:
 soundplayback
 
 Code-Quality
-- texture: singleton (pass in texturedatapath)
-- materials: singleton (pass materialdatapath)
 - format all header-files same (see Zazengraphcis)
 - keep id, type & core in ISubSystem as readable
 - cleanup header-includes

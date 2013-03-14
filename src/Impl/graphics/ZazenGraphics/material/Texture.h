@@ -12,27 +12,34 @@
 
 #include <GL/glew.h>
 
+#include <boost/filesystem.hpp>
+
 #include <string>
 #include <map>
 
 class Texture
 {
- public:
-	static Texture* load( const std::string& );
-	static void freeAll();
+	public:
+		static void init( const boost::filesystem::path& );
+		static void freeAll();
 	
-	void bind( int textureUnit );
-	void unbind();
-	
- private:
-	Texture( GLuint );
-	~Texture();
+		static Texture* get( const std::string& );
 
-	int textureUnit;
-
-	GLuint textureID;
+		void bind( int textureUnit );
+		void unbind();
 	
-	static std::map<std::string, Texture*> allTextures;
+	private:
+		Texture( GLuint );
+		~Texture();
+
+		int m_textureUnit;
+
+		GLuint m_textureID;
+	
+		static boost::filesystem::path textureDataPath;
+		static std::map<std::string, Texture*> allTextures;
+
+		static GLuint createGLTexture( const boost::filesystem::path& );
 };
 
 #endif

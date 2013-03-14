@@ -16,12 +16,12 @@ using namespace std;
 GeomSkyBox::GeomSkyBox(Viewer& cam, string& folder)
 	: cam(cam)
 {
-	this->east = Texture::load(folder + "/east.png");
-	this->west = Texture::load(folder + "/west.png");
-	this->up = Texture::load(folder + "/up.png");
-	this->down = Texture::load(folder + "/down.png");
-	this->south = Texture::load(folder + "/south.png");
-	this->north = Texture::load(folder + "/north.png");
+	this->east = Texture::get(folder + "/east.png");
+	this->west = Texture::get(folder + "/west.png");
+	this->up = Texture::get(folder + "/up.png");
+	this->down = Texture::get(folder + "/down.png");
+	this->south = Texture::get(folder + "/south.png");
+	this->north = Texture::get(folder + "/north.png");
 }
 
 GeomSkyBox::~GeomSkyBox()

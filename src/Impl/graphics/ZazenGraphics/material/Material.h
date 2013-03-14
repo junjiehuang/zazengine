@@ -34,7 +34,7 @@ class Material
 		MATERIAL_TRANSPARENT = 99
 	};
 
-	static bool loadAll( const boost::filesystem::path& );
+	static bool init( const boost::filesystem::path& );
 	static void freeAll();
 
 	static Material* get( const std::string& );

@@ -19,7 +19,7 @@ using namespace boost;
 std::map<std::string, Material*> Material::allMaterials;
 
 bool
-Material::loadAll( const filesystem::path& path )
+Material::init( const filesystem::path& path )
 {
 	string fullFileName = path.generic_string() + "materials.xml";
 
@@ -123,7 +123,7 @@ Material::loadAll( const filesystem::path& path )
 						str = materialCfgNode->Attribute( "file" );
 						if ( 0 != str )
 						{
-							Texture* texture = Texture::load( str );
+							Texture* texture = Texture::get( str );
 							if ( texture )
 							{
 								material->m_diffuseTexture = texture;
@@ -138,7 +138,7 @@ Material::loadAll( const filesystem::path& path )
 						str = materialCfgNode->Attribute( "file" );
 						if ( 0 != str )
 						{
-							Texture* texture = Texture::load( str );
+							Texture* texture = Texture::get( str );
 							if ( texture )
 							{
 								material->m_normalMap = texture;

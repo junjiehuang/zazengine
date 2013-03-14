@@ -84,14 +84,14 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 		return false;
 	}
 
-	if ( false == Material::loadAll( this->m_materialDataPath ) )
+	Texture::init( this->m_textureDataPath );
+
+	GeometryFactory::setDataPath( this->m_modelDataPath );
+
+	if ( false == Material::init( this->m_materialDataPath ) )
 	{
 		return false;
 	}
-
-	GeometryFactory::init( this->m_modelDataPath );
-	// TODO init TextureFactory
-	// TODO init MaterialFactory
 
 	this->m_core->getEventManager().registerForEvent( "KEY_RELEASED", this );
 
@@ -121,7 +121,7 @@ ZazenGraphics::shutdown()
 
 	Material::freeAll();
 	Texture::freeAll();
-	GeometryFactory::getInstance().freeAll();
+	GeometryFactory::freeAll();
 	
 	RenderingWindow::destroyWindow();
 
@@ -234,7 +234,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		const char* str = instanceNode->Attribute( "mesh" );
 		if ( 0 != str )
 		{
-			instance->geom = GeometryFactory::getInstance().get( str );
+			instance->geom = GeometryFactory::get( str );
 			if ( NULL == instance->geom )
 			{
 				// TODO ignore

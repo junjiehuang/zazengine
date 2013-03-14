@@ -18,36 +18,23 @@
 using namespace std;
 using namespace boost;
 
-GeometryFactory* GeometryFactory::instance = NULL;
+map<string, GeomType*> GeometryFactory::allMeshes;
+boost::filesystem::path GeometryFactory::modelDataPath;
 
 void
-GeometryFactory::init( const boost::filesystem::path& modelDataPath )
+GeometryFactory::setDataPath( const boost::filesystem::path& modelDataPath )
 {
-	if ( NULL == GeometryFactory::instance )
-	{
-		new GeometryFactory( modelDataPath );
-	}
-}
-
-GeometryFactory::GeometryFactory( const boost::filesystem::path& modelDataPath )
-	: m_modelDataPath( modelDataPath )
-{
-	GeometryFactory::instance = this;
-}
-
-GeometryFactory::~GeometryFactory()
-{
-	GeometryFactory::instance = NULL;
+	GeometryFactory::modelDataPath = modelDataPath;
 }
 
 GeomType*
 GeometryFactory::get( const std::string& fileName )
 {
-	map<std::string, GeomType*>::iterator findIter = GeometryFactory::meshes.find( fileName );
-	if ( findIter != GeometryFactory::meshes.end() )
+	map<std::string, GeomType*>::iterator findIter = GeometryFactory::allMeshes.find( fileName );
+	if ( findIter != GeometryFactory::allMeshes.end() )
 		return findIter->second;
 
-	filesystem::path fullFileName( this->m_modelDataPath.generic_string() + fileName );
+	filesystem::path fullFileName( GeometryFactory::modelDataPath.generic_string() + fileName );
 
 	if ( ! filesystem::exists( fullFileName ) )
 	{
@@ -67,7 +54,9 @@ GeometryFactory::get( const std::string& fileName )
 	}
 	
 	if ( NULL != geomType )
-		GeometryFactory::meshes[ fileName ] = geomType;
+	{
+		GeometryFactory::allMeshes[ fileName ] = geomType;
+	}
 
 	return geomType;
 }
@@ -75,8 +64,8 @@ GeometryFactory::get( const std::string& fileName )
 void
 GeometryFactory::freeAll()
 {
-	map<std::string, GeomType*>::iterator iter = GeometryFactory::meshes.begin();
-	while ( iter != GeometryFactory::meshes.end() )
+	map<std::string, GeomType*>::iterator iter = GeometryFactory::allMeshes.begin();
+	while ( iter != GeometryFactory::allMeshes.end() )
 	{
 		GeomType* geom = iter->second;
 		delete geom;
@@ -84,7 +73,7 @@ GeometryFactory::freeAll()
 		iter++;
 	}
 
-	GeometryFactory::meshes.clear();
+	GeometryFactory::allMeshes.clear();
 }
 
 GeomType*
