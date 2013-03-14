@@ -10,6 +10,8 @@ bool
 RenderingWindow::createRenderingWindow( const std::string& title, int width, int height, bool fullScreenFlag )
 {
 	new RenderingWindow();
+	RenderingWindow::instance->m_windowWidth = width;
+	RenderingWindow::instance->m_windowHeight = height;
 
 	GLuint PixelFormat;			// Holds The Results After Searching For A Match
 	WNDCLASS wc;						// Windows Class Structure

@@ -69,11 +69,11 @@ renderDiffuseBRDF( in vec4 diffuse, in vec4 normal, in vec4 generic1, in vec4 ge
 void
 renderLambertianBRDF( in vec4 diffuse, in vec4 normal, in vec4 generic1, in vec4 generic2 )
 {
-	float intensity = dot( lightDirection, normalize( normal) );
-
-	final_color = vec4( intensity, intensity, intensity, 1.0 );
-	// final_color = vec4( 1.0, 0.0, 0.0, 1.0 );
-	// final_color = diffuse;
+	float intensity = dot( lightDirection, normal );
+	final_color = vec4( diffuse.r * intensity, diffuse.g * intensity, diffuse.b * intensity, 1.0 );
+	//final_color = vec4( 1.0, 0.0, 0.0, 1.0 );
+	//final_color = diffuse;
+	//final_color = normal;
 }
 
 void
@@ -105,7 +105,8 @@ void main()
 {
 	// fetch the coordinate of this fragment in normalized
 	// screen-space ( 0 – 1 ) 
-	vec2 screenCoord = vec2( gl_FragCoord.x / 800, gl_FragCoord.y / 600 );
+	// TODO problem: what if screen-resolution changes??
+	vec2 screenCoord = vec2( gl_FragCoord.x / 1024, gl_FragCoord.y / 768 );
 
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
 	vec4 normal = texture( NormalMap, screenCoord );

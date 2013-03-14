@@ -686,7 +686,8 @@ DRRenderer::initDepthBuffer()
 	glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE );
 
 	// for now we create shadowmaps in same width and height as their viewing frustum and 32 bit depth
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0 );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 
+		0, GL_DEPTH_COMPONENT, GL_FLOAT, 0 );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR in DRRenderer::initDepthBuffer: glTexImage2D for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
@@ -744,7 +745,8 @@ DRRenderer::initMrtBuffer( unsigned int i )
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 
+		0, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
 		cout << "ERROR in DRRenderer::initMrtBuffer: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
@@ -779,7 +781,9 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 	GLenum status;
 
 	if ( false == this->m_progShadowMapping->use() )
+	{
 		return false;
+	}
 
 	// Rendering offscreen
 	glBindFramebuffer( GL_FRAMEBUFFER, this->m_shadowMappingFB );
@@ -800,7 +804,7 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 		Light* light = *iter++;
 
 		// attach the texture to FBO depth attachment point
-		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D, light->getShadowMap(), 0 );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, light->getShadowMap(), 0 );
 		CHECK_FRAMEBUFFER_STATUS( status );
 		if ( GL_FRAMEBUFFER_COMPLETE != status )
 		{
@@ -922,10 +926,10 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	// tell lighting program that diffusemap is bound to texture-unit 0
 	if ( false == this->m_progLightingStage->setUniformInt( "DiffuseMap", 0 ) )
 		return false;
-	/*
 	// tell lighting program that normalmap is bound to texture-unit 1
 	if ( false == this->m_progLightingStage->setUniformInt( "NormalMap", 1 ) )
 		return false;
+	/*
 	// tell lighting program that generic map is bound to texture-unit 2
 	if ( false == this->m_progLightingStage->setUniformInt( "GenericMap1", 2 ) )
 		return false;
@@ -935,6 +939,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	// tell lighting program that depth-map of scene is bound to texture-unit MRT_COUNT
 	if ( false == this->m_progLightingStage->setUniformInt( "DepthMap", MRT_COUNT ) )
 		return false;
+	
 	// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
 	if ( false == this->m_progLightingStage->setUniformInt( "ShadowMap", MRT_COUNT + 1 ) )
 		return false;
@@ -1044,6 +1049,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 bool
 DRRenderer::renderTransparencyStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
+	// TODO implement
 	return true;
 }
 
