@@ -1,9 +1,16 @@
 !!! FROM NOW ON: always compileable & runnable when checked in !!!
 
 For Qualcomm presentation (implementation deadline saturday)
-- graphics: make combination of deferred renderer work
-- graphics: shadow - mapping
+Graphics
+- texture-mapping
+- normal-mapping
+- phong-illumination
+- ambient lighting
 
+Bugfixing:
+soundplayback
+
+Code-Quality
 - texture: singleton (pass in texturedatapath)
 - materials: singleton (pass materialdatapath)
 - format all header-files same (see Zazengraphcis)
@@ -14,8 +21,11 @@ For Qualcomm presentation (implementation deadline saturday)
 - add const to inline methods were appropriate
 - remove friend-initialisation bullshit from entities
 
+
+For myself
 Graphics:
 - add transformations to models when loaded!
+- graphics: shadow - mapping solve it!
 
 Advanced
 - make physics processing async

@@ -1,11 +1,10 @@
 #version 330 core
 
 in vec4 ex_normal;
+in vec2 ex_texCoord;
 
-// provided by OpenGL
-in vec4 gl_FragCoord;
-out float gl_FragDepth;
-///////////////////////
+uniform sampler2D diffuseTexture;
+uniform sampler2D normalMap;
 
 layout( location = 0 ) out vec4 out_diffuse;
 layout( location = 1 ) out vec4 out_normal;
@@ -21,9 +20,6 @@ layout( shared ) uniform material
 	vec4 materialColor;     		// base-color of material
 };
 
-//uniform sampler2D diffuseTexture;
-//uniform sampler2D normalMap;
-
 void main()
 {
 	// store base-color of material
@@ -31,22 +27,21 @@ void main()
 	// store materialtype in diffuse-component alpha-channel
 	out_diffuse.a = materialConfig.x;
 
-	/*
+	// use diffuse-texture for color
 	if ( 1.0 == materialConfig.y )
 	{
-		out_diffuse.rgb += texture( diffuseTexture, ex_textureCoord ).rgb;
+		out_diffuse.rgb += texture( diffuseTexture, ex_texCoord ).rgb;
 	}
 
     // normal-mapping enabled – fetch from texture
 	if ( 1.0 == materialConfig.z )
 	{
-		out_normal.xyz = texture( normalMap, ex_textureCoord ).xyz;
+		out_normal.xyz = texture( normalMap, ex_texCoord ).xyz;
 	}
 	else
 	{
 		out_normal.xyz = ex_normal.xyz;
 	}
-	*/
 
     // set alpha component of normal to 0
 	out_normal.xyz = ex_normal.xyz;
@@ -54,7 +49,4 @@ void main()
 
     out_generic1 = genericMaterialAttrib1;
     out_generic2 = genericMaterialAttrib2;
-
-	gl_FragDepth = gl_FragCoord.z;
-	//gl_FragDepth = gl_FragCoord.x / gl_FragCoord.y;
 }

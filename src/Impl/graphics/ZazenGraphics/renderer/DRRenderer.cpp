@@ -409,6 +409,11 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 		cout << "ERROR in DRRenderer::initGeomStage: binding attribute location to program failed - exit" << endl;
 		return false;
 	}
+	if ( false == this->m_progGeomStage->bindAttribLocation( 2, "in_texCoord" ) )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: binding attribute location to program failed - exit" << endl;
+		return false;
+	}
 
 	if ( false == this->m_progGeomStage->link() )
 	{

@@ -196,7 +196,7 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 	// allocate vertexdata
 	GeomMesh::VertexData* vertexData = new GeomMesh::VertexData[ mesh->mNumVertices ];
 	memset( vertexData, 0, mesh->mNumVertices * sizeof( GeomMesh::VertexData ) );
-		
+
 	glm::vec3 meshBBmin;
 	glm::vec3 meshBBmax;
 
@@ -204,7 +204,7 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 
 	for ( unsigned int j = 0; j < mesh->mNumFaces; ++j ) {
 		const struct aiFace* face = &mesh->mFaces[ j ];
-	
+
 		for( unsigned int k = 0; k < face->mNumIndices; k++ ) {
 			int index = face->mIndices[ k ];
 
@@ -212,6 +212,9 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 
 			memcpy( vertexData[ index ].position, &mesh->mVertices[ index ].x, sizeof( GeomMesh::Vertex ) );
 			memcpy( vertexData[ index ].normal, &mesh->mNormals[ index ].x, sizeof( GeomMesh::Normal ) );
+
+			vertexData[ index ].texCoord[ 0 ] = mesh->mTextureCoords[ 0 ][ index].x;
+			vertexData[ index ].texCoord[ 1 ] = mesh->mTextureCoords[ 0 ][ index].y;
 		}
 	}
 

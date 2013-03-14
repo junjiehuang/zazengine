@@ -10,11 +10,13 @@ class GeomMesh : public GeomType
  public:
 	typedef float Vertex [ 3 ];
 	typedef float Normal [ 3 ];
+	typedef float TexCoord [ 2 ];
 
 	struct VertexData
 	{
 		Vertex position;
 		Normal normal;
+		TexCoord texCoord;
 	};
 
 	GeomMesh( int faceCount, int vertexCount, VertexData* data, GLuint* indices );

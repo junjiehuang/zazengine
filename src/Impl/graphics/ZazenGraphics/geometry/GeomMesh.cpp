@@ -137,7 +137,7 @@ GeomMesh::render()
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "GeomMesh::render: glVertexAttribPointer(0) failed: " << gluErrorString( status )  << endl;
+		cout << "GeomMesh::render: glVertexAttribPointer( 0 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
 
@@ -145,7 +145,15 @@ GeomMesh::render()
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "GeomMesh::render: glVertexAttribPointer(1) failed: " << gluErrorString( status )  << endl;
+		cout << "GeomMesh::render: glVertexAttribPointer( 1 ) failed: " << gluErrorString( status )  << endl;
+		return false;
+	}
+
+	glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, sizeof( VertexData ), BUFFER_OFFSET( 24 ) );
+	status = glGetError();
+	if ( GL_NO_ERROR != status )
+	{
+		cout << "GeomMesh::render: glVertexAttribPointer( 2 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
 
