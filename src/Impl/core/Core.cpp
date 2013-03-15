@@ -102,7 +102,6 @@ Core::Core()
 	this->m_gameObjectFactory = 0;
 	this->m_subSystemFactory = 0;
 
-	this->m_ai = 0;
 	this->m_audio = 0;
 	this->m_graphics = 0;
 	this->m_input = 0;
@@ -468,16 +467,6 @@ Core::loadSubSystem( const std::string& fileName, const std::string& configPath 
 bool
 Core::checkSubSystemType( ISubSystem* subSystem )
 {
-	if ( dynamic_cast<IAi*>( subSystem ) )
-	{
-		if ( NULL != this->m_ai )
-		{
-			cout << "ERROR ... trying to load Ai-Subsystem but is already present, it is not allowed to have two SubSystems of same type" << endl;
-		}
-
-		this->m_ai = ( IAi* ) subSystem;
-	}
-
 	if ( dynamic_cast<IAudio*>( subSystem ) )
 	{
 		if ( NULL != this->m_audio )

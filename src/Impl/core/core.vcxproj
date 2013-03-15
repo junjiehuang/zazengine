@@ -29,6 +29,7 @@
     <ClInclude Include="..\..\IFaces\core\XML\tinystr.h" />
     <ClInclude Include="..\..\IFaces\core\XML\tinyxml.h" />
     <ClInclude Include="Core.h" />
+    <ClInclude Include="DllExport.h" />
     <ClInclude Include="EventManager.h" />
     <ClInclude Include="ScriptSystem.h" />
     <ClInclude Include="ZazenGameObject.h" />
@@ -76,6 +77,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;CORE_EXPORTS;%(PreprocessorDefinitions);DLL_EXPORTS</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../../IFaces/;../../libs/include/;../../libs/include/lua;$(BOOST_PATH)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4251;4275;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

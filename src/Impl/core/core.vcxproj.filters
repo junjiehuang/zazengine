@@ -63,6 +63,9 @@
     <ClInclude Include="..\..\IFaces\core\XML\tinyxml.h">
       <Filter>Headerdateien\XML</Filter>
     </ClInclude>
+    <ClInclude Include="DllExport.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Quelldateien">

@@ -8,7 +8,7 @@
 #ifndef IGAMEOBJECTFACTORY_H_
 #define IGAMEOBJECTFACTORY_H_
 
-#include <core/IGameObject.h>
+#include "IGameObject.h"
 
 class IGameObjectFactory
 {

@@ -17,7 +17,6 @@ class ZazenSubSystemFactory
 		~ZazenSubSystemFactory();
 
 		ISubSystem* createSubSystem( const std::string& file, const std::string& type );
-
 };
 
 #endif /* ZAZENSUBSYSTEMFACTORY_H_ */

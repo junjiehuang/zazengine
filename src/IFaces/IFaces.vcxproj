@@ -11,13 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ai\IAi.h" />
-    <ClInclude Include="ai\IAIEntity.h" />
-    <ClInclude Include="animations\IAnimations.h" />
-    <ClInclude Include="animations\IAnimationsEntity.h" />
     <ClInclude Include="audio\IAudio.h" />
     <ClInclude Include="audio\IAudioEntity.h" />
-    <ClInclude Include="core\DllExport.h" />
     <ClInclude Include="core\Event.h" />
     <ClInclude Include="core\ICore.h" />
     <ClInclude Include="core\IEventListener.h" />

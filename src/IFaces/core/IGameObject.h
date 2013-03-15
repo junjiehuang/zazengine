@@ -11,7 +11,6 @@
 #include "IEventListener.h"
 
 #include "XML/tinyxml.h"
-#include <boost/any.hpp>
 
 class ISubSystemEntity;
 

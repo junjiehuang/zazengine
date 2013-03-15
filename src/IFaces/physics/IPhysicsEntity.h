@@ -8,7 +8,7 @@
 #ifndef IPHYSICSENTITY_H_
 #define IPHYSICSENTITY_H_
 
-#include <core/ISubSystemEntity.h>
+#include "core/ISubSystemEntity.h"
 
 class IPhysicsEntity : public ISubSystemEntity
 {

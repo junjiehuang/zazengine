@@ -265,6 +265,8 @@ RenderingWindow::destroyWindow()								// Properly Kill The Window
 	}
 
 	delete RenderingWindow::instance;
+
+	return true;
 }
 
 LRESULT CALLBACK

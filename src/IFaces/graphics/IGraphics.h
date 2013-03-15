@@ -8,8 +8,9 @@
 #ifndef IGRAPHICS_H_
 #define IGRAPHICS_H_
 
-#include <core/ISubSystem.h>
-#include <graphics/IGraphicsEntity.h>
+#include "core/ISubSystem.h"
+
+#include "IGraphicsEntity.h"
 
 class IGraphics : public ISubSystem
 {

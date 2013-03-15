@@ -1,5 +1,5 @@
 /*
- * PlayGround.h
+ * Core.h
  *
  *  Created on: 27.06.2010
  *      Author: Jonathan Thaler
@@ -8,22 +8,17 @@
 #ifndef CORE_H_
 #define CORE_H_
 
-#include "ZazenSubSystemFactory.h"
-#include "EventManager.h"
-
 #include <core/ICore.h>
 #include <core/IGameObjectFactory.h>
 
+#include "ZazenSubSystemFactory.h"
+
+#include "EventManager.h"
+
+#include "DllExport.h"
+
 #include <list>
 
-/* BIG TARGET: Discrete Realtime Autonomus Entity Simulation
- *
- * TODO: clear, powerful and flexible event-system
- * TODO: integrate event-system with LUA-scripting
- *
- * TODO: client-server model for world
- *
- */
 class DLL_API Core : public ICore
 {
 	public:
@@ -39,7 +34,6 @@ class DLL_API Core : public ICore
 
 		long long getCurrentMillis() const;
 
-		IAi* getAi() { return this->m_ai; };
 		IAudio* getAudio() { return this->m_audio; };
 		IGraphics* getGraphics() { return this->m_graphics; };
 		IInput* getInput() { return this->m_input; };
@@ -61,7 +55,6 @@ class DLL_API Core : public ICore
 
 		EventManager* m_eventManager;
 
-		IAi* m_ai;
 		IAudio* m_audio;
 		IGraphics* m_graphics;
 		IInput* m_input;

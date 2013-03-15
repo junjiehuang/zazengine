@@ -8,7 +8,7 @@
 #ifndef IINPUTENTITY_H_
 #define IINPUTENTITY_H_
 
-#include <core/ISubSystemEntity.h>
+#include "core/ISubSystemEntity.h"
 
 class IInputEntity : public ISubSystemEntity
 {

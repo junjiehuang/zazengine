@@ -8,7 +8,6 @@
 #ifndef ISUBSYSTEMENTITY_H_
 #define ISUBSYSTEMENTITY_H_
 
-#include <string>
 #include <list>
 
 #include "IGameObject.h"

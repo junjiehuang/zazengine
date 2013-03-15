@@ -8,8 +8,9 @@
 #ifndef ZAZENGAMEOBJECT_H_
 #define ZAZENGAMEOBJECT_H_
 
-#include <core/DllExport.h>
 #include <core/IGameObject.h>
+
+#include "DllExport.h"
 
 class DLL_API ZazenGameObject : public IGameObject
 {
