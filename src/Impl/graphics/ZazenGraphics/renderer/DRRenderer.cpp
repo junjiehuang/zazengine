@@ -104,16 +104,19 @@ bool
 DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
 	if ( false == this->renderShadowMap( instances, lights ) )
+	{
 		return false;
+	}
 
 	if ( false == this->renderGeometryStage( instances, lights ) )
+	{
 		return false;
+	}
 
 	if ( false == this->renderLightingStage( instances, lights ) )
+	{
 		return false;
-
-	if ( false == this->renderTransparencyStage( instances, lights ) )
-		return false;
+	}
 
 	if ( this->m_displayMRT )
 	{
@@ -834,7 +837,9 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 
 		// render scene from view of camera - don't apply material, don't render transparency
 		if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, false ) )
+		{
 			return false;
+		}
 	}
 
 	// back to window-system framebuffer
@@ -1078,6 +1083,9 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		}
 	}
 
+	glActiveTexture( GL_TEXTURE0 + MRT_COUNT );
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
 	// unbind textures for mrts
 	for ( int i = 0; i < MRT_COUNT; i++ )
 	{
@@ -1094,13 +1102,6 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	// back to perspective
 	this->m_camera->setupPerspective();
 
-	return true;
-}
-
-bool
-DRRenderer::renderTransparencyStage( std::list<Instance*>& instances, std::list<Light*>& lights )
-{
-	// TODO implement
 	return true;
 }
 
@@ -1129,6 +1130,7 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 	while ( iter != instances.end() )
 	{
 		Instance* instance = *iter++;
+		Material* activeMaterial = NULL;
 
 		if ( instance->material && applyMaterial )
 		{
@@ -1147,6 +1149,11 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 				}
 			}
 
+			activeMaterial = instance->material;
+		}
+
+		if ( activeMaterial )
+		{
 			if ( false == instance->material->activate( this->m_materialBlock, currentProgramm ) )
 			{
 				return false;
@@ -1156,6 +1163,11 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 		if ( false == this->renderGeom( viewer, instance, instance->geom ) )
 		{
 			return false;
+		}
+
+		if ( activeMaterial )
+		{
+			instance->material->deactivate();
 		}
 	}
 
@@ -1199,15 +1211,25 @@ DRRenderer::renderGeom( Viewer* viewer, Instance* parent, GeomType* geom )
 			glm::mat4 normalModelMatrix = glm::transpose( glm::inverse( modelMatrix ) );
 
 			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( modelMatrix ), 0, 64 ) )
+			{
 				return false;
+			}
 			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( modelViewMatrix ), 64, 64 ) )
+			{
 				return false;
+			}
 			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( modelViewProjectionMatrix ), 128, 64 ) )
+			{
 				return false;
+			}
 			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( normalModelViewMatrix ), 192, 64 ) )
+			{
 				return false;
+			}
 			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( normalModelMatrix ), 256, 64 ) )
+			{
 				return false;
+			}
 
 			// Don't need to update inverse, because its just needed in screen-space during lighting-stage
 

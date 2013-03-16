@@ -122,18 +122,22 @@ Program::bindUniformBlock( UniformBlock* block )
 
 	GLuint index = this->getUniformBlockIndex( block->getName() );
 	if ( GL_INVALID_INDEX == index )
+	{
 		return false;
+	}
 
 	glGetActiveUniformBlockiv( this->m_programObject, index, GL_UNIFORM_BLOCK_DATA_SIZE, &uniformBlockSize );
 
 	// create the UBO
 	if ( false == block->updateData( 0, uniformBlockSize ) )
+	{
 		return false;
+	}
 
 	//if ( false == block->bind( index ) )
 	//	return false;
 
-	glUniformBlockBinding( this->m_programObject, index,  block->getBindIndex() );
+	glUniformBlockBinding( this->m_programObject, index,  block->getBinding() );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR ... in Program::bindUniformBlock for programm " << this->m_programName << ": glUniformBlockBinding failed for name \"" << block->getName() << "\": " << gluErrorString( status )  << endl;

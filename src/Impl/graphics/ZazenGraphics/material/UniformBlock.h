@@ -22,7 +22,7 @@ class UniformBlock
 	const std::string& getName() { return this->m_name; };
 	GLuint getID() { return this->m_id; };
 
-	GLuint getBindIndex() { return this->m_bindIndex; };
+	GLuint getBinding() { return this->m_binding; };
 
 	bool bind();
 
@@ -35,12 +35,12 @@ class UniformBlock
  private:
 	UniformBlock( const std::string& name );
 
-	static GLuint bindIndexer;
+	static GLuint nextBinding;
 
 	GLuint m_id;
 	const std::string m_name;
 
-	GLuint m_bindIndex;
+	GLuint m_binding;
 
 };
 

@@ -46,6 +46,7 @@ class Material
 	MaterialType getType() const { return this->m_type; };
 
 	bool activate( UniformBlock*, Program* );
+	bool deactivate();
 
  private:
 	static std::map<std::string, Material*> allMaterials;

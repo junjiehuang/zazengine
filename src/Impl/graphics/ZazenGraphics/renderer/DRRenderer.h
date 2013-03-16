@@ -190,7 +190,6 @@ class DRRenderer : public Renderer
 	bool renderShadowMap( std::list<Instance*>&, std::list<Light*>& );
 	bool renderGeometryStage( std::list<Instance*>&, std::list<Light*>& );
 	bool renderLightingStage( std::list<Instance*>&, std::list<Light*>& );
-	bool renderTransparencyStage( std::list<Instance*>&, std::list<Light*>& );
 
 	bool renderInstances( Viewer*, std::list<Instance*>&, Program*, bool, bool );
 	bool renderGeom( Viewer*, Instance*, GeomType* );

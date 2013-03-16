@@ -14,7 +14,7 @@ using namespace std;
 // the index used to bind the uniformblock with glBindBufferBase
 // this is the index like the activetexture in texturing. its different because
 // an arbitrary number of uniformblocks can be active
-GLuint UniformBlock::bindIndexer = 0;
+GLuint UniformBlock::nextBinding = 0;
 
 UniformBlock*
 UniformBlock::createBlock( const std::string& name )
@@ -32,9 +32,9 @@ UniformBlock::createBlock( const std::string& name )
 
 	UniformBlock* block = new UniformBlock( name );
 	block->m_id = id;
-	block->m_bindIndex = UniformBlock::bindIndexer;
+	block->m_binding = UniformBlock::nextBinding;
 
-	UniformBlock::bindIndexer++;
+	UniformBlock::nextBinding++;
 
 	return block;
 }
@@ -43,13 +43,15 @@ UniformBlock::UniformBlock( const std::string& name )
 	: m_name ( name )
 {
 	this->m_id = 0;
-	this->m_bindIndex = 0;
+	this->m_binding = 0;
 }
 
 UniformBlock::~UniformBlock()
 {
 	if ( this->m_id )
+	{
 		glDeleteBuffers( 1, &this->m_id );
+	}
 }
 
 bool
@@ -57,7 +59,7 @@ UniformBlock::bind()
 {
 	GLint status;
 
-	glBindBufferBase( GL_UNIFORM_BUFFER, this->m_bindIndex, this->m_id );
+	glBindBufferBase( GL_UNIFORM_BUFFER, this->m_binding, this->m_id );
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -74,7 +76,9 @@ UniformBlock::updateData( const void* data, int offset, int size )
 	GLint status;
 
 	if ( false == this->bindBuffer() )
+	{
 		return false;
+	}
 
 	glBufferSubData( GL_UNIFORM_BUFFER, offset, size, data );
 	status = glGetError();
@@ -85,7 +89,9 @@ UniformBlock::updateData( const void* data, int offset, int size )
 	}
 
 	if ( false == this->unbindBuffer() )
+	{
 		return false;
+	}
 
 	return true;
 }
@@ -96,7 +102,9 @@ UniformBlock::updateData( const void* data, int size )
 	GLint status;
 
 	if ( false == this->bindBuffer() )
+	{
 		return false;
+	}
 
 	glBufferData( GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW );
 	status = glGetError();
@@ -107,7 +115,9 @@ UniformBlock::updateData( const void* data, int size )
 	}
 
 	if ( false == this->unbindBuffer() )
+	{
 		return false;
+	}
 
 	return true;
 }
