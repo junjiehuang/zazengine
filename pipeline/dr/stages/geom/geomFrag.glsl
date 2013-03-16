@@ -1,5 +1,6 @@
 #version 330 core
 
+in vec4 ex_position;
 in vec4 ex_normal;
 in vec2 ex_texCoord;
 
@@ -25,7 +26,7 @@ void main()
 	// store base-color of material
 	out_diffuse.rgb = materialColor.rgb;
 	// store materialtype in diffuse-component alpha-channel
-	out_diffuse.a = materialConfig.x;
+	out_diffuse.a = materialConfig.x / 255;
 
 	// use diffuse-texture for color
 	if ( 1.0 == materialConfig.y )
@@ -47,6 +48,6 @@ void main()
 	out_normal.xyz = ex_normal.xyz;
 	out_normal.a = 1.0;
 
-    out_generic1 = genericMaterialAttrib1;
+    out_generic1 = ex_position;
     out_generic2 = genericMaterialAttrib2;
 }

@@ -2,10 +2,12 @@
 
 uniform int screen_width;
 uniform int screen_height;
+uniform vec4 camera_pos;
 
 uniform sampler2D DiffuseMap;
 uniform sampler2D NormalMap;
 uniform sampler2D DepthMap;
+uniform sampler2D GenericMap1;
 
 uniform sampler2DShadow ShadowMap;
 
@@ -67,9 +69,18 @@ renderDiffuseBRDF( in vec4 diffuse, in vec4 normal )
 }
 
 vec4
-renderPhongBRDF( in vec4 diffuse, in vec4 normal )
+renderPhongBRDF( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
-	return diffuse;
+	vec3 light = lightPosition.xyz;
+	vec3 lightDir = light - position.xyz;
+    
+	lightDir = normalize( lightDir );
+    
+	vec3 eyeDir = normalize( camera_pos.xyz - position.xyz );
+	vec3 vHalfVector = normalize(lightDir.xyz+eyeDir);
+    
+	return max( dot( normal, lightDir ), 0 ) * diffuse + 
+            pow( max( dot( normal,vHalfVector ), 0.0 ), 100 ) * 1.5;
 }
 
 vec4
@@ -108,14 +119,16 @@ void main()
 	// fetch the coordinate of this fragment in normalized
 	// screen-space ( 0 – 1 ) 
 	vec2 screenCoord = vec2( gl_FragCoord.x / screen_width, gl_FragCoord.y / screen_height );
+
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
 	vec4 normal = texture( NormalMap, screenCoord );
-	
+	vec4 position = texture( GenericMap1, screenCoord );
+
 	// worldCoord = modelCoord
 	vec4 viewSpace = vec4( viewSpaceFromDepth( screenCoord ), 1.0 );
 	// transform worldCoord to lightspace & fit from NDC (lightSpace matrix includes viewing-projection) 
 	// into the unit-cube 0-1 to be able to access the shadow-map
-	vec4 shadowCoord = lightSpaceUniform * viewSpace;
+	vec4 shadowCoord = lightSpaceUniform * position;
 
 	float shadow = 0.0f;
 
@@ -133,36 +146,36 @@ void main()
 	// this fragment is not in shadow, only then apply lighting
 	if ( shadow == 0.0 )
 	{
-		if ( 0.0 == diffuse.a )
+		float matId = diffuse.a * 255;
+
+		if ( 0.0 == matId )
 		{
 			final_color = renderDiffuseBRDF( diffuse, normal );
 		}
-		else if ( 1.0 == diffuse.a )
+		else if ( 1.0 == matId )
 		{
 			final_color = renderLambertianBRDF( diffuse, normal );
 		}
-		else if ( 2.0 == diffuse.a )
+		else if ( 2.0 == matId )
 		{
-			final_color = renderPhongBRDF( diffuse, normal );
+			final_color = renderPhongBRDF( diffuse, normal, position );
 		}
-		else if ( 3.0 == diffuse.a )
+		else if ( 3.0 == matId )
 		{
 			final_color = renderOrenNayarBRDF( diffuse, normal );
 		}
-		else if ( 4.0 == diffuse.a )
+		else if ( 4.0 == matId )
 		{
 			final_color = renderSSSBRDF( diffuse, normal );
 		}
-		else if ( 5.0 == diffuse.a )
+		else if ( 5.0 == matId )
 		{
 			final_color = renderWardsBRDF( diffuse, normal );
 		}
-		else if ( 6.0 == diffuse.a )
+		else if ( 6.0 == matId )
 		{
 			final_color = renderMicrofacetBRDF( diffuse, normal );
 		}
-
-		final_color = renderLambertianBRDF( diffuse, normal );
     }
     else
     {

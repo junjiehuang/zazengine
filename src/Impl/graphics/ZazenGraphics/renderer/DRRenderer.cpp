@@ -121,7 +121,9 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 			return false;
 		if ( false == this->showTexture( this->m_colorBuffers[ 1 ], 1 ) )
 			return false;
-		if ( false == this->showTexture( this->m_geometryDepth, 2 ) )
+		if ( false == this->showTexture( this->m_colorBuffers[ 2 ], 2 ) )
+			return false;
+		if ( false == this->showTexture( this->m_geometryDepth, 3 ) )
 			return false;
 	}
 
@@ -928,9 +930,12 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
+	const float* data = glm::value_ptr( this->m_camera->getMatrix() );
+
 	// need screen-resolution in lighting-stage fragment-shader
 	this->m_progLightingStage->setUniformInt( "screen_width", this->m_camera->getWidth() );
 	this->m_progLightingStage->setUniformInt( "screen_height", this->m_camera->getHeight() );
+	this->m_progLightingStage->setUniform4( "camera_pos", &data[ 12 ]  );
 
 	// tell lighting program that diffusemap is bound to texture-unit 0
 	this->m_progLightingStage->setUniformInt( "DiffuseMap", 0 );

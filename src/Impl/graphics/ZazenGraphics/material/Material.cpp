@@ -79,7 +79,11 @@ Material::init( const filesystem::path& path )
 				typeID = str;
 			}
 
-			if ( "LAMBERTIAN" == typeID )
+			if ( "DIFFUSE" == typeID )
+			{
+				materialType = Material::MATERIAL_DIFFUSE;
+			}
+			else if ( "LAMBERTIAN" == typeID )
 			{
 				materialType = Material::MATERIAL_LAMBERTIAN;
 			}

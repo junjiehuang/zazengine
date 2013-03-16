@@ -4,6 +4,7 @@ in vec3 in_vertPos;
 in vec3 in_vertNorm;
 in vec2 in_texCoord;
 
+out vec4 ex_position;
 out vec4 ex_normal;
 out vec2 ex_texCoord;
 
@@ -26,8 +27,9 @@ layout(shared) uniform transforms
 void main()
 {
 	gl_Position = modelViewProjection_Matrix * vec4( in_vertPos, 1.0 );
+	
+	ex_position = modelView_Matrix * vec4( in_vertPos, 1.0 );
 	// lighting is applied in world-space (model-space)
 	ex_normal = normalsModel_Matrix * vec4( in_vertNorm, 0.0 );
-
 	ex_texCoord = in_texCoord;
 }
