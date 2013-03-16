@@ -16,6 +16,7 @@ Advanced
 - make physics processing async
 
 Code-Quality
+- encapsulate MRTs in own texture-like class
 - replace all strcmp with boost:iequals
 - add const to inline methods were appropriate
 - keep id, type & core in ISubSystem as readable

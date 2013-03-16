@@ -158,19 +158,29 @@ DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
 	glEnable( GL_TEXTURE_2D );
 
 	if ( false == this->initFBO() )
+	{
 		return false;
+	}
 
 	if ( false == this->initGeomStage( pipelinePath ) )
+	{
 		return false;
+	}
 
 	if ( false == this->initLightingStage( pipelinePath ) )
+	{
 		return false;
+	}
 
 	if ( false == this->initShadowMapping( pipelinePath ) )
+	{
 		return false;
+	}
 
 	if ( false == this->initUniformBlocks() )
+	{
 		return false;
+	}
 
 	cout << "Initializing Deferred Renderer finished" << endl;
 
@@ -883,7 +893,9 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 
 	// draw all geometry - apply materials but don't render transparency
 	if ( false == this->renderInstances( this->m_camera, instances, this->m_progGeomStage, true, false ) )
+	{
 		return false;
+	}
 
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
@@ -902,8 +914,10 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 
 	// activate lighting-stage shader
 	if ( false == this->m_progLightingStage->use() )
+	{
 		return false;
-
+	}
+	
 	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -988,10 +1002,9 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		// alpha? color modulate?...
 
 		// bind the shadowmap of the light to texture unit MRT_COUNT + 1
-		glActiveTexture( GL_TEXTURE0 + MRT_COUNT + 1 );
-
 		if ( Light::SPOT == light->getType() || Light::DIRECTIONAL == light->getType() )
 		{
+			glActiveTexture( GL_TEXTURE0 + MRT_COUNT + 1 );
 			glBindTexture( GL_TEXTURE_2D, light->getShadowMap() );
 			if ( GL_NO_ERROR != ( status = glGetError() ) )
 			{
@@ -1047,6 +1060,35 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 			glVertex2f( ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight() );
 			glVertex2f( ( float ) this->m_camera->getWidth(), 0 );
 		glEnd();
+
+		// unbind shadow-map texture
+		if ( Light::SPOT == light->getType() || Light::DIRECTIONAL == light->getType() )
+		{
+			glActiveTexture( GL_TEXTURE0 + MRT_COUNT + 1 );
+			glBindTexture( GL_TEXTURE_2D, 0 );
+			if ( GL_NO_ERROR != ( status = glGetError() ) )
+			{
+				cout << "ERROR in DRRenderer::renderLightingStage: glBindTexture failed with " << gluErrorString( status ) << endl;
+				return false;
+			}
+		}
+		else if ( Light::POINT == light->getType() )
+		{
+			// TODO: unbind shadow cubemap
+		}
+	}
+
+	// unbind textures for mrts
+	for ( int i = 0; i < MRT_COUNT; i++ )
+	{
+		// bind diffuse rendering target to texture unit 0
+		glActiveTexture( GL_TEXTURE0 + i );
+		glBindTexture( GL_TEXTURE_2D, 0 );
+		if ( GL_NO_ERROR != ( status = glGetError() ) )
+		{
+			cout << "ERROR in DRRenderer::renderLightingStage: glBindTexture( 0 ) of mrt " << i << " failed with " << gluErrorString( status ) << endl;
+			return false;
+		}
 	}
 
 	// back to perspective
