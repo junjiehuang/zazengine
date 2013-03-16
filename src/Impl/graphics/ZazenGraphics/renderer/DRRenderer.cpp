@@ -928,6 +928,10 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
+	// need screen-resolution in lighting-stage fragment-shader
+	this->m_progLightingStage->setUniformInt( "screen_width", this->m_camera->getWidth() );
+	this->m_progLightingStage->setUniformInt( "screen_height", this->m_camera->getHeight() );
+
 	// tell lighting program that diffusemap is bound to texture-unit 0
 	this->m_progLightingStage->setUniformInt( "DiffuseMap", 0 );
 	// tell lighting program that normalmap is bound to texture-unit 1

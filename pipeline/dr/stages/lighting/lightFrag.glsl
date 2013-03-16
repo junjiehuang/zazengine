@@ -1,5 +1,8 @@
 #version 330 core
 
+uniform int screen_width;
+uniform int screen_height;
+
 uniform sampler2D DiffuseMap;
 uniform sampler2D NormalMap;
 uniform sampler2D DepthMap;
@@ -36,7 +39,7 @@ layout(shared) uniform light
 
 
 vec3
-worldPosFromDepth( const vec2 screenCoord )
+viewSpaceFromDepth( const vec2 screenCoord )
 {
 	// stored as luminance floating point 32bit
 	float depth = texture( DepthMap, screenCoord ).x;
@@ -58,6 +61,42 @@ worldPosFromDepth( const vec2 screenCoord )
 }
 
 vec4
+renderDiffuseBRDF( in vec4 diffuse, in vec4 normal )
+{
+	return diffuse;
+}
+
+vec4
+renderPhongBRDF( in vec4 diffuse, in vec4 normal )
+{
+	return diffuse;
+}
+
+vec4
+renderOrenNayarBRDF( in vec4 diffuse, in vec4 normal )
+{
+	return diffuse;
+}
+
+vec4
+renderSSSBRDF( in vec4 diffuse, in vec4 normal )
+{
+	return diffuse;
+}
+
+vec4
+renderWardsBRDF( in vec4 diffuse, in vec4 normal )
+{
+	return diffuse;
+}
+
+vec4
+renderMicrofacetBRDF( in vec4 diffuse, in vec4 normal )
+{
+	return diffuse;
+}
+
+vec4
 renderLambertianBRDF( in vec4 diffuse, in vec4 normal )
 {
 	float intensity = dot( lightDirection, normal );
@@ -68,16 +107,15 @@ void main()
 {
 	// fetch the coordinate of this fragment in normalized
 	// screen-space ( 0 – 1 ) 
-	// TODO problem: what if screen-resolution changes??
-	vec2 screenCoord = vec2( gl_FragCoord.x / 1024, gl_FragCoord.y / 768 );
+	vec2 screenCoord = vec2( gl_FragCoord.x / screen_width, gl_FragCoord.y / screen_height );
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
 	vec4 normal = texture( NormalMap, screenCoord );
 	
 	// worldCoord = modelCoord
-	vec4 worldCoord = vec4( worldPosFromDepth( screenCoord ), 1.0 );
+	vec4 viewSpace = vec4( viewSpaceFromDepth( screenCoord ), 1.0 );
 	// transform worldCoord to lightspace & fit from NDC (lightSpace matrix includes viewing-projection) 
 	// into the unit-cube 0-1 to be able to access the shadow-map
-	vec4 shadowCoord = lightSpaceUniform * worldCoord;
+	vec4 shadowCoord = lightSpaceUniform * viewSpace;
 
 	float shadow = 0.0f;
 
@@ -95,6 +133,35 @@ void main()
 	// this fragment is not in shadow, only then apply lighting
 	if ( shadow == 0.0 )
 	{
+		if ( 0.0 == diffuse.a )
+		{
+			final_color = renderDiffuseBRDF( diffuse, normal );
+		}
+		else if ( 1.0 == diffuse.a )
+		{
+			final_color = renderLambertianBRDF( diffuse, normal );
+		}
+		else if ( 2.0 == diffuse.a )
+		{
+			final_color = renderPhongBRDF( diffuse, normal );
+		}
+		else if ( 3.0 == diffuse.a )
+		{
+			final_color = renderOrenNayarBRDF( diffuse, normal );
+		}
+		else if ( 4.0 == diffuse.a )
+		{
+			final_color = renderSSSBRDF( diffuse, normal );
+		}
+		else if ( 5.0 == diffuse.a )
+		{
+			final_color = renderWardsBRDF( diffuse, normal );
+		}
+		else if ( 6.0 == diffuse.a )
+		{
+			final_color = renderMicrofacetBRDF( diffuse, normal );
+		}
+
 		final_color = renderLambertianBRDF( diffuse, normal );
     }
     else
