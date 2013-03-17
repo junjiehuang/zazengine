@@ -11,23 +11,33 @@
 #define _GEOMSPACEBOX_H_
 
 #include "GeomType.h"
+
 #include "../Material/Texture.h"
+#include "../material/Program.h"
 
 class GeomSkyBox : public GeomType
 {
- public:
-	GeomSkyBox();
-	virtual ~GeomSkyBox();
+	public:
+		static bool initialize( const boost::filesystem::path& );
+		static bool shutdown();
+
+		static GeomSkyBox& getRef() { return *GeomSkyBox::instance;};
+
+		virtual ~GeomSkyBox();
 	
-	bool render();
+		bool render();
 	
- private:
-	Texture* east;
-	Texture* west;
-	Texture* up;
-	Texture* down;
-	Texture* south;
-	Texture* north;
+	private:
+		static GeomSkyBox* instance;
+
+		GeomSkyBox();
+
+		Texture* east;
+		Texture* west;
+		Texture* up;
+		Texture* down;
+		Texture* south;
+		Texture* north;
 };
 
 #endif

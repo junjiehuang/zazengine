@@ -138,6 +138,8 @@
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert_new.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowVert.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\skybox\skyBoxFrag.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\skybox\skyBoxVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpGeom.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpVert.glsl" />
   </ItemGroup>

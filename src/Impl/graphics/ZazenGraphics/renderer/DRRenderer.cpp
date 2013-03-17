@@ -10,6 +10,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "DRRenderer.h"
+
+#include "../Geometry/GeomSkyBox.h"
 #include "../Material/UniformBlock.h"
 
 #include <iostream>
@@ -108,6 +110,11 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
+	if ( false == this->renderSkyBox() )
+	{
+		return false;
+	}
+
 	if ( false == this->renderGeometryStage( instances, lights ) )
 	{
 		return false;
@@ -121,13 +128,21 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 	if ( this->m_displayMRT )
 	{
 		if ( false == this->showTexture( this->m_colorBuffers[ 0 ], 0 ) )
+		{
 			return false;
+		}
 		if ( false == this->showTexture( this->m_colorBuffers[ 1 ], 1 ) )
+		{
 			return false;
+		}
 		if ( false == this->showTexture( this->m_colorBuffers[ 2 ], 2 ) )
+		{
 			return false;
+		}
 		if ( false == this->showTexture( this->m_geometryDepth, 3 ) )
+		{
 			return false;
+		}
 	}
 
 	this->frame++;
@@ -144,7 +159,7 @@ DRRenderer::toggleDisplay()
 }
 
 bool
-DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
+DRRenderer::initialize( const boost::filesystem::path& pipelinePath, const boost::filesystem::path& skyBoxFolderPath )
 {
 	cout << "Initializing Deferred Renderer..." << endl;
 
@@ -176,6 +191,11 @@ DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
 	}
 
 	if ( false == this->initShadowMapping( pipelinePath ) )
+	{
+		return false;
+	}
+
+	if ( false == this->initSkyBoxStage( pipelinePath, skyBoxFolderPath ) )
 	{
 		return false;
 	}
@@ -313,6 +333,8 @@ DRRenderer::shutdown()
 		glDeleteFramebuffers( 1, &this->m_fbo );
 		this->m_fbo = 0;
 	}
+
+	GeomSkyBox::shutdown();
 
 	cout << "Shutting down Deferred Renderer finished" << endl;
 
@@ -586,6 +608,22 @@ DRRenderer::initShadowMapping( const boost::filesystem::path& pipelinePath )
 }
 
 bool
+DRRenderer::initSkyBoxStage( const boost::filesystem::path& pipelinePath, const boost::filesystem::path& skyBoxFolderPath )
+{
+	cout << "Initializing Deferred Rendering Sky-Box..." << endl;
+
+	if ( false == GeomSkyBox::initialize( skyBoxFolderPath ) )
+	{
+		cout << "ERROR in DRRenderer::initSkyBoxStage: coulnd't initialize Sky-Box - exit" << endl;
+		return false;
+	}
+
+	cout << "Initializing Deferred Rendering Sky-Box finished" << endl;
+
+	return true;
+}
+
+bool
 DRRenderer::initUniformBlocks()
 {
 	this->m_transformsBlock = UniformBlock::createBlock( "transforms" );
@@ -802,6 +840,7 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 
 	if ( false == this->m_progShadowMapping->use() )
 	{
+		cout << "ERROR in DRRenderer::renderShadowMap: using program failed - exit" << endl;
 		return false;
 	}
 
@@ -828,7 +867,7 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 		CHECK_FRAMEBUFFER_STATUS( status );
 		if ( GL_FRAMEBUFFER_COMPLETE != status )
 		{
-			cout << "ERROR in DRRenderer::renderGeometryStage: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
+			cout << "ERROR in DRRenderer::renderShadowMap: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
 			return false;
 		}
 
@@ -847,6 +886,60 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR in DRRenderer::renderShadowMap: glBindFramebuffer( 0 ) failed with " << gluErrorString( status ) << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool
+DRRenderer::renderSkyBox()
+{
+	GLenum status;
+
+	if ( false == Program::unuse() )
+	{
+		cout << "ERROR in DRRenderer::renderSkyBox: failed deactivating program " << endl;
+		return false;
+	}
+
+	// bind the framebuffer of the geometry-stage
+	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR in DRRenderer::renderSkyBox: glBindFramebuffer failed with " << gluErrorString( status ) << endl;
+		return false;
+	}
+
+	// activate multiple drawing to our color targets targets
+	glDrawBuffer( this->m_buffers[ 0 ] );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR in DRRenderer::renderSkyBox: glDrawBuffer failed with " << gluErrorString( status ) << endl;
+		return false;
+	}
+
+	// check framebuffer status, maybe something failed with glDrawBuffers
+	CHECK_FRAMEBUFFER_STATUS( status );
+	if ( GL_FRAMEBUFFER_COMPLETE != status )
+	{
+		cout << "ERROR in DRRenderer::renderSkyBox: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	// turn on color drawing ( was turned off in shadowmaping )
+	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+	// set clear-color
+	glClearColor( 0.0, 0.0, 0.0, 1.0 );
+	// clear the colorbuffers DON'T clear depthbuffer, we dont write to it
+	glClear( GL_COLOR_BUFFER_BIT );
+
+	GeomSkyBox::getRef().render();
+
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR in DRRenderer::renderSkyBox: glBindFramebuffer( 0 ) failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
@@ -889,12 +982,12 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
-	// turn on color drawing ( was turned off in shadowmaping)
+	// turn on color drawing ( was turned off in shadowmaping )
 	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
 	// set clear-color
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 	// clear the colorbuffers AND our depth-buffer ( m_geometryDepth );
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glClear( GL_DEPTH_BUFFER_BIT );
 
 	// draw all geometry - apply materials but don't render transparency
 	if ( false == this->renderInstances( this->m_camera, instances, this->m_progGeomStage, true, false ) )
@@ -920,6 +1013,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	// activate lighting-stage shader
 	if ( false == this->m_progLightingStage->use() )
 	{
+		cout << "ERROR in DRRenderer::renderLightingStage: using program failed - exit" << endl;
 		return false;
 	}
 	

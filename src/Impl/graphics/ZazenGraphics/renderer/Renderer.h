@@ -17,7 +17,7 @@ class Renderer
 
 	void setCamera( Viewer* cam ) { this->m_camera = cam; };
 
-	virtual bool initialize( const boost::filesystem::path& ) = 0;
+	virtual bool initialize( const boost::filesystem::path&, const boost::filesystem::path& ) = 0;
 	virtual bool shutdown() = 0;
 	virtual bool renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights ) = 0;
 

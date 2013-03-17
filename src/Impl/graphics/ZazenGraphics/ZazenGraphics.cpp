@@ -95,6 +95,9 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 		return false;
 	}
 
+	// TODO: load from XML
+	m_skyBoxFolderPath = filesystem::path( "SkyBoxes/SunSet" );
+
 	this->m_core->getEventManager().registerForEvent( "KEY_RELEASED", this );
 
 	// cannot initialize renderer now because camera not yet loaded
@@ -142,7 +145,7 @@ ZazenGraphics::start()
 	}
 
 	this->m_renderer->setCamera( this->m_camera );
-	if ( false == this->m_renderer->initialize( this->m_pipelinePath ) )
+	if ( false == this->m_renderer->initialize( this->m_pipelinePath, this->m_skyBoxFolderPath  ) )
 	{
 		cout << "ERROR ... initializing renderer failed - exit" << endl;
 		return false;
@@ -462,7 +465,7 @@ ZazenGraphics::toggleFullscreen()
 
 	/* TODO fix it, not yet working */
 	this->m_renderer->shutdown();
-	this->m_renderer->initialize( this->m_pipelinePath );
+	this->m_renderer->initialize( this->m_pipelinePath, this->m_skyBoxFolderPath );
 
 	return true;
 }

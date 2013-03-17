@@ -131,7 +131,7 @@ class DRRenderer : public Renderer
 	DRRenderer();
 	virtual ~DRRenderer();
 
-	virtual bool initialize( const boost::filesystem::path& );
+	virtual bool initialize( const boost::filesystem::path&, const boost::filesystem::path& );
 	virtual bool shutdown();
 
 	virtual bool toggleDisplay();
@@ -182,12 +182,14 @@ class DRRenderer : public Renderer
 	bool initGeomStage( const boost::filesystem::path& );
 	bool initLightingStage( const boost::filesystem::path& );
 	bool initShadowMapping( const boost::filesystem::path& );
+	bool initSkyBoxStage( const boost::filesystem::path&, const boost::filesystem::path& );
 	bool initUniformBlocks();
 
 	bool initDepthBuffer();
 	bool initMrtBuffer( unsigned int );
 
 	bool renderShadowMap( std::list<Instance*>&, std::list<Light*>& );
+	bool renderSkyBox();
 	bool renderGeometryStage( std::list<Instance*>&, std::list<Light*>& );
 	bool renderLightingStage( std::list<Instance*>&, std::list<Light*>& );
 

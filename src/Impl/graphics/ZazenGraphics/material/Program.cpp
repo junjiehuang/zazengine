@@ -257,7 +257,9 @@ Program::setUniformInt( const std::string& name, int value )
 	GLint status;
 	GLint location = this->getUniformLocation( name );
 	if ( -1 == location )
+	{
 		return false;
+	}
 
 	glUniform1i( location, value );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )

@@ -16,18 +16,94 @@ using namespace std;
 
 #define BOX_SIDE_SIZE 100
 
+GeomSkyBox* GeomSkyBox::instance = NULL;
+
+bool
+GeomSkyBox::initialize( const boost::filesystem::path& textureFolder )
+{
+	if ( NULL == GeomSkyBox::instance )
+	{
+		new GeomSkyBox();
+
+		GeomSkyBox::instance->east = Texture::get( textureFolder.generic_string() + "/east.png" );
+		if ( NULL == GeomSkyBox::instance->east )
+		{
+			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get east-texture" << endl;
+			return false;
+		}
+
+		GeomSkyBox::instance->west = Texture::get( textureFolder.generic_string() + "/west.png" );
+		if ( NULL == GeomSkyBox::instance->west )
+		{
+			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get west-texture" << endl;
+			return false;
+		}
+
+		GeomSkyBox::instance->up = Texture::get( textureFolder.generic_string() + "/up.png" );
+		if ( NULL == GeomSkyBox::instance->up )
+		{
+			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get up-texture" << endl;
+			return false;
+		}
+
+		GeomSkyBox::instance->down = Texture::get( textureFolder.generic_string() + "/down.png" );
+		if ( NULL == GeomSkyBox::instance->down )
+		{
+			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get down-texture" << endl;
+			return false;
+		}
+
+		GeomSkyBox::instance->south = Texture::get( textureFolder.generic_string() + "/south.png" );
+		if ( NULL == GeomSkyBox::instance->south )
+		{
+			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get south-texture" << endl;
+			return false;
+		}
+
+		GeomSkyBox::instance->north = Texture::get( textureFolder.generic_string() + "/north.png" );
+		if ( NULL == GeomSkyBox::instance->north )
+		{
+			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get north-texture" << endl;
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool
+GeomSkyBox::shutdown()
+{
+	if ( GeomSkyBox::instance )
+	{
+		delete GeomSkyBox::instance;
+	}
+
+	return true;
+}
+
 GeomSkyBox::GeomSkyBox()
 {
-	this->east = Texture::get( "east.jpg" );
-	this->west = Texture::get( "west.jpg" );
-	this->up = Texture::get( "up.jpg" );
-	this->down = Texture::get( "down.jpg" );
-	this->south = Texture::get( "south.jpg" );
-	this->north = Texture::get( "north.jpg" );
+	this->east = NULL;
+	this->west = NULL;
+	this->up = NULL;
+	this->down = NULL;
+	this->south = NULL;
+	this->north = NULL;
+
+	GeomSkyBox::instance = this;
 }
 
 GeomSkyBox::~GeomSkyBox()
 {
+	this->east = NULL;
+	this->west = NULL;
+	this->up = NULL;
+	this->down = NULL;
+	this->south = NULL;
+	this->north = NULL;
+
+	GeomSkyBox::instance = NULL;
 }
 
 bool
@@ -37,8 +113,8 @@ GeomSkyBox::render()
 	Viewer& cam = ZazenGraphics::getInstance().getCamera();
 	float* data = glm::value_ptr( cam.m_viewMatrix );
 
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
+	glDisable( GL_DEPTH_TEST );
+	glDisable( GL_CULL_FACE );
 
 	float xPos = data[ 12 ];
 	float yPos = data[ 13 ];
@@ -52,63 +128,122 @@ GeomSkyBox::render()
 
 	// Front Face
 	this->east->bind( 0 );
-	glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(-BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Bottom Left Of The Texture and Quad
-		glTexCoord2f(1.0f, 1.0f); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Bottom Right Of The Texture and Quad
-		glTexCoord2f(1.0f, 0.0f); glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Top Right Of The Texture and Quad
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(-BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Top Left Of The Texture and Quad
+
+	glBegin( GL_QUADS );
+		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
+		glTexCoord2f( 0.0f, 1.0f ); 
+
+		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
+		glTexCoord2f( 1.0f, 1.0f ); 
+
+		glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
+		glTexCoord2f( 1.0f, 0.0f ); 
+
+		glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
+		glTexCoord2f( 0.0f, 0.0f ); 
 	glEnd();
+
 	this->east->unbind();
+	/////////////////////////
 
 	// Back Face
 	this->west->bind( 0 );
+
 	glBegin(GL_QUADS);
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(-BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Bottom Right Of The Texture and Quad
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(-BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Top Right Of The Texture and Quad
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Top Left Of The Texture and Quad
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Bottom Left Of The Texture and Quad
+		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
+		glTexCoord2f( 1.0f, 1.0f ); 
+
+		glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
+		glTexCoord2f( 1.0f, 0.0f ); 
+
+		glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
+		glTexCoord2f( 0.0f, 0.0f ); 
+
+		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
+		glTexCoord2f( 0.0f, 1.0f ); 
 	glEnd();
+
 	this->west->unbind();
+	/////////////////////////
 
 	// Top Face
 	this->up->bind( 0 );
-	glBegin(GL_QUADS);
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(-BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Top Left Of The Texture and Quad
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(-BOX_SIDE_SIZE, BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Bottom Left Of The Texture and Quad
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(BOX_SIDE_SIZE, BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Bottom Right Of The Texture and Quad
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Top Right Of The Texture and Quad
+	glBegin( GL_QUADS );
+		glVertex3f( -BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
+		glTexCoord2f( 1.0f, 0.0f ); 
+
+		glVertex3f( -BOX_SIDE_SIZE, BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
+		glTexCoord2f( 0.0f, 0.0f ); 
+
+		glVertex3f( BOX_SIDE_SIZE, BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
+		glTexCoord2f( 0.0f, 1.0f ); 
+
+		glVertex3f( BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
+		glTexCoord2f( 1.0f, 1.0f ); 
 	glEnd();
+
 	this->up->unbind();
+	/////////////////////////
 
 	// Bottom Face
 	this->down->bind( 0 );
-	glBegin(GL_QUADS);
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(-BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Top Right Of The Texture and Quad
-		glTexCoord2f(1.0f, 0.0f); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Top Left Of The Texture and Quad
-		glTexCoord2f(0.0f, 0.0f); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Bottom Left Of The Texture and Quad
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(-BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Bottom Right Of The Texture and Quad
+
+	glBegin( GL_QUADS );
+		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
+		glTexCoord2f( 1.0f, 1.0f ); 
+
+		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
+		glTexCoord2f( 1.0f, 0.0f ); 
+
+		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
+		glTexCoord2f( 0.0f, 0.0f ); 
+
+		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
+		glTexCoord2f( 0.0f, 1.0f ); 
 	glEnd();
+
 	this->down->unbind();
+	/////////////////////////
 
 	// Right face
 	this->south->bind( 0 );
+
 	glBegin(GL_QUADS);
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Bottom Right Of The Texture and Quad
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Top Right Of The Texture and Quad
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Top Left Of The Texture and Quad
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Bottom Left Of The Texture and Quad
+		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
+		glTexCoord2f( 1.0f, 1.0f ); 
+
+		glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
+		glTexCoord2f( 1.0f, 0.0f ); 
+
+		glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
+		glTexCoord2f( 0.0f, 0.0f ); 
+
+		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
+		glTexCoord2f( 0.0f, 1.0f ); 
 	glEnd();
+
 	this->south->unbind();
+	/////////////////////////
 
 	// Left Face
 	this->north->bind( 0 );
+
 	glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 1.0f); glVertex3f(-BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Bottom Left Of The Texture and Quad
-		glTexCoord2f(1.0f, 1.0f); glVertex3f(-BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Bottom Right Of The Texture and Quad
-		glTexCoord2f(1.0f, 0.0f); glVertex3f(-BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE);	// Top Right Of The Texture and Quad
-		glTexCoord2f(0.0f, 0.0f); glVertex3f(-BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE);	// Top Left Of The Texture and Quad
+		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
+		glTexCoord2f( 0.0f, 1.0f ); 
+
+		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
+		glTexCoord2f( 1.0f, 1.0f ); 
+
+		glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
+		glTexCoord2f( 1.0f, 0.0f ); 
+
+		glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
+		glTexCoord2f( 0.0f, 0.0f ); 
 	glEnd();
+
 	this->north->unbind();
+	/////////////////////////
 
 	data[ 12 ] = xPos;
 	data[ 13 ] = yPos;
@@ -117,8 +252,8 @@ GeomSkyBox::render()
 	glLoadMatrixf( data );
 
 	// activate z-buffering and face culling
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	glEnable( GL_DEPTH_TEST );
+	glEnable( GL_CULL_FACE );
 
 	return true;
 }

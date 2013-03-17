@@ -91,6 +91,9 @@
     <Filter Include="Quelldateien\window">
       <UniqueIdentifier>{9d306254-532c-4838-b309-901d01a895e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Skybox">
+      <UniqueIdentifier>{48972818-0a8b-4b56-ac3f-955f01e02bf8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -294,6 +297,12 @@
     </None>
     <None Include="..\..\..\..\config\graphics\config.xml">
       <Filter>Ressourcendateien\Config</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\skybox\skyBoxFrag.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Skybox</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\skybox\skyBoxVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Skybox</Filter>
     </None>
   </ItemGroup>
 </Project>
