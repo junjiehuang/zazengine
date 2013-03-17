@@ -202,8 +202,11 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 			memcpy( vertexData[ index ].position, &mesh->mVertices[ index ].x, sizeof( GeomMesh::Vertex ) );
 			memcpy( vertexData[ index ].normal, &mesh->mNormals[ index ].x, sizeof( GeomMesh::Normal ) );
 
-			vertexData[ index ].texCoord[ 0 ] = mesh->mTextureCoords[ 0 ][ index ].x;
-			vertexData[ index ].texCoord[ 1 ] = mesh->mTextureCoords[ 0 ][ index ].y;
+			if ( mesh->HasTextureCoords( 0 ) )
+			{
+				vertexData[ index ].texCoord[ 0 ] = mesh->mTextureCoords[ 0 ][ index ].x;
+				vertexData[ index ].texCoord[ 1 ] = mesh->mTextureCoords[ 0 ][ index ].y;
+			}
 		}
 	}
 
