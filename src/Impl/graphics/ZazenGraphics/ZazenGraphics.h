@@ -66,8 +66,6 @@ class ZazenGraphics : public IGraphics
 		boost::filesystem::path m_textureDataPath;
 		boost::filesystem::path m_materialDataPath;
 
-		boost::filesystem::path m_skyBoxFolderPath;
-
 		ICore* m_core;
 
 		Viewer* m_camera;
@@ -82,6 +80,7 @@ class ZazenGraphics : public IGraphics
 		bool initModelDataPath( TiXmlElement* );
 		bool initTextureDataPath( TiXmlElement* );
 		bool initMaterialDataPath( TiXmlElement* );
+		bool initSkyBoxFolderPath( TiXmlElement* );
 
 		bool createWindow( TiXmlElement* );
 		bool initGL( TiXmlElement* );

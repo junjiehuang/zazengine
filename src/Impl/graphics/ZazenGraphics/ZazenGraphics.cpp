@@ -95,9 +95,6 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 		return false;
 	}
 
-	// TODO: load from XML
-	m_skyBoxFolderPath = filesystem::path( "SkyBoxes/SunSet" );
-
 	this->m_core->getEventManager().registerForEvent( "KEY_RELEASED", this );
 
 	// cannot initialize renderer now because camera not yet loaded
@@ -145,7 +142,7 @@ ZazenGraphics::start()
 	}
 
 	this->m_renderer->setCamera( this->m_camera );
-	if ( false == this->m_renderer->initialize( this->m_pipelinePath, this->m_skyBoxFolderPath  ) )
+	if ( false == this->m_renderer->initialize( this->m_pipelinePath ) )
 	{
 		cout << "ERROR ... initializing renderer failed - exit" << endl;
 		return false;
@@ -261,6 +258,51 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			entity->m_orientation = instance;
 
 			this->m_instances.push_back( instance );
+		}
+	}
+
+	TiXmlElement* sceneNode = objectNode->FirstChildElement( "scene" );
+	if ( sceneNode )
+	{
+		TiXmlElement* skyBoxNode = sceneNode->FirstChildElement( "skyBox" );
+		if ( skyBoxNode )
+		{
+			const char* str = skyBoxNode->Attribute( "path" );
+			if ( 0 == str )
+			{
+				cout << "ERROR ... missing path-attribute in skybox node" << endl;
+				return false;
+			}
+
+			std::string skyFolderPathStr = str;
+			filesystem::path fullSkyBoxFolderPath = filesystem::path( m_textureDataPath.generic_string() + skyFolderPathStr );
+			if ( ! filesystem::exists( fullSkyBoxFolderPath ) )
+			{
+				cout << "ERROR ... skybox-path " << fullSkyBoxFolderPath << " does not exist" << endl;
+				return false;
+			}
+
+			if ( false == filesystem::is_directory( fullSkyBoxFolderPath ) )
+			{
+				cout << "ERROR ... skybox-path " << fullSkyBoxFolderPath << " is not a directory" << endl;
+				return false;
+			}
+
+			str = skyBoxNode->Attribute( "format" );
+			if ( 0 == str )
+			{
+				cout << "ERROR ... missing format-attribute in skybox node" << endl;
+				return false;
+			}
+
+			string skyBoxFormat = str;
+			filesystem::path skyBoxFolderPath = filesystem::path( skyFolderPathStr );
+
+			if ( false == GeomSkyBox::initialize( skyBoxFolderPath, skyBoxFormat ) )
+			{
+				cout << "ERROR ... failed to initialize Sky-Box" << endl;
+				return false;
+			}
 		}
 	}
 
@@ -465,7 +507,7 @@ ZazenGraphics::toggleFullscreen()
 
 	/* TODO fix it, not yet working */
 	this->m_renderer->shutdown();
-	this->m_renderer->initialize( this->m_pipelinePath, this->m_skyBoxFolderPath );
+	this->m_renderer->initialize( this->m_pipelinePath );
 
 	return true;
 }
@@ -619,6 +661,39 @@ ZazenGraphics::initTextureDataPath( TiXmlElement* configElem )
 
 bool
 ZazenGraphics::initMaterialDataPath( TiXmlElement* configElem )
+{
+	TiXmlElement* materialDataNode = configElem->FirstChildElement( "materialData" );
+	if ( 0 == materialDataNode )
+	{
+		cout << "ERROR ... missing materialData-config in graphics-config" << endl;
+		return false;
+	}
+
+	const char* str = materialDataNode->Attribute( "path" );
+	if ( 0 == str )
+	{
+		cout << "ERROR ... missing materialData-path in graphics-config" << endl;
+		return false;
+	}
+
+	this->m_materialDataPath = filesystem::path( str );
+	if ( ! filesystem::exists( this->m_materialDataPath ) )
+	{
+		cout << "ERROR ... materialData-path " << this->m_materialDataPath << " does not exist" << endl;
+		return false;
+	}
+
+	if ( false == filesystem::is_directory( this->m_materialDataPath ) )
+	{
+		cout << "ERROR ... materialData-path " << this->m_materialDataPath << " is not a directory" << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool
+ZazenGraphics::initSkyBoxFolderPath( TiXmlElement* configElem )
 {
 	TiXmlElement* materialDataNode = configElem->FirstChildElement( "materialData" );
 	if ( 0 == materialDataNode )

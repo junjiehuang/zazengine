@@ -199,7 +199,7 @@ DRRenderer::toggleDisplay()
 }
 
 bool
-DRRenderer::initialize( const boost::filesystem::path& pipelinePath, const boost::filesystem::path& skyBoxFolderPath )
+DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Renderer..." << endl;
 
@@ -231,11 +231,6 @@ DRRenderer::initialize( const boost::filesystem::path& pipelinePath, const boost
 	}
 
 	if ( false == this->initShadowMapping( pipelinePath ) )
-	{
-		return false;
-	}
-
-	if ( false == this->initSkyBoxStage( pipelinePath, skyBoxFolderPath ) )
 	{
 		return false;
 	}
@@ -648,22 +643,6 @@ DRRenderer::initShadowMapping( const boost::filesystem::path& pipelinePath )
 }
 
 bool
-DRRenderer::initSkyBoxStage( const boost::filesystem::path& pipelinePath, const boost::filesystem::path& skyBoxFolderPath )
-{
-	cout << "Initializing Deferred Rendering Sky-Box..." << endl;
-
-	if ( false == GeomSkyBox::initialize( skyBoxFolderPath ) )
-	{
-		cout << "ERROR in DRRenderer::initSkyBoxStage: coulnd't initialize Sky-Box - exit" << endl;
-		return false;
-	}
-
-	cout << "Initializing Deferred Rendering Sky-Box finished" << endl;
-
-	return true;
-}
-
-bool
 DRRenderer::initUniformBlocks()
 {
 	this->m_transformsBlock = UniformBlock::createBlock( "transforms" );
@@ -935,6 +914,11 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 bool
 DRRenderer::renderSkyBox()
 {
+	if ( false == GeomSkyBox::isPresent() )
+	{
+		return true;
+	}
+
 	GLenum status;
 
 	if ( false == Program::unuse() )

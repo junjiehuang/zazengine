@@ -19,48 +19,48 @@ using namespace std;
 GeomSkyBox* GeomSkyBox::instance = NULL;
 
 bool
-GeomSkyBox::initialize( const boost::filesystem::path& textureFolder )
+GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std::string& format )
 {
 	if ( NULL == GeomSkyBox::instance )
 	{
 		new GeomSkyBox();
 
-		GeomSkyBox::instance->east = Texture::get( textureFolder.generic_string() + "/east.png" );
+		GeomSkyBox::instance->east = Texture::get( textureFolder.generic_string() + "/east." + format );
 		if ( NULL == GeomSkyBox::instance->east )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get east-texture" << endl;
 			return false;
 		}
 
-		GeomSkyBox::instance->west = Texture::get( textureFolder.generic_string() + "/west.png" );
+		GeomSkyBox::instance->west = Texture::get( textureFolder.generic_string() + "/west." + format );
 		if ( NULL == GeomSkyBox::instance->west )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get west-texture" << endl;
 			return false;
 		}
 
-		GeomSkyBox::instance->up = Texture::get( textureFolder.generic_string() + "/up.png" );
+		GeomSkyBox::instance->up = Texture::get( textureFolder.generic_string() + "/up." + format );
 		if ( NULL == GeomSkyBox::instance->up )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get up-texture" << endl;
 			return false;
 		}
 
-		GeomSkyBox::instance->down = Texture::get( textureFolder.generic_string() + "/down.png" );
+		GeomSkyBox::instance->down = Texture::get( textureFolder.generic_string() + "/down." + format );
 		if ( NULL == GeomSkyBox::instance->down )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get down-texture" << endl;
 			return false;
 		}
 
-		GeomSkyBox::instance->south = Texture::get( textureFolder.generic_string() + "/south.png" );
+		GeomSkyBox::instance->south = Texture::get( textureFolder.generic_string() + "/south." + format );
 		if ( NULL == GeomSkyBox::instance->south )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get south-texture" << endl;
 			return false;
 		}
 
-		GeomSkyBox::instance->north = Texture::get( textureFolder.generic_string() + "/north.png" );
+		GeomSkyBox::instance->north = Texture::get( textureFolder.generic_string() + "/north." + format );
 		if ( NULL == GeomSkyBox::instance->north )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get north-texture" << endl;

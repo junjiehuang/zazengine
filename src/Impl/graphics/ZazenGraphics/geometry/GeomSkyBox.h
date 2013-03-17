@@ -18,8 +18,9 @@
 class GeomSkyBox : public GeomType
 {
 	public:
-		static bool initialize( const boost::filesystem::path& );
+		static bool initialize( const boost::filesystem::path&, const std::string& );
 		static bool shutdown();
+		static bool isPresent() { return GeomSkyBox::instance != NULL; };
 
 		static GeomSkyBox& getRef() { return *GeomSkyBox::instance;};
 

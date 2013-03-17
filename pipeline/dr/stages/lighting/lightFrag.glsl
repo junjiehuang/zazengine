@@ -176,6 +176,10 @@ void main()
 		{
 			final_color = renderMicrofacetBRDF( diffuse, normal );
 		}
+		else
+		{
+			final_color = renderDiffuseBRDF( diffuse, normal );
+		}
     }
     else
     {
