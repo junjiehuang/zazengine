@@ -109,7 +109,6 @@ GeomSkyBox::~GeomSkyBox()
 bool
 GeomSkyBox::render()
 {
-//	GeomType::render();
 	Viewer& cam = ZazenGraphics::getInstance().getCamera();
 	float* data = glm::value_ptr( cam.m_viewMatrix );
 
@@ -130,17 +129,14 @@ GeomSkyBox::render()
 	this->east->bind( 0 );
 
 	glBegin( GL_QUADS );
-		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
-		glTexCoord2f( 0.0f, 1.0f ); 
+		glTexCoord2f( 0.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
 
-		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
-		glTexCoord2f( 1.0f, 1.0f ); 
+		glTexCoord2f( 1.0f, 1.0f ); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
 
-		glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-		glTexCoord2f( 1.0f, 0.0f ); 
+		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
 
-		glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
-		glTexCoord2f( 0.0f, 0.0f ); 
+		glTexCoord2f( 0.0f, 0.0f );  glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
+		
 	glEnd();
 
 	this->east->unbind();
@@ -150,17 +146,14 @@ GeomSkyBox::render()
 	this->west->bind( 0 );
 
 	glBegin(GL_QUADS);
-		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
-		glTexCoord2f( 1.0f, 1.0f ); 
+		glTexCoord2f( 1.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
 
-		glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-		glTexCoord2f( 1.0f, 0.0f ); 
+		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
 
-		glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
-		glTexCoord2f( 0.0f, 0.0f ); 
+		glTexCoord2f( 0.0f, 0.0f );  glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
 
-		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
-		glTexCoord2f( 0.0f, 1.0f ); 
+		glTexCoord2f( 0.0f, 1.0f ); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
+		 
 	glEnd();
 
 	this->west->unbind();
@@ -169,17 +162,13 @@ GeomSkyBox::render()
 	// Top Face
 	this->up->bind( 0 );
 	glBegin( GL_QUADS );
-		glVertex3f( -BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
-		glTexCoord2f( 1.0f, 0.0f ); 
+		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
 
-		glVertex3f( -BOX_SIDE_SIZE, BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
-		glTexCoord2f( 0.0f, 0.0f ); 
+		glTexCoord2f( 0.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE, BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
 
-		glVertex3f( BOX_SIDE_SIZE, BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
-		glTexCoord2f( 0.0f, 1.0f ); 
+		glTexCoord2f( 0.0f, 1.0f ); glVertex3f( BOX_SIDE_SIZE, BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
 
-		glVertex3f( BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-		glTexCoord2f( 1.0f, 1.0f ); 
+		glTexCoord2f( 1.0f, 1.0f );  glVertex3f( BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
 	glEnd();
 
 	this->up->unbind();
@@ -189,17 +178,13 @@ GeomSkyBox::render()
 	this->down->bind( 0 );
 
 	glBegin( GL_QUADS );
-		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-		glTexCoord2f( 1.0f, 1.0f ); 
+		glTexCoord2f( 1.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
+		
+		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
 
-		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
-		glTexCoord2f( 1.0f, 0.0f ); 
-
-		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
-		glTexCoord2f( 0.0f, 0.0f ); 
-
-		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
-		glTexCoord2f( 0.0f, 1.0f ); 
+		glTexCoord2f( 0.0f, 0.0f ); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
+		 
+		glTexCoord2f( 0.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
 	glEnd();
 
 	this->down->unbind();
@@ -209,17 +194,13 @@ GeomSkyBox::render()
 	this->south->bind( 0 );
 
 	glBegin(GL_QUADS);
-		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
-		glTexCoord2f( 1.0f, 1.0f ); 
+		glTexCoord2f( 1.0f, 1.0f ); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
+		
+		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
 
-		glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-		glTexCoord2f( 1.0f, 0.0f ); 
-
-		glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
-		glTexCoord2f( 0.0f, 0.0f ); 
-
-		glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
-		glTexCoord2f( 0.0f, 1.0f ); 
+		glTexCoord2f( 0.0f, 0.0f ); glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
+		 
+		glTexCoord2f( 0.0f, 1.0f );  glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
 	glEnd();
 
 	this->south->unbind();
@@ -229,17 +210,13 @@ GeomSkyBox::render()
 	this->north->bind( 0 );
 
 	glBegin(GL_QUADS);
-		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
-		glTexCoord2f( 0.0f, 1.0f ); 
+		glTexCoord2f( 0.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
+		 
+		glTexCoord2f( 1.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
 
-		glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
-		glTexCoord2f( 1.0f, 1.0f ); 
-
-		glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-		glTexCoord2f( 1.0f, 0.0f ); 
-
-		glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
-		glTexCoord2f( 0.0f, 0.0f ); 
+		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
+		 
+		glTexCoord2f( 0.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
 	glEnd();
 
 	this->north->unbind();

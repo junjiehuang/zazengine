@@ -110,6 +110,46 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
+	GLenum status;
+
+	// bind the framebuffer of the geometry-stage
+	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR in DRRenderer::renderGeometryStage: glBindFramebuffer failed with " << gluErrorString( status ) << endl;
+		return false;
+	}
+
+	// activate multiple drawing to our color targets targets
+	glDrawBuffers( MRT_COUNT, this->m_buffers );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR in DRRenderer::renderGeometryStage: glDrawBuffers failed with " << gluErrorString( status ) << endl;
+		return false;
+	}
+
+	// check framebuffer status, maybe something failed with glDrawBuffers
+	CHECK_FRAMEBUFFER_STATUS( status );
+	if ( GL_FRAMEBUFFER_COMPLETE != status )
+	{
+		cout << "ERROR in DRRenderer::renderGeometryStage: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	// turn on color drawing ( was turned off in shadowmaping )
+	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+	// set clear-color
+	glClearColor( 0.0, 0.0, 0.0, 1.0 );
+	// clear the colorbuffers AND our depth-buffer ( m_geometryDepth );
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR in DRRenderer::renderGeometryStage: glBindFramebuffer( 0 ) failed with " << gluErrorString( status ) << endl;
+		return false;
+	}
+
 	if ( false == this->renderSkyBox() )
 	{
 		return false;
@@ -927,12 +967,14 @@ DRRenderer::renderSkyBox()
 		return false;
 	}
 
+	/*
 	// turn on color drawing ( was turned off in shadowmaping )
 	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
 	// set clear-color
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 	// clear the colorbuffers DON'T clear depthbuffer, we dont write to it
 	glClear( GL_COLOR_BUFFER_BIT );
+	*/
 
 	GeomSkyBox::getRef().render();
 
@@ -982,12 +1024,14 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
+	/*
 	// turn on color drawing ( was turned off in shadowmaping )
 	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
 	// set clear-color
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 	// clear the colorbuffers AND our depth-buffer ( m_geometryDepth );
 	glClear( GL_DEPTH_BUFFER_BIT );
+	*/
 
 	// draw all geometry - apply materials but don't render transparency
 	if ( false == this->renderInstances( this->m_camera, instances, this->m_progGeomStage, true, false ) )
