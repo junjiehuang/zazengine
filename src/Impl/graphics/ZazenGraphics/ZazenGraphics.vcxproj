@@ -84,7 +84,9 @@
     <ClCompile Include="material\UniformBlock.cpp" />
     <ClCompile Include="orientation\Orientation.cpp" />
     <ClCompile Include="renderer\DRRenderer.cpp" />
+    <ClCompile Include="renderer\FrameBufferObject.cpp" />
     <ClCompile Include="renderer\Renderer.cpp" />
+    <ClCompile Include="renderer\RenderTarget.cpp" />
     <ClCompile Include="scene\Instance.cpp" />
     <ClCompile Include="scene\Viewer.cpp" />
     <ClCompile Include="states\Statemanager.cpp" />
@@ -111,7 +113,9 @@
     <ClInclude Include="material\UniformBlock.h" />
     <ClInclude Include="orientation\Orientation.h" />
     <ClInclude Include="renderer\DRRenderer.h" />
+    <ClInclude Include="renderer\FrameBufferObject.h" />
     <ClInclude Include="renderer\Renderer.h" />
+    <ClInclude Include="renderer\RenderTarget.h" />
     <ClInclude Include="scene\Instance.h" />
     <ClInclude Include="scene\Viewer.h" />
     <ClInclude Include="states\Occlusionquerystate.h" />

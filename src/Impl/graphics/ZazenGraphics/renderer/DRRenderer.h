@@ -17,10 +17,12 @@
 
 #include "Renderer.h"
 
+#include "FrameBufferObject.h"
+#include "RenderTarget.h"
+
 #include "../Material/UniformBlock.h"
 #include "../Material/Program.h"
 #include "../Material/Shader.h"
-
 
 /* Deferred Rendering
  * Geometry-Stage:
@@ -141,10 +143,7 @@ class DRRenderer : public Renderer
 
  private:
 	// Multiple-Render-Targes & Framebuffer for Deferred Rendering
-	GLuint m_fbo;
-	GLuint m_geometryDepth;						// the id of the depth-buffer
-	GLuint m_colorBuffers[ MRT_COUNT ];			// the generic color attachments for MRTs
-	GLenum m_buffers[ MRT_COUNT ];
+	FrameBufferObject* m_fbo;
 	////////////////////////////////////////
 
 	// Program and shaders for geometry-stage
@@ -164,7 +163,7 @@ class DRRenderer : public Renderer
 	Shader* m_vertShadowMapping;
 	Shader* m_fragShadowMapping;
 
-	GLuint m_shadowMappingFB;
+	FrameBufferObject* m_shadowMappingFB;
 	////////////////////////////////////////
 
 	// Uniform-Blocks

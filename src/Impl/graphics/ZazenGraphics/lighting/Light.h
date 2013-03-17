@@ -10,6 +10,8 @@
 
 #include "../Scene/Viewer.h"
 
+#include "../renderer/RenderTarget.h"
+
 #include <GL/glew.h>
 
 class Light : public Viewer
@@ -39,7 +41,7 @@ class Light : public Viewer
 	void setColor( const glm::vec4& color ) { this->m_color = color; };
 	const glm::vec4& getColor() const { return this->m_color; };
 
-	GLuint getShadowMap() { return this->m_shadowMap; };
+	RenderTarget* getShadowMap() { return this->m_shadowMap; };
 	GLuint* getShadowCubeMap() { return this->m_cubeShadowMap; };
 
  private:
@@ -50,7 +52,7 @@ class Light : public Viewer
 	LightType m_type;
 	glm::vec4 m_color;
 
-	GLuint m_shadowMap;
+	RenderTarget* m_shadowMap;
 	GLuint m_cubeShadowMap[6];
 
 	bool createShadowMap( int width, int height );

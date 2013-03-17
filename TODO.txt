@@ -1,15 +1,14 @@
 !!! FROM NOW ON: always compileable & runnable when checked in !!!
 
 For Qualcomm presentation (implementation deadline saturday)
-- sky-box
 - transform lighting position to MV
-- shadow-mapping
+- fix sky-box (correct up/down/south/north)
+- add transformations to models when loaded?
 
 For myself
 Graphics:
 - graphics: shadow - mapping solve it!
 - add transformations to models when loaded!
-
 - normal-mapping
 
 Advanced

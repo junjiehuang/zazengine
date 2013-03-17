@@ -16,58 +16,13 @@
 
 #include <iostream>
 #include <algorithm>
-#include <assert.h>
 
 using namespace std;
-
-#define CHECK_FRAMEBUFFER_STATUS( status ) \
-{\
- status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT); \
- switch(status) { \
- case GL_FRAMEBUFFER_COMPLETE: \
-   break; \
- case GL_FRAMEBUFFER_UNSUPPORTED: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_UNSUPPORTED\n");\
-    /* you gotta choose different formats */ \
-   assert(0); \
-   break; \
- case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n");\
-   break; \
- case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\n");\
-   break; \
- case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n");\
-   break; \
-  case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n");\
-   break; \
- case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER\n");\
-   break; \
- case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER\n");\
-   break; \
- case GL_FRAMEBUFFER_BINDING: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_BINDING\n");\
-   break; \
- default: \
-   /* programming error; will fail on all hardware */ \
-   assert(0); \
- }\
-}
-
-// TODO move shaders for rendering-pipeline to zazengine-project
 
 DRRenderer::DRRenderer()
 	: Renderer( )
 {
 	this->m_fbo = 0;
-	memset( this->m_colorBuffers, 0, sizeof( this->m_colorBuffers) );
-	memset( this->m_buffers, 0, sizeof( this->m_buffers) );
-
-	this->m_geometryDepth = 0;
 
 	this->m_progGeomStage = 0;
 	this->m_vertGeomStage = 0;
@@ -110,43 +65,8 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
-	GLenum status;
-
-	// bind the framebuffer of the geometry-stage
-	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == this->m_fbo->clearAll() )
 	{
-		cout << "ERROR in DRRenderer::renderGeometryStage: glBindFramebuffer failed with " << gluErrorString( status ) << endl;
-		return false;
-	}
-
-	// activate multiple drawing to our color targets targets
-	glDrawBuffers( MRT_COUNT, this->m_buffers );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in DRRenderer::renderGeometryStage: glDrawBuffers failed with " << gluErrorString( status ) << endl;
-		return false;
-	}
-
-	// check framebuffer status, maybe something failed with glDrawBuffers
-	CHECK_FRAMEBUFFER_STATUS( status );
-	if ( GL_FRAMEBUFFER_COMPLETE != status )
-	{
-		cout << "ERROR in DRRenderer::renderGeometryStage: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	// turn on color drawing ( was turned off in shadowmaping )
-	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-	// set clear-color
-	glClearColor( 0.0, 0.0, 0.0, 1.0 );
-	// clear the colorbuffers AND our depth-buffer ( m_geometryDepth );
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in DRRenderer::renderGeometryStage: glBindFramebuffer( 0 ) failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
@@ -167,19 +87,19 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 
 	if ( this->m_displayMRT )
 	{
-		if ( false == this->showTexture( this->m_colorBuffers[ 0 ], 0 ) )
+		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 0 ]->getId(), 0 ) )
 		{
 			return false;
 		}
-		if ( false == this->showTexture( this->m_colorBuffers[ 1 ], 1 ) )
+		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 1 ]->getId(), 1 ) )
 		{
 			return false;
 		}
-		if ( false == this->showTexture( this->m_colorBuffers[ 2 ], 2 ) )
+		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 2 ]->getId(), 2 ) )
 		{
 			return false;
 		}
-		if ( false == this->showTexture( this->m_geometryDepth, 3 ) )
+		if ( false == this->showTexture( this->m_fbo->getAttachedDepthTarget()->getId(), 3 ) )
 		{
 			return false;
 		}
@@ -340,35 +260,11 @@ DRRenderer::shutdown()
 		this->m_materialBlock = NULL;
 	}
 
-	if ( this->m_shadowMappingFB )
-	{
-		glDeleteFramebuffers( 1, &this->m_shadowMappingFB );
-		this->m_shadowMappingFB = 0;
-	}
-
-	if ( this->m_geometryDepth )
-	{
-		glDeleteTextures( 1, &this->m_geometryDepth );
-		this->m_geometryDepth = 0;
-	}
-
-	// cleaning up mrts
-	for ( int i = 0; i < MRT_COUNT; i++ )
-	{
-		if ( this->m_colorBuffers[ i ] )
-		{
-			glDeleteTextures( 1, &this->m_colorBuffers[ i ] );
-			this->m_colorBuffers[ i ] = 0;
-		}
-	}
+	FrameBufferObject::destroy( this->m_shadowMappingFB );
 
 	// cleaning up framebuffer
-	if ( this->m_fbo )
-	{
-		glDeleteFramebuffers( 1, &this->m_fbo );
-		this->m_fbo = 0;
-	}
-
+	FrameBufferObject::destroy( this->m_fbo );
+	
 	GeomSkyBox::shutdown();
 
 	cout << "Shutting down Deferred Renderer finished" << endl;
@@ -379,13 +275,9 @@ DRRenderer::shutdown()
 bool
 DRRenderer::initFBO()
 {
-	GLenum status;
-
-	// generate the id of our frame-buffer-object
-	glGenFramebuffers( 1, &this->m_fbo );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	this->m_fbo = FrameBufferObject::create();
+	if ( NULL == this->m_fbo )
 	{
-		cout << "ERROR in DRRenderer::initFBO: glGenFramebuffers failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
 
@@ -570,13 +462,9 @@ DRRenderer::initShadowMapping( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Rendering Shadow-Mapping..." << endl;
 
-	GLenum status;
-
-	// create a framebuffer object
-	glGenFramebuffers( 1, &this->m_shadowMappingFB );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	this->m_shadowMappingFB = FrameBufferObject::create();
+	if ( NULL == this->m_shadowMappingFB )
 	{
-		cout << "ERROR in DRRenderer::initShadowMapping: glGenFramebuffers failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
 
@@ -734,62 +622,17 @@ DRRenderer::initUniformBlocks()
 bool
 DRRenderer::initDepthBuffer()
 {
-	GLenum status;
-
-	// generate and bind depth buffer
-	glGenTextures( 1, &this->m_geometryDepth );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	RenderTarget* renderTarget = RenderTarget::create( ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 
+		RenderTarget::RT_DEPTH );
+	if ( NULL == renderTarget )
 	{
-		cout << "ERROR in DRRenderer::initDepthBuffer: glGenTextures for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
 
-	glBindTexture( GL_TEXTURE_2D, this->m_geometryDepth );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	if ( false == this->m_fbo->attachTarget( renderTarget ) )
 	{
-		cout << "ERROR in DRRenderer::initDepthBuffer: glBindTexture for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
-
-	// GL_LINEAR does not make sense for depth texture.
-	// PercentageCloserFiltering utilizes GL_LINEAR, not yet implemented
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-
-	// Remove artifact on the edges of the depthmap
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-
-	glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE );
-
-	// for now we create shadowmaps in same width and height as their viewing frustum and 32 bit depth
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 
-		0, GL_DEPTH_COMPONENT, GL_FLOAT, 0 );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in DRRenderer::initDepthBuffer: glTexImage2D for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	glBindTexture( GL_TEXTURE_2D, 0 );
-
-	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
-	{
-		cout << "ERROR in DRRenderer::initDepthBuffer: glBindFramebuffer for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
-	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, this->m_geometryDepth, 0 );
-	CHECK_FRAMEBUFFER_STATUS( status );
-	if ( GL_FRAMEBUFFER_COMPLETE != status )
-	{
-		cout << "ERROR in DRRenderer::initDepthBuffer: framebuffer error for depth-buffer: " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 	return true;
 }
@@ -797,57 +640,17 @@ DRRenderer::initDepthBuffer()
 bool
 DRRenderer::initMrtBuffer( unsigned int i )
 {
-	GLenum status;
-
-	this->m_buffers[ i ] = GL_COLOR_ATTACHMENT0 + i;
-
-	glGenTextures( 1, &this->m_colorBuffers[ i ] );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	RenderTarget* renderTarget = RenderTarget::create( ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 
+		RenderTarget::RT_COLOR );
+	if ( NULL == renderTarget )
 	{
-		cout << "ERROR in DRRenderer::initMrtBuffer: glGenTextures failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
 
-	glBindTexture( GL_TEXTURE_2D, this->m_colorBuffers[ i ] );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	if ( false == this->m_fbo->attachTarget( renderTarget ) )
 	{
-		cout << "ERROR in DRRenderer::initMrtBuffer: glBindTexture failed with " << gluErrorString( status ) << " - exit" << endl;
 		return false;
 	}
-
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-
-	// Remove artifact on the edges of the shadowmap
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 
-		0, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
-	{
-		cout << "ERROR in DRRenderer::initMrtBuffer: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	glBindTexture( GL_TEXTURE_2D, 0 );
-
-	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
-	{
-		cout << "ERROR in DRRenderer::initMrtBuffer: glBindFramebuffer failed with " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->m_colorBuffers[ i ], 0 );
-	CHECK_FRAMEBUFFER_STATUS( status );
-	if ( GL_FRAMEBUFFER_COMPLETE != status )
-	{
-		cout << "ERROR in DRRenderer::initMrtBuffer: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 	return true;
 }
@@ -855,8 +658,6 @@ DRRenderer::initMrtBuffer( unsigned int i )
 bool
 DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
-	GLenum status;
-
 	if ( false == this->m_progShadowMapping->use() )
 	{
 		cout << "ERROR in DRRenderer::renderShadowMap: using program failed - exit" << endl;
@@ -864,12 +665,7 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 	}
 
 	// Rendering offscreen
-	glBindFramebuffer( GL_FRAMEBUFFER, this->m_shadowMappingFB );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in DRRenderer::renderShadowMap: glBindFramebuffer failed with " << gluErrorString( status ) << endl;
-		return false;
-	}
+	this->m_shadowMappingFB->bind();
 
 	// Instruct openGL that we won't bind a color texture with the currently binded FBO
 	glDrawBuffer( GL_NONE );
@@ -881,12 +677,8 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 	{
 		Light* light = *iter++;
 
-		// attach the texture to FBO depth attachment point
-		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, light->getShadowMap(), 0 );
-		CHECK_FRAMEBUFFER_STATUS( status );
-		if ( GL_FRAMEBUFFER_COMPLETE != status )
+		if ( false == this->m_shadowMappingFB->attachTarget( light->getShadowMap() ) )
 		{
-			cout << "ERROR in DRRenderer::renderShadowMap: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
 			return false;
 		}
 
@@ -901,13 +693,8 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 	}
 
 	// back to window-system framebuffer
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in DRRenderer::renderShadowMap: glBindFramebuffer( 0 ) failed with " << gluErrorString( status ) << endl;
-		return false;
-	}
-
+	this->m_shadowMappingFB->unbind();
+	
 	return true;
 }
 
@@ -919,53 +706,26 @@ DRRenderer::renderSkyBox()
 		return true;
 	}
 
-	GLenum status;
-
 	if ( false == Program::unuse() )
 	{
 		cout << "ERROR in DRRenderer::renderSkyBox: failed deactivating program " << endl;
 		return false;
 	}
 
-	// bind the framebuffer of the geometry-stage
-	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == this->m_fbo->bind() )
 	{
-		cout << "ERROR in DRRenderer::renderSkyBox: glBindFramebuffer failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
-	// activate multiple drawing to our color targets targets
-	glDrawBuffer( this->m_buffers[ 0 ] );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == this->m_fbo->drawBuffer( 0 ) )
 	{
-		cout << "ERROR in DRRenderer::renderSkyBox: glDrawBuffer failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
-
-	// check framebuffer status, maybe something failed with glDrawBuffers
-	CHECK_FRAMEBUFFER_STATUS( status );
-	if ( GL_FRAMEBUFFER_COMPLETE != status )
-	{
-		cout << "ERROR in DRRenderer::renderSkyBox: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	/*
-	// turn on color drawing ( was turned off in shadowmaping )
-	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-	// set clear-color
-	glClearColor( 0.0, 0.0, 0.0, 1.0 );
-	// clear the colorbuffers DON'T clear depthbuffer, we dont write to it
-	glClear( GL_COLOR_BUFFER_BIT );
-	*/
 
 	GeomSkyBox::getRef().render();
 
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == this->m_fbo->unbind() )
 	{
-		cout << "ERROR in DRRenderer::renderSkyBox: glBindFramebuffer( 0 ) failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
@@ -975,8 +735,6 @@ DRRenderer::renderSkyBox()
 bool
 DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
-	GLenum status;
-
 	// activate geometry-stage program
 	if ( false == this->m_progGeomStage->use() )
 	{
@@ -984,38 +742,15 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
-	// bind the framebuffer of the geometry-stage
-	glBindFramebuffer( GL_FRAMEBUFFER, this->m_fbo );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == this->m_fbo->bind() )
 	{
-		cout << "ERROR in DRRenderer::renderGeometryStage: glBindFramebuffer failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
-	// activate multiple drawing to our color targets targets
-	glDrawBuffers( MRT_COUNT, this->m_buffers );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == this->m_fbo->drawAllBuffers() )
 	{
-		cout << "ERROR in DRRenderer::renderGeometryStage: glDrawBuffers failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
-
-	// check framebuffer status, maybe something failed with glDrawBuffers
-	CHECK_FRAMEBUFFER_STATUS( status );
-	if ( GL_FRAMEBUFFER_COMPLETE != status )
-	{
-		cout << "ERROR in DRRenderer::renderGeometryStage: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
-	/*
-	// turn on color drawing ( was turned off in shadowmaping )
-	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-	// set clear-color
-	glClearColor( 0.0, 0.0, 0.0, 1.0 );
-	// clear the colorbuffers AND our depth-buffer ( m_geometryDepth );
-	glClear( GL_DEPTH_BUFFER_BIT );
-	*/
 
 	// draw all geometry - apply materials but don't render transparency
 	if ( false == this->renderInstances( this->m_camera, instances, this->m_progGeomStage, true, false ) )
@@ -1023,10 +758,8 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == this->m_fbo->unbind() )
 	{
-		cout << "ERROR in DRRenderer::renderGeometryStage: glBindFramebuffer( 0 ) failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
@@ -1036,8 +769,6 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 bool
 DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
-	GLenum status;
-
 	// activate lighting-stage shader
 	if ( false == this->m_progLightingStage->use() )
 	{
@@ -1049,27 +780,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	// bind the mrts
-	for ( int i = 0; i < MRT_COUNT; i++ )
-	{
-		// bind diffuse rendering target to texture unit 0
-		glActiveTexture( GL_TEXTURE0 + i );
-		glBindTexture( GL_TEXTURE_2D, this->m_colorBuffers[ i ] );
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
-		{
-			cout << "ERROR in DRRenderer::renderLightingStage: glBindTexture of mrt " << i << " failed with " << gluErrorString( status ) << endl;
-			return false;
-		}
-	}
-
-	// bind depth-buffer to texture-unit MRT_COUNT
-	glActiveTexture( GL_TEXTURE0 + MRT_COUNT );
-	glBindTexture( GL_TEXTURE_2D, this->m_geometryDepth );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in DRRenderer::renderLightingStage: glBindTexture of depth-buffer failed with " << gluErrorString( status ) << endl;
-		return false;
-	}
+	this->m_fbo->bindAllTargets();
 
 	const float* data = glm::value_ptr( this->m_camera->getMatrix() );
 
@@ -1131,13 +842,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		// bind the shadowmap of the light to texture unit MRT_COUNT + 1
 		if ( Light::SPOT == light->getType() || Light::DIRECTIONAL == light->getType() )
 		{
-			glActiveTexture( GL_TEXTURE0 + MRT_COUNT + 1 );
-			glBindTexture( GL_TEXTURE_2D, light->getShadowMap() );
-			if ( GL_NO_ERROR != ( status = glGetError() ) )
-			{
-				cout << "ERROR in DRRenderer::renderLightingStage: glBindTexture failed with " << gluErrorString( status ) << endl;
-				return false;
-			}
+			light->getShadowMap()->bind( MRT_COUNT + 1 );
 		}
 		else if ( Light::POINT == light->getType() )
 		{
@@ -1170,15 +875,25 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		lightSpaceUnit = this->m_unitCubeMatrix * light->m_PVMatrix;
 
 		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightConfig ), 0, 16 ) )
+		{
 			return false;
+		}
 		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightPosition ), 16, 16 ) )
+		{
 			return false;
+		}
 		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightDirection ), 32, 16 ) )
+		{
 			return false;
+		}
 		if ( false == this->m_lightBlock->updateData( glm::value_ptr( light->getColor() ), 48, 16 ) )
+		{
 			return false;
+		}
 		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightSpaceUnit ), 64, 64 ) )
+		{
 			return false;
+		}
 
 		// render quad
 		glBegin( GL_QUADS );
@@ -1191,13 +906,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		// unbind shadow-map texture
 		if ( Light::SPOT == light->getType() || Light::DIRECTIONAL == light->getType() )
 		{
-			glActiveTexture( GL_TEXTURE0 + MRT_COUNT + 1 );
-			glBindTexture( GL_TEXTURE_2D, 0 );
-			if ( GL_NO_ERROR != ( status = glGetError() ) )
-			{
-				cout << "ERROR in DRRenderer::renderLightingStage: glBindTexture failed with " << gluErrorString( status ) << endl;
-				return false;
-			}
+			light->getShadowMap()->unbind();
 		}
 		else if ( Light::POINT == light->getType() )
 		{
@@ -1205,21 +914,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		}
 	}
 
-	glActiveTexture( GL_TEXTURE0 + MRT_COUNT );
-	glBindTexture( GL_TEXTURE_2D, 0 );
-
-	// unbind textures for mrts
-	for ( int i = 0; i < MRT_COUNT; i++ )
-	{
-		// bind diffuse rendering target to texture unit 0
-		glActiveTexture( GL_TEXTURE0 + i );
-		glBindTexture( GL_TEXTURE_2D, 0 );
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
-		{
-			cout << "ERROR in DRRenderer::renderLightingStage: glBindTexture( 0 ) of mrt " << i << " failed with " << gluErrorString( status ) << endl;
-			return false;
-		}
-	}
+	this->m_fbo->unbindAllTargets();
 
 	// back to perspective
 	this->m_camera->setupPerspective();

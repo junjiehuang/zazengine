@@ -162,6 +162,12 @@
     <ClCompile Include="window\RenderingWindow.cpp">
       <Filter>Quelldateien\window</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\FrameBufferObject.cpp">
+      <Filter>Quelldateien\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\RenderTarget.cpp">
+      <Filter>Quelldateien\renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ZazenGraphics.h">
@@ -247,6 +253,12 @@
     </ClInclude>
     <ClInclude Include="window\RenderingWindow.h">
       <Filter>Headerdateien\window</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\FrameBufferObject.h">
+      <Filter>Headerdateien\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\RenderTarget.h">
+      <Filter>Headerdateien\renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
