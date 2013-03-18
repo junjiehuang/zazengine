@@ -12,10 +12,10 @@ public:
 	virtual bool create(dWorldID, dSpaceID);
 	
  private:
-	 float x;
-	 float y;
-	 float z;
-	 float d;
+	 float m_x;
+	 float m_y;
+	 float m_z;
+	 float m_d;
 };
 
 #endif /*PHYSICPLANE_H_*/

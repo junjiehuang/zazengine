@@ -8,39 +8,45 @@ class PhysicType
  public:
 	 PhysicType( bool staticFlag, float mass )
 	 { 
-		 this->staticFlag = staticFlag; 
-		 this->mass = mass; 
+		 this->m_staticFlag = staticFlag; 
+		 this->m_mass = mass; 
 	 };
 
 	 virtual ~PhysicType()
 	 { 
-		 if ( this->bodyID )
-			dBodyDestroy( this->bodyID );
-		 
-		 dGeomDestroy( this->geomID );
+		 if ( this->m_bodyID )
+		 {
+			dBodyDestroy( this->m_bodyID );
+		 }
+
+		 dGeomDestroy( this->m_geomID );
 	 };
 	 
-	 bool isStatic() { return this->staticFlag; };
-	 float getMass() { return this->mass; };
+	 bool isStatic() { return this->m_staticFlag; };
+	 float getMass() { return this->m_mass; };
 
 	 void setPosition( float x, float y, float z )
 	 {
-		 if ( this->staticFlag )
-			 dGeomSetPosition( this->geomID, x, y, z );
+		 if ( this->m_staticFlag )
+		 {
+			 dGeomSetPosition( this->m_geomID, x, y, z );
+		 }
 		 else
-			 dBodySetPosition( this->bodyID, x, y, z );
+		 {
+			 dBodySetPosition( this->m_bodyID, x, y, z );
+		 }
 	 };
 
-	 dBodyID getBodyID() { return this->bodyID; };
+	 dBodyID getBodyID() { return this->m_bodyID; };
 
 	 virtual bool create( dWorldID, dSpaceID ) = 0;
 	 
  protected:
-	 bool staticFlag;
-	 float mass;
+	 bool m_staticFlag;
+	 float m_mass;
 	 
-	 dBodyID bodyID;
-	 dGeomID geomID;
+	 dBodyID m_bodyID;
+	 dGeomID m_geomID;
 
 };
 

@@ -4,18 +4,18 @@
 
 using namespace std;
 
-PhysicMesh::PhysicMesh(bool staticFlag, float mass, const string& meshFile)
-	: PhysicType(staticFlag, mass),
-	meshFile(meshFile)
+PhysicMesh::PhysicMesh( bool staticFlag, float mass, const string& meshFile )
+	: PhysicType( staticFlag, mass ),
+	m_meshFile(meshFile)
 {
 }
 
 PhysicMesh::~PhysicMesh()
 {
-	dGeomTriMeshDataDestroy(this->meshID);
+	dGeomTriMeshDataDestroy( this->m_meshID );
 }
 
-bool PhysicMesh::create(dWorldID worldID, dSpaceID spaceID)
+bool PhysicMesh::create( dWorldID worldID, dSpaceID spaceID )
 {
 	return false;
 

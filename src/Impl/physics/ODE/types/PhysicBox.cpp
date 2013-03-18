@@ -1,10 +1,10 @@
 #include "PhysicBox.h"
 
-PhysicBox::PhysicBox(bool staticFlag, float mass, float x, float y, float z)
-	: PhysicType(staticFlag, mass),
-	x(x),
-	y(y),
-	z(z)
+PhysicBox::PhysicBox( bool staticFlag, float mass, float x, float y, float z )
+	: PhysicType( staticFlag, mass ),
+	m_x( x ),
+	m_y( y ),
+	m_z( z )
 {
 }
 
@@ -12,25 +12,25 @@ PhysicBox::~PhysicBox()
 {
 }
 
-bool PhysicBox::create(dWorldID worldID, dSpaceID spaceID)
+bool PhysicBox::create( dWorldID worldID, dSpaceID spaceID )
 {
-	this->bodyID = 0;
-	this->geomID = dCreateBox( spaceID, this->x, this->y, this->z );
+	this->m_bodyID = 0;
+	this->m_geomID = dCreateBox( spaceID, this->m_x, this->m_y, this->m_z );
 	
-	if ( false == this->staticFlag ) {
-		this->bodyID = dBodyCreate( worldID );
+	if ( false == this->m_staticFlag ) {
+		this->m_bodyID = dBodyCreate( worldID );
 		
 		dMass massStruct;
 		dMassSetZero( &massStruct );
-		dMassSetBoxTotal( &massStruct, this->mass, this->x, this->y, this->z );
+		dMassSetBoxTotal( &massStruct, this->m_mass, this->m_x, this->m_y, this->m_z );
 		
-		dBodySetMass( this->bodyID, &massStruct );
-		dGeomSetBody ( this->geomID, this->bodyID );
+		dBodySetMass( this->m_bodyID, &massStruct );
+		dGeomSetBody ( this->m_geomID, this->m_bodyID );
 
 	}
 	else 
 	{
-		dGeomSetBody( this->geomID, 0 );
+		dGeomSetBody( this->m_geomID, 0 );
 	}
 	
 	return true;

@@ -12,25 +12,25 @@ PhysicSphere::~PhysicSphere()
 
 bool PhysicSphere::create( dWorldID worldID, dSpaceID spaceID )
 {
-	this->bodyID = 0;
-	this->geomID = dCreateSphere( spaceID, this->radius );
+	this->m_bodyID = 0;
+	this->m_geomID = dCreateSphere( spaceID, this->radius );
 	
-	if ( false == this->staticFlag ) {
-		this->bodyID = dBodyCreate( worldID );
+	if ( false == this->m_staticFlag ) {
+		this->m_bodyID = dBodyCreate( worldID );
 		
 		dMass massStruct;
 		dMassSetZero(&massStruct);
 		dMassSetSphere( &massStruct, 1, this->radius );
 
-		dMassSetSphereTotal( &massStruct, this->mass, this->radius );
+		dMassSetSphereTotal( &massStruct, this->m_mass, this->radius );
 
-		dBodySetMass( this->bodyID, &massStruct );
-		dGeomSetBody( this->geomID, this->bodyID );
+		dBodySetMass( this->m_bodyID, &massStruct );
+		dGeomSetBody( this->m_geomID, this->m_bodyID );
 
 	} 
 	else 
 	{
-		dGeomSetBody( this->geomID, 0 );
+		dGeomSetBody( this->m_geomID, 0 );
 	}
 	
 	return true;

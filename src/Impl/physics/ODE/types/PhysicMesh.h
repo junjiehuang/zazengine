@@ -8,14 +8,14 @@
 class PhysicMesh : public PhysicType
 {
 public:
-	PhysicMesh(bool, float, const std::string&);
+	PhysicMesh( bool, float, const std::string& );
 	virtual ~PhysicMesh();
 	
-	virtual bool create(dWorldID, dSpaceID);
+	virtual bool create( dWorldID, dSpaceID );
 	
  private:
-	 const std::string meshFile;
-	 dTriMeshDataID meshID;
+	 const std::string m_meshFile;
+	 dTriMeshDataID m_meshID;
 };
 
 #endif /*PHYSICMESH_H_*/

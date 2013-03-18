@@ -6,15 +6,15 @@
 class PhysicBox : public PhysicType
 {
 public:
-	PhysicBox(bool, float, float, float, float);
+	PhysicBox( bool, float, float, float, float );
 	virtual ~PhysicBox();
 	
-	virtual bool create(dWorldID, dSpaceID);
+	virtual bool create( dWorldID, dSpaceID );
 	
  private:
-	 float x;
-	 float y;
-	 float z;
+	 float m_x;
+	 float m_y;
+	 float m_z;
 };
 
 #endif /*PHYSICBOX_H_*/

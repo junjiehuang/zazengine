@@ -297,9 +297,7 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 	}
 
 	entity->m_physicType->create( this->worldID, this->spaceID );
-
-	if ( false == entity->m_physicType->isStatic() )
-		entity->m_physicType->setPosition( posX, posY, posZ );
+	entity->m_physicType->setPosition( posX, posY, posZ );
 
 	this->entities.push_back( entity );
 
@@ -451,7 +449,7 @@ ODEPhysics::collisionCallback( void* data, dGeomID o1, dGeomID o2 )
 			float velLength = sqrt( pow( vel[ 0 ], 2 ) + pow( vel[ 1 ], 2 ) + pow( vel[ 2 ], 2 ) );
 
 			// only create collision-event when there was enough time since the last and the object is already moving
-			if ( lastCollDelta > 250 && velLength > 0.1 )
+			if ( lastCollDelta > 250 && velLength > 1.0 )
 			{
 				entity->setLastCollTs( currentMillis );
 

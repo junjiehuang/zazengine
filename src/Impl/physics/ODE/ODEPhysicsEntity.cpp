@@ -10,6 +10,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace boost;
 
 ODEPhysicsEntity::ODEPhysicsEntity( IGameObject* p )
 	: IPhysicsEntity( p ),
@@ -33,6 +34,12 @@ ODEPhysicsEntity::update()
 bool
 ODEPhysicsEntity::sendEvent( Event& e )
 {
+	if ( e == "POSITION_CHANGED" )
+	{
+		const float* matrix = any_cast<const float*>( e.getValue( "matrix" ) );
+		this->m_physicType->setPosition( matrix[ 12 ], matrix[ 13 ], matrix[ 14 ] );
+	}
+
 	return false;
 }
 
