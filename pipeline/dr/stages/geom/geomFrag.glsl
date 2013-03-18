@@ -31,7 +31,7 @@ void main()
 	// use diffuse-texture for color
 	if ( 1.0 == materialConfig.y )
 	{
-		out_diffuse.rgb = texture( DiffuseTexture, ex_texCoord ).rgb;
+		out_diffuse.rgb += texture( DiffuseTexture, ex_texCoord ).rgb;
 	}
 
     // normal-mapping enabled – fetch from texture

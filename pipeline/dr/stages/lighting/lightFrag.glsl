@@ -63,12 +63,6 @@ viewSpaceFromDepth( const vec2 screenCoord )
 }
 
 vec4
-renderDiffuseBRDF( in vec4 diffuse, in vec4 normal )
-{
-	return diffuse;
-}
-
-vec4
 renderPhongBRDF( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
 	vec3 light = lightPosition.xyz;
@@ -148,11 +142,7 @@ void main()
 	{
 		float matId = diffuse.a * 255;
 
-		if ( 0.0 == matId )
-		{
-			final_color = renderDiffuseBRDF( diffuse, normal );
-		}
-		else if ( 1.0 == matId )
+		if ( 1.0 == matId )
 		{
 			final_color = renderLambertianBRDF( diffuse, normal );
 		}
@@ -178,7 +168,7 @@ void main()
 		}
 		else
 		{
-			final_color = renderDiffuseBRDF( diffuse, normal );
+			final_color = diffuse;
 		}
     }
     else

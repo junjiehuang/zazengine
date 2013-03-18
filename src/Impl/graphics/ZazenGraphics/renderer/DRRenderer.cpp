@@ -977,7 +977,7 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 			}
 		}
 
-		if ( false == this->renderGeom( viewer, instance, instance->geom ) )
+		if ( false == this->renderGeom( viewer, instance->geom, instance->getMatrix() ) )
 		{
 			return false;
 		}
@@ -992,14 +992,19 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 }
 
 bool
-DRRenderer::renderGeom( Viewer* viewer, Instance* parent, GeomType* geom )
+DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootModelMatrix )
 {
+	glm::mat4 modelMatrix = rootModelMatrix * geom->m_modelMatrix;
+
 	if ( geom->children.size() )
 	{
 		for ( unsigned int i = 0; i < geom->children.size(); i++ )
 		{
-			if ( false == this->renderGeom( viewer, parent, geom->children[ i ] ) )
+			GeomType* child = geom->children[ i ];
+			if ( false == this->renderGeom( viewer, geom->children[ i ], modelMatrix ) )
+			{
 				return false;
+			}
 		}
 	}
 	else
@@ -1008,7 +1013,7 @@ DRRenderer::renderGeom( Viewer* viewer, Instance* parent, GeomType* geom )
 		if ( Viewer::OUTSIDE != cullResult )
 		{
 			// calculate model-Matrix
-			glm::mat4 modelMatrix = parent->m_modelMatrix * geom->m_modelMatrix;
+			//glm::mat4 modelMatrix = parent->m_modelMatrix * geom->m_modelMatrix;
 			// calculate modelView-Matrix
 			glm::mat4 modelViewMatrix = viewer->m_viewMatrix * modelMatrix;
 			// calculate the model-view-projection matrix

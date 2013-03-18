@@ -13,6 +13,8 @@
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 
+#include <glm/gtc/type_ptr.hpp>
+
 #include <iostream>
 
 using namespace std;
@@ -127,20 +129,55 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 	{
 		return 0;
 	}
-	
-	geomRoot = new GeomType();
+
+	geomRoot = GeometryFactory::processNode( scene->mRootNode, scene );
 	geomRoot->name = fileName;
 
-	const struct aiNode* rootNode = scene->mRootNode;
-
-	GeometryFactory::processNodeChildren( geomRoot, rootNode, scene );
-	
 	aiReleaseImport( scene );
 
 	cout << "LOADED ... " << filePath << endl;
     
     return geomRoot;
 }
+
+GeomType*
+GeometryFactory::processNode( const struct aiNode* node, const struct aiScene* scene )
+{
+	GeomType* geomParent = new GeomType();
+	float* data = glm::value_ptr( geomParent->m_modelMatrix );
+	data[ 0 ] = node->mTransformation.a1;
+	data[ 1 ] = node->mTransformation.a2;
+	data[ 2 ] = node->mTransformation.a3;
+	data[ 3 ] = node->mTransformation.a4;
+
+	data[ 4 ] = node->mTransformation.b1;
+	data[ 5 ] = node->mTransformation.b2;
+	data[ 6 ] = node->mTransformation.b3;
+	data[ 7 ] = node->mTransformation.b4;
+
+	data[ 8 ] = node->mTransformation.c1;
+	data[ 9 ] = node->mTransformation.c2;
+	data[ 10 ] = node->mTransformation.c3;
+	data[ 11 ] = node->mTransformation.c4;
+
+	data[ 12 ] = node->mTransformation.d1;
+	data[ 13 ] = node->mTransformation.d2;
+	data[ 14 ] = node->mTransformation.d3;
+	data[ 15 ] = node->mTransformation.d4;
+
+	for ( unsigned int i = 0; i < node->mNumMeshes; ++i )
+	{
+		const struct aiMesh* mesh = scene->mMeshes[ node->mMeshes[ i ] ];
+
+		GeomType* geomMesh = GeometryFactory::processMesh( mesh );
+		geomParent->children.push_back( geomMesh );
+	}
+
+	GeometryFactory::processNodeChildren( geomParent, node, scene );
+
+	return geomParent;
+}
+
 
 void
 GeometryFactory::processNodeChildren( GeomType* geomParent, const struct aiNode* node, const struct aiScene* scene )
@@ -155,23 +192,6 @@ GeometryFactory::processNodeChildren( GeomType* geomParent, const struct aiNode*
 	}
 }
 
-GeomType*
-GeometryFactory::processNode( const struct aiNode* node, const struct aiScene* scene )
-{
-	GeomType* geomParent = new GeomType();
-
-	for ( unsigned int i = 0; i < node->mNumMeshes; ++i )
-	{
-		const struct aiMesh* mesh = scene->mMeshes[ node->mMeshes[ i ] ];
-
-		GeomType* geomMesh = GeometryFactory::processMesh( mesh );
-		geomParent->children.push_back( geomMesh );
-	}
-
-	GeometryFactory::processNodeChildren( geomParent, node, scene );
-
-	return geomParent;
-}
 
 GeomType*
 GeometryFactory::processMesh( const struct aiMesh* mesh )

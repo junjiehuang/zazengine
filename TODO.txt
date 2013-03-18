@@ -3,12 +3,14 @@
 For Qualcomm presentation (implementation deadline saturday)
 - transform lighting position to MV
 - fix sky-box (correct up/down/south/north)
-- add transformations to models when loaded?
+- crash when loading .obj models
+- ply models not showing?
+
 
 For myself
 Graphics:
+
 - graphics: shadow - mapping solve it!
-- add transformations to models when loaded!
 - normal-mapping
 
 Advanced

@@ -192,7 +192,7 @@ class DRRenderer : public Renderer
 	bool renderLightingStage( std::list<Instance*>&, std::list<Light*>& );
 
 	bool renderInstances( Viewer*, std::list<Instance*>&, Program*, bool, bool );
-	bool renderGeom( Viewer*, Instance*, GeomType* );
+	bool renderGeom( Viewer*, GeomType*, const glm::mat4& );
 
 	bool showTexture( GLuint texID, int quarter );
 
