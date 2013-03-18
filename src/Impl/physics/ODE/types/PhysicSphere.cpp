@@ -19,15 +19,17 @@ bool PhysicSphere::create( dWorldID worldID, dSpaceID spaceID )
 		this->bodyID = dBodyCreate( worldID );
 		
 		dMass massStruct;
-		//dMassSetZero(&massStruct);
+		dMassSetZero(&massStruct);
 		dMassSetSphere( &massStruct, 1, this->radius );
 
-		//dMassSetSphereTotal(&massStruct, this->mass, this->radius);
+		dMassSetSphereTotal( &massStruct, this->mass, this->radius );
 
 		dBodySetMass( this->bodyID, &massStruct );
 		dGeomSetBody( this->geomID, this->bodyID );
 
-	} else {
+	} 
+	else 
+	{
 		dGeomSetBody( this->geomID, 0 );
 	}
 	

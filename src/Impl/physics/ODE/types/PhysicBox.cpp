@@ -15,20 +15,22 @@ PhysicBox::~PhysicBox()
 bool PhysicBox::create(dWorldID worldID, dSpaceID spaceID)
 {
 	this->bodyID = 0;
-	this->geomID = dCreateBox(spaceID, this->x, this->y, this->z);
+	this->geomID = dCreateBox( spaceID, this->x, this->y, this->z );
 	
-	if (this->staticFlag == false) {
-		this->bodyID = dBodyCreate(worldID);
+	if ( false == this->staticFlag ) {
+		this->bodyID = dBodyCreate( worldID );
 		
 		dMass massStruct;
-		dMassSetZero(&massStruct);
-		dMassSetBoxTotal(&massStruct, this->mass, this->x, this->y, this->z);
+		dMassSetZero( &massStruct );
+		dMassSetBoxTotal( &massStruct, this->mass, this->x, this->y, this->z );
 		
-		dBodySetMass(this->bodyID, &massStruct);
-		dGeomSetBody (this->geomID, this->bodyID);
+		dBodySetMass( this->bodyID, &massStruct );
+		dGeomSetBody ( this->geomID, this->bodyID );
 
-	} else {
-		dGeomSetBody(this->geomID, 0);
+	}
+	else 
+	{
+		dGeomSetBody( this->geomID, 0 );
 	}
 	
 	return true;
