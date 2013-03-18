@@ -57,18 +57,18 @@ GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std:
 			return false;
 		}
 
-		GeomSkyBox::instance->m_top = Texture::get( textureFolder.generic_string() + "/top." + format );
-		if ( NULL == GeomSkyBox::instance->m_top )
+		GeomSkyBox::instance->m_up = Texture::get( textureFolder.generic_string() + "/up." + format );
+		if ( NULL == GeomSkyBox::instance->m_up )
 		{
-			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get top-texture" << endl;
+			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get up-texture" << endl;
 			GeomSkyBox::shutdown();
 			return false;
 		}
 
-		GeomSkyBox::instance->m_bottom = Texture::get( textureFolder.generic_string() + "/bottom." + format );
-		if ( NULL == GeomSkyBox::instance->m_bottom )
+		GeomSkyBox::instance->m_down = Texture::get( textureFolder.generic_string() + "/down." + format );
+		if ( NULL == GeomSkyBox::instance->m_down )
 		{
-			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get bottom-texture" << endl;
+			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get down-texture" << endl;
 			GeomSkyBox::shutdown();
 			return false;
 		}
@@ -94,8 +94,8 @@ GeomSkyBox::GeomSkyBox()
 	this->m_back = NULL;
 	this->m_left = NULL;
 	this->m_right = NULL;
-	this->m_top = NULL;
-	this->m_bottom = NULL;
+	this->m_up = NULL;
+	this->m_down = NULL;
 
 	GeomSkyBox::instance = this;
 }
@@ -159,7 +159,7 @@ GeomSkyBox::render()
 	/////////////////////////
 
 	// Top Face
-	this->m_top->bind( 0 );
+	this->m_up->bind( 0 );
 	glBegin( GL_QUADS );
 		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
 
@@ -170,11 +170,11 @@ GeomSkyBox::render()
 		glTexCoord2f( 1.0f, 1.0f );  glVertex3f( BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
 	glEnd();
 
-	this->m_top->unbind();
+	this->m_up->unbind();
 	/////////////////////////
 
 	// Bottom Face
-	this->m_bottom->bind( 0 );
+	this->m_down->bind( 0 );
 
 	glBegin( GL_QUADS );
 		glTexCoord2f( 1.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
@@ -186,7 +186,7 @@ GeomSkyBox::render()
 		glTexCoord2f( 0.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
 	glEnd();
 
-	this->m_bottom->unbind();
+	this->m_down->unbind();
 	/////////////////////////
 
 	// Right face

@@ -39,8 +39,8 @@ class GeomSkyBox : public GeomType
 		Texture* m_left;
 		Texture* m_right;
 		
-		Texture* m_top;
-		Texture* m_bottom;
+		Texture* m_up;
+		Texture* m_down;
 	
 };
 
