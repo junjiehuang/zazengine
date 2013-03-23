@@ -1,23 +1,21 @@
-!!! FROM NOW ON: always compileable & runnable when checked in !!!
-
-For Qualcomm presentation (implementation deadline saturday)
-
-- fix sky-box (correct up/down/south/north)
-- crash when loading .obj models
-- ply models not showing?
-
-
-For myself
-Graphics:
+Graphics
+- loading of .obj & .ply
 - transform lighting position to MV
-- graphics: shadow - mapping solve it!
+- shadow-mapping
 - normal-mapping
+- multiple lights
+- msaa
+- optimization
+- culling library (Umbra 3)
+- remove ALL legacy-calls (use gDEBugger for help)
 
-Advanced
+Multithreading
 - make physics processing async
 
+Scripting
+- TODO
+
 Code-Quality
-- encapsulate MRTs in own texture-like class
 - replace all strcmp with boost:iequals
 - add const to inline methods were appropriate
 - keep id, type & core in ISubSystem as readable
@@ -25,9 +23,5 @@ Code-Quality
 - project buildable as RELEASE
 - check if everything is cleaned up when a subsystem cannot be initialized
 - A GOOD SOLUTION FOR THE PROBLEM OF INCLUDING TINY-XML IN ALL SUBSYSTEMS
-- fmod-subsystem should do a proper loading and managing of its loaded sound
+- fmod-subsystem should do a proper loading and managing of its loaded sound (same as e.g. textures in graphics)
 - UNIT-Tests?
-
-Hacks
-- fmod should be initialized as 3D_RIGHTHANDED
-- ode now y-axis as z-achsis because of 3ds models 
