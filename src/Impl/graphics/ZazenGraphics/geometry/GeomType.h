@@ -14,13 +14,13 @@ class GeomType
 	 GeomType();
 	 virtual ~GeomType();
 
-	 void compareBB(const glm::vec3&, const glm::vec3&);
+	 void compareBB( const glm::vec3&, const glm::vec3& );
 	 
 	 const glm::vec3& getCenter() { return this->center; };
 	 const glm::vec3& getBBMin() { return this->bbMin; };
 	 const glm::vec3& getBBMax() { return this->bbMax; };
 	 
-	 void setBB(const glm::vec3&, const glm::vec3&);
+	 void setBB( const glm::vec3&, const glm::vec3& );
 	 
 	 virtual int getFaceCount() { return 0; };
 	 

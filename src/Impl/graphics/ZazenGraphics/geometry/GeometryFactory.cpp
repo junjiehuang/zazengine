@@ -144,6 +144,9 @@ GeomType*
 GeometryFactory::processNode( const struct aiNode* node, const struct aiScene* scene )
 {
 	GeomType* geomParent = new GeomType();
+
+	// TODO replace this anoying shit initialization
+	/*
 	float* data = glm::value_ptr( geomParent->m_modelMatrix );
 	data[ 0 ] = node->mTransformation.a1;
 	data[ 1 ] = node->mTransformation.a2;
@@ -164,12 +167,15 @@ GeometryFactory::processNode( const struct aiNode* node, const struct aiScene* s
 	data[ 13 ] = node->mTransformation.d2;
 	data[ 14 ] = node->mTransformation.d3;
 	data[ 15 ] = node->mTransformation.d4;
+	*/
 
 	for ( unsigned int i = 0; i < node->mNumMeshes; ++i )
 	{
 		const struct aiMesh* mesh = scene->mMeshes[ node->mMeshes[ i ] ];
 
 		GeomType* geomMesh = GeometryFactory::processMesh( mesh );
+
+		geomParent->compareBB( geomMesh->getBBMin(), geomMesh->getBBMax() );
 		geomParent->children.push_back( geomMesh );
 	}
 
@@ -187,6 +193,7 @@ GeometryFactory::processNodeChildren( GeomType* geomParent, const struct aiNode*
 		GeomType* geomChildNode = GeometryFactory::processNode( node->mChildren[ i ], scene );
 		if ( NULL != geomChildNode )
 		{
+			geomParent->compareBB( geomChildNode->getBBMin(), geomChildNode->getBBMax() );
 			geomParent->children.push_back( geomChildNode );
 		}
 	}
@@ -196,8 +203,6 @@ GeometryFactory::processNodeChildren( GeomType* geomParent, const struct aiNode*
 GeomType*
 GeometryFactory::processMesh( const struct aiMesh* mesh )
 {
-	// TODO take transformation of nodes into account
-
 	// indexbuffer for faces
 	GLuint* indexBuffer = new GLuint[ mesh->mNumFaces * 3 ];
 	memset( indexBuffer, 0, mesh->mNumFaces * 3 * sizeof( GLuint ) );
@@ -209,7 +214,13 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 	glm::vec3 meshBBmin;
 	glm::vec3 meshBBmax;
 
-	// TODO calculate bounding-box
+	meshBBmin[ 0 ] = numeric_limits<float>::max();
+	meshBBmin[ 1 ] = numeric_limits<float>::max();
+	meshBBmin[ 2 ] = numeric_limits<float>::max();
+
+	meshBBmax[ 0 ] = numeric_limits<float>::min();
+	meshBBmax[ 1 ] = numeric_limits<float>::min();
+	meshBBmax[ 2 ] = numeric_limits<float>::min();
 
 	for ( unsigned int j = 0; j < mesh->mNumFaces; ++j ) {
 		const struct aiFace* face = &mesh->mFaces[ j ];
@@ -227,6 +238,8 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 				vertexData[ index ].texCoord[ 0 ] = mesh->mTextureCoords[ 0 ][ index ].x;
 				vertexData[ index ].texCoord[ 1 ] = mesh->mTextureCoords[ 0 ][ index ].y;
 			}
+
+			GeometryFactory::updateBB( mesh->mVertices[ index ], meshBBmin, meshBBmax );
 		}
 	}
 
@@ -235,4 +248,32 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 	geomMesh->name = mesh->mName.C_Str();
 
 	return geomMesh;
+}
+
+void
+GeometryFactory::updateBB( const aiVector3D& vertex, glm::vec3& meshBBmin, glm::vec3& meshBBmax )
+{
+	if ( vertex.x < meshBBmin[ 0 ] ) {
+		meshBBmin[ 0 ] = vertex.x;
+	}
+	else if ( vertex.y < meshBBmin[ 1 ] )
+	{
+		meshBBmin[ 1 ] = vertex.y;
+	}
+	else if ( vertex.z < meshBBmin[ 2 ] )
+	{
+		meshBBmin[ 2 ] = vertex.z;
+	}
+
+	if ( vertex.x > meshBBmax[ 0 ] ) {
+		meshBBmax[ 0 ] = vertex.x;
+	}
+	else if ( vertex.y > meshBBmax[ 1 ] )
+	{
+		meshBBmax[ 1 ] = vertex.y;
+	}
+	else if ( vertex.z > meshBBmax[ 2 ] )
+	{
+		meshBBmax[ 2 ] = vertex.z;
+	}
 }

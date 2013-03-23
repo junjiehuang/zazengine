@@ -37,6 +37,9 @@ private:
 	static void processNodeChildren( GeomType* geomParent, const struct aiNode*, const struct aiScene* );
 	static GeomType* processNode( const struct aiNode*, const struct aiScene* );		 
 	static GeomType* processMesh( const struct aiMesh* );
+
+	static void updateBB( const aiVector3D& vertex, glm::vec3&, glm::vec3& );
+
 };
 
 #endif

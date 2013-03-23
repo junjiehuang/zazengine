@@ -1,6 +1,8 @@
+Scenes
+- chess-game
+- rotation of 3 hierarchical donuts with point-light in center casting shadow
+
 Basic Graphics
-- loading of .obj & .ply
-- remove ALL legacy-calls (use gDEBugger for help)
 - phong-illumination
 	-> fix lighting-space calculations
 	-> revise diffuse color calc
@@ -15,6 +17,7 @@ Basic Graphics
 	-> spot-light boundary
 	-> directional full screen quad
 	-> blending 
+- remove ALL legacy-calls (use gDEBugger for help)
 - msaa
 	-> do sampling in geometry fragment-shader (centroid)
 - optimization
@@ -34,9 +37,6 @@ Advanced Graphics
 	-> subsurface scattering
 	-> microfacet
 - culling library (Umbra 3)
-	
-Scenes
-- rotation of 3 hierarchical donuts with point-light in center casting shadow
 
 Multithreading
 - make physics processing async

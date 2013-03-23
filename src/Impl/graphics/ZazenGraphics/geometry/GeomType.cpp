@@ -11,35 +11,33 @@ GeomType::~GeomType()
 }
 
 void
-GeomType::compareBB(const glm::vec3& bbMin, const glm::vec3& bbMax)
+GeomType::compareBB( const glm::vec3& bbMin, const glm::vec3& bbMax )
 {
-	if (bbMax[0] > this->bbMax[0])
-		this->bbMax[0] = bbMax[0];
-	else if (bbMin[0] < this->bbMin[0])
-		this->bbMin[0] = bbMin[0];
+	for ( int i = 0; i < 3; i++ )
+	{
+		if ( bbMax[ i ] > this->bbMax[ i ] )
+		{
+			this->bbMax[ i ] = bbMax[ i ];
+		}
+		else if ( bbMin[ i ] < this->bbMin[ i ] )
+		{
+			this->bbMin[ i ] = bbMin[ i ];
+		}
+	}
 
-	if (bbMax[1] > this->bbMax[1])
-		this->bbMax[1] = bbMax[1];
-	else if (bbMin[1] < this->bbMin[1])
-		this->bbMin[1] = bbMin[1];
-	
-	if (bbMax[2] > this->bbMax[2])
-		this->bbMax[2] = bbMax[2];
-	else if (bbMin[2] < this->bbMin[2])
-		this->bbMin[2] = bbMin[2];
-	
-	this->setBB(this->bbMin, this->bbMax);
+	this->setBB( this->bbMin, this->bbMax );
 }
  
 void
-GeomType::setBB(const glm::vec3& bbMin, const glm::vec3& bbMax)
+GeomType::setBB( const glm::vec3& bbMin, const glm::vec3& bbMax )
 {
 	this->bbMin = bbMin;
 	this->bbMax = bbMax;
 	
-	this->center[0] = this->bbMin[0] + ((this->bbMax[0] - this->bbMin[0]) / 2);
-	this->center[1] = this->bbMin[1] + ((this->bbMax[1] - this->bbMin[1]) / 2);
-	this->center[2] = this->bbMin[2] + ((this->bbMax[2] - this->bbMin[2]) / 2);
+	for ( int i = 0; i < 3; i++ )
+	{
+		this->center[ i ] = this->bbMin[ i ] + ( ( this->bbMax[ i ] - this->bbMin[ i ] ) / 2 );
+	}
 }
 
 void
