@@ -5,7 +5,8 @@ Graphics
 - normal-mapping
 - multiple lights
 - msaa
-- optimization
+- optimization (OpenGL-calls, shaders, initializations, use layout in shaders)
+- Fix View-Frustum culling
 - culling library (Umbra 3)
 - remove ALL legacy-calls (use gDEBugger for help)
 

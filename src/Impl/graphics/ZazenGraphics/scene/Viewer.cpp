@@ -65,6 +65,8 @@ Viewer::resize( int width, int height )
 
 /* Not correctly working yet ( and pretty slow )
  * with this method an object will be clipped although one is inside it
+ *
+ * TODO fix it: bbMin & bbMax need to be in correct space to apply clippingcoords
  */
 Viewer::CullResult
 Viewer::cullBB( const glm::vec3& bbMin, const glm::vec3& bbMax )

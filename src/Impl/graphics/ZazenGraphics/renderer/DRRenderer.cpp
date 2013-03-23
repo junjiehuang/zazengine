@@ -991,6 +991,7 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 	return true;
 }
 
+// NOTE OpenGL applies last matrix in multiplication as first transformation to object
 bool
 DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootModelMatrix )
 {
@@ -1012,8 +1013,6 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 		Viewer::CullResult cullResult = viewer->cullBB( geom->getBBMin(), geom->getBBMax() );
 		if ( Viewer::OUTSIDE != cullResult )
 		{
-			// calculate model-Matrix
-			//glm::mat4 modelMatrix = parent->m_modelMatrix * geom->m_modelMatrix;
 			// calculate modelView-Matrix
 			glm::mat4 modelViewMatrix = viewer->m_viewMatrix * modelMatrix;
 			// calculate the model-view-projection matrix
