@@ -1,14 +1,30 @@
 Graphics
 - loading of .obj & .ply
-- transform lighting position to MV
+- remove ALL legacy-calls (use gDEBugger for help)
+- phong-illumination
+	-> fix lighting-space calculations
+	-> revise diffuse color calc
+	-> add global ambient term
+	-> add emissive term
+	-> add specular term
+	-> add specular power
 - shadow-mapping
 - normal-mapping
 - multiple lights
+	-> point-light boundary
+	-> spot-light boundary
+	-> directional full screen quad
+	-> blending 
 - msaa
-- optimization (OpenGL-calls, shaders, initializations, use layout in shaders)
+	-> do sampling in geometry fragment-shader (centroid)
+- optimization
+	-> OpenGL-calls
+	-> shaders
+	-> initializations of shader
+	-> use layout in shaders
+	-> state-changes
 - Fix View-Frustum culling
 - culling library (Umbra 3)
-- remove ALL legacy-calls (use gDEBugger for help)
 
 Multithreading
 - make physics processing async
