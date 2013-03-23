@@ -1,4 +1,4 @@
-Graphics
+Basic Graphics
 - loading of .obj & .ply
 - remove ALL legacy-calls (use gDEBugger for help)
 - phong-illumination
@@ -24,7 +24,19 @@ Graphics
 	-> use layout in shaders
 	-> state-changes
 - Fix View-Frustum culling
+
+
+Advanced Graphics
+- transparency
+- reflections
+- brdfs
+	-> cook torrance sparrow
+	-> subsurface scattering
+	-> microfacet
 - culling library (Umbra 3)
+	
+Scenes
+- rotation of 3 hierarchical donuts with point-light in center casting shadow
 
 Multithreading
 - make physics processing async
