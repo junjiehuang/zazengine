@@ -1,8 +1,6 @@
-Scenes
-- chess-game
-- rotation of 3 hierarchical donuts with point-light in center casting shadow
-
 Basic Graphics
+- visualisation of bounding-boxes possible (wireframe or vertices)
+- chess-game possible: set material for each geom-type
 - phong-illumination
 	-> fix lighting-space calculations
 	-> revise diffuse color calc
@@ -37,6 +35,7 @@ Advanced Graphics
 	-> subsurface scattering
 	-> microfacet
 - culling library (Umbra 3)
+- scene: rotation of 3 hierarchical donuts with point-light in center casting shadow
 
 Multithreading
 - make physics processing async
