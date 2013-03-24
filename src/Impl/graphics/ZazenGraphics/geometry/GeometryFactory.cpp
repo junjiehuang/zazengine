@@ -34,10 +34,11 @@ GeometryFactory::get( const std::string& fileName )
 {
 	map<std::string, GeomType*>::iterator findIter = GeometryFactory::allMeshes.find( fileName );
 	if ( findIter != GeometryFactory::allMeshes.end() )
+	{
 		return findIter->second;
+	}
 
 	filesystem::path fullFileName( GeometryFactory::modelDataPath.generic_string() + fileName );
-
 	if ( ! filesystem::exists( fullFileName ) )
 	{
 		cout << "ERROR ... in GeometryFactory::get: file \"" << fullFileName << "\" does not exist" << endl;
@@ -102,7 +103,8 @@ GeometryFactory::loadFolder( const filesystem::path& folderPath )
 			subFolderGeometryFactory = GeometryFactory::loadFile( entry.path() );
 		}
 		
-		if ( subFolderGeometryFactory ) {
+		if ( subFolderGeometryFactory )
+		{
 			subFolderGeometryFactory->parent = folderGroup;
 			
 			folderGroup->compareBB( subFolderGeometryFactory->getBBMin(), subFolderGeometryFactory->getBBMin() );
@@ -124,14 +126,31 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 
 	const std::string& fileName = filePath.generic_string();
 
-	const struct aiScene* scene = aiImportFile( fileName.c_str(), aiProcessPreset_TargetRealtime_MaxQuality );
+	const struct aiScene* scene = aiImportFile( fileName.c_str(), aiProcess_CalcTangentSpace	
+		| aiProcess_JoinIdenticalVertices 
+		| aiProcess_Triangulate 
+		| aiProcess_RemoveComponent 
+		| aiProcess_GenNormals 
+		| aiProcess_GenSmoothNormals 
+		| aiProcess_SplitLargeMeshes 
+		| aiProcess_ValidateDataStructure 
+		| aiProcess_SortByPType 
+		| aiProcess_FindInvalidData 
+		| aiProcess_GenUVCoords 
+		| aiProcess_OptimizeMeshes 
+		| aiProcess_OptimizeGraph );
 	if ( NULL == scene )
 	{
+		cout << "ERROR ... in GeometryFactory::loadFile: AssetImporter failed loading the file with error: " << aiGetErrorString() << endl;
 		return 0;
 	}
 
 	geomRoot = GeometryFactory::processNode( scene->mRootNode, scene );
-	geomRoot->name = fileName;
+	// can return NULL when contains nothing
+	if ( NULL == geomRoot )
+	{
+		geomRoot->name = fileName;
+	}
 
 	aiReleaseImport( scene );
 
@@ -143,11 +162,10 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 GeomType*
 GeometryFactory::processNode( const struct aiNode* node, const struct aiScene* scene )
 {
-	GeomType* geomParent = new GeomType();
+	GeomType* geomNode = new GeomType();
 
 	// TODO replace this anoying shit initialization
-	/*
-	float* data = glm::value_ptr( geomParent->m_modelMatrix );
+	float* data = glm::value_ptr( geomNode->m_modelMatrix );
 	data[ 0 ] = node->mTransformation.a1;
 	data[ 1 ] = node->mTransformation.a2;
 	data[ 2 ] = node->mTransformation.a3;
@@ -167,23 +185,30 @@ GeometryFactory::processNode( const struct aiNode* node, const struct aiScene* s
 	data[ 13 ] = node->mTransformation.d2;
 	data[ 14 ] = node->mTransformation.d3;
 	data[ 15 ] = node->mTransformation.d4;
-	*/
 
 	for ( unsigned int i = 0; i < node->mNumMeshes; ++i )
 	{
 		const struct aiMesh* mesh = scene->mMeshes[ node->mMeshes[ i ] ];
 
 		GeomType* geomMesh = GeometryFactory::processMesh( mesh );
-
-		geomParent->compareBB( geomMesh->getBBMin(), geomMesh->getBBMax() );
-		geomParent->children.push_back( geomMesh );
+		if ( NULL != geomMesh )
+		{
+			geomNode->compareBB( geomMesh->getBBMin(), geomMesh->getBBMax() );
+			geomNode->children.push_back( geomMesh );
+		}
 	}
 
-	GeometryFactory::processNodeChildren( geomParent, node, scene );
+	GeometryFactory::processNodeChildren( geomNode, node, scene );
 
-	return geomParent;
+	// ignore empty nodes
+	if ( 0 == geomNode->children.size() )
+	{
+		delete geomNode;
+		geomNode = NULL;
+	}
+
+	return geomNode;
 }
-
 
 void
 GeometryFactory::processNodeChildren( GeomType* geomParent, const struct aiNode* node, const struct aiScene* scene )
@@ -199,10 +224,15 @@ GeometryFactory::processNodeChildren( GeomType* geomParent, const struct aiNode*
 	}
 }
 
-
 GeomType*
 GeometryFactory::processMesh( const struct aiMesh* mesh )
 {
+	// ignore non-triangle meshes
+	if ( 0 == ( mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE ) )
+	{
+		return NULL;
+	}
+
 	// indexbuffer for faces
 	GLuint* indexBuffer = new GLuint[ mesh->mNumFaces * 3 ];
 	memset( indexBuffer, 0, mesh->mNumFaces * 3 * sizeof( GLuint ) );
@@ -253,7 +283,8 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 void
 GeometryFactory::updateBB( const aiVector3D& vertex, glm::vec3& meshBBmin, glm::vec3& meshBBmax )
 {
-	if ( vertex.x < meshBBmin[ 0 ] ) {
+	if ( vertex.x < meshBBmin[ 0 ] ) 
+	{
 		meshBBmin[ 0 ] = vertex.x;
 	}
 	else if ( vertex.y < meshBBmin[ 1 ] )
@@ -265,7 +296,8 @@ GeometryFactory::updateBB( const aiVector3D& vertex, glm::vec3& meshBBmin, glm::
 		meshBBmin[ 2 ] = vertex.z;
 	}
 
-	if ( vertex.x > meshBBmax[ 0 ] ) {
+	if ( vertex.x > meshBBmax[ 0 ] ) 
+	{
 		meshBBmax[ 0 ] = vertex.x;
 	}
 	else if ( vertex.y > meshBBmax[ 1 ] )

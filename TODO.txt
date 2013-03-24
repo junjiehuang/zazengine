@@ -1,5 +1,28 @@
+Game-Functionality
+- allow mutliple scenes which can be changed during runtime (load/unload)
+
+Scenes
+- qualcomm presentation
+- brdf & model gallery
+	-> famous models with all different brdfs placed in scene like in a gallery
+	-> advanced brdfs
+	-> shadowing
+	-> lighting
+- chess
+	-> show the chess-board 
+	-> different material for black & white
+	-> board reflects
+	-> white transparent
+	-> black subsurface scattering brdf
+- rotating hyperdrive
+	-> point light in center
+	-> interesting shadow situation
+- physics
+	-> mesh
+	-> spheres
+	-> oder models fall down
+	
 Basic Graphics
-- visualisation of bounding-boxes possible (wireframe or vertices)
 - chess-game possible: set material for each geom-type
 - phong-illumination
 	-> fix lighting-space calculations
@@ -8,6 +31,7 @@ Basic Graphics
 	-> add emissive term
 	-> add specular term
 	-> add specular power
+- other brdfs
 - shadow-mapping
 - normal-mapping
 - multiple lights
@@ -35,7 +59,6 @@ Advanced Graphics
 	-> subsurface scattering
 	-> microfacet
 - culling library (Umbra 3)
-- scene: rotation of 3 hierarchical donuts with point-light in center casting shadow
 
 Multithreading
 - make physics processing async
