@@ -130,8 +130,11 @@ DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
 	glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );	// Really Nice Perspective Calculations
 
 	glEnable( GL_DEPTH_TEST );								// Enables Depth Testing
-	glDepthFunc( GL_LEQUAL );								// The Type Of Depth Testing To Do
+	glDepthFunc( GL_LESS );								// The Type Of Depth Testing To Do
 	glDepthMask( GL_TRUE );
+
+	// Cull triangles which normal is not towards the camera
+	glEnable(GL_CULL_FACE);
 
 	glEnable( GL_TEXTURE_2D );
 
@@ -661,6 +664,7 @@ DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType )
 	return true;
 }
 
+// TODO something is still wrong here
 bool
 DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
@@ -670,12 +674,18 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 		return false;
 	}
 
-	// Rendering offscreen
-	this->m_shadowMappingFB->bind();
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
 
 	// Instruct openGL that we won't bind a color texture with the currently binded FBO
 	glDrawBuffer( GL_NONE );
 	glReadBuffer( GL_NONE );
+
+	// Rendering offscreen
+	if ( false == this->m_shadowMappingFB->bind() )
+	{
+		return false;
+	}
 
 	// render the depth-map for each light
 	std::list<Light*>::iterator iter = lights.begin();
@@ -688,9 +698,6 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 			return false;
 		}
 
-		glClear( GL_DEPTH_BUFFER_BIT );
-		glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
-
 		// render scene from view of camera - don't apply material, don't render transparency
 		if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, false ) )
 		{
@@ -699,7 +706,10 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 	}
 
 	// back to window-system framebuffer
-	this->m_shadowMappingFB->unbind();
+	if ( false == this->m_shadowMappingFB->unbind() )
+	{
+		return false;
+	}
 	
 	return true;
 }
@@ -859,7 +869,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 
 		// calculate the light-space projection matrix
 		// multiplication with unit-cube is first because has to be carried out the last
-		lightSpaceUnit = this->m_unitCubeMatrix * light->m_PVMatrix;
+		lightSpaceUnit = this->m_unitCubeMatrix * light->m_PVMatrix; // TODO: need MVP not only PV matrix!
 
 		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightConfig ), 0, 16 ) )
 		{

@@ -84,22 +84,34 @@ void main()
 	vec4 normal = texture( NormalMap, screenCoord );
 	vec4 position = texture( GenericMap1, screenCoord );
 
-	float matId = diffuse.a * 255;
+	vec4 shadowCoord = lightSpaceUniform_Matrix * position;
+	float shadow = texture( ShadowMap, shadowCoord );
 
-	if ( lightConfig.x == 1.0 )
+	// not in shadow
+	if ( shadow == 0.0 )
 	{
-	}
+		float matId = diffuse.a * 255;
 
-	if ( 1.0 == matId )
-	{
-		final_color = calculateLambertian( diffuse, normal, position );
-	}
-	else if ( 2.0 == matId )
-	{
-		final_color = calculatePhong( diffuse, normal, position );
+		if ( lightConfig.x == 1.0 )
+		{
+		}
+
+		if ( 1.0 == matId )
+		{
+			final_color = calculateLambertian( diffuse, normal, position );
+		}
+		else if ( 2.0 == matId )
+		{
+			final_color = calculatePhong( diffuse, normal, position );
+		}
+		else
+		{
+			final_color = diffuse;
+		}
 	}
 	else
 	{
-		final_color = diffuse;
+		final_color.rgb = diffuse.rgb * 0.5;
+		final_color.a = 1.0;
 	}
 }

@@ -23,13 +23,6 @@ Scenes
 	-> oder models fall down
 	
 Basic Graphics
-- phong-illumination
-	-> fix lighting-space calculations
-	-> revise diffuse color calc
-	-> add global ambient term
-	-> add emissive term
-	-> add specular term
-	-> add specular power
 - shadow-mapping
 - normal-mapping
 - other brdfs

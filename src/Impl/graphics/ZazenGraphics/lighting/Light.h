@@ -23,7 +23,7 @@ class Light : public Viewer
 		POINT
 	};
 
-	static Light* createSpoptLight( float, int, int );
+	static Light* createSpotLight( float, int, int );
 	static Light* createDirectionalLight( int, int );
 	static Light* createPointLight( int );
 

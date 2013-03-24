@@ -333,7 +333,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			// default is spot
 			else
 			{
-				light = Light::createSpoptLight( 90, RenderingWindow::getRef().getWidth(), RenderingWindow::getRef().getHeight() );
+				light = Light::createSpotLight( 90, RenderingWindow::getRef().getWidth(), RenderingWindow::getRef().getHeight() );
 			}
 
 			entity->m_orientation = light;

@@ -83,11 +83,17 @@ FrameBufferObject::destroy( FrameBufferObject* frameBufferObject )
 FrameBufferObject::FrameBufferObject( GLuint id )
 {
 	this->m_id = id;
+
+	this->m_depthBuffer = 0;
+	this->m_depthTarget = NULL;
 }
 
 FrameBufferObject::~FrameBufferObject()
 {
 	this->m_id = 0;
+
+	this->m_depthBuffer = 0;
+	this->m_depthTarget = NULL;
 }
 
 bool
@@ -98,14 +104,14 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 	glBindFramebuffer( GL_FRAMEBUFFER, this->m_id );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
-		cout << "ERROR in FrameBufferObject::attachTarget: glBindFramebuffer for depth-buffer failed with " << gluErrorString( status ) << " - exit" << endl;
+		cout << "ERROR in FrameBufferObject::attachTarget: glBindFramebuffer for render-target failed with " << status << " - exit" << endl;
 		return false;
 	}
 
-	if ( RenderTarget::RT_DEPTH == renderTarget->getType() )
+	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW == renderTarget->getType() )
 	{
 		// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
-		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, renderTarget->getId(), 0 );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, renderTarget->getId(), 0 );
 		CHECK_FRAMEBUFFER_STATUS( status );
 		if ( GL_FRAMEBUFFER_COMPLETE != status )
 		{

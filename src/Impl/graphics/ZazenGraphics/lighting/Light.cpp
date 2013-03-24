@@ -13,7 +13,7 @@
 using namespace std;
 
 Light*
-Light::createSpoptLight( float fov, int width, int height )
+Light::createSpotLight( float fov, int width, int height )
 {
 	Light* light = new Light( width, height, Light::SPOT );
 	if ( false == light->createShadowMap( width, height ) )
