@@ -49,9 +49,29 @@ calculateLambertian( in vec4 diffuse, in vec4 normal, in vec4 position )
 	vec3 lightDir = normalize( lightPos - vec3( position ) );
     
 	// calculate attenuation-factor
-	float factor = max( dot( normal, lightDir ), 0.0 );
+	float attenuationFactor = max( dot( normal, lightDir ), 0.0 );
 
-	return factor * diffuse;
+	return attenuationFactor * diffuse;
+}
+
+vec4
+calculatePhong( in vec4 diffuse, in vec4 normal, in vec4 position )
+{
+	// need to transpose light-model matrix to view-space for eye-coordinates 
+	mat4 lightMV_Matrix = viewing_Matrix * lightModel_Matrix;
+
+	vec3 lightPos = vec3( lightMV_Matrix[ 3 ] );
+	vec3 lightDir = normalize( lightPos - vec3( position ) );
+    
+	vec3 eyeDir = normalize( vec3( camera_pos ) - vec3( position ) );
+	vec3 vHalfVector = normalize( lightDir + eyeDir );
+    
+	// calculate attenuation-factor
+	float attenuationFactor = max( dot( normal, lightDir ), 0.0 );
+
+	float specularFactor =  pow( max( dot( normal,vHalfVector ), 0.0 ), 100 ) * 1.5;
+
+	return attenuationFactor * diffuse + specularFactor;    
 }
 
 void main()
@@ -76,7 +96,7 @@ void main()
 	}
 	else if ( 2.0 == matId )
 	{
-		final_color = calculateLambertian( diffuse, normal, position );
+		final_color = calculatePhong( diffuse, normal, position );
 	}
 	else
 	{
