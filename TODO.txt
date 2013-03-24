@@ -1,5 +1,5 @@
 Game-Functionality
-- allow mutliple scenes which can be changed during runtime (load/unload)
+- allow mutliple scenes which can be changed during runtime. also specify which subsystems are necessary: load/unload them during runtime
 
 Scenes
 - qualcomm presentation
@@ -23,7 +23,6 @@ Scenes
 	-> oder models fall down
 	
 Basic Graphics
-- chess-game possible: set material for each geom-type
 - phong-illumination
 	-> fix lighting-space calculations
 	-> revise diffuse color calc
@@ -31,9 +30,9 @@ Basic Graphics
 	-> add emissive term
 	-> add specular term
 	-> add specular power
-- other brdfs
 - shadow-mapping
 - normal-mapping
+- other brdfs
 - multiple lights
 	-> point-light boundary
 	-> spot-light boundary
