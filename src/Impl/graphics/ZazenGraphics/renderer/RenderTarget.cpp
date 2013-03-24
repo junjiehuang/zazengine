@@ -45,27 +45,34 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 	}
 	else if ( RenderTarget::RT_SHADOW == targetType )
 	{
-
 		// need to enable comparison-mode for depth-texture to use it as a shadow2DSampler in shader
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL );
 
 		// for now we create shadowmaps in same width and height as their viewing frustum
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0 );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR in Light::createShadowMap: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
 			return false;
 		}
 	}
-	else
+	else if ( RenderTarget::RT_COLOR == targetType )
 	{
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL );
 		if ( GL_NO_ERROR != ( status = glGetError() )  )
 		{
 			cout << "ERROR in RenderTarget::create: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
 			return false;
 		}
+	}
+	else
+	{
+		cout << "ERROR in RenderTarget::create: unsupported RenderTarget-Type - exit" << endl;
+		return false;
 	}
 
 	// unbind framebuffer depth-target

@@ -46,7 +46,7 @@ void main()
 
     // set alpha component of normal to 0
 	out_normal.xyz = ex_normal.xyz;
-	out_normal.a = 1.0;
+	out_normal.a = 0.0;
 
     out_generic1 = ex_position;
     out_generic2 = genericMaterialAttrib2;

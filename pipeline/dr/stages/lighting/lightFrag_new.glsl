@@ -1,13 +1,15 @@
 #version 330 core
 
-uniform sampler diffuseMap;
-uniform sampler normalMap;
-uniform sampler depthMap;
-uniform sampler genericMap1;
-uniform sampler genericMap2;
+uniform int screen_width;
+uniform int screen_height;
+uniform vec4 camera_pos;
 
-uniform shadowSampler shadowMap;
-uniform shadowSamplerCube shadowCubeMap;
+uniform sampler2D DiffuseMap;
+uniform sampler2D NormalMap;
+uniform sampler2D DepthMap;
+uniform sampler2D GenericMap1;
+
+uniform sampler2DShadow ShadowMap;
 
 out vec4 final_color;
 
@@ -17,36 +19,30 @@ layout(shared) uniform transforms
 	mat4 modelView_Matrix;				// 64
 	mat4 modelViewProjection_Matrix;	// 128
 	
-	mat4 normalsModelView_Matrix;		// 196
+	mat4 normalsModelView_Matrix;		// 192
+	mat4 normalsModel_Matrix;			// 256
 	
-	mat4 projection_Matrix;				// 254
-	mat4 viewing_Matrix;				// 320
+	mat4 projection_Matrix;				// 320
+	mat4 viewing_Matrix;				// 384
 	
-	mat4 projectionInv_Matrix;			// 384
-	mat4 viewingInv_Matrix;				// 448
+	mat4 projectionInv_Matrix;			// 448
+	mat4 viewingInv_Matrix;				// 512
 };
 
-// contains light-direction in 8,9,10
 layout(shared) uniform light
 {
-	mat4 light_ModelMatrix;
-	mat4 light_SpaceMatrix;
-	mat4 light_SpaceUnitMatrix;
+	vec4 lightConfig; 				// x: type, y: falloff, z: shadowCaster 0/1
+	vec4 lightColor;
+
+	mat4 lightModel_Matrix;
+	mat4 lightSpaceUniform_Matrix;
 };
 
-uniform block light
+vec3
+viewSpaceFromDepth( const vec2 screenCoord )
 {
-        vec4 lightConfig; 				// x: type, y: falloff, z: shadowCaster 0/1
-        vec4 lightPosition;             // spot & point only
-        vec4 lightDirection;    		// spot & directional only
-        vec4 color;
-
-        mat4 lightSpace;
-        mat4 lightSpaceUniform;
-}
-
-vec4 positionFromDepth( const vec2 screenCoord, const float depth )
-{
+	// stored as luminance floating point 32bit
+	float depth = texture( DepthMap, screenCoord ).x;
     // Get x/w and y/w (NDC) from the viewport position
     // after perspective division through w we are in the normaliced device coordinages 
     // which are in the range from -1 to +1.
@@ -55,86 +51,131 @@ vec4 positionFromDepth( const vec2 screenCoord, const float depth )
     
     vec4 vProjectedPos = vec4( ndcX, ndcY, depth, 1.0f );
     
-    // Transform by the inverse projection matrix
-    // SOMETHING IS NOT RIGHT HERE MAYBE
+    // Transform by the inverse projection-view matrix
     vec4 pos = projectionInv_Matrix * vProjectedPos;
     
     // Divide by w to get the view-space position
-    vec4 modelSpace = pos / pos.w;
+    vec3 viewSpace = pos.xyz / pos.w;
     
-    // transform to model-space because it's the same in lighting-space too
-    return viewingInv_Matrix * modelSpace; 
+    return viewSpace; 
 }
 
-float shadowLookup( const vec4 shadowCoord, const float offsetX, const float offsetY )
+vec4
+renderPhongBRDF( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
-	return textureProj( ShadowMap, shadowCoord + vec4( offsetX, offsetY, 0.0, 0.0 ) );
+	/*
+	vec3 lightPos = lightPosition.xyz;
+	vec3 lightDir = light - position.xyz;
+    
+	lightDir = normalize( lightDir );
+    
+	vec3 eyeDir = normalize( camera_pos.xyz - position.xyz );
+	vec3 vHalfVector = normalize(lightDir.xyz+eyeDir);
+    
+	return max( dot( normal, lightDir ), 0 ) * diffuse + 
+            pow( max( dot( normal,vHalfVector ), 0.0 ), 100 ) * 1.5;
+			*/
+
+	return diffuse;
+}
+
+vec4
+renderOrenNayarBRDF( in vec4 diffuse, in vec4 normal )
+{
+	return diffuse;
+}
+
+vec4
+renderSSSBRDF( in vec4 diffuse, in vec4 normal )
+{
+	return diffuse;
+}
+
+vec4
+renderWardsBRDF( in vec4 diffuse, in vec4 normal )
+{
+	return diffuse;
+}
+
+vec4
+renderMicrofacetBRDF( in vec4 diffuse, in vec4 normal )
+{
+	return diffuse;
+}
+
+vec4
+renderLambertianBRDF( in vec4 diffuse, in vec4 normal )
+{
+	mat4 lightModelViewMatrix = lightModel_Matrix * viewing_Matrix;
+	vec4 lightDir = lightModelViewMatrix[ 2 ];
+
+	float intensity = dot( lightDir, normal );
+	return vec4( diffuse.r * intensity, diffuse.g * intensity, diffuse.b * intensity, 1.0 );
 }
 
 void main()
 {
 	// fetch the coordinate of this fragment in normalized
 	// screen-space ( 0 – 1 ) 
-	vec2 screenCoord = ...;
+	vec2 screenCoord = vec2( gl_FragCoord.x / screen_width, gl_FragCoord.y / screen_height );
 
-	vec4 diffuse = texture( diffuseMap, screenCoord );
-	vec4 normal = texture( normalMap, screenCoord );
-	// stored as luminance floating point 32bit
-	vec4 depth = texture( depthMap, screenCoord ).x;
-	vec4 generic1 = texture( genericMap1, screenCoord );
-	vec4 generic2 = texture( genericMap2, screenCoord );
-    
+	vec4 diffuse = texture( DiffuseMap, screenCoord );
+	vec4 normal = texture( NormalMap, screenCoord );
+	vec4 position = texture( GenericMap1, screenCoord );
+
+	// worldCoord = modelCoord
+	vec4 viewSpace = vec4( viewSpaceFromDepth( screenCoord ), 1.0 );
+	// transform worldCoord to lightspace & fit from NDC (lightSpace matrix includes viewing-projection) 
+	// into the unit-cube 0-1 to be able to access the shadow-map
+	vec4 shadowCoord = lightSpaceUniform_Matrix * position;
+
 	float shadow = 0.0f;
 
-	// light is not a point light
-	if ( 2 != lightConfig.x )
+	// spot-light is projective – shadowlookup must be projective
+	if ( 0 == lightConfig.x )
 	{
-		// get the world-coordinate of this fragment
-		vec4 worldCoord = ...; // apply inverse projection-matrix and undo projection
-		// transform the worldCoord into model-coordinates
-		vec4 modelCoord = ...; // apply inverse view-matrix
-		// get the fragment in the light-space
-		vec4 lightCoord = ...; // apply the lightSpace-Matrix to the modelCoord
-		// transform lightcoord to fit from NDC (lightSpace matrix includes viewing-projection) into the unit-cube 0-1 to be able to access the shadow-map
-		vec4 shadowCoord = ...; // apply the unit-cube matrix
-
-		// spot-light is projective – shadowlookup must be projective
-		if ( 0 == lightConfig.x )
-		{
-			shadow = textureProj( shadowMap, shadowcoord );
-		}
-		// directional-light is orthographic – no projective shadowlookup
-		else
-		{
-			shadow = texture( shadowMap, shadowcoord );
-		}
+		shadow = textureProj( ShadowMap, shadowCoord );
 	}
-	// point-light shadow is handled with cube map
+	// directional-light is orthographic – no projective shadowlookup
 	else
 	{
-		// cube-map access is done through the world-space normal
-		vec3 worldSpaceNormal = ...;
-		shadow = texture( shadowCubeMap, worldSpaceNormal );
-    }
+		shadow = texture( ShadowMap, shadowCoord.xyz );
+	}
 
 	// this fragment is not in shadow, only then apply lighting
 	if ( shadow == 0.0 )
 	{
-		if ( 0 == diffuse.a )
-			renderDiffuseBRDF();
-		else if ( 1 == diffuse.a )
-			renderLambertianBRDF();
-		else if ( 2 == diffuse.a )
-			renderPhongBRDF();
-		else if ( 3 == diffuse.a )
-			renderOrenNayarBRDF();
-		else if ( 4 == diffuse.a )
-			renderSSSBRDF();
-		else if ( 5 == diffuse.a )
-			renderWardsBRDF();
-		else if ( 6 == diffuse.a )
-			renderMicrofacetBRDF();
-		end if
+		float matId = diffuse.a * 255;
+
+		if ( 1.0 == matId )
+		{
+			final_color = renderLambertianBRDF( diffuse, normal );
+		}
+		else if ( 2.0 == matId )
+		{
+			//final_color = renderPhongBRDF( diffuse, normal, position );
+			final_color = renderLambertianBRDF( diffuse, normal );
+		}
+		else if ( 3.0 == matId )
+		{
+			final_color = renderOrenNayarBRDF( diffuse, normal );
+		}
+		else if ( 4.0 == matId )
+		{
+			final_color = renderSSSBRDF( diffuse, normal );
+		}
+		else if ( 5.0 == matId )
+		{
+			final_color = renderWardsBRDF( diffuse, normal );
+		}
+		else if ( 6.0 == matId )
+		{
+			final_color = renderMicrofacetBRDF( diffuse, normal );
+		}
+		else
+		{
+			final_color = diffuse;
+		}
     }
     else
     {
@@ -145,32 +186,4 @@ void main()
 		final_color.rgb = diffuse.rgb * 0.5;
 		final_color.a = 1.0;
     }
-}
-
-void renderDiffuseBRDF()
-{
-}
-
-void renderLambertianBRDF()
-{
-}
-
-void renderPhongBRDF()
-{
-}
-
-void renderOrenNayarBRDF()
-{
-}
-
-void renderSSSBRDF()
-{
-}
-
-void renderWardsBRDF()
-{
-}
-
-void renderMicrofacetBRDF()
-{
 }

@@ -281,14 +281,39 @@ DRRenderer::initFBO()
 		return false;
 	}
 
-	// generate and bind generic color attachements
-	for ( unsigned int i = 0; i < MRT_COUNT; i++ )
+	// order is important!
+
+	// diffuse color
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
 	{
-		this->initMrtBuffer( i );	
+		return false;
 	}
 
-	// important: initialize depth buffer AFTER binding color-buffers (MRTs) otherwise would fail on ATI-card
-	return this->initDepthBuffer();
+	// normals
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
+	{
+		return false;
+	}
+
+	// position data
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
+	{
+		return false;
+	}
+
+	// generic attributes
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
+	{
+		return false;
+	}
+
+	// depth-buffer
+	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH ) )		
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool
@@ -620,28 +645,9 @@ DRRenderer::initUniformBlocks()
 }
 
 bool
-DRRenderer::initDepthBuffer()
+DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType )
 {
-	RenderTarget* renderTarget = RenderTarget::create( ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 
-		RenderTarget::RT_DEPTH );
-	if ( NULL == renderTarget )
-	{
-		return false;
-	}
-
-	if ( false == this->m_fbo->attachTarget( renderTarget ) )
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool
-DRRenderer::initMrtBuffer( unsigned int i )
-{
-	RenderTarget* renderTarget = RenderTarget::create( ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), 
-		RenderTarget::RT_COLOR );
+	RenderTarget* renderTarget = RenderTarget::create( ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), targetType );
 	if ( NULL == renderTarget )
 	{
 		return false;
@@ -826,8 +832,6 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	}
 
 	glm::vec4 lightConfig;
-	glm::vec4 lightPosition;
-	glm::vec4 lightDirection;
 	glm::mat4 lightSpaceUnit;
 
 	// render the contribution of each light to the scene
@@ -853,23 +857,6 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		lightConfig[ 1 ] = light->getFalloff();
 		lightConfig[ 2 ] = light->isShadowCaster();
 
-		// TODO: VERY IMPORTANT: IF LIGHT DOES NOT STICK TO CAMERA THEN THE LIGHTS MODELMATRIX MUST BE TRANSFORMED
-		// BY THE VIEWING-MATRIX OF THE LIGHT TO PLACE IT IN WORLD COORDINATES.
-
-		// only spot and point have a position
-		if ( Light::SPOT == light->getType() || Light::POINT == light->getType() )
-		{
-			// position is in model-matrix translation-achsis
-			lightPosition = light->m_modelMatrix[ 3 ];
-		}
-
-		// only spot and directional have a direction
-		if ( Light::SPOT == light->getType() || Light::DIRECTIONAL == light->getType() )
-		{
-			// direction is in model-matrix z-achsis
-			lightDirection = light->m_modelMatrix[ 2 ];
-		}
-
 		// calculate the light-space projection matrix
 		// multiplication with unit-cube is first because has to be carried out the last
 		lightSpaceUnit = this->m_unitCubeMatrix * light->m_PVMatrix;
@@ -878,19 +865,15 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		{
 			return false;
 		}
-		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightPosition ), 16, 16 ) )
+		if ( false == this->m_lightBlock->updateData( glm::value_ptr( light->getColor() ), 16, 16 ) )
 		{
 			return false;
 		}
-		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightDirection ), 32, 16 ) )
+		if ( false == this->m_lightBlock->updateData( glm::value_ptr( light->m_modelMatrix ), 32, 64 ) )
 		{
 			return false;
 		}
-		if ( false == this->m_lightBlock->updateData( glm::value_ptr( light->getColor() ), 48, 16 ) )
-		{
-			return false;
-		}
-		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightSpaceUnit ), 64, 64 ) )
+		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightSpaceUnit ), 96, 64 ) )
 		{
 			return false;
 		}

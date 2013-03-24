@@ -130,7 +130,6 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 		| aiProcess_JoinIdenticalVertices 
 		| aiProcess_Triangulate 
 		| aiProcess_RemoveComponent 
-		| aiProcess_GenNormals 
 		| aiProcess_GenSmoothNormals 
 		| aiProcess_SplitLargeMeshes 
 		| aiProcess_ValidateDataStructure 

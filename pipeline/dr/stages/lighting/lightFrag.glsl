@@ -32,80 +32,26 @@ layout(shared) uniform transforms
 layout(shared) uniform light
 {
 	vec4 lightConfig; 				// x: type, y: falloff, z: shadowCaster 0/1
-	vec4 lightPosition;             // spot & point only
-	vec4 lightDirection;    		// spot & directional only
 	vec4 lightColor;
 
-	mat4 lightSpaceUniform;
+	mat4 lightModel_Matrix;
+	mat4 lightSpaceUniform_Matrix;
 };
 
-
-vec3
-viewSpaceFromDepth( const vec2 screenCoord )
-{
-	// stored as luminance floating point 32bit
-	float depth = texture( DepthMap, screenCoord ).x;
-    // Get x/w and y/w (NDC) from the viewport position
-    // after perspective division through w we are in the normaliced device coordinages 
-    // which are in the range from -1 to +1.
-    float ndcX = screenCoord.x * 2 - 1;
-    float ndcY = ( 1 - screenCoord.y ) * 2 - 1;
-    
-    vec4 vProjectedPos = vec4( ndcX, ndcY, depth, 1.0f );
-    
-    // Transform by the inverse projection-view matrix
-    vec4 pos = projectionInv_Matrix * vProjectedPos;
-    
-    // Divide by w to get the view-space position
-    vec3 viewSpace = pos.xyz / pos.w;
-    
-    return viewSpace; 
-}
-
 vec4
-renderPhongBRDF( in vec4 diffuse, in vec4 normal, in vec4 position )
+calculateLambertian( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
-	vec3 light = lightPosition.xyz;
-	vec3 lightDir = light - position.xyz;
+	// need to transpose light-model matrix to view-space for eye-coordinates 
+	mat4 lightMV_Matrix = viewing_Matrix * lightModel_Matrix;
+
+	// light-position is stored in 4th vector
+	vec3 lightPos = vec3( lightMV_Matrix[ 3 ] );
+	vec3 lightDir = normalize( lightPos - vec3( position ) );
     
-	lightDir = normalize( lightDir );
-    
-	vec3 eyeDir = normalize( camera_pos.xyz - position.xyz );
-	vec3 vHalfVector = normalize(lightDir.xyz+eyeDir);
-    
-	return max( dot( normal, lightDir ), 0 ) * diffuse + 
-            pow( max( dot( normal,vHalfVector ), 0.0 ), 100 ) * 1.5;
-}
+	// calculate attenuation-factor
+	float factor = max( dot( normal, lightDir ), 0.0 );
 
-vec4
-renderOrenNayarBRDF( in vec4 diffuse, in vec4 normal )
-{
-	return diffuse;
-}
-
-vec4
-renderSSSBRDF( in vec4 diffuse, in vec4 normal )
-{
-	return diffuse;
-}
-
-vec4
-renderWardsBRDF( in vec4 diffuse, in vec4 normal )
-{
-	return diffuse;
-}
-
-vec4
-renderMicrofacetBRDF( in vec4 diffuse, in vec4 normal )
-{
-	return diffuse;
-}
-
-vec4
-renderLambertianBRDF( in vec4 diffuse, in vec4 normal )
-{
-	float intensity = dot( lightDirection, normal );
-	return vec4( diffuse.r * intensity, diffuse.g * intensity, diffuse.b * intensity, 1.0 );
+	return factor * diffuse;
 }
 
 void main()
@@ -118,66 +64,22 @@ void main()
 	vec4 normal = texture( NormalMap, screenCoord );
 	vec4 position = texture( GenericMap1, screenCoord );
 
-	// worldCoord = modelCoord
-	vec4 viewSpace = vec4( viewSpaceFromDepth( screenCoord ), 1.0 );
-	// transform worldCoord to lightspace & fit from NDC (lightSpace matrix includes viewing-projection) 
-	// into the unit-cube 0-1 to be able to access the shadow-map
-	vec4 shadowCoord = lightSpaceUniform * position;
+	float matId = diffuse.a * 255;
 
-	float shadow = 0.0f;
-
-	// spot-light is projective – shadowlookup must be projective
-	if ( 0 == lightConfig.x )
+	if ( lightConfig.x == 1.0 )
 	{
-		shadow = textureProj( ShadowMap, shadowCoord );
 	}
-	// directional-light is orthographic – no projective shadowlookup
+
+	if ( 1.0 == matId )
+	{
+		final_color = calculateLambertian( diffuse, normal, position );
+	}
+	else if ( 2.0 == matId )
+	{
+		final_color = calculateLambertian( diffuse, normal, position );
+	}
 	else
 	{
-		shadow = texture( ShadowMap, shadowCoord.xyz );
+		final_color = diffuse;
 	}
-
-	// this fragment is not in shadow, only then apply lighting
-	if ( shadow == 0.0 )
-	{
-		float matId = diffuse.a * 255;
-
-		if ( 1.0 == matId )
-		{
-			final_color = renderLambertianBRDF( diffuse, normal );
-		}
-		else if ( 2.0 == matId )
-		{
-			final_color = renderPhongBRDF( diffuse, normal, position );
-		}
-		else if ( 3.0 == matId )
-		{
-			final_color = renderOrenNayarBRDF( diffuse, normal );
-		}
-		else if ( 4.0 == matId )
-		{
-			final_color = renderSSSBRDF( diffuse, normal );
-		}
-		else if ( 5.0 == matId )
-		{
-			final_color = renderWardsBRDF( diffuse, normal );
-		}
-		else if ( 6.0 == matId )
-		{
-			final_color = renderMicrofacetBRDF( diffuse, normal );
-		}
-		else
-		{
-			final_color = diffuse;
-		}
-    }
-    else
-    {
-		// TODO: soft-shadows
-
-		// when in shadow, only the diffuse color is used for
-		// the final color output but darkened by its half
-		final_color.rgb = diffuse.rgb * 0.5;
-		final_color.a = 1.0;
-    }
 }

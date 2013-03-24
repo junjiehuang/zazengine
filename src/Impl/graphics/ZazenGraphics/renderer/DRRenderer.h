@@ -183,8 +183,7 @@ class DRRenderer : public Renderer
 	bool initShadowMapping( const boost::filesystem::path& );
 	bool initUniformBlocks();
 
-	bool initDepthBuffer();
-	bool initMrtBuffer( unsigned int );
+	bool createMrtBuffer( RenderTarget::RenderTargetType );
 
 	bool renderShadowMap( std::list<Instance*>&, std::list<Light*>& );
 	bool renderSkyBox();
