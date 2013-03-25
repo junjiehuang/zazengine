@@ -559,6 +559,13 @@ DRRenderer::initShadowMapping( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
+	// setting frag-data location is done bevore linking
+	if ( false == this->m_progShadowMapping->bindFragDataLocation( 0, "fragmentdepth" ) )
+	{
+		cout << "ERROR in DRRenderer::initShadowMapping: binding fragment-data location failed - exit" << endl;
+		return false;
+	}
+
 	if ( false == this->m_progShadowMapping->bindAttribLocation( 0, "in_vertPos" ) )
 	{
 		cout << "ERROR in DRRenderer::initShadowMapping: binding attribute location to program failed - exit" << endl;
