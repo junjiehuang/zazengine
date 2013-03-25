@@ -65,7 +65,17 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
+	if ( false == this->m_fbo->bind() )
+	{
+		return false;
+	}
+
 	if ( false == this->m_fbo->clearAll() )
+	{
+		return false;
+	}
+
+	if ( false == this->m_fbo->unbind() )
 	{
 		return false;
 	}
@@ -284,34 +294,42 @@ DRRenderer::initFBO()
 		return false;
 	}
 
-	// order is important!
-
-	// diffuse color
+	if ( false == this->m_fbo->bind() )
+	{
+		return false;
+	}
+	
+	// index 0: diffuse color
 	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
 	{
 		return false;
 	}
 
-	// normals
+	// index 1: normals
 	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
 	{
 		return false;
 	}
 
-	// position data
+	// index 2: position data
 	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
 	{
 		return false;
 	}
 
-	// generic attributes
+	// index 3: generic attributes
 	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
 	{
 		return false;
 	}
 
-	// depth-buffer
+	// index 4: depth-buffer
 	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH ) )		
+	{
+		return false;
+	}
+
+	if ( false == this->m_fbo->unbind() )
 	{
 		return false;
 	}
@@ -674,19 +692,16 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 		return false;
 	}
 
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
-
-	// Instruct openGL that we won't bind a color texture with the currently binded FBO
-	glDrawBuffer( GL_NONE );
-	glReadBuffer( GL_NONE );
-
 	// Rendering offscreen
 	if ( false == this->m_shadowMappingFB->bind() )
 	{
 		return false;
 	}
 
+	glDrawBuffer( GL_NONE );
+
+	//glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
+	
 	// render the depth-map for each light
 	std::list<Light*>::iterator iter = lights.begin();
 	while ( iter != lights.end() )
@@ -697,6 +712,8 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 		{
 			return false;
 		}
+		
+		glClear( GL_DEPTH_BUFFER_BIT );
 
 		// render scene from view of camera - don't apply material, don't render transparency
 		if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, false ) )

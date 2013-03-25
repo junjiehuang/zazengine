@@ -101,11 +101,13 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 {
 	GLenum status;
 
-	glBindFramebuffer( GL_FRAMEBUFFER, this->m_id );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	// ignore when already added
+	for ( unsigned int i = 0; i < this->m_attachedTargets.size(); i++ )
 	{
-		cout << "ERROR in FrameBufferObject::attachTarget: glBindFramebuffer for render-target failed with " << status << " - exit" << endl;
-		return false;
+		if ( renderTarget->getId() == this->m_attachedTargets[ i ]->getId() )
+		{
+			return true;
+		}
 	}
 
 	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW == renderTarget->getType() )
@@ -137,16 +139,6 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 
 		this->m_colorBufferTargets.push_back( colorAttachment );
 		this->m_colorBuffers.push_back( id );
-	}
-
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-
-	for ( unsigned int i = 0; i < this->m_attachedTargets.size(); i++ )
-	{
-		if ( renderTarget->getId() == this->m_attachedTargets[ i ]->getId() )
-		{
-			return true;
-		}
 	}
 
 	this->m_attachedTargets.push_back( renderTarget );
@@ -260,11 +252,6 @@ FrameBufferObject::drawBuffer( unsigned int index )
 bool
 FrameBufferObject::clearAll()
 {
-	if ( false == this->bind() )
-	{
-		return false;
-	}
-
 	if ( false == this->drawAllBuffers() )
 	{
 		return false;
@@ -276,11 +263,6 @@ FrameBufferObject::clearAll()
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 	// clear the colorbuffers AND our depth-buffer ( m_geometryDepth );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-	if ( false == this->unbind() )
-	{
-		return false;
-	}
 
 	return true;
 }
