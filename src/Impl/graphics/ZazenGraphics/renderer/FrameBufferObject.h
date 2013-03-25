@@ -24,6 +24,7 @@ class FrameBufferObject
 		
 		bool drawAllBuffers();
 		bool drawBuffer( unsigned int );
+		bool drawNone();
 
 		bool bind();
 		bool unbind();

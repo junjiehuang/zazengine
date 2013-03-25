@@ -113,11 +113,11 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW == renderTarget->getType() )
 	{
 		// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
-		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, renderTarget->getId(), 0 );
+		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, renderTarget->getId(), 0 );
 		CHECK_FRAMEBUFFER_STATUS( status );
 		if ( GL_FRAMEBUFFER_COMPLETE != status )
 		{
-			cout << "ERROR in FrameBufferObject::attachTarget: framebuffer error for depth-buffer: " << gluErrorString( status ) << " - exit" << endl;
+			cout << "ERROR in FrameBufferObject::attachTarget: glFramebufferTexture2D error for depth-buffer - exit" << endl;
 			return false;
 		}
 
@@ -133,7 +133,7 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 		CHECK_FRAMEBUFFER_STATUS( status );
 		if ( GL_FRAMEBUFFER_COMPLETE != status )
 		{
-			cout << "ERROR in DRRenderer::initMrtBuffer: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
+			cout << "ERROR in DRRenderer::initMrtBuffer: glFramebufferTexture2D error for color-buffer: - exit" << endl;
 			return false;
 		}
 
@@ -243,6 +243,34 @@ FrameBufferObject::drawBuffer( unsigned int index )
 	if ( GL_FRAMEBUFFER_COMPLETE != status )
 	{
 		cout << "ERROR in FrameBufferObject::drawBuffer: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool
+FrameBufferObject::drawNone()
+{
+	GLenum status;
+
+	glDrawBuffer( GL_NONE );
+
+	// check framebuffer status, maybe something failed with glDrawBuffers
+	CHECK_FRAMEBUFFER_STATUS( status );
+	if ( GL_FRAMEBUFFER_COMPLETE != status )
+	{
+		cout << "ERROR in FrameBufferObject::drawNone: glDrawBuffer( GL_NONE ) failed - exit" << endl;
+		return false;
+	}
+
+	glReadBuffer( GL_NONE );
+
+	// check framebuffer status, maybe something failed with glDrawBuffers
+	CHECK_FRAMEBUFFER_STATUS( status );
+	if ( GL_FRAMEBUFFER_COMPLETE != status )
+	{
+		cout << "ERROR in FrameBufferObject::drawNone: glReadBuffer( GL_NONE ) failed - exit" << endl;
 		return false;
 	}
 

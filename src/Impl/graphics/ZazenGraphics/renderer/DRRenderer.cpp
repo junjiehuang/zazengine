@@ -60,10 +60,12 @@ DRRenderer::~DRRenderer()
 bool
 DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
+	/*
 	if ( false == this->renderShadowMap( instances, lights ) )
 	{
 		return false;
 	}
+	*/
 
 	if ( false == this->m_fbo->bind() )
 	{
@@ -693,22 +695,12 @@ DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType )
 bool
 DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
-	if ( false == this->m_progShadowMapping->use() )
-	{
-		cout << "ERROR in DRRenderer::renderShadowMap: using program failed - exit" << endl;
-		return false;
-	}
-
 	// Rendering offscreen
 	if ( false == this->m_shadowMappingFB->bind() )
 	{
 		return false;
 	}
 
-	glDrawBuffer( GL_NONE );
-
-	//glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
-	
 	// render the depth-map for each light
 	std::list<Light*>::iterator iter = lights.begin();
 	while ( iter != lights.end() )
@@ -719,14 +711,11 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 		{
 			return false;
 		}
-		
-		glClear( GL_DEPTH_BUFFER_BIT );
+	}
 
-		// render scene from view of camera - don't apply material, don't render transparency
-		if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, false ) )
-		{
-			return false;
-		}
+	if ( false == this->m_shadowMappingFB->drawNone() )
+	{
+		return false;
 	}
 
 	// back to window-system framebuffer
@@ -734,7 +723,40 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 	{
 		return false;
 	}
+
+	// Rendering offscreen
+	if ( false == this->m_shadowMappingFB->bind() )
+	{
+		return false;
+	}
+
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+	if ( false == this->m_progShadowMapping->use() )
+	{
+		cout << "ERROR in DRRenderer::renderShadowMap: using program failed - exit" << endl;
+		return false;
+	}
+
+	// render the depth-map for each light
+	iter = lights.begin();
+	while ( iter != lights.end() )
+	{
+		Light* light = *iter++;
+
+		// render scene from view of camera - don't apply material, don't render transparency
+		if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, false ) )
+		{
+			return false;
+		}
+	}
 	
+	// back to window-system framebuffer
+	if ( false == this->m_shadowMappingFB->unbind() )
+	{
+		return false;
+	}
+
 	return true;
 }
 
