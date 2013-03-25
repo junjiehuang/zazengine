@@ -8,6 +8,7 @@
 #include <GL/glew.h>
 
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "DRRenderer.h"
 
@@ -895,11 +896,18 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
-	// change to ortho to render the screen quad
-	this->m_camera->setupOrtho();
+	glm::mat4 orthoMat = glm::ortho( 0.0f, ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight(), 0.0f, -1.0f, 1.0f );
+
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity();
+
+	glLoadMatrixf( glm::value_ptr( orthoMat ) );
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
 	// update projection-matrix because changed to orthogonal-projection
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( this->m_camera->m_projectionMatrix ), 320, 64 ) )
+	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( orthoMat ), 320, 64 ) )
 	{
 		return false;
 	}
@@ -973,7 +981,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	this->m_fbo->unbindAllTargets();
 
 	// back to perspective
-	this->m_camera->setupPerspective();
+	this->m_camera->restore();
 
 	return true;
 }
@@ -1078,12 +1086,7 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 			// take the transpose of the inverse modelView or simply reset the translation vector in the modelview-matrix
 			// in other words: only the rotations are applied to normals and they are guaranteed to leave
 			// normalized normals at unit length. THIS METHOD ONLY WORKS WHEN NO NON UNIFORM SCALING IS APPLIED
-			/*
-						glm::mat4 normalMatrix = modelViewMatrix;
-						glm::value_ptr( normalMatrix )[ 12 ] = 0.0;
-						glm::value_ptr( normalMatrix )[ 13 ] = 0.0;
-						glm::value_ptr( normalMatrix )[ 14 ] = 0.0;
-						*/
+
 			glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( modelViewMatrix ) );
 			glm::mat4 normalModelMatrix = glm::transpose( glm::inverse( modelMatrix ) );
 
@@ -1130,7 +1133,15 @@ DRRenderer::showTexture( GLuint texID, int quarter )
 	}
 
 	// set up orthogonal projection to render quad
-	this->m_camera->setupOrtho();
+	glm::mat4 orthoMat = glm::ortho( 0.0f, ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight(), 0.0f, -1.0f, 1.0f );
+
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity();
+
+	glLoadMatrixf( glm::value_ptr( orthoMat ) );
+
+	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity();
 
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, texID );
@@ -1164,7 +1175,7 @@ DRRenderer::showTexture( GLuint texID, int quarter )
 	}
 
 	// switch back to perspective projection
-	this->m_camera->setupPerspective();
+	this->m_camera->restore();
 
 	return true;
 }

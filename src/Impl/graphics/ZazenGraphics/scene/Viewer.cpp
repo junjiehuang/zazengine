@@ -2,7 +2,6 @@
 
 #include <GL/glew.h>
 
-//#include <glm/gtc/matrix_projection.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -27,33 +26,33 @@ Viewer::~Viewer()
 }
 
 void
-Viewer::setupPerspective()
+Viewer::restore()
 {
-	this->m_projectionMatrix = glm::perspective( this->fov, ( float ) this->width / ( float ) this->height, this->nearDist, this->farDist );
-
 	// TODO: remove this fixed-function stuff
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
 
 	glLoadMatrixf( glm::value_ptr( this->m_projectionMatrix ) );
 
-	glMatrixMode(GL_MODELVIEW);
+	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
+}
+
+void
+Viewer::setupPerspective()
+{
+	this->m_projectionMatrix = glm::perspective( this->fov, ( float ) this->width / ( float ) this->height, this->nearDist, this->farDist );
+	this->restore();
 }
 
 void
 Viewer::setupOrtho()
 {
-	this->m_projectionMatrix = glm::ortho( 0.0f, ( float ) this->width, ( float ) this->height, 0.0f, -1.0f, 1.0f );
+	float halfWidth = ( float ) this->width / 2.0f;
+	float halfHeight = ( float ) this->height / 2.0f;
 
-	// TODO: remove this fixed-function stuff
-	glMatrixMode( GL_PROJECTION );
-	glLoadIdentity();
-
-	glLoadMatrixf( glm::value_ptr( this->m_projectionMatrix ) );
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	this->m_projectionMatrix = glm::ortho( -halfWidth, halfWidth, -halfHeight, halfHeight, -500.0f, 500.0f );
+	this->restore();
 }
 
 void

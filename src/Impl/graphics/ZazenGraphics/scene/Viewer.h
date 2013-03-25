@@ -44,6 +44,7 @@ class Viewer : public Orientation
 
 	glm::mat4 m_PVMatrix;
 
+	void restore();
     void setupPerspective();
     void setupOrtho();
 
