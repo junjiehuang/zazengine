@@ -49,7 +49,7 @@ calculateLambertian( in vec4 diffuse, in vec4 normal, in vec4 position )
 	vec3 lightDir = normalize( lightPos - vec3( position ) );
     
 	// calculate attenuation-factor
-	float attenuationFactor = max( dot( normal, lightDir ), 0.0 );
+	float attenuationFactor = max( dot( vec3( normal ), lightDir ), 0.0 );
 
 	return attenuationFactor * diffuse;
 }
@@ -67,9 +67,9 @@ calculatePhong( in vec4 diffuse, in vec4 normal, in vec4 position )
 	vec3 vHalfVector = normalize( lightDir + eyeDir );
     
 	// calculate attenuation-factor
-	float attenuationFactor = max( dot( normal, lightDir ), 0.0 );
+	float attenuationFactor = max( dot( vec3( normal ), lightDir ), 0.0 );
 
-	float specularFactor =  pow( max( dot( normal,vHalfVector ), 0.0 ), 100 ) * 1.5;
+	float specularFactor =  pow( max( dot( vec3( normal ), vHalfVector ), 0.0 ), 100 ) * 1.5;
 
 	return attenuationFactor * diffuse + specularFactor;    
 }
@@ -85,16 +85,31 @@ void main()
 	vec4 position = texture( GenericMap1, screenCoord );
 
 	vec4 shadowCoord = lightSpaceUniform_Matrix * position;
-	float shadow = texture( ShadowMap, shadowCoord );
+	float shadow = 0.0;
+	float bias = 0.1;
+
+	// spot-light - do perspective shadow-lookup
+	if ( 0.0 == lightConfig.x )
+	{
+		float lightDepth = textureProj( ShadowMap, shadowCoord );
+
+		if ( lightDepth < ( shadowCoord.z - bias ) / shadowCoord.w ) {
+			shadow = 0.5;
+		}
+	}
+	else if ( 1.0 == lightConfig.x )
+	{
+		float lightDepth = texture( ShadowMap, shadowCoord );
+
+		if ( lightDepth < shadowCoord.z - bias ) {
+			shadow = 0.5;
+		}
+	}
 
 	// not in shadow
 	if ( shadow == 0.0 )
 	{
 		float matId = diffuse.a * 255;
-
-		if ( lightConfig.x == 1.0 )
-		{
-		}
 
 		if ( 1.0 == matId )
 		{
