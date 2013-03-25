@@ -6,44 +6,6 @@
 
 using namespace std;
 
-#define CHECK_FRAMEBUFFER_STATUS( status ) \
-{\
- status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT); \
- switch(status) { \
- case GL_FRAMEBUFFER_COMPLETE: \
-   break; \
- case GL_FRAMEBUFFER_UNSUPPORTED: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_UNSUPPORTED\n");\
-    /* you gotta choose different formats */ \
-   assert(0); \
-   break; \
- case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n");\
-   break; \
- case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\n");\
-   break; \
- case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n");\
-   break; \
-  case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n");\
-   break; \
- case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER\n");\
-   break; \
- case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER\n");\
-   break; \
- case GL_FRAMEBUFFER_BINDING: \
-   fprintf(stderr,"framebuffer GL_FRAMEBUFFER_BINDING\n");\
-   break; \
- default: \
-   /* programming error; will fail on all hardware */ \
-   assert(0); \
- }\
-}
-
 FrameBufferObject*
 FrameBufferObject::create()
 {
@@ -99,8 +61,6 @@ FrameBufferObject::~FrameBufferObject()
 bool
 FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 {
-	GLenum status;
-
 	// ignore when already added
 	for ( unsigned int i = 0; i < this->m_attachedTargets.size(); i++ )
 	{
@@ -114,12 +74,6 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 	{
 		// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
 		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, renderTarget->getId(), 0 );
-		CHECK_FRAMEBUFFER_STATUS( status );
-		if ( GL_FRAMEBUFFER_COMPLETE != status )
-		{
-			cout << "ERROR in FrameBufferObject::attachTarget: glFramebufferTexture2D error for depth-buffer - exit" << endl;
-			return false;
-		}
 
 		this->m_depthBuffer = renderTarget->getId();
 		this->m_depthTarget = renderTarget;
@@ -130,12 +84,6 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 		GLenum colorAttachment = GL_COLOR_ATTACHMENT0 + this->m_colorBufferTargets.size();
 
 		glFramebufferTexture2D( GL_FRAMEBUFFER, colorAttachment, GL_TEXTURE_2D, id, 0 );
-		CHECK_FRAMEBUFFER_STATUS( status );
-		if ( GL_FRAMEBUFFER_COMPLETE != status )
-		{
-			cout << "ERROR in DRRenderer::initMrtBuffer: glFramebufferTexture2D error for color-buffer: - exit" << endl;
-			return false;
-		}
 
 		this->m_colorBufferTargets.push_back( colorAttachment );
 		this->m_colorBuffers.push_back( id );
@@ -214,14 +162,6 @@ FrameBufferObject::drawAllBuffers()
 		return false;
 	}
 
-	// check framebuffer status, maybe something failed with glDrawBuffers
-	CHECK_FRAMEBUFFER_STATUS( status );
-	if ( GL_FRAMEBUFFER_COMPLETE != status )
-	{
-		cout << "ERROR in FrameBufferObject::drawAllBuffers: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
 	return true;
 }
 
@@ -238,41 +178,15 @@ FrameBufferObject::drawBuffer( unsigned int index )
 		return false;
 	}
 
-	// check framebuffer status, maybe something failed with glDrawBuffers
-	CHECK_FRAMEBUFFER_STATUS( status );
-	if ( GL_FRAMEBUFFER_COMPLETE != status )
-	{
-		cout << "ERROR in FrameBufferObject::drawBuffer: framebuffer error: " << gluErrorString( status ) << " - exit" << endl;
-		return false;
-	}
-
 	return true;
 }
+
 
 bool
 FrameBufferObject::drawNone()
 {
-	GLenum status;
-
 	glDrawBuffer( GL_NONE );
-
-	// check framebuffer status, maybe something failed with glDrawBuffers
-	CHECK_FRAMEBUFFER_STATUS( status );
-	if ( GL_FRAMEBUFFER_COMPLETE != status )
-	{
-		cout << "ERROR in FrameBufferObject::drawNone: glDrawBuffer( GL_NONE ) failed - exit" << endl;
-		return false;
-	}
-
 	glReadBuffer( GL_NONE );
-
-	// check framebuffer status, maybe something failed with glDrawBuffers
-	CHECK_FRAMEBUFFER_STATUS( status );
-	if ( GL_FRAMEBUFFER_COMPLETE != status )
-	{
-		cout << "ERROR in FrameBufferObject::drawNone: glReadBuffer( GL_NONE ) failed - exit" << endl;
-		return false;
-	}
 
 	return true;
 }
@@ -293,4 +207,49 @@ FrameBufferObject::clearAll()
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	return true;
+}
+
+bool
+FrameBufferObject::checkStatus()
+{
+	GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+
+	if ( GL_FRAMEBUFFER_COMPLETE == status )
+	{
+		return true;
+	}
+	else if ( GL_FRAMEBUFFER_UNSUPPORTED == status )
+	{
+		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_UNSUPPORTED" << endl;
+	}
+	else if ( GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT == status )
+	{
+		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT" << endl;
+	}
+	else if ( GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT == status )
+	{
+		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT" << endl;
+	}
+	else if ( GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT == status )
+	{
+		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT" << endl;
+	}
+	else if ( GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT == status )
+	{
+		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT" << endl;
+	}
+	else if ( GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER == status )
+	{
+		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER" << endl;
+	}
+	else if ( GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER == status )
+	{
+		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER" << endl;
+	}
+	 else if ( GL_FRAMEBUFFER_BINDING == status )
+	{
+		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER" << endl;
+	}
+	
+	return false;
 }

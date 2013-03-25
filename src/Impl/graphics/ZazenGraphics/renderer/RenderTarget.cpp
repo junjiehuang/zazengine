@@ -58,7 +58,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY );
 
 		// for now we create shadowmaps in same width and height as their viewing frustum
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR in Light::createShadowMap: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;

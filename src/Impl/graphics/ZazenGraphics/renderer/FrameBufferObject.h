@@ -34,6 +34,8 @@ class FrameBufferObject
 
 		bool clearAll();
 
+		bool checkStatus();
+
 		const std::vector<RenderTarget*>& getAttachedTargets() { return this->m_attachedTargets; };
 		RenderTarget* getAttachedDepthTarget() { return this->m_depthTarget; };
 

@@ -60,13 +60,11 @@ DRRenderer::~DRRenderer()
 bool
 DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
-	/*
 	if ( false == this->renderShadowMap( instances, lights ) )
 	{
 		return false;
 	}
-	*/
-
+	
 	if ( false == this->m_fbo->bind() )
 	{
 		return false;
@@ -116,6 +114,7 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 			return false;
 		}
 	}
+	
 
 	this->frame++;
 
@@ -327,6 +326,11 @@ DRRenderer::initFBO()
 
 	// index 4: depth-buffer
 	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH ) )		
+	{
+		return false;
+	}
+
+	if ( false == this->m_fbo->checkStatus() )
 	{
 		return false;
 	}
@@ -691,7 +695,6 @@ DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType )
 	return true;
 }
 
-// TODO something is still wrong here
 bool
 DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
@@ -700,6 +703,9 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 	{
 		return false;
 	}
+
+	// don't check yet because cannot be complete yet
+	this->m_shadowMappingFB->drawNone();
 
 	// render the depth-map for each light
 	std::list<Light*>::iterator iter = lights.begin();
@@ -713,7 +719,8 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 		}
 	}
 
-	if ( false == this->m_shadowMappingFB->drawNone() )
+	// no all set up for checking completeness
+	if ( false == this->m_shadowMappingFB->checkStatus() )
 	{
 		return false;
 	}
@@ -784,6 +791,11 @@ DRRenderer::renderSkyBox()
 		return false;
 	}
 
+	if ( false == this->m_fbo->checkStatus() )
+	{
+		return false;
+	}
+
 	GeomSkyBox::getRef().render();
 
 	if ( false == this->m_fbo->unbind() )
@@ -810,6 +822,11 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 	}
 
 	if ( false == this->m_fbo->drawAllBuffers() )
+	{
+		return false;
+	}
+
+	if ( false == this->m_fbo->checkStatus() )
 	{
 		return false;
 	}
