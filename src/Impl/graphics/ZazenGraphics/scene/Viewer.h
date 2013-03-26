@@ -42,7 +42,8 @@ class Viewer : public Orientation
 	glm::mat4 m_viewMatrix;
 	glm::mat4 m_projectionMatrix;
 
-	glm::mat4 m_PVMatrix;
+	glm::mat4 m_VPMatrix;
+	glm::mat4 m_MVPMatrix;
 
 	void restore();
     void setupPerspective();

@@ -43,13 +43,12 @@ DRRenderer::DRRenderer()
 	this->m_lightBlock = 0;
 	this->m_materialBlock = 0;
 
-	float unitCube[] = {
-			0.5, 0.0, 0.0, 0.0,
-			0.0, 0.5, 0.0, 0.0,
-			0.0, 0.0, 0.5, 0.0,
-		0.5, 0.5, 0.5, 1.0};
-
-	memcpy( glm::value_ptr( this->m_unitCubeMatrix ), unitCube, sizeof( unitCube ) );
+	this->m_unitCubeMatrix = glm::mat4(
+		0.5, 0.0, 0.0, 0.0, 
+		0.0, 0.5, 0.0, 0.0,
+		0.0, 0.0, 0.5, 0.0,
+		0.5, 0.5, 0.5, 1.0
+	);
 
 	this->m_displayMRT = false;
 }
@@ -940,7 +939,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 
 		// calculate the light-space projection matrix
 		// multiplication with unit-cube is first because has to be carried out the last
-		lightSpaceUnit = this->m_unitCubeMatrix * light->m_PVMatrix; // TODO: need MVP not only PV matrix!
+		lightSpaceUnit = this->m_unitCubeMatrix * light->m_VPMatrix;
 
 		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightConfig ), 0, 16 ) )
 		{

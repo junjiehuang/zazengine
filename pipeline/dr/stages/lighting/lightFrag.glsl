@@ -86,7 +86,7 @@ void main()
 
 	vec4 shadowCoord = lightSpaceUniform_Matrix * position;
 	float shadow = 0.0;
-	float bias = 0.1;
+	float bias = 0.0;
 
 	// spot-light - do perspective shadow-lookup
 	if ( 0.0 == lightConfig.x )
