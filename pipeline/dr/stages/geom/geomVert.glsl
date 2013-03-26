@@ -8,20 +8,12 @@ out vec4 ex_position;
 out vec4 ex_normal;
 out vec2 ex_texCoord;
 
-layout(shared) uniform transforms
+layout( shared ) uniform transforms
 {
-	mat4 model_Matrix;					// 0
-	mat4 modelView_Matrix;				// 64
-	mat4 modelViewProjection_Matrix;	// 128
-	
-	mat4 normalsModelView_Matrix;		// 192
-	mat4 normalsModel_Matrix;			// 256
-	
-	mat4 projection_Matrix;				// 320
-	mat4 viewing_Matrix;				// 384
-	
-	mat4 projectionInv_Matrix;			// 448
-	mat4 viewingInv_Matrix;				// 512
+	mat4 modelView_Matrix;				// 0
+	mat4 projection_Matrix;				// 64
+
+	mat4 normalsModelView_Matrix;		// 128
 };
 
 void main()
@@ -32,5 +24,5 @@ void main()
 	ex_normal = normalsModelView_Matrix * vec4( in_vertNorm, 0.0 );
 	ex_texCoord = in_texCoord;
 
-	gl_Position = modelViewProjection_Matrix * vec4( in_vertPos, 1.0 );
+	gl_Position = projection_Matrix * modelView_Matrix * vec4( in_vertPos, 1.0 );
 }

@@ -49,8 +49,8 @@ class Viewer : public Orientation
     void setupPerspective();
     void setupOrtho();
 
-    int getHeight() { return this->height; };
-    int getWidth() { return this->width; };
+    const int& getHeight() const { return this->height; };
+    const int& getWidth() const { return this->width; };
 
     void setFov( float fov ) { this->fov = fov; };
 

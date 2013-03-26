@@ -40,6 +40,7 @@ DRRenderer::DRRenderer()
 	this->m_shadowMappingFB = 0;
 
 	this->m_transformsBlock = 0;
+	this->m_cameraBlock = 0;
 	this->m_lightBlock = 0;
 	this->m_materialBlock = 0;
 
@@ -260,6 +261,12 @@ DRRenderer::shutdown()
 	{
 		delete this->m_transformsBlock;
 		this->m_transformsBlock = NULL;
+	}
+
+	if ( this->m_cameraBlock )
+	{
+		delete this->m_cameraBlock;
+		this->m_cameraBlock = NULL;
 	}
 
 	if ( this->m_lightBlock )
@@ -599,6 +606,13 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
+	this->m_cameraBlock = UniformBlock::createBlock( "camera" );
+	if ( 0 == this->m_cameraBlock )
+	{
+		cout << "ERROR in DRRenderer::initUniformBlocks: creating uniform block failed - exit" << endl;
+		return false;
+	}
+
 	this->m_lightBlock = UniformBlock::createBlock( "light" );
 	if ( 0 == this->m_lightBlock )
 	{
@@ -613,7 +627,7 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
-	// bind mvp-transformation to all programs
+	// bind transformation-data to all programs
 	if ( false == this->m_progShadowMapping->bindUniformBlock( this->m_transformsBlock ) )
 	{
 		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
@@ -630,14 +644,19 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
-	// lighting data just to lighting stage program
+	// lighting-data & camera-data just to lighting stage program
 	if ( false == this->m_progLightingStage->bindUniformBlock( this->m_lightBlock ) )
 	{
 		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
 		return false;
 	}
+	if ( false == this->m_progLightingStage->bindUniformBlock( this->m_cameraBlock ) )
+	{
+		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
+		return false;
+	}
 
-	// material data just go to geometry-stage program
+	// material-data just go to geometry-stage program
 	if ( false == this->m_progGeomStage->bindUniformBlock( this->m_materialBlock ) )
 	{
 		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
@@ -660,6 +679,11 @@ DRRenderer::initUniformBlocks()
 	*/
 	// bind uniform blocks
 	if ( false == this->m_transformsBlock->bind() )
+	{
+		cout << "ERROR in DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" << endl;
+		return false;
+	}
+	if ( false == this->m_cameraBlock->bind() )
 	{
 		cout << "ERROR in DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" << endl;
 		return false;
@@ -845,6 +869,7 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 	return true;
 }
 
+// TODO break this method up into smaller submethods, its too long
 bool
 DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
@@ -861,12 +886,25 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 
 	this->m_fbo->bindAllTargets();
 
-	const float* data = glm::value_ptr( this->m_camera->getMatrix() );
+	glm::vec4 cameraRectangle;
+	cameraRectangle[ 0 ] = ( float ) this->m_camera->getWidth();
+	cameraRectangle[ 1 ] = ( float ) this->m_camera->getHeight();
 
-	// need screen-resolution in lighting-stage fragment-shader
-	this->m_progLightingStage->setUniformInt( "screen_width", this->m_camera->getWidth() );
-	this->m_progLightingStage->setUniformInt( "screen_height", this->m_camera->getHeight() );
-	this->m_progLightingStage->setUniform4( "camera_pos", &data[ 12 ]  );
+	// upload world-orientation of camera ( its model-matrix )
+	if ( false == this->m_cameraBlock->updateData( glm::value_ptr( this->m_camera->getMatrix() ), 0, 64 ) )
+	{
+		return false;
+	}
+	// upload view-matrix of camera (need to transform e.g. light-world position in EyeCoords/Viewspace)
+	if ( false == this->m_cameraBlock->updateData( glm::value_ptr( this->m_camera->m_viewMatrix ), 64, 64 ) )
+	{
+		return false;
+	}
+	// upload camera-rectangel
+	if ( false == this->m_cameraBlock->updateData( glm::value_ptr( cameraRectangle ), 128, 16 ) )
+	{
+		return false;
+	}
 
 	// tell lighting program that diffusemap is bound to texture-unit 0
 	this->m_progLightingStage->setUniformInt( "DiffuseMap", 0 );
@@ -881,22 +919,9 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
 	this->m_progLightingStage->setUniformInt( "ShadowMap", MRT_COUNT + 1 );
 
-	// calculate the inverse projection matrix - is needed for reconstructing world-position from screen-space
-	// update the inverse projection ( could also be carried out on the GPU but we calculate it once on the cpu )
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( glm::inverse( this->m_camera->m_projectionMatrix ) ), 448, 64) )
-	{
-		return false;
-	}
-
-	// calculate the inverse viewing matrix - is needed for reconstructing world-position from screen-space
-	// update the inverse projection ( could also be carried out on the GPU but we calculate it once on the cpu )
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( glm::inverse( this->m_camera->m_viewMatrix ) ), 512, 64) )
-	{
-		return false;
-	}
-
 	glm::mat4 orthoMat = glm::ortho( 0.0f, ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight(), 0.0f, -1.0f, 1.0f );
 
+	// TODO do we really need those?
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
 
@@ -906,7 +931,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	glLoadIdentity();
 
 	// update projection-matrix because changed to orthogonal-projection
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( orthoMat ), 320, 64 ) )
+	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( orthoMat ), 64, 64 ) )
 	{
 		return false;
 	}
@@ -989,19 +1014,7 @@ bool
 DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program* currentProgramm, 
 		bool applyMaterial, bool transparencyPass )
 {
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( viewer->m_projectionMatrix ), 320, 64 ) )
-	{
-		return false;
-	}
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( viewer->m_viewMatrix ), 384, 64 ) )
-	{
-		return false;
-	}
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( glm::inverse( viewer->m_projectionMatrix ) ), 448, 64 ) )
-	{
-		return false;
-	}
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( glm::inverse( viewer->m_viewMatrix ) ), 512, 64 ) )
+	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( viewer->m_projectionMatrix ), 64, 64 ) )
 	{
 		return false;
 	}
@@ -1078,39 +1091,20 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 		{
 			// calculate modelView-Matrix
 			glm::mat4 modelViewMatrix = viewer->m_viewMatrix * modelMatrix;
-			// calculate the model-view-projection matrix
-			glm::mat4 modelViewProjectionMatrix = viewer->m_projectionMatrix * modelViewMatrix;
-
 			// normal-vectors are transformed different than vertices
 			// take the transpose of the inverse modelView or simply reset the translation vector in the modelview-matrix
 			// in other words: only the rotations are applied to normals and they are guaranteed to leave
 			// normalized normals at unit length. THIS METHOD ONLY WORKS WHEN NO NON UNIFORM SCALING IS APPLIED
-
 			glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( modelViewMatrix ) );
-			glm::mat4 normalModelMatrix = glm::transpose( glm::inverse( modelMatrix ) );
 
-			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( modelMatrix ), 0, 64 ) )
+			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( modelViewMatrix ), 0, 64 ) )
 			{
 				return false;
 			}
-			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( modelViewMatrix ), 64, 64 ) )
+			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( normalModelViewMatrix ), 128, 64 ) )
 			{
 				return false;
 			}
-			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( modelViewProjectionMatrix ), 128, 64 ) )
-			{
-				return false;
-			}
-			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( normalModelViewMatrix ), 192, 64 ) )
-			{
-				return false;
-			}
-			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( normalModelMatrix ), 256, 64 ) )
-			{
-				return false;
-			}
-
-			// Don't need to update inverse, because its just needed in screen-space during lighting-stage
 
 			return geom->render();
 		}

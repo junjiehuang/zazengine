@@ -1,9 +1,5 @@
 #version 330 core
 
-uniform int screen_width;
-uniform int screen_height;
-uniform vec4 camera_pos;
-
 uniform sampler2D DiffuseMap;
 uniform sampler2D NormalMap;
 uniform sampler2D DepthMap;
@@ -13,36 +9,28 @@ uniform sampler2DShadow ShadowMap;
 
 out vec4 final_color;
 
-layout(shared) uniform transforms
+layout( shared ) uniform camera
 {
-	mat4 model_Matrix;					// 0
-	mat4 modelView_Matrix;				// 64
-	mat4 modelViewProjection_Matrix;	// 128
+	mat4 camera_Model_Matrix;			// 0
+	mat4 camera_View_Matrix;			// 64
 	
-	mat4 normalsModelView_Matrix;		// 192
-	mat4 normalsModel_Matrix;			// 256
-	
-	mat4 projection_Matrix;				// 320
-	mat4 viewing_Matrix;				// 384
-	
-	mat4 projectionInv_Matrix;			// 448
-	mat4 viewingInv_Matrix;				// 512
+	vec4 camera_rec;					// 128
 };
 
-layout(shared) uniform light
+layout( shared ) uniform light
 {
-	vec4 lightConfig; 				// x: type, y: falloff, z: shadowCaster 0/1
-	vec4 lightColor;
+	vec4 light_Config; 				// x: type, y: falloff, z: shadowCaster 0/1
+	vec4 light_Color;
 
-	mat4 lightModel_Matrix;
-	mat4 lightSpaceUniform_Matrix;
+	mat4 light_Model_Matrix;
+	mat4 light_SpaceUniform_Matrix;
 };
 
 vec4
 calculateLambertian( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
 	// need to transpose light-model matrix to view-space for eye-coordinates 
-	mat4 lightMV_Matrix = viewing_Matrix * lightModel_Matrix;
+	mat4 lightMV_Matrix = camera_View_Matrix * light_Model_Matrix;
 
 	// light-position is stored in 4th vector
 	vec3 lightPos = vec3( lightMV_Matrix[ 3 ] );
@@ -58,12 +46,12 @@ vec4
 calculatePhong( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
 	// need to transpose light-model matrix to view-space for eye-coordinates 
-	mat4 lightMV_Matrix = viewing_Matrix * lightModel_Matrix;
+	mat4 lightMV_Matrix = camera_View_Matrix * light_Model_Matrix;
 
 	vec3 lightPos = vec3( lightMV_Matrix[ 3 ] );
 	vec3 lightDir = normalize( lightPos - vec3( position ) );
     
-	vec3 eyeDir = normalize( vec3( camera_pos ) - vec3( position ) );
+	vec3 eyeDir = normalize( vec3( camera_Model_Matrix[ 3 ] ) - vec3( position ) );
 	vec3 vHalfVector = normalize( lightDir + eyeDir );
     
 	// calculate attenuation-factor
@@ -78,18 +66,18 @@ void main()
 {
 	// fetch the coordinate of this fragment in normalized
 	// screen-space ( 0 – 1 ) 
-	vec2 screenCoord = vec2( gl_FragCoord.x / screen_width, gl_FragCoord.y / screen_height );
+	vec2 screenCoord = vec2( gl_FragCoord.x / camera_rec.x, gl_FragCoord.y / camera_rec.y );
 
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
 	vec4 normal = texture( NormalMap, screenCoord );
 	vec4 position = texture( GenericMap1, screenCoord );
 
-	vec4 shadowCoord = lightSpaceUniform_Matrix * position;
+	vec4 shadowCoord = light_SpaceUniform_Matrix * position;
 	float shadow = 0.0;
 	float bias = 0.0;
 
 	// spot-light - do perspective shadow-lookup
-	if ( 0.0 == lightConfig.x )
+	if ( 0.0 == light_Config.x )
 	{
 		float lightDepth = textureProj( ShadowMap, shadowCoord );
 
@@ -97,7 +85,7 @@ void main()
 			shadow = 0.5;
 		}
 	}
-	else if ( 1.0 == lightConfig.x )
+	else if ( 1.0 == light_Config.x )
 	{
 		float lightDepth = texture( ShadowMap, shadowCoord );
 

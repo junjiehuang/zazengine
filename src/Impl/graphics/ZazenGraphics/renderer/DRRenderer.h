@@ -168,6 +168,7 @@ class DRRenderer : public Renderer
 
 	// Uniform-Blocks
 	UniformBlock* m_transformsBlock;
+	UniformBlock* m_cameraBlock;
 	UniformBlock* m_lightBlock;
 	UniformBlock* m_materialBlock;
 	////////////////////////////////////////

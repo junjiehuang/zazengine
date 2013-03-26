@@ -1,14 +1,12 @@
 Clean-Up
 - ortho-Proj in renderer (lighting-stage & visualisation of MRT) & camera->restore
 - render shadow-map: clearing of FBO not necessary this way & move drawNone after init
-- remove unnecessary matrices from transform-uniform block
-- split transform-uniform block because it not allways the same e.g. in lighting stage different meaning of modeling!
 - force sky-box perspective projection
 - fix mrt-visualisation
-- lighting stage doesn'tneed load_matrix calls, is done in shader
+- lighting stage doesn't need load_matrix calls, is done in shader
 - set fov of spotlight in xml
 - set height, width + depth of directional light in xml
-- check light-space-matrix: LightPROJECTION * LightVIEWING ( = inverse(LightModeling) ) * UnitCube
+- check light-space-matrix: UnitCube * LightPROJECTION * LightVIEWING 
 
 Basic Graphics
 - shadow-mapping
