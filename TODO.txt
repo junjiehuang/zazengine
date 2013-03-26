@@ -1,27 +1,15 @@
-Game-Functionality
-- allow mutliple scenes which can be changed during runtime. also specify which subsystems are necessary: load/unload them during runtime
+Clean-Up
+- ortho-Proj in renderer (lighting-stage & visualisation of MRT) & camera->restore
+- render shadow-map: clearing of FBO not necessary this way & move drawNone after init
+- remove unnecessary matrices from transform-uniform block
+- split transform-uniform block because it not allways the same e.g. in lighting stage different meaning of modeling!
+- force sky-box perspective projection
+- fix mrt-visualisation
+- lighting stage doesn'tneed load_matrix calls, is done in shader
+- set fov of spotlight in xml
+- set height, width + depth of directional light in xml
+- check light-space-matrix: LightPROJECTION * LightVIEWING ( = inverse(LightModeling) ) * UnitCube
 
-Scenes
-- qualcomm presentation
-- brdf & model gallery
-	-> famous models with all different brdfs placed in scene like in a gallery
-	-> advanced brdfs
-	-> shadowing
-	-> lighting
-- chess
-	-> show the chess-board 
-	-> different material for black & white
-	-> board reflects
-	-> white transparent
-	-> black subsurface scattering brdf
-- rotating hyperdrive
-	-> point light in center
-	-> interesting shadow situation
-- physics
-	-> mesh
-	-> spheres
-	-> oder models fall down
-	
 Basic Graphics
 - shadow-mapping
 - normal-mapping
@@ -52,6 +40,30 @@ Advanced Graphics
 	-> microfacet
 - culling library (Umbra 3)
 
+Game-Functionality
+- allow mutliple scenes which can be changed during runtime. also specify which subsystems are necessary: load/unload them during runtime
+
+Scenes
+- qualcomm presentation
+- brdf & model gallery
+	-> famous models with all different brdfs placed in scene like in a gallery
+	-> advanced brdfs
+	-> shadowing
+	-> lighting
+- chess
+	-> show the chess-board 
+	-> different material for black & white
+	-> board reflects
+	-> white transparent
+	-> black subsurface scattering brdf
+- rotating hyperdrive
+	-> point light in center
+	-> interesting shadow situation
+- physics
+	-> mesh
+	-> spheres
+	-> oder models fall down
+	
 Multithreading
 - make physics processing async
 
