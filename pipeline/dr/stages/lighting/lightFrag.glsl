@@ -70,8 +70,16 @@ void main()
 
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
 	vec4 normal = texture( NormalMap, screenCoord );
+	// position of fragment is stored in model-view coordinates = EyeCoordinates (EC)
+	// EC is what we need for lighting-calculations
 	vec4 ecPosition = texture( GenericMap1, screenCoord );
 
+	// for shadow-mapping we need to transform the position of the fragment to light-space
+	// before we can apply the light-space transformation we first need to apply
+	// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
+	// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
+	// TODO: something is still wrong, maybe we really need the pure local position directly from the 
+	//		 model without ANY matrices applied.
 	vec4 wcPosition = inverse( camera_View_Matrix ) * ecPosition;
 	vec4 shadowCoord = light_SpaceUniform_Matrix * wcPosition;
 	float shadow = 0.0;
