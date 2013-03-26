@@ -906,6 +906,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
+	// TODO remove: can use layout in shader to bind
 	// tell lighting program that diffusemap is bound to texture-unit 0
 	this->m_progLightingStage->setUniformInt( "DiffuseMap", 0 );
 	// tell lighting program that normalmap is bound to texture-unit 1

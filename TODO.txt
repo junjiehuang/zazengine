@@ -7,6 +7,8 @@ Clean-Up
 - set fov of spotlight in xml
 - set height, width + depth of directional light in xml
 - check light-space-matrix: UnitCube * LightPROJECTION * LightVIEWING 
+- do inverse camera view-matrix calculation on CPU and send to Shader using uniform
+- find more high-level approach to send matrices to uniform blocks (no void* & bytecount & offset, encapsulate in some way)
 
 Basic Graphics
 - shadow-mapping

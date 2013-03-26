@@ -70,11 +70,12 @@ void main()
 
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
 	vec4 normal = texture( NormalMap, screenCoord );
-	vec4 position = texture( GenericMap1, screenCoord );
+	vec4 ecPosition = texture( GenericMap1, screenCoord );
 
-	vec4 shadowCoord = light_SpaceUniform_Matrix * position;
+	vec4 wcPosition = inverse( camera_View_Matrix ) * ecPosition;
+	vec4 shadowCoord = light_SpaceUniform_Matrix * wcPosition;
 	float shadow = 0.0;
-	float bias = 0.0;
+	float bias = 0.05;
 
 	// spot-light - do perspective shadow-lookup
 	if ( 0.0 == light_Config.x )
@@ -101,11 +102,11 @@ void main()
 
 		if ( 1.0 == matId )
 		{
-			final_color = calculateLambertian( diffuse, normal, position );
+			final_color = calculateLambertian( diffuse, normal, ecPosition );
 		}
 		else if ( 2.0 == matId )
 		{
-			final_color = calculatePhong( diffuse, normal, position );
+			final_color = calculatePhong( diffuse, normal, ecPosition );
 		}
 		else
 		{
