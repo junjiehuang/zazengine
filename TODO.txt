@@ -12,6 +12,8 @@ Clean-Up
 
 Basic Graphics
 - shadow-mapping
+- add scaling-factor to orientation to allow enlargment or shrinking of models
+- text-rendering
 - normal-mapping
 - other brdfs
 - multiple lights
@@ -44,12 +46,24 @@ Game-Functionality
 - allow mutliple scenes which can be changed during runtime. also specify which subsystems are necessary: load/unload them during runtime
 
 Scenes
-- qualcomm presentation
 - brdf & model gallery
 	-> famous models with all different brdfs placed in scene like in a gallery
 	-> advanced brdfs
 	-> shadowing
 	-> lighting
+	-> find some interesting "skybox" or surrounding model: http://www.3dmodelfree.com/
+
+	Famous models (Stanford http://graphics.stanford.edu/data/3Dscanrep/ & Utah Teapot)
+	-> teapot
+	-> bunny
+	-> dragon
+	-> happy buddah
+	-> armadillo
+	-> lucy
+	-> Asian Dragon
+	-> Thai Statue
+
+- qualcomm presentation
 - chess
 	-> show the chess-board 
 	-> different material for black & white
