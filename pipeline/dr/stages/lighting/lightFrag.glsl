@@ -78,9 +78,14 @@ void main()
 	// before we can apply the light-space transformation we first need to apply
 	// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
 	// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
-	// TODO: something is still wrong, maybe we really need the pure local position directly from the 
-	//		 model without ANY matrices applied.
 	vec4 wcPosition = inverse( camera_View_Matrix ) * ecPosition;
+	// TODO: we are only in clip-space, need to divide by w to reach NDC.
+	// normally the forward-rendering shadow-mapping calculates the shadow-coord
+	// in the vertex-shader, which is not possible in the deferred renderer without using 
+	// an additional render-target. in forward-rendering between the vertex-shader
+	// and the fragment-shader where the shadow-map lookup happens
+	// interpolation & perspective division is carried out by the fixed-function
+	// so we need to do this here in the fragment-shader of the deferred renderer as well
 	vec4 shadowCoord = light_SpaceUniform_Matrix * wcPosition;
 	float shadow = 0.0;
 	float bias = 0.05;
