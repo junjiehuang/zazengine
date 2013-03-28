@@ -265,31 +265,13 @@
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag_backup.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
-    </None>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert_backup.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag_backup.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag_new.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
-    </None>
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert_backup.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert_new.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowFrag.glsl">

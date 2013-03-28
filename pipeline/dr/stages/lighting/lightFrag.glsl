@@ -69,7 +69,8 @@ void main()
 	vec2 screenCoord = vec2( gl_FragCoord.x / camera_rec.x, gl_FragCoord.y / camera_rec.y );
 
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
-	vec4 normal = texture( NormalMap, screenCoord );
+	// IMPORTANT: need to normalize normals due to possible uniform-scaling applied to models
+	vec4 normal = normalize( texture( NormalMap, screenCoord ) );
 	// position of fragment is stored in model-view coordinates = EyeCoordinates (EC)
 	// EC is what we need for lighting-calculations
 	vec4 ecPosition = texture( GenericMap1, screenCoord );
@@ -82,7 +83,7 @@ void main()
 	vec4 shadowCoord = light_SpaceUniform_Matrix * wcPosition;
 
 	float shadow = 0.0;
-	float bias = 0.05;
+	float bias = 0.0001;
 
 	shadowCoord.z -= bias;
 

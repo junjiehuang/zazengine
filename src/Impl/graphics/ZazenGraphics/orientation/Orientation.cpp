@@ -165,17 +165,13 @@ Orientation::strafeY( float units )
 }
 
 void
-Orientation::set( const glm::vec3& pos, float pitch, float heading, float roll )
+Orientation::set( const glm::vec3& pos, float pitch, float heading, float roll, float scale )
 {
 	float* data = glm::value_ptr( this->m_matrix );
-
+	
+	this->m_matrix = glm::scale( this->m_matrix, glm::vec3( scale ) );
 	this->m_matrix = glm::rotate( this->m_matrix, pitch, glm::vec3( 1, 0, 0 ) );
-
-	//this->m_matrix = glm::rotate( this->m_matrix, heading, glm::vec3( 0, 1, 0 ) );
-
-
-	//this->m_matrix = glm::rotate( this->m_matrix, roll, glm::vec3( 0, 0, 1 ) );
-
+	
 	data[ 12 ] = pos[ 0 ];
 	data[ 13 ] = pos[ 1 ];
 	data[ 14 ] = pos[ 2 ];

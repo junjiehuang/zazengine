@@ -49,7 +49,7 @@ class Orientation
 	void strafeY( float );
 	void strafeUp( float );
 
-	void set( const glm::vec3& pos, float pitch, float heading, float roll );
+	void set( const glm::vec3& pos, float pitch, float heading, float roll, float scale );
 	void setRaw( const float* rotation, const float* position );
 
 	const glm::mat4& getMatrix() { return this->m_matrix; };

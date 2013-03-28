@@ -71,6 +71,9 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
+	// IMPORTANT: need to set the viewport for each FBO
+	glViewport( 0, 0, this->m_camera->getWidth(), this->m_camera->getHeight() );
+
 	if ( false == this->m_fbo->clearAll() )
 	{
 		return false;
@@ -774,6 +777,9 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>&
 	while ( iter != lights.end() )
 	{
 		Light* light = *iter++;
+
+		// IMPORTANT: need to set the viewport for each FBO
+		glViewport( 0, 0, light->getWidth(), light->getHeight() );
 
 		// render scene from view of camera - don't apply material, don't render transparency
 		if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, false ) )

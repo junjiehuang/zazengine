@@ -8,15 +8,17 @@ Clean-Up
 - set height, width + depth of directional light in xml
 - do inverse camera view-matrix calculation on CPU and send to Shader using uniform
 - find more high-level approach to send matrices to uniform blocks (no void* & bytecount & offset, encapsulate in some way)
-
+- glViewport-call clenaup
+- shadowing of sky-box not wanted
+	
 Basic Graphics
 - shadow-mapping
-	-> allow various resolutions of shadow-maps. FBO must have same resolution!
+	-> self-shadowing doe no more work!
+	-> correct lighting&shadowing equations: falloff, cone, ...
 	-> do some sampling on shadow-edges
-- add scaling-factor to orientation to allow enlargment or shrinking of models
-- text-rendering
 - normal-mapping
 - other brdfs
+- text-rendering
 - multiple lights
 	-> point-light boundary
 	-> spot-light boundary

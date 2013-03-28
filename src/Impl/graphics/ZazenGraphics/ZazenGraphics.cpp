@@ -428,6 +428,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		float roll = 0.0f;
 		float pitch = 0.0f;
 		float heading = 0.0f;
+		float scale = 1.0f;
 
 		const char* str = orientationNode->Attribute( "x" );
 		if ( 0 != str )
@@ -477,7 +478,17 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			pitch = ( float ) atof( str );
 		}
 
-		entity->m_orientation->set( v, pitch, heading, roll );
+		str = orientationNode->Attribute( "scale" );
+		if ( 0 == str )
+		{
+			cout << "INFO ... scale attribute missing in orientation - use default " << endl;
+		}
+		else
+		{
+			scale = ( float ) atof( str );
+		}
+
+		entity->m_orientation->set( v, pitch, heading, roll, scale );
 	}
 
 	TiXmlElement* animationNode = objectNode->FirstChildElement( "animation" );

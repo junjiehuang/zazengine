@@ -131,15 +131,9 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag_backup.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert_backup.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag_backup.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag_new.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert_backup.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert_new.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpGeom.glsl" />
