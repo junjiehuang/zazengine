@@ -25,10 +25,10 @@ Viewer::~Viewer()
 {
 }
 
+// TODO remove when fixed-functionality is gone
 void
-Viewer::restore()
+Viewer::restoreMatrixStack()
 {
-	// TODO: remove this fixed-function stuff
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
 
@@ -38,21 +38,34 @@ Viewer::restore()
 	glLoadIdentity();
 }
 
+
+glm::mat4
+Viewer::createPerspProj() const
+{
+	return glm::perspective( this->fov, ( float ) this->width / ( float ) this->height, this->nearDist, this->farDist );
+}
+
+glm::mat4
+Viewer::createOrthoProj() const
+{
+	float halfWidth = ( float ) this->width / 2.0f;
+	float halfHeight = ( float ) this->height / 2.0f;
+
+	return glm::ortho( -halfWidth, halfWidth, -halfHeight, halfHeight, -500.0f, 500.0f );
+}
+
 void
 Viewer::setupPerspective()
 {
-	this->m_projectionMatrix = glm::perspective( this->fov, ( float ) this->width / ( float ) this->height, this->nearDist, this->farDist );
-	this->restore();
+	this->m_projectionMatrix = this->createPerspProj();
+	this->restoreMatrixStack(); // TODO remove should not be necessary
 }
 
 void
 Viewer::setupOrtho()
 {
-	float halfWidth = ( float ) this->width / 2.0f;
-	float halfHeight = ( float ) this->height / 2.0f;
-
-	this->m_projectionMatrix = glm::ortho( -halfWidth, halfWidth, -halfHeight, halfHeight, -500.0f, 500.0f );
-	this->restore();
+	this->m_projectionMatrix = this->createOrthoProj();
+	this->restoreMatrixStack(); // TODO remove should not be necessary
 }
 
 void

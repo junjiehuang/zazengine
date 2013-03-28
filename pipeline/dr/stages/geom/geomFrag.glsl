@@ -7,6 +7,7 @@ in vec2 ex_texCoord;
 uniform sampler2D DiffuseTexture;
 uniform sampler2D NormalMap;
 
+// OPTIMIZE: remove bindfraglocation in init
 layout( location = 0 ) out vec4 out_diffuse;
 layout( location = 1 ) out vec4 out_normal;
 layout( location = 2 ) out vec4 out_generic1;

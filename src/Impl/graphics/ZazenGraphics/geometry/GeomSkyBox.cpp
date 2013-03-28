@@ -109,20 +109,28 @@ bool
 GeomSkyBox::render()
 {
 	Viewer& cam = ZazenGraphics::getInstance().getCamera();
-	float* data = glm::value_ptr( cam.m_viewMatrix );
 
+	// disable depth-writing, sky-box is ALWAYS behind everything else
 	glDisable( GL_DEPTH_TEST );
 	glDisable( GL_CULL_FACE );
 
-	float xPos = data[ 12 ];
-	float yPos = data[ 13 ];
-	float zPos = data[ 14 ];
+	// force projective-projection in sky-box (camera could have ortho)
+	glm::mat4 projMat = ZazenGraphics::getInstance().getCamera().createPerspProj();
+	// reset modelview back to origin, to stick with camera, sky-box is so far away that it doesn't move
+	glm::mat4 modelViewMat = cam.m_viewMatrix;
+	modelViewMat[ 3 ][ 0 ] = 0.0f;
+	modelViewMat[ 3 ][ 1 ] = 0.0f;
+	modelViewMat[ 3 ][ 2 ] = 0.0f;
 
-	data[ 12 ] = 0.0f;
-	data[ 13 ] = 0.0f;
-	data[ 14 ] = 0.0f;
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity();
 
-	glLoadMatrixf( data );
+	glLoadMatrixf( glm::value_ptr( projMat ) );
+
+	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity();
+
+	glLoadMatrixf( glm::value_ptr( modelViewMat ) );
 
 	// Front Face
 	this->m_front->bind( 0 );
@@ -221,15 +229,13 @@ GeomSkyBox::render()
 	this->m_left->unbind();
 	/////////////////////////
 
-	data[ 12 ] = xPos;
-	data[ 13 ] = yPos;
-	data[ 14 ] = zPos;
-
-	glLoadMatrixf( data );
-
 	// activate z-buffering and face culling
 	glEnable( GL_DEPTH_TEST );
 	glEnable( GL_CULL_FACE );
+
+	// restore matrix stack for future uses
+	// TODO try if we can remove it
+	ZazenGraphics::getInstance().getCamera().restoreMatrixStack();
 
 	return true;
 }

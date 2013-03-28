@@ -18,11 +18,12 @@ layout( shared ) uniform transforms
 
 void main()
 {
-	// note that due to multiplication with modelView only and without projection
+	// NOTE: that due to multiplication with modelView only and without projection
 	// only interpoation between vertices will happen but no perspective division
 	ex_position = modelView_Matrix * vec4( in_vertPos, 1.0 );
 	ex_normal = normalsModelView_Matrix * vec4( in_vertNorm, 0.0 );
 	ex_texCoord = in_texCoord;
 
+	// OPTIMIZE: premultiply projection & modelView on CPU 
 	gl_Position = projection_Matrix * modelView_Matrix * vec4( in_vertPos, 1.0 );
 }

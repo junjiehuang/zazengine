@@ -12,6 +12,6 @@ layout( shared ) uniform transforms
 
 void main()
 {
-	// only apply projection-matrix because we do orthogonal quad rendering and apply no modeling
+	// HINT: only apply projection-matrix because we do orthogonal quad rendering and apply no modeling
 	gl_Position = projection_Matrix * vec4( in_vertPos, 1.0 );
 }

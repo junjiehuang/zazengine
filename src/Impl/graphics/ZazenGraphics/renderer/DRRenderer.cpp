@@ -1012,7 +1012,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	this->m_fbo->unbindAllTargets();
 
 	// back to perspective
-	this->m_camera->restore();
+	this->m_camera->restoreMatrixStack();
 
 	return true;
 }
@@ -1132,7 +1132,7 @@ DRRenderer::showTexture( GLuint texID, int quarter )
 		return false;
 	}
 
-	// set up orthogonal projection to render quad
+	// TODO remove set up orthogonal projection to render quad
 	glm::mat4 orthoMat = glm::ortho( 0.0f, ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight(), 0.0f, -1.0f, 1.0f );
 
 	glMatrixMode( GL_PROJECTION );
@@ -1175,7 +1175,7 @@ DRRenderer::showTexture( GLuint texID, int quarter )
 	}
 
 	// switch back to perspective projection
-	this->m_camera->restore();
+	this->m_camera->restoreMatrixStack();
 
 	return true;
 }

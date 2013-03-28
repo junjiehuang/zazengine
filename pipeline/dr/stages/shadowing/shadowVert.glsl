@@ -12,5 +12,6 @@ layout( shared ) uniform transforms
 
 void main()
 {
+	// OPTIMIZE: premultiply projection & modelView on CPU 
 	gl_Position = projection_Matrix * modelView_Matrix * vec4( in_vertPos, 1.0 );
 }

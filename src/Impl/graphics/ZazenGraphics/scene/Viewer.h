@@ -45,7 +45,7 @@ class Viewer : public Orientation
 	glm::mat4 m_VPMatrix;
 	glm::mat4 m_MVPMatrix;
 
-	void restore();
+	void restoreMatrixStack();
     void setupPerspective();
     void setupOrtho();
 
@@ -58,6 +58,9 @@ class Viewer : public Orientation
 	void setFar( float farDist ) { this->farDist = farDist; };
 	
 	void resize( int, int );
+
+	glm::mat4 createPerspProj() const;
+	glm::mat4 createOrthoProj() const;
 
 	CullResult cullBB( const glm::vec3&, const glm::vec3& );
 

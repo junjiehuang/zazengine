@@ -13,6 +13,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zaZenOIS", "Impl\input\zaZe
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zaZenFMod", "Impl\audio\zaZenFMod\FMod.vcxproj", "{ACFAB442-6334-4B8E-A755-F0B1F0DB8AE6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{BD6407B5-56EC-441A-A315-83D4E95988CE}"
+	ProjectSection(SolutionItems) = preProject
+		..\INSTALL.txt = ..\INSTALL.txt
+		..\TODO.txt = ..\TODO.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32

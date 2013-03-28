@@ -1,16 +1,20 @@
 Clean-Up
-- ortho-Proj in renderer (lighting-stage & visualisation of MRT) & camera->restore
-- render shadow-map: clearing of FBO not necessary this way & move drawNone after init
-- force sky-box perspective projection
-- fix mrt-visualisation
+- check if restorematrixstack calls can be removed
 - lighting stage doesn't need load_matrix calls, is done in shader
+- ortho-Proj in renderer (lighting-stage & visualisation of MRT) & camera->restore
+- fix mrt-visualisation
+- render shadow-map: clearing of FBO not necessary this way & move drawNone after init
 - set fov of spotlight in xml
 - set height, width + depth of directional light in xml
-- do inverse camera view-matrix calculation on CPU and send to Shader using uniform
 - find more high-level approach to send matrices to uniform blocks (no void* & bytecount & offset, encapsulate in some way)
 - glViewport-call clenaup
 - shadowing of sky-box not wanted
-	
+- const-completeness (add const to inline methods were appropriate)
+- replace all strcmp with boost:iequals
+- keep id, type & core in ISubSystem as readable
+- remove friend-initialisation bullshit from entities
+
+
 Basic Graphics
 - shadow-mapping
 	-> self-shadowing doe no more work!
@@ -88,10 +92,6 @@ Scripting
 - TODO
 
 Code-Quality
-- replace all strcmp with boost:iequals
-- add const to inline methods were appropriate
-- keep id, type & core in ISubSystem as readable
-- remove friend-initialisation bullshit from entities
 - project buildable as RELEASE
 - check if everything is cleaned up when a subsystem cannot be initialized
 - A GOOD SOLUTION FOR THE PROBLEM OF INCLUDING TINY-XML IN ALL SUBSYSTEMS
