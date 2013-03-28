@@ -321,6 +321,35 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 
 			Light* light = 0;
 
+			bool castShadow = false;
+			float fov = 90.0f;
+			int shadowMapResX = 800;
+			int shadowMapResY = 800;
+
+			TiXmlElement* shadowingNode = objectNode->FirstChildElement( "shadowing" );
+			if ( shadowingNode )
+			{
+				castShadow = true;
+
+				str = shadowingNode->Attribute( "fov" );
+				if ( 0 != str )
+				{
+					fov = ( float ) atof( str );
+				}
+
+				str = shadowingNode->Attribute( "resMapX" );
+				if ( 0 != str )
+				{
+					shadowMapResX = atoi( str );
+				}
+
+				str = shadowingNode->Attribute( "resMapY" );
+				if ( 0 != str )
+				{
+					shadowMapResY = atoi( str );
+				}
+			}
+
 			if ( lightType == "DIRECTIONAL" )
 			{
 				light = Light::createDirectionalLight( RenderingWindow::getRef().getWidth(), RenderingWindow::getRef().getHeight() );
@@ -333,7 +362,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			// default is spot
 			else
 			{
-				light = Light::createSpotLight( 90, RenderingWindow::getRef().getWidth(), RenderingWindow::getRef().getHeight() );
+				light = Light::createSpotLight( fov, shadowMapResX, shadowMapResY );
 			}
 
 			entity->m_orientation = light;

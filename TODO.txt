@@ -6,12 +6,13 @@ Clean-Up
 - lighting stage doesn't need load_matrix calls, is done in shader
 - set fov of spotlight in xml
 - set height, width + depth of directional light in xml
-- check light-space-matrix: UnitCube * LightPROJECTION * LightVIEWING 
 - do inverse camera view-matrix calculation on CPU and send to Shader using uniform
 - find more high-level approach to send matrices to uniform blocks (no void* & bytecount & offset, encapsulate in some way)
 
 Basic Graphics
 - shadow-mapping
+	-> allow various resolutions of shadow-maps. FBO must have same resolution!
+	-> do some sampling on shadow-edges
 - add scaling-factor to orientation to allow enlargment or shrinking of models
 - text-rendering
 - normal-mapping

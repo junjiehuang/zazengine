@@ -79,37 +79,44 @@ void main()
 	// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
 	// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
 	vec4 wcPosition = inverse( camera_View_Matrix ) * ecPosition;
-	// TODO: we are only in clip-space, need to divide by w to reach NDC.
-	// normally the forward-rendering shadow-mapping calculates the shadow-coord
-	// in the vertex-shader, which is not possible in the deferred renderer without using 
-	// an additional render-target. in forward-rendering between the vertex-shader
-	// and the fragment-shader where the shadow-map lookup happens
-	// interpolation & perspective division is carried out by the fixed-function
-	// so we need to do this here in the fragment-shader of the deferred renderer as well
 	vec4 shadowCoord = light_SpaceUniform_Matrix * wcPosition;
+
 	float shadow = 0.0;
 	float bias = 0.05;
+
+	shadowCoord.z -= bias;
 
 	// spot-light - do perspective shadow-lookup
 	if ( 0.0 == light_Config.x )
 	{
-		float lightDepth = textureProj( ShadowMap, shadowCoord );
-
-		if ( lightDepth < ( shadowCoord.z - bias ) / shadowCoord.w ) {
-			shadow = 0.5;
-		}
+		// IMPORTANT: we are only in clip-space, need to divide by w to reach projected NDC.
+		// normally the forward-rendering shadow-mapping calculates the shadow-coord
+		// in the vertex-shader, which is not possible in the deferred renderer without using 
+		// an additional render-target. in forward-rendering between the vertex-shader
+		// and the fragment-shader where the shadow-map lookup happens
+		// interpolation & perspective division is carried out by the fixed-function
+		// so we need to do this here in the fragment-shader of the deferred renderer as well
+		// ADDITION: either use 	
+		//		vec3 shadowCoordPersp = shadowCoord.xyz / shadowCoord.w; with texture( ShadowMap, shadowCoordPersp ) lookup 
+		//		OR use textureProj( ShadowMap, shadowCoord ); directly
+		
+		// IMPORTANT: because we installed a compare-function on this shadow-sampler
+		// we don't need to compare it anymore to the z-value of the shadow-coord
+		shadow = textureProj( ShadowMap, shadowCoord );
 	}
 	else if ( 1.0 == light_Config.x )
 	{
-		float lightDepth = texture( ShadowMap, shadowCoord );
-
-		if ( lightDepth < shadowCoord.z - bias ) {
-			shadow = 0.5;
-		}
+		// IMPORTANT: directionaly light uses orthogonal shadow-map so 
+		// transformation of position to shadow-coord is orthgonal projection too
+		// so no need for perspective lookup (or divide) because orthogonal 
+		// projection has 1 at w so there won't be a foreshortening of values
+		// IMPORTANT: because we installed a compare-function on this shadow-sampler
+		// we don't need to compare it anymore to the z-value of the shadow-coord
+		shadow = texture( ShadowMap, shadowCoord );
 	}
 
 	// not in shadow
-	if ( shadow == 0.0 )
+	if ( shadow != 0.0 )
 	{
 		float matId = diffuse.a * 255;
 
@@ -128,7 +135,7 @@ void main()
 	}
 	else
 	{
-		final_color.rgb = diffuse.rgb * 0.5;
+		final_color = calculateLambertian( diffuse, normal, ecPosition );
 		final_color.a = 1.0;
 	}
 }
