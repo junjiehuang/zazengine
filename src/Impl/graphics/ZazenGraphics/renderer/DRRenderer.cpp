@@ -926,18 +926,8 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
 	this->m_progLightingStage->setUniformInt( "ShadowMap", MRT_COUNT + 1 );
 
-	glm::mat4 orthoMat = glm::ortho( 0.0f, ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight(), 0.0f, -1.0f, 1.0f );
-
-	// TODO do we really need those?
-	glMatrixMode( GL_PROJECTION );
-	glLoadIdentity();
-
-	glLoadMatrixf( glm::value_ptr( orthoMat ) );
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
 	// update projection-matrix because changed to orthogonal-projection
+	glm::mat4 orthoMat = this->m_camera->createOrthoProj( false, true );
 	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( orthoMat ), 64, 64 ) )
 	{
 		return false;
@@ -1010,9 +1000,6 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	}
 
 	this->m_fbo->unbindAllTargets();
-
-	// back to perspective
-	this->m_camera->restoreMatrixStack();
 
 	return true;
 }
@@ -1132,9 +1119,7 @@ DRRenderer::showTexture( GLuint texID, int quarter )
 		return false;
 	}
 
-	// TODO remove set up orthogonal projection to render quad
-	glm::mat4 orthoMat = glm::ortho( 0.0f, ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight(), 0.0f, -1.0f, 1.0f );
-
+	glm::mat4 orthoMat = this->m_camera->createOrthoProj( false, true );
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
 
@@ -1173,9 +1158,6 @@ DRRenderer::showTexture( GLuint texID, int quarter )
 			counter++;
 		}
 	}
-
-	// switch back to perspective projection
-	this->m_camera->restoreMatrixStack();
 
 	return true;
 }

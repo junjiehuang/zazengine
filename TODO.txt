@@ -1,14 +1,10 @@
 Clean-Up
-- check if restorematrixstack calls can be removed
-- lighting stage doesn't need load_matrix calls, is done in shader
-- ortho-Proj in renderer (lighting-stage & visualisation of MRT) & camera->restore
 - fix mrt-visualisation
-- render shadow-map: clearing of FBO not necessary this way & move drawNone after init
-- set fov of spotlight in xml
-- set height, width + depth of directional light in xml
 - find more high-level approach to send matrices to uniform blocks (no void* & bytecount & offset, encapsulate in some way)
+- render shadow-map: clearing of FBO not necessary this way & move drawNone after init
 - glViewport-call clenaup
 - shadowing of sky-box not wanted
+
 - const-completeness (add const to inline methods were appropriate)
 - replace all strcmp with boost:iequals
 - keep id, type & core in ISubSystem as readable

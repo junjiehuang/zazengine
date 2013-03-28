@@ -45,22 +45,21 @@ class Viewer : public Orientation
 	glm::mat4 m_VPMatrix;
 	glm::mat4 m_MVPMatrix;
 
-	void restoreMatrixStack();
     void setupPerspective();
     void setupOrtho();
 
-    const int& getHeight() const { return this->height; };
-    const int& getWidth() const { return this->width; };
+    const int& getHeight() const { return this->m_height; };
+    const int& getWidth() const { return this->m_width; };
 
-    void setFov( float fov ) { this->fov = fov; };
+    void setFov( float fov ) { this->m_fov = fov; };
 
-	void setNear( float nearDist ) { this->nearDist = nearDist; };
-	void setFar( float farDist ) { this->farDist = farDist; };
+	void setNear( float nearDist ) { this->m_nearDist = nearDist; };
+	void setFar( float farDist ) { this->m_farDist = farDist; };
 	
 	void resize( int, int );
 
 	glm::mat4 createPerspProj() const;
-	glm::mat4 createOrthoProj() const;
+	glm::mat4 createOrthoProj( bool, bool ) const;
 
 	CullResult cullBB( const glm::vec3&, const glm::vec3& );
 
@@ -69,13 +68,13 @@ class Viewer : public Orientation
 	virtual void matrixChanged();
 	
  private:
-	int width;
-	int height;
+	int m_width;
+	int m_height;
 
-	float fov;
+	float m_fov;
 
-	float nearDist;
-	float farDist;
+	float m_nearDist;
+	float m_farDist;
 	
 };
 

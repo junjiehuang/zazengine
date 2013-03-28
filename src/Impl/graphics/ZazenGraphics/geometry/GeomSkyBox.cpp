@@ -233,9 +233,5 @@ GeomSkyBox::render()
 	glEnable( GL_DEPTH_TEST );
 	glEnable( GL_CULL_FACE );
 
-	// restore matrix stack for future uses
-	// TODO try if we can remove it
-	ZazenGraphics::getInstance().getCamera().restoreMatrixStack();
-
 	return true;
 }

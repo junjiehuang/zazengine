@@ -12,67 +12,72 @@ using namespace std;
 Viewer::Viewer( int width, int height )
 	: Orientation( m_modelMatrix )
 {
-	this->width = width;
-	this->height = height;
+	this->m_width = width;
+	this->m_height = height;
 
-	this->nearDist = 1;
-	this->farDist = 1000;
+	this->m_nearDist = 1;
+	this->m_farDist = 1000;
 
-	this->fov = 90.0f;
+	this->m_fov = 90.0f;
 }
 
 Viewer::~Viewer()
 {
 }
 
-// TODO remove when fixed-functionality is gone
-void
-Viewer::restoreMatrixStack()
-{
-	glMatrixMode( GL_PROJECTION );
-	glLoadIdentity();
-
-	glLoadMatrixf( glm::value_ptr( this->m_projectionMatrix ) );
-
-	glMatrixMode( GL_MODELVIEW );
-	glLoadIdentity();
-}
-
-
 glm::mat4
 Viewer::createPerspProj() const
 {
-	return glm::perspective( this->fov, ( float ) this->width / ( float ) this->height, this->nearDist, this->farDist );
+	return glm::perspective( this->m_fov, ( float ) this->m_width / ( float ) this->m_height, this->m_nearDist, this->m_farDist );
 }
 
 glm::mat4
-Viewer::createOrthoProj() const
+Viewer::createOrthoProj( bool centered, bool normalizeZ ) const
 {
-	float halfWidth = ( float ) this->width / 2.0f;
-	float halfHeight = ( float ) this->height / 2.0f;
+	float left = 0.0f;
+	float right = ( float ) this->m_width;
+	float bottom = ( float ) this->m_height;
+	float top = 0.0f;
+	float zNear = this->m_nearDist;
+	float zFar = this->m_farDist;
 
-	return glm::ortho( -halfWidth, halfWidth, -halfHeight, halfHeight, -500.0f, 500.0f );
+	if ( centered ) 
+	{
+		float halfWidth = ( float ) this->m_width / 2.0f;
+		float halfHeight = ( float ) this->m_width / 2.0f;
+
+		left = -halfWidth;
+		right = halfWidth;
+		bottom = -halfHeight;
+		top = halfHeight;
+	}
+
+	if ( normalizeZ )
+	{
+		zNear = -1.0;
+		zFar = 1.0;
+	}
+
+	return glm::ortho( left, right, bottom, top, zNear, zFar );
 }
 
 void
 Viewer::setupPerspective()
 {
 	this->m_projectionMatrix = this->createPerspProj();
-	this->restoreMatrixStack(); // TODO remove should not be necessary
 }
 
 void
 Viewer::setupOrtho()
 {
-	this->m_projectionMatrix = this->createOrthoProj();
-	this->restoreMatrixStack(); // TODO remove should not be necessary
+	this->m_projectionMatrix = this->createOrthoProj( true, false );
 }
 
 void
 Viewer::resize( int width, int height )
 {
-	this->width = width;
-	this->height = height;
+	this->m_width = width;
+	this->m_height = height;
 }
 
 /* Not correctly working yet ( and pretty slow )
