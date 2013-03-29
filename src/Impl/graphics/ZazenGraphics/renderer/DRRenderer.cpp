@@ -703,6 +703,10 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 	{
 		this->m_camera->restoreViewport();
 
+		glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+		glClearColor( 0.0, 0.0, 0.0, 1.0 );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
 		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 0 ]->getId(), 0 ) )
 		{
 			return false;
