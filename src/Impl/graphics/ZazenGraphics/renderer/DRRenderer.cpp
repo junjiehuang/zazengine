@@ -58,76 +58,6 @@ DRRenderer::~DRRenderer()
 {
 }
 
-// TODO cleanup this method!
-bool
-DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights )
-{
-	if ( false == this->renderShadowMap( instances, lights ) )
-	{
-		return false;
-	}
-	
-	if ( false == this->m_fbo->bind() )
-	{
-		return false;
-	}
-
-	// IMPORTANT: need to set the viewport for each FBO
-	this->m_camera->restoreViewport();
-
-	if ( false == this->m_fbo->clearAll() )
-	{
-		return false;
-	}
-
-	if ( false == this->m_fbo->unbind() )
-	{
-		return false;
-	}
-
-	if ( false == this->renderSkyBox() )
-	{
-		return false;
-	}
-
-	if ( false == this->renderGeometryStage( instances, lights ) )
-	{
-		return false;
-	}
-
-	if ( false == this->m_displayMRT ) 
-	{
-		if ( false == this->renderLightingStage( instances, lights ) )
-		{
-			return false;
-		}
-	}
-	else
-	{
-		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 0 ]->getId(), 0 ) )
-		{
-			return false;
-		}
-		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 1 ]->getId(), 1 ) )
-		{
-			return false;
-		}
-		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 2 ]->getId(), 2 ) )
-		{
-			return false;
-		}
-		if ( false == this->showTexture( this->m_fbo->getAttachedDepthTarget()->getId(), 3 ) )
-		{
-			return false;
-		}
-	}
-	
-
-	this->frame++;
-
-	return true;
-}
-
 bool
 DRRenderer::toggleDisplay()
 {
@@ -725,6 +655,79 @@ DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType )
 	return true;
 }
 
+// TODO cleanup this method!
+bool
+DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights )
+{
+	if ( false == this->renderShadowMap( instances, lights ) )
+	{
+		return false;
+	}
+	
+	if ( false == this->m_fbo->bind() )
+	{
+		return false;
+	}
+
+	// IMPORTANT: need to set the viewport for each FBO
+	this->m_camera->restoreViewport();
+
+	if ( false == this->m_fbo->clearAll() )
+	{
+		return false;
+	}
+
+	if ( false == this->m_fbo->unbind() )
+	{
+		return false;
+	}
+
+	if ( false == this->renderSkyBox() )
+	{
+		return false;
+	}
+
+	if ( false == this->renderGeometryStage( instances, lights ) )
+	{
+		return false;
+	}
+
+	if ( false == this->m_displayMRT ) 
+	{
+		if ( false == this->renderLightingStage( instances, lights ) )
+		{
+			return false;
+		}
+	}
+	else
+	{
+		this->m_camera->restoreViewport();
+
+		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 0 ]->getId(), 0 ) )
+		{
+			return false;
+		}
+		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 1 ]->getId(), 1 ) )
+		{
+			return false;
+		}
+		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 2 ]->getId(), 2 ) )
+		{
+			return false;
+		}
+		if ( false == this->showTexture( this->m_fbo->getAttachedDepthTarget()->getId(), 3 ) )
+		{
+			return false;
+		}
+	}
+
+	this->frame++;
+
+	return true;
+}
+
+// TODO optimize this method, no need to bind, clear, bindattachment, unbind, bind and draw, could be done in one setup
+// refactor: rendershadowmap for one light & called during lighting-stage for each light
 bool
 DRRenderer::renderShadowMap( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
