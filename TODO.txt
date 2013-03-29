@@ -1,8 +1,12 @@
+502 calls/frame
+
 Refactoring, Fixing & Clean-Up
-- for each data-update on uniform-block bind&unbind is called: this is too much overhead
 - caching of uniform-locations in program: only need for one lookup!
 - glViewport-call clenaup
 - fix mrt-visualisation
+- reduce OpenGL-Calls
+	-> check if all unbinds are really necessary
+- remove ALL legacy calls: create hard-coded vertex-arrays for sky-box, full-screen quad & mrt-visualiation (see geom-type renderBB() )
 
 - render shadow-map: clearing of FBO not necessary this way & move drawNone after init
 - do shadow-map generation of light during lighting-pass of each light

@@ -898,6 +898,11 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	cameraRectangle[ 0 ] = ( float ) this->m_camera->getWidth();
 	cameraRectangle[ 1 ] = ( float ) this->m_camera->getHeight();
 
+	if ( false == this->m_cameraBlock->bindBuffer() )
+	{
+		return false;
+	}
+
 	// upload world-orientation of camera ( its model-matrix )
 	if ( false == this->m_cameraBlock->updateMat4( this->m_camera->getMatrix(), 0 ) )
 	{
@@ -927,6 +932,8 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	this->m_progLightingStage->setUniformInt( "DepthMap", MRT_COUNT );
 	// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
 	this->m_progLightingStage->setUniformInt( "ShadowMap", MRT_COUNT + 1 );
+
+	this->m_transformsBlock->bind();
 
 	// update projection-matrix because changed to orthogonal-projection
 	glm::mat4 orthoMat = this->m_camera->createOrthoProj( false, true );
@@ -964,6 +971,11 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		// calculate the light-space projection matrix
 		// multiplication with unit-cube is first because has to be carried out the last
 		lightSpaceUnit = this->m_unitCubeMatrix * light->m_VPMatrix;
+
+		if ( false == this->m_lightBlock->bindBuffer() )
+		{
+			return false;
+		}
 
 		if ( false == this->m_lightBlock->updateVec4( lightConfig, 0 ) )
 		{
@@ -1010,6 +1022,11 @@ bool
 DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program* currentProgramm, 
 		bool applyMaterial, bool transparencyPass )
 {
+	if ( false == this->m_transformsBlock->bindBuffer() )
+	{
+		return false;
+	}
+
 	if ( false == this->m_transformsBlock->updateMat4( viewer->m_projectionMatrix, 64 ) )
 	{
 		return false;
@@ -1043,7 +1060,17 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 
 		if ( activeMaterial )
 		{
+			if ( false == this->m_materialBlock->bindBuffer() )
+			{
+				return false;
+			}
+
 			if ( false == instance->material->activate( this->m_materialBlock, currentProgramm ) )
+			{
+				return false;
+			}
+
+			if ( false == this->m_transformsBlock->bindBuffer() )
 			{
 				return false;
 			}

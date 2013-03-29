@@ -128,14 +128,21 @@ Program::bindUniformBlock( UniformBlock* block )
 
 	glGetActiveUniformBlockiv( this->m_programObject, index, GL_UNIFORM_BLOCK_DATA_SIZE, &uniformBlockSize );
 
+	if ( false == block->bindBuffer() )
+	{
+		return false;
+	}
+
 	// create the UBO
 	if ( false == block->updateData( 0, uniformBlockSize ) )
 	{
 		return false;
 	}
 
-	//if ( false == block->bind( index ) )
-	//	return false;
+	if ( false == block->unbindBuffer() )
+	{
+		return false;
+	}
 
 	glUniformBlockBinding( this->m_programObject, index,  block->getBinding() );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )

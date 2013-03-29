@@ -77,21 +77,11 @@ UniformBlock::updateData( const void* data, int offset, int size )
 {
 	GLint status;
 
-	if ( false == this->bindBuffer() )
-	{
-		return false;
-	}
-
 	glBufferSubData( GL_UNIFORM_BUFFER, offset, size, data );
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\": " << gluErrorString( status )  << endl;
-		return false;
-	}
-
-	if ( false == this->unbindBuffer() )
-	{
 		return false;
 	}
 
@@ -103,21 +93,11 @@ UniformBlock::updateData( const void* data, int size )
 {
 	GLint status;
 
-	if ( false == this->bindBuffer() )
-	{
-		return false;
-	}
-
 	glBufferData( GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW );
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\": " << gluErrorString( status )  << endl;
-		return false;
-	}
-
-	if ( false == this->unbindBuffer() )
-	{
 		return false;
 	}
 
