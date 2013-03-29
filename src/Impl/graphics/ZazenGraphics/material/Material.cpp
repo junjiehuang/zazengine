@@ -226,22 +226,22 @@ Material::activate( UniformBlock* materialUniforms, Program* currentProgramm )
 	materialCfg[ 1 ] = this->m_diffuseTexture == 0 ? 0.0f : 1.0f;
 	materialCfg[ 2 ] = this->m_normalMap == 0 ? 0.0f : 1.0f;
 
-	if ( false == materialUniforms->updateData( glm::value_ptr( materialCfg ), 0, 16 ) )
+	if ( false == materialUniforms->updateVec4( materialCfg, 0 ) )
 	{
 		return false;
 	}
 
-	if ( false == materialUniforms->updateData( glm::value_ptr( this->m_genericParams1 ), 16, 16 ) )
+	if ( false == materialUniforms->updateVec4( this->m_genericParams1, 16 ) )
 	{
 		return false;
 	}
 
-	if ( false == materialUniforms->updateData( glm::value_ptr( this->m_genericParams1 ), 32, 16 ) )
+	if ( false == materialUniforms->updateVec4( this->m_genericParams1, 32 ) )
 	{
 		return false;
 	}
 
-	if ( false == materialUniforms->updateData( glm::value_ptr( this->m_color ), 48, 16 ) )
+	if ( false == materialUniforms->updateVec4( this->m_color, 48 ) )
 	{
 		return false;
 	}

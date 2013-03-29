@@ -899,17 +899,17 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	cameraRectangle[ 1 ] = ( float ) this->m_camera->getHeight();
 
 	// upload world-orientation of camera ( its model-matrix )
-	if ( false == this->m_cameraBlock->updateData( glm::value_ptr( this->m_camera->getMatrix() ), 0, 64 ) )
+	if ( false == this->m_cameraBlock->updateMat4( this->m_camera->getMatrix(), 0 ) )
 	{
 		return false;
 	}
 	// upload view-matrix of camera (need to transform e.g. light-world position in EyeCoords/Viewspace)
-	if ( false == this->m_cameraBlock->updateData( glm::value_ptr( this->m_camera->m_viewMatrix ), 64, 64 ) )
+	if ( false == this->m_cameraBlock->updateMat4( this->m_camera->m_viewMatrix, 64 ) )
 	{
 		return false;
 	}
 	// upload camera-rectangel
-	if ( false == this->m_cameraBlock->updateData( glm::value_ptr( cameraRectangle ), 128, 16 ) )
+	if ( false == this->m_cameraBlock->updateVec4( cameraRectangle, 128 ) )
 	{
 		return false;
 	}
@@ -930,7 +930,7 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 
 	// update projection-matrix because changed to orthogonal-projection
 	glm::mat4 orthoMat = this->m_camera->createOrthoProj( false, true );
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( orthoMat ), 64, 64 ) )
+	if ( false == this->m_transformsBlock->updateMat4( orthoMat, 64 ) )
 	{
 		return false;
 	}
@@ -965,19 +965,19 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		// multiplication with unit-cube is first because has to be carried out the last
 		lightSpaceUnit = this->m_unitCubeMatrix * light->m_VPMatrix;
 
-		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightConfig ), 0, 16 ) )
+		if ( false == this->m_lightBlock->updateVec4( lightConfig, 0 ) )
 		{
 			return false;
 		}
-		if ( false == this->m_lightBlock->updateData( glm::value_ptr( light->getColor() ), 16, 16 ) )
+		if ( false == this->m_lightBlock->updateVec4( light->getColor(), 16 ) )
 		{
 			return false;
 		}
-		if ( false == this->m_lightBlock->updateData( glm::value_ptr( light->m_modelMatrix ), 32, 64 ) )
+		if ( false == this->m_lightBlock->updateMat4( light->m_modelMatrix, 32 ) )
 		{
 			return false;
 		}
-		if ( false == this->m_lightBlock->updateData( glm::value_ptr( lightSpaceUnit ), 96, 64 ) )
+		if ( false == this->m_lightBlock->updateMat4(lightSpaceUnit, 96 ) )
 		{
 			return false;
 		}
@@ -1010,7 +1010,7 @@ bool
 DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program* currentProgramm, 
 		bool applyMaterial, bool transparencyPass )
 {
-	if ( false == this->m_transformsBlock->updateData( glm::value_ptr( viewer->m_projectionMatrix ), 64, 64 ) )
+	if ( false == this->m_transformsBlock->updateMat4( viewer->m_projectionMatrix, 64 ) )
 	{
 		return false;
 	}
@@ -1093,11 +1093,11 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 			// normalized normals at unit length. THIS METHOD ONLY WORKS WHEN NO NON UNIFORM SCALING IS APPLIED
 			glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( modelViewMatrix ) );
 
-			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( modelViewMatrix ), 0, 64 ) )
+			if ( false == this->m_transformsBlock->updateMat4( modelViewMatrix, 0 ) )
 			{
 				return false;
 			}
-			if ( false == this->m_transformsBlock->updateData( glm::value_ptr( normalModelViewMatrix ), 128, 64 ) )
+			if ( false == this->m_transformsBlock->updateMat4( normalModelViewMatrix, 128 ) )
 			{
 				return false;
 			}

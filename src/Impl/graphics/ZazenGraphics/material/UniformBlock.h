@@ -9,6 +9,7 @@
 #define UNIFORMBLOCK_H_
 
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 
 #include <string>
 
@@ -28,6 +29,9 @@ class UniformBlock
 
 	bool bindBuffer();
 	bool unbindBuffer();
+
+	bool updateMat4( const glm::mat4&, int offset );
+	bool updateVec4( const glm::vec4&, int offset );
 
 	bool updateData( const void* data, int size );
 	bool updateData( const void* data, int offset, int size );

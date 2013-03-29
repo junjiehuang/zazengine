@@ -7,6 +7,8 @@
 
 #include "UniformBlock.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 #include <iostream>
 
 using namespace std;
@@ -120,6 +122,18 @@ UniformBlock::updateData( const void* data, int size )
 	}
 
 	return true;
+}
+
+bool
+UniformBlock::updateMat4( const glm::mat4& matrix, int offset )
+{
+	return this->updateData( glm::value_ptr( matrix ), offset, 64 );
+}
+
+bool
+UniformBlock::updateVec4( const glm::vec4& vec, int offset )
+{
+	return this->updateData( glm::value_ptr( vec ), offset, 16 );
 }
 
 bool
