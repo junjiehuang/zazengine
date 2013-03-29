@@ -204,9 +204,9 @@ RenderingWindow::resize( int width, int height )		// Resize And Initialize The G
 		height=1;										// Making Height Equal One
 	}
 
-	glViewport(0,0,width,height);						// Reset The Current Viewport
+	glViewport( 0,0, width, height );						// Reset The Current Viewport
 
-	// TODO resize viewer
+	// TODO resize camera
 	// TODO reinit renderer
 }
 

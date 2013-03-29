@@ -25,6 +25,12 @@ Viewer::~Viewer()
 {
 }
 
+void
+Viewer::restoreViewport()
+{
+	glViewport( 0, 0, this->getWidth(), this->getHeight() );
+}
+
 glm::mat4
 Viewer::createPerspProj() const
 {

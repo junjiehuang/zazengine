@@ -1,19 +1,12 @@
-502 calls/frame
-
 Refactoring, Fixing & Clean-Up
-- caching of uniform-locations in program: only need for one lookup!
-- glViewport-call clenaup
 - fix mrt-visualisation
-- reduce OpenGL-Calls
-	-> check if all unbinds are really necessary
-- remove ALL legacy calls: create hard-coded vertex-arrays for sky-box, full-screen quad & mrt-visualiation (see geom-type renderBB() )
 
 - render shadow-map: clearing of FBO not necessary this way & move drawNone after init
 - do shadow-map generation of light during lighting-pass of each light
 - split lighting-pass into "ambient&sky-box pass" & lighting-pass for each light => no lighting/shadowing of sky-box & objects visible also when no light in scene present
 - use stencil buffer to mask skybox from lighting&shading
 - check if any light casting shadows is in light-list, otherwise shadow-mapping would fail!
-
+- remove ALL legacy calls: create hard-coded vertex-arrays for sky-box, full-screen quad & mrt-visualiation (see geom-type renderBB() )
 - shadowing of sky-box not wanted
 
 - split methods in renderer in submethods, they are too long
@@ -22,13 +15,12 @@ Refactoring, Fixing & Clean-Up
 - keep id, type & core in ISubSystem as readable
 - remove friend-initialisation bullshit from entities
 
-
 Basic Graphics
 - shadow-mapping
 	-> correct lighting&shadowing equations: falloff, cone, ...
 	-> do some sampling on shadow-edges
 - normal-mapping
-- other brdfs
+- sub-surface-scattering
 - text-rendering
 - multiple lights
 	-> point-light boundary
@@ -38,14 +30,15 @@ Basic Graphics
 - remove ALL legacy-calls (use gDEBugger for help)
 - msaa
 	-> do sampling in geometry fragment-shader (centroid)
-- optimization
-	-> OpenGL-calls
-	-> shaders
-	-> initializations of shader
-	-> use layout in shaders
-	-> state-changes
 - Fix View-Frustum culling
 
+Optimization
+- reduce OpenGL-calls/state-changes
+- optimzie shaders
+- initializations of shader
+- caching of uniform-locations in program: only need for one lookup!
+- use layout in shaders
+- check if all unbinds are really necessary
 
 Advanced Graphics
 - transparency
