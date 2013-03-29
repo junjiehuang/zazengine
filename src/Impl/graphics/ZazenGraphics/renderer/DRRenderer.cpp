@@ -94,12 +94,14 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
-	if ( false == this->renderLightingStage( instances, lights ) )
+	if ( false == this->m_displayMRT ) 
 	{
-		return false;
+		if ( false == this->renderLightingStage( instances, lights ) )
+		{
+			return false;
+		}
 	}
-
-	if ( this->m_displayMRT )
+	else
 	{
 		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 0 ]->getId(), 0 ) )
 		{
@@ -1112,10 +1114,9 @@ DRRenderer::showTexture( GLuint texID, int quarter )
 {
 	GLint status;
 
-	glUseProgram( 0 );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == Program::unuse() )
 	{
-		cout << "ERROR in DRRenderer::showTexture: glUseProgram( 0 ) failed with " << gluErrorString( status ) << endl;
+		cout << "ERROR in DRRenderer::showTexture: failed deactivating program " << endl;
 		return false;
 	}
 

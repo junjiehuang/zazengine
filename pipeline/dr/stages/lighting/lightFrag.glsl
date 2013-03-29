@@ -142,7 +142,7 @@ void main()
 	}
 	else
 	{
-		final_color = calculateLambertian( diffuse, normal, ecPosition );
+		final_color = calculateLambertian( diffuse, normal, ecPosition ) * 0.5;
 		final_color.a = 1.0;
 	}
 }

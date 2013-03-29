@@ -1,10 +1,16 @@
-Clean-Up
-- fix mrt-visualisation
-- find more high-level approach to send matrices to uniform blocks (no void* & bytecount & offset, encapsulate in some way)
+Refactoring, Fixing & Clean-Up
 - render shadow-map: clearing of FBO not necessary this way & move drawNone after init
 - glViewport-call clenaup
+- do shadow-map generation of light during lighting-pass of each light
+- split lighting-pass into "ambient&sky-box pass" & lighting-pass for each light => no lighting/shadowing of sky-box & objects visible also when no light in scene present
+- use stencil buffer to mask skybox from lighting&shading
+- check if any light casting shadows is in light-list, otherwise shadow-mapping would fail!
+- find more high-level approach to send matrices to uniform blocks (no void* & bytecount & offset, encapsulate in some way)
+
+- fix mrt-visualisation
 - shadowing of sky-box not wanted
 
+- split methods in renderer in submethods, they are too long
 - const-completeness (add const to inline methods were appropriate)
 - replace all strcmp with boost:iequals
 - keep id, type & core in ISubSystem as readable
@@ -13,7 +19,6 @@ Clean-Up
 
 Basic Graphics
 - shadow-mapping
-	-> self-shadowing doe no more work!
 	-> correct lighting&shadowing equations: falloff, cone, ...
 	-> do some sampling on shadow-edges
 - normal-mapping
