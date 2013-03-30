@@ -1,11 +1,13 @@
 Refactoring, Fixing & Clean-Up
-- check if any light casting shadows is in light-list, otherwise shadow-mapping would fail!
 - no need for shadowmap for each light, only need pool for various resolutions which will be reused
+- fix problem with shadow-caster for light on/off possible
 
 - split lighting-pass into "ambient&sky-box pass" & lighting-pass for each light => no lighting/shadowing of sky-box & objects visible also when no light in scene present
 - use stencil buffer to mask skybox from lighting&shading
 - remove ALL legacy calls: create hard-coded vertex-arrays for sky-box, full-screen quad & mrt-visualiation (see geom-type renderBB() )
 - shadowing of sky-box not wanted
+
+- render-target derives from texture: bind/unbind functionality duplicated
 
 - split methods in renderer in submethods, they are too long
 - const-completeness (add const to inline methods were appropriate)

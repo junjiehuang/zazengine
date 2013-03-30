@@ -118,7 +118,7 @@ FrameBufferObject::unbind()
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "ERROR in FrameBufferObject::unbind: glBindFramebuffer failed with " << gluErrorString( status ) << endl;
+		cout << "ERROR in FrameBufferObject::unbind: glBindFramebuffer( 0 ) failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
@@ -131,7 +131,10 @@ FrameBufferObject::bindAllTargets()
 	// bind the mrts
 	for ( unsigned int i = 0; i < this->m_attachedTargets.size(); i++ )
 	{
-		this->m_attachedTargets[ i ]->bind( i );
+		if ( false == this->m_attachedTargets[ i ]->bind( i ) )
+		{
+			return false;
+		}
 	}
 
 	return true;
@@ -143,7 +146,10 @@ FrameBufferObject::unbindAllTargets()
 	// bind the mrts
 	for ( unsigned int i = 0; i < this->m_attachedTargets.size(); i++ )
 	{
-		this->m_attachedTargets[ i ]->unbind();
+		if ( false == this->m_attachedTargets[ i ]->unbind() )
+		{
+			return false;
+		}
 	}
 
 	return true;

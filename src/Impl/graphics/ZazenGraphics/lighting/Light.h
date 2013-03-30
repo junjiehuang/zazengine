@@ -23,9 +23,9 @@ class Light : public Viewer
 		POINT
 	};
 
-	static Light* createSpotLight( float, int, int );
-	static Light* createDirectionalLight( int, int );
-	static Light* createPointLight( int );
+	static Light* createSpotLight( float, int, int, bool );
+	static Light* createDirectionalLight( int, int, bool );
+	static Light* createPointLight( int, bool );
 
 	virtual ~Light();
 
@@ -45,15 +45,16 @@ class Light : public Viewer
 	GLuint* getShadowCubeMap() { return this->m_cubeShadowMap; };
 
  private:
-	Light( int, int, LightType );
+	Light( int, int, LightType, bool );
 
 	float m_falloff;
 	bool m_shadowCaster;
+
 	LightType m_type;
 	glm::vec4 m_color;
 
 	RenderTarget* m_shadowMap;
-	GLuint m_cubeShadowMap[6];
+	GLuint m_cubeShadowMap[ 6 ];
 
 	bool createShadowMap( int width, int height );
 	bool createShadowCubeMap( int side );

@@ -882,7 +882,10 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 			return false;
 		}
 
-		this->m_fbo->bindAllTargets();
+		if ( false == this->m_fbo->bindAllTargets() )
+		{
+			return false;
+		}
 
 		// TODO remove: can use layout in shader to bind
 		// tell lighting program that diffusemap is bound to texture-unit 0
@@ -895,27 +898,11 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		this->m_progLightingStage->setUniformInt( "GenericMap2", 3 );
 		// tell lighting program that depth-map of scene is bound to texture-unit MRT_COUNT
 		this->m_progLightingStage->setUniformInt( "DepthMap", MRT_COUNT );
-		// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
-		this->m_progLightingStage->setUniformInt( "ShadowMap", MRT_COUNT + 1 );
-
-		// bind the shadowmap of the light to texture unit MRT_COUNT + 1
-		if ( Light::SPOT == light->getType() || Light::DIRECTIONAL == light->getType() )
-		{
-			light->getShadowMap()->bind( MRT_COUNT + 1 );
-		}
-		else if ( Light::POINT == light->getType() )
-		{
-			// TODO: bind shadow cubemap
-		}
-
+		
 		lightConfig[ 0 ] = ( float ) light->getType();
 		lightConfig[ 1 ] = light->getFalloff();
 		lightConfig[ 2 ] = light->isShadowCaster();
-
-		// calculate the light-space projection matrix
-		// multiplication with unit-cube is first because has to be carried out the last
-		lightSpaceUnit = this->m_unitCubeMatrix * light->m_VPMatrix;
-
+		
 		if ( false == this->m_lightBlock->bindBuffer() )
 		{
 			return false;
@@ -933,9 +920,22 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		{
 			return false;
 		}
-		if ( false == this->m_lightBlock->updateMat4(lightSpaceUnit, 96 ) )
+
+		if ( light->isShadowCaster() )
 		{
-			return false;
+			// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
+			this->m_progLightingStage->setUniformInt( "ShadowMap", MRT_COUNT + 1 );
+
+			light->getShadowMap()->bind( MRT_COUNT + 1 );
+
+			// calculate the light-space projection matrix
+			// multiplication with unit-cube is first because has to be carried out the last
+			lightSpaceUnit = this->m_unitCubeMatrix * light->m_VPMatrix;
+
+			if ( false == this->m_lightBlock->updateMat4( lightSpaceUnit, 96 ) )
+			{
+				return false;
+			}
 		}
 
 		this->m_transformsBlock->bind();
@@ -952,17 +952,15 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 			glVertex2f( ( float ) this->m_camera->getWidth(), 0 );
 		glEnd();
 
-		// unbind shadow-map texture
-		if ( Light::SPOT == light->getType() || Light::DIRECTIONAL == light->getType() )
+		if ( light->isShadowCaster() )
 		{
 			light->getShadowMap()->unbind();
 		}
-		else if ( Light::POINT == light->getType() )
-		{
-			// TODO: unbind shadow cubemap
-		}
 
-		this->m_fbo->unbindAllTargets();
+		if ( false == this->m_fbo->unbindAllTargets() )
+		{
+			return false;
+		}
 	}
 
 	return true;
@@ -983,6 +981,7 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 		return false;
 	}
 
+	// TODO won't work with multiple shadow-maps! do different when multiple lightsources implemented
 	if ( false == this->m_shadowMappingFB->attachTarget( light->getShadowMap() ) )
 	{
 		return false;
@@ -1011,7 +1010,7 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 	{
 		return false;
 	}
-	
+
 	// back to window-system framebuffer
 	if ( false == this->m_shadowMappingFB->unbind() )
 	{

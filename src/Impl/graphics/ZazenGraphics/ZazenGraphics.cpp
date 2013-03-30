@@ -352,17 +352,17 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 
 			if ( lightType == "DIRECTIONAL" )
 			{
-				light = Light::createDirectionalLight( RenderingWindow::getRef().getWidth(), RenderingWindow::getRef().getHeight() );
+				light = Light::createDirectionalLight( RenderingWindow::getRef().getWidth(), RenderingWindow::getRef().getHeight(), castShadow );
 
 			}
 			else if ( lightType == "POINT" )
 			{
-				light = Light::createPointLight( RenderingWindow::getRef().getHeight() );
+				light = Light::createPointLight( RenderingWindow::getRef().getHeight(), castShadow );
 			}
 			// default is spot
 			else
 			{
-				light = Light::createSpotLight( fov, shadowMapResX, shadowMapResY );
+				light = Light::createSpotLight( fov, shadowMapResX, shadowMapResY, castShadow );
 			}
 
 			entity->m_orientation = light;

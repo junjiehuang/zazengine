@@ -13,74 +13,70 @@
 using namespace std;
 
 Light*
-Light::createSpotLight( float fov, int width, int height )
+Light::createSpotLight( float fov, int width, int height, bool shadowCaster )
 {
-	Light* light = new Light( width, height, Light::SPOT );
+	Light* light = new Light( width, height, Light::SPOT, shadowCaster );
 	if ( false == light->createShadowMap( width, height ) )
 	{
 		delete light;
-		light = 0;
+		return NULL;
 	}
-	else
-	{
-		light->setFov( fov );
-		light->setupPerspective();
-	}
+	
+	light->setFov( fov );
+	light->setupPerspective();
 
 	return light;
 }
 
 Light*
-Light::createDirectionalLight( int width, int height )
+Light::createDirectionalLight( int width, int height, bool shadowCaster )
 {
-	Light* light = new Light( width, height, Light::DIRECTIONAL );
+	Light* light = new Light( width, height, Light::DIRECTIONAL, shadowCaster );
 	if ( false == light->createShadowMap( width, height ) )
 	{
 		delete light;
-		light = 0;
+		return NULL;
 	}
-	else
-	{
-		light->setupOrtho();
-	}
+	
+	light->setupOrtho();
 
 	return light;
 }
 
 Light*
-Light::createPointLight( int side )
+Light::createPointLight( int side, bool shadowCaster )
 {
-	Light* light = new Light( side, side, Light::POINT );
+	Light* light = new Light( side, side, Light::POINT, shadowCaster );
 	if ( false == light->createShadowCubeMap( side ) )
 	{
 		delete light;
-		light = 0;
+		return NULL;
 	}
-	else
-	{
-		light->setFov( 90 );
-		light->setupPerspective();
-	}
+
+	light->setFov( 90 );
+	light->setupPerspective();
 
 	return light;
 }
 
-Light::Light( int width, int height, LightType type )
+Light::Light( int width, int height, LightType type, bool shadowCaster )
 	: Viewer( width, height ),
-	  m_type( type )
+	  m_type( type ),
+	  m_shadowCaster( shadowCaster )
 {
 	this->m_shadowMap = 0;
 	memset( this->m_cubeShadowMap, 0, sizeof( this->m_cubeShadowMap ) );
 
-	this->m_shadowCaster = true;
-
 	this->m_falloff = 0.0f;
+
+	this->m_shadowMap = NULL;
 }
 
 Light::~Light()
 {
 	RenderTarget::destroy( this->m_shadowMap );
 
+	//TODO handle different when implemented
 	if ( this->m_cubeShadowMap[ 0 ] )
 	{
 		glDeleteTextures( 6, this->m_cubeShadowMap );
@@ -90,13 +86,16 @@ Light::~Light()
 bool
 Light::createShadowMap( int width, int height )
 {
-	RenderTarget* shadowMap = RenderTarget::create( width, height, RenderTarget::RT_SHADOW );
-	if ( NULL == shadowMap )
+	if ( this->m_shadowCaster )
 	{
-		return false;
-	}
+		RenderTarget* shadowMap = RenderTarget::create( width, height, RenderTarget::RT_SHADOW );
+		if ( NULL == shadowMap )
+		{
+			return false;
+		}
 
-	this->m_shadowMap = shadowMap;
+		this->m_shadowMap = shadowMap;
+	}
 
 	return true;
 }
@@ -104,5 +103,6 @@ Light::createShadowMap( int width, int height )
 bool
 Light::createShadowCubeMap( int side )
 {
-	return false;
+	// TODO implement
+	return true;
 }

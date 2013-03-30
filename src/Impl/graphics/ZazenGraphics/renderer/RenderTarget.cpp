@@ -111,7 +111,7 @@ RenderTarget::RenderTarget( GLuint id, RenderTargetType targetType )
 	this->m_id = id;
 	this->m_targetType = targetType;
 
-	this->m_boundIndex = 0;
+	this->m_boundIndex = -1;
 }
 
 RenderTarget::~RenderTarget()
@@ -123,14 +123,24 @@ RenderTarget::bind( unsigned int index )
 {
 	GLenum status;
 
+	if ( -1 != this->m_boundIndex )
+	{
+		return false;
+	}
+
 	this->m_boundIndex = index;
 
-	// bind diffuse rendering target to texture unit 0
 	glActiveTexture( GL_TEXTURE0 + this->m_boundIndex );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR in RenderTarget::bind: glActiveTexture of GL_TEXTURE" << this->m_boundIndex << " failed with " << gluErrorString( status ) << endl;
+		return false;
+	}
+
 	glBindTexture( GL_TEXTURE_2D, this->m_id );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "ERROR in RenderTarget::bind: glBindTexture of mrt " << this->m_boundIndex << " failed with " << gluErrorString( status ) << endl;
+		cout << "ERROR in RenderTarget::bind: glBindTexture with id " << this->m_id << " failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
@@ -142,15 +152,26 @@ RenderTarget::unbind()
 {
 	GLenum status;
 
-	// bind depth-buffer to texture-unit MRT_COUNT
-	glActiveTexture( GL_TEXTURE0 + this->m_boundIndex );
-	glBindTexture( GL_TEXTURE_2D, this->m_id );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( -1 == this->m_boundIndex )
 	{
-		cout << "ERROR in FrameBufferObject::bindAllTargets: glBindTexture of depth-buffer failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
+	glActiveTexture( GL_TEXTURE0 + this->m_boundIndex );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR in RenderTarget::unbind: glActiveTexture GL_TEXTURE" << this->m_boundIndex << " failed with " << gluErrorString( status ) << endl;
+		return false;
+	}
+
+	glBindTexture( GL_TEXTURE_2D, 0 );
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR in RenderTarget::unbind: glBindTexture( 0 ) failed with " << gluErrorString( status ) << endl;
+		return false;
+	}
+
+	this->m_boundIndex = -1;
 
 	return true;
 }
