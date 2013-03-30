@@ -1,6 +1,4 @@
 Refactoring, Fixing & Clean-Up
-- no need for shadowmap for each light, only need pool for various resolutions which will be reused
-
 - split lighting-pass into "ambient&sky-box pass" & lighting-pass for each light => no lighting/shadowing of sky-box & objects visible also when no light in scene present
 - use stencil buffer to mask skybox from lighting&shading
 - remove ALL legacy calls: create hard-coded vertex-arrays for sky-box, full-screen quad & mrt-visualiation (see geom-type renderBB() )

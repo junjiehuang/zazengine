@@ -4,11 +4,24 @@
 
 using namespace std;
 
+vector<RenderTarget*>
+RenderTarget::m_shadowMapPool;
+
 RenderTarget*
 RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType )
 {
 	GLuint id = 0;
 	GLenum status;
+
+	// use shadow-map pooling: only create maps with different resolution and reuse them
+	if ( RenderTarget::RT_SHADOW == targetType )
+	{
+		RenderTarget* pooledShadowMap = RenderTarget::findShadowMapInPool( width, height );
+		if ( NULL != pooledShadowMap )
+		{
+			return pooledShadowMap;
+		}
+	}
 
 	glGenTextures( 1, &id );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
@@ -89,7 +102,22 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 	// unbind framebuffer depth-target
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
-	return new RenderTarget( id, targetType );
+	return new RenderTarget( id, width, height, targetType );
+}
+
+RenderTarget*
+RenderTarget::findShadowMapInPool( GLsizei width, GLsizei height )
+{
+	for ( unsigned int i = 0; i < RenderTarget::m_shadowMapPool.size(); i++ )
+	{
+		RenderTarget* shadowMap = RenderTarget::m_shadowMapPool[ i ];
+		if ( shadowMap->getWidth() == width && shadowMap->getHeight() == height )
+		{
+			return shadowMap;
+		}
+	}
+
+	return NULL;
 }
 
 bool
@@ -106,10 +134,13 @@ RenderTarget::destroy( RenderTarget* renderTarget )
 	return true;
 }
 
-RenderTarget::RenderTarget( GLuint id, RenderTargetType targetType )
+RenderTarget::RenderTarget( GLuint id, GLsizei width, GLsizei height, RenderTargetType targetType )
 {
 	this->m_id = id;
 	this->m_targetType = targetType;
+
+	this->m_width = width;
+	this->m_height = height;
 
 	this->m_boundIndex = -1;
 }
