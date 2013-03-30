@@ -1,9 +1,9 @@
 Refactoring, Fixing & Clean-Up
-- render shadow-map: clearing of FBO not necessary this way & move drawNone after init
-- do shadow-map generation of light during lighting-pass of each light
+- check if any light casting shadows is in light-list, otherwise shadow-mapping would fail!
+- no need for shadowmap for each light, only need pool for various resolutions which will be reused
+
 - split lighting-pass into "ambient&sky-box pass" & lighting-pass for each light => no lighting/shadowing of sky-box & objects visible also when no light in scene present
 - use stencil buffer to mask skybox from lighting&shading
-- check if any light casting shadows is in light-list, otherwise shadow-mapping would fail!
 - remove ALL legacy calls: create hard-coded vertex-arrays for sky-box, full-screen quad & mrt-visualiation (see geom-type renderBB() )
 - shadowing of sky-box not wanted
 

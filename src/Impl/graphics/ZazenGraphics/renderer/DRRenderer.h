@@ -186,10 +186,10 @@ class DRRenderer : public Renderer
 
 	bool createMrtBuffer( RenderTarget::RenderTargetType );
 
-	bool renderShadowMap( std::list<Instance*>&, std::list<Light*>& );
 	bool renderSkyBox();
 	bool renderGeometryStage( std::list<Instance*>&, std::list<Light*>& );
 	bool renderLightingStage( std::list<Instance*>&, std::list<Light*>& );
+	bool renderShadowMap( std::list<Instance*>&, Light* );
 
 	bool renderInstances( Viewer*, std::list<Instance*>&, Program*, bool, bool );
 	bool renderGeom( Viewer*, GeomType*, const glm::mat4& );
