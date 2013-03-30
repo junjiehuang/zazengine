@@ -1,45 +1,40 @@
-Refactoring, Fixing & Clean-Up
-- split lighting-pass into "ambient&sky-box pass" & lighting-pass for each light => no lighting/shadowing of sky-box & objects visible also when no light in scene present
-- use stencil buffer to mask skybox from lighting&shading
+Optimization
 - remove ALL legacy calls: create hard-coded vertex-arrays for sky-box, full-screen quad & mrt-visualiation (see geom-type renderBB() )
+	-> using legacy-stuff gives huge performance penalty!!
+- reduce OpenGL-calls/state-changes
+- optimzie shaders
+- caching of uniform-locations in program: only need for one lookup!
+- use layout in shaders
+- check if all unbinds are really necessary
+- remove ALL legacy-calls (use gDEBugger for help)
+
+
+Graphics-Pipeline
 - shadowing of sky-box not wanted
+- split lighting-pass into "ambient&sky-box pass" & lighting-pass for each light
+	 => no lighting/shadowing of sky-box & objects visible also when no light in scene present
+- use stencil buffer to mask skybox from lighting&shading
 
-- render-target derives from texture: bind/unbind functionality duplicated
-
-- const-completeness (add const to inline methods were appropriate)
-- replace all strcmp with boost:iequals
-- keep id, type & core in ISubSystem as readable
-- remove friend-initialisation bullshit from entities
 
 Basic Graphics
 - shadow-mapping
 	-> correct lighting&shadowing equations: falloff, cone, ...
 	-> do some sampling on shadow-edges
-- normal-mapping
-- sub-surface-scattering
-- text-rendering
 - multiple lights
-	-> point-light boundary
 	-> spot-light boundary
 	-> directional full screen quad
 	-> blending 
-- remove ALL legacy-calls (use gDEBugger for help)
+- normal-mapping
+- sub-surface-scattering brdf
+- text-rendering
 - msaa
 	-> do sampling in geometry fragment-shader (centroid)
 - Fix View-Frustum culling
 
-Optimization
-- reduce OpenGL-calls/state-changes
-- optimzie shaders
-- initializations of shader
-- caching of uniform-locations in program: only need for one lookup!
-- use layout in shaders
-- check if all unbinds are really necessary
-
 Advanced Graphics
 - transparency
 - reflections
-- brdfs
+- advanced brdfs
 	-> cook torrance sparrow
 	-> subsurface scattering
 	-> microfacet
@@ -88,6 +83,10 @@ Scripting
 - TODO
 
 Code-Quality
+- const-completeness (add const to inline methods were appropriate)
+- replace all strcmp with boost:iequals
+- keep id, type & core in ISubSystem as readable
+- remove friend-initialisation bullshit from entities
 - project buildable as RELEASE
 - check if everything is cleaned up when a subsystem cannot be initialized
 - A GOOD SOLUTION FOR THE PROBLEM OF INCLUDING TINY-XML IN ALL SUBSYSTEMS
