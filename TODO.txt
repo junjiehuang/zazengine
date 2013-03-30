@@ -6,7 +6,6 @@ Refactoring, Fixing & Clean-Up
 
 - render-target derives from texture: bind/unbind functionality duplicated
 
-- split methods in renderer in submethods, they are too long
 - const-completeness (add const to inline methods were appropriate)
 - replace all strcmp with boost:iequals
 - keep id, type & core in ISubSystem as readable

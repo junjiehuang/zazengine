@@ -810,12 +810,6 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
-	// TODO check if we really need this
-	if ( false == this->m_fbo->unbind() )
-	{
-		return false;
-	}
-
 	if ( false == this->renderSkyBox() )
 	{
 		return false;
@@ -825,12 +819,6 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 	if ( false == this->m_progGeomStage->use() )
 	{
 		cout << "ERROR in DRRenderer::renderGeometryStage: using shadow mapping program failed - exit" << endl;
-		return false;
-	}
-
-	// TODO check if we really need this
-	if ( false == this->m_fbo->bind() )
-	{
 		return false;
 	}
 
@@ -872,11 +860,6 @@ DRRenderer::renderSkyBox()
 		return false;
 	}
 
-	if ( false == this->m_fbo->bind() )
-	{
-		return false;
-	}
-
 	if ( false == this->m_fbo->drawBuffer( 0 ) )
 	{
 		return false;
@@ -888,11 +871,6 @@ DRRenderer::renderSkyBox()
 	}
 
 	GeomSkyBox::getRef().render();
-
-	if ( false == this->m_fbo->unbind() )
-	{
-		return false;
-	}
 
 	return true;
 }
