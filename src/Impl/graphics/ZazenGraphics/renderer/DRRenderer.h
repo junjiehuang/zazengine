@@ -152,10 +152,15 @@ class DRRenderer : public Renderer
 	Shader* m_fragGeomStage;
 	////////////////////////////////////////
 
-	// Program and shaders for lighting-stage
+	// Program and shaders for lighting-stage with shadowing
 	Program* m_progLightingStage;
 	Shader* m_vertLightingStage;
 	Shader* m_fragLightingStage;
+	////////////////////////////////////////
+
+	// Program and shaders for lighting-stage withOUT shadowing
+	Program* m_progLightingNoShadowStage;
+	Shader* m_fragLightingNoShadowStage;
 	////////////////////////////////////////
 
 	// Program and shaders for shadow-mapping
@@ -189,6 +194,7 @@ class DRRenderer : public Renderer
 	bool renderSkyBox();
 	bool renderGeometryStage( std::list<Instance*>&, std::list<Light*>& );
 	bool renderLightingStage( std::list<Instance*>&, std::list<Light*>& );
+	bool renderLight( std::list<Instance*>&, Light* );
 	bool renderShadowMap( std::list<Instance*>&, Light* );
 
 	bool renderInstances( Viewer*, std::list<Instance*>&, Program*, bool, bool );

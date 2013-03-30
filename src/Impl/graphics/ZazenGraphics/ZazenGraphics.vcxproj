@@ -133,6 +133,7 @@
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightNoShadowFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowVert.glsl" />

@@ -33,6 +33,9 @@ DRRenderer::DRRenderer()
 	this->m_vertLightingStage = 0;
 	this->m_fragLightingStage = 0;
 
+	this->m_progLightingNoShadowStage = 0;
+	this->m_fragLightingNoShadowStage = 0;
+
 	this->m_progShadowMapping = 0;
 	this->m_vertShadowMapping = 0;
 	this->m_fragShadowMapping = 0;
@@ -169,6 +172,21 @@ DRRenderer::shutdown()
 		this->m_progLightingStage = NULL;
 	}
 	
+	// cleaning up lighting stage
+	if ( this->m_progLightingNoShadowStage )
+	{
+		if ( this->m_fragLightingNoShadowStage )
+		{
+			this->m_progLightingNoShadowStage->detachShader( this->m_fragLightingNoShadowStage );
+
+			delete this->m_fragLightingNoShadowStage;
+			this->m_fragLightingNoShadowStage = NULL;
+		}
+
+		delete this->m_progLightingNoShadowStage;
+		this->m_progLightingNoShadowStage = NULL;
+	}
+
 	// cleaning up geometry-stage
 	if ( this->m_progGeomStage )
 	{
@@ -397,6 +415,13 @@ DRRenderer::initLightingStage( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
+	this->m_progLightingNoShadowStage = Program::createProgram( "LightingNoShadowStageProgramm" );
+	if ( 0 == this->m_progLightingNoShadowStage )
+	{
+		cout << "ERROR in DRRenderer::initLightingStage: coulnd't create program - exit" << endl;
+		return false;
+	}
+
 	this->m_vertLightingStage = Shader::createShader( Shader::VERTEX_SHADER, pipelinePath.generic_string() + "/dr/stages/lighting/lightVert.glsl" );
 	if ( 0 == this->m_vertLightingStage )
 	{
@@ -411,6 +436,13 @@ DRRenderer::initLightingStage( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
+	this->m_fragLightingNoShadowStage = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/lighting/lightNoShadowFrag.glsl" );
+	if ( 0 == this->m_fragGeomStage )
+	{
+		cout << "ERROR in DRRenderer::initLightingStage: coulnd't create fragment-shader - exit" << endl;
+		return false;
+	}
+
 	if ( false == this->m_vertLightingStage->compile() )
 	{
 		cout << "ERROR in DRRenderer::initLightingStage: vertex shader compilation failed - exit" << endl;
@@ -418,6 +450,12 @@ DRRenderer::initLightingStage( const boost::filesystem::path& pipelinePath )
 	}
 
 	if ( false == this->m_fragLightingStage->compile() )
+	{
+		cout << "ERROR in DRRenderer::initLightingStage: fragment shader compilation failed - exit" << endl;
+		return false;
+	}
+
+	if ( false == this->m_fragLightingNoShadowStage->compile() )
 	{
 		cout << "ERROR in DRRenderer::initLightingStage: fragment shader compilation failed - exit" << endl;
 		return false;
@@ -447,6 +485,29 @@ DRRenderer::initLightingStage( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
+	if ( false == this->m_progLightingNoShadowStage->attachShader( this->m_vertLightingStage ) )
+	{
+		cout << "ERROR in DRRenderer::initLightingStage: attaching vertex shader to program failed - exit" << endl;
+		return false;
+	}
+
+	if ( false == this->m_progLightingNoShadowStage->attachShader( this->m_fragLightingNoShadowStage ) )
+	{
+		cout << "ERROR in DRRenderer::initLightingStage: attaching fragment shader to program failed - exit" << endl;
+		return false;
+	}
+
+	if ( false == this->m_progLightingNoShadowStage->bindAttribLocation( 0, "in_vertPos" ) )
+	{
+		cout << "ERROR in DRRenderer::initLightingStage: binding attribute location to program failed - exit" << endl;
+		return false;
+	}
+
+	if ( false == this->m_progLightingNoShadowStage->link() )
+	{
+		cout << "ERROR in DRRenderer::initLightingStage: linking program failed - exit" << endl;
+		return false;
+	}
 	cout << "Initializing Deferred Rendering Lighting-Stage finished" << endl;
 
 	return true;
@@ -594,6 +655,11 @@ DRRenderer::initUniformBlocks()
 		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
 		return false;
 	}
+	if ( false == this->m_progLightingNoShadowStage->bindUniformBlock( this->m_transformsBlock ) )
+	{
+		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
+		return false;
+	}
 
 	// lighting-data & camera-data just to lighting stage program
 	if ( false == this->m_progLightingStage->bindUniformBlock( this->m_lightBlock ) )
@@ -602,6 +668,16 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 	if ( false == this->m_progLightingStage->bindUniformBlock( this->m_cameraBlock ) )
+	{
+		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
+		return false;
+	}
+	if ( false == this->m_progLightingNoShadowStage->bindUniformBlock( this->m_lightBlock ) )
+	{
+		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
+		return false;
+	}
+	if ( false == this->m_progLightingNoShadowStage->bindUniformBlock( this->m_cameraBlock ) )
 	{
 		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
 		return false;
@@ -670,7 +746,6 @@ DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType )
 	return true;
 }
 
-// TODO cleanup this method!
 bool
 DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
@@ -718,45 +793,7 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 	return true;
 }
 
-bool
-DRRenderer::renderSkyBox()
-{
-	if ( false == GeomSkyBox::isPresent() )
-	{
-		return true;
-	}
-
-	if ( false == Program::unuse() )
-	{
-		cout << "ERROR in DRRenderer::renderSkyBox: failed deactivating program " << endl;
-		return false;
-	}
-
-	if ( false == this->m_fbo->bind() )
-	{
-		return false;
-	}
-
-	if ( false == this->m_fbo->drawBuffer( 0 ) )
-	{
-		return false;
-	}
-
-	if ( false == this->m_fbo->checkStatus() )
-	{
-		return false;
-	}
-
-	GeomSkyBox::getRef().render();
-
-	if ( false == this->m_fbo->unbind() )
-	{
-		return false;
-	}
-
-	return true;
-}
-
+// TODO cleanup!
 bool
 DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
@@ -821,7 +858,45 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 	return true;
 }
 
-// TODO break this method up into smaller submethods, its too long
+bool
+DRRenderer::renderSkyBox()
+{
+	if ( false == GeomSkyBox::isPresent() )
+	{
+		return true;
+	}
+
+	if ( false == Program::unuse() )
+	{
+		cout << "ERROR in DRRenderer::renderSkyBox: failed deactivating program " << endl;
+		return false;
+	}
+
+	if ( false == this->m_fbo->bind() )
+	{
+		return false;
+	}
+
+	if ( false == this->m_fbo->drawBuffer( 0 ) )
+	{
+		return false;
+	}
+
+	if ( false == this->m_fbo->checkStatus() )
+	{
+		return false;
+	}
+
+	GeomSkyBox::getRef().render();
+
+	if ( false == this->m_fbo->unbind() )
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool
 DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
@@ -855,109 +930,13 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
-	// update projection-matrix because changed to orthogonal-projection
-	glm::mat4 orthoMat = this->m_camera->createOrthoProj( false, true );
-	
-	glm::vec4 lightConfig;
-	glm::mat4 lightSpaceUnit;
-
 	// render the contribution of each light to the scene
 	std::list<Light*>::iterator iter = lights.begin();
 	while ( iter != lights.end() )
 	{
 		Light* light = *iter++;
 
-		// TODO: need to set opengl to additiveley blend light-passes
-		// alpha? color modulate?...
-
-		if ( false == this->renderShadowMap( instances, light ) )
-		{
-			return false;
-		}
-
-		// activate lighting-stage shader
-		if ( false == this->m_progLightingStage->use() )
-		{
-			cout << "ERROR in DRRenderer::renderLightingStage: using program failed - exit" << endl;
-			return false;
-		}
-
-		if ( false == this->m_fbo->bindAllTargets() )
-		{
-			return false;
-		}
-
-		// TODO remove: can use layout in shader to bind
-		// tell lighting program that diffusemap is bound to texture-unit 0
-		this->m_progLightingStage->setUniformInt( "DiffuseMap", 0 );
-		// tell lighting program that normalmap is bound to texture-unit 1
-		this->m_progLightingStage->setUniformInt( "NormalMap", 1 );
-		// tell lighting program that generic map is bound to texture-unit 2
-		this->m_progLightingStage->setUniformInt( "GenericMap1", 2 );
-		// tell lighting program that generic map is bound to texture-unit 3
-		this->m_progLightingStage->setUniformInt( "GenericMap2", 3 );
-		// tell lighting program that depth-map of scene is bound to texture-unit MRT_COUNT
-		this->m_progLightingStage->setUniformInt( "DepthMap", MRT_COUNT );
-		
-		lightConfig[ 0 ] = ( float ) light->getType();
-		lightConfig[ 1 ] = light->getFalloff();
-		lightConfig[ 2 ] = light->isShadowCaster();
-		
-		if ( false == this->m_lightBlock->bindBuffer() )
-		{
-			return false;
-		}
-
-		if ( false == this->m_lightBlock->updateVec4( lightConfig, 0 ) )
-		{
-			return false;
-		}
-		if ( false == this->m_lightBlock->updateVec4( light->getColor(), 16 ) )
-		{
-			return false;
-		}
-		if ( false == this->m_lightBlock->updateMat4( light->m_modelMatrix, 32 ) )
-		{
-			return false;
-		}
-
-		if ( light->isShadowCaster() )
-		{
-			// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
-			this->m_progLightingStage->setUniformInt( "ShadowMap", MRT_COUNT + 1 );
-
-			light->getShadowMap()->bind( MRT_COUNT + 1 );
-
-			// calculate the light-space projection matrix
-			// multiplication with unit-cube is first because has to be carried out the last
-			lightSpaceUnit = this->m_unitCubeMatrix * light->m_VPMatrix;
-
-			if ( false == this->m_lightBlock->updateMat4( lightSpaceUnit, 96 ) )
-			{
-				return false;
-			}
-		}
-
-		this->m_transformsBlock->bind();
-		if ( false == this->m_transformsBlock->updateMat4( orthoMat, 64 ) )
-		{
-			return false;
-		}
-
-		// render quad
-		glBegin( GL_QUADS );
-			glVertex2f( 0, 0 );
-			glVertex2f( 0, ( float ) this->m_camera->getHeight() );
-			glVertex2f( ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight() );
-			glVertex2f( ( float ) this->m_camera->getWidth(), 0 );
-		glEnd();
-
-		if ( light->isShadowCaster() )
-		{
-			light->getShadowMap()->unbind();
-		}
-
-		if ( false == this->m_fbo->unbindAllTargets() )
+		if ( false == this->renderLight( instances, light ) )
 		{
 			return false;
 		}
@@ -967,14 +946,131 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 }
 
 bool
-DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
+DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 {
-	// no shadow-caster, no need for calculating shadow-map
-	if ( false == light->isShadowCaster() )
+	Program* activeLightingProgram = NULL;
+
+	if ( light->isShadowCaster() )
 	{
-		return true;
+		if ( false == this->renderShadowMap( instances, light ) )
+		{
+			return false;
+		}
+
+		activeLightingProgram = this->m_progLightingStage;
+	}
+	else
+	{
+		activeLightingProgram = this->m_progLightingNoShadowStage;
+	}
+	
+	// activate lighting-stage (with shadowing) shader
+	if ( false == activeLightingProgram->use() )
+	{
+		cout << "ERROR in DRRenderer::renderLightingStage: using program failed - exit" << endl;
+		return false;
 	}
 
+	if ( false == this->m_fbo->bindAllTargets() )
+	{
+		return false;
+	}
+
+	// TODO remove: can use layout in shader to bind
+	// tell lighting program that diffusemap is bound to texture-unit 0
+	activeLightingProgram->setUniformInt( "DiffuseMap", 0 );
+	// tell lighting program that normalmap is bound to texture-unit 1
+	activeLightingProgram->setUniformInt( "NormalMap", 1 );
+	// tell lighting program that generic map is bound to texture-unit 2
+	activeLightingProgram->setUniformInt( "GenericMap1", 2 );
+	// tell lighting program that generic map is bound to texture-unit 3
+	activeLightingProgram->setUniformInt( "GenericMap2", 3 );
+	// tell lighting program that depth-map of scene is bound to texture-unit MRT_COUNT
+	activeLightingProgram->setUniformInt( "DepthMap", MRT_COUNT );
+	
+	glm::vec4 lightConfig;
+	glm::mat4 lightSpaceUnit;
+
+	lightConfig[ 0 ] = ( float ) light->getType();
+	lightConfig[ 1 ] = light->getFalloff();
+	lightConfig[ 2 ] = light->isShadowCaster();
+		
+	if ( false == this->m_lightBlock->bindBuffer() )
+	{
+		return false;
+	}
+
+	if ( false == this->m_lightBlock->updateVec4( lightConfig, 0 ) )
+	{
+		return false;
+	}
+	if ( false == this->m_lightBlock->updateVec4( light->getColor(), 16 ) )
+	{
+		return false;
+	}
+	if ( false == this->m_lightBlock->updateMat4( light->m_modelMatrix, 32 ) )
+	{
+		return false;
+	}
+
+	if ( light->isShadowCaster() )
+	{
+		// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
+		activeLightingProgram->setUniformInt( "ShadowMap", MRT_COUNT + 1 );
+
+		if ( false == light->getShadowMap()->bind( MRT_COUNT + 1 ) )
+		{
+			return false;
+		}
+
+		// calculate the light-space projection matrix
+		// multiplication with unit-cube is first because has to be carried out the last
+		lightSpaceUnit = this->m_unitCubeMatrix * light->m_VPMatrix;
+
+		if ( false == this->m_lightBlock->updateMat4( lightSpaceUnit, 96 ) )
+		{
+			return false;
+		}
+	}
+
+	this->m_transformsBlock->bind();
+	// update projection-matrix because changed to orthogonal-projection
+	glm::mat4 orthoMat = this->m_camera->createOrthoProj( false, true );
+	if ( false == this->m_transformsBlock->updateMat4( orthoMat, 64 ) )
+	{
+		return false;
+	}
+
+	// TODO: need to set opengl to additiveley blend light-passes
+	// alpha? color modulate?...
+
+	// render quad
+	glBegin( GL_QUADS );
+		glVertex2f( 0, 0 );
+		glVertex2f( 0, ( float ) this->m_camera->getHeight() );
+		glVertex2f( ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight() );
+		glVertex2f( ( float ) this->m_camera->getWidth(), 0 );
+	glEnd();
+
+	if ( light->isShadowCaster() )
+	{
+		if ( false == light->getShadowMap()->unbind() )
+		{
+			return false;
+		}
+	}
+
+	if ( false == this->m_fbo->unbindAllTargets() )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool
+DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
+{
 	// Rendering offscreen
 	if ( false == this->m_shadowMappingFB->bind() )
 	{
