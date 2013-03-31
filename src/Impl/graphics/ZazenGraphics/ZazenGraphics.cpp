@@ -95,8 +95,6 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 		return false;
 	}
 
-	this->m_core->getEventManager().registerForEvent( "KEY_RELEASED", this );
-
 	// cannot initialize renderer now because camera not yet loaded
 	this->m_renderer = new DRRenderer();
 
@@ -211,15 +209,6 @@ ZazenGraphics::finalizeProcess()
 bool
 ZazenGraphics::sendEvent( Event& e )
 {
-	if  ( e == "KEY_RELEASED" )
-	{
-		int keyCode = any_cast<int>( e.getValue( "key" ) );
-		if ( 59 == keyCode )
-		{
-			this->m_renderer->toggleDisplay();
-		}
-	}
-
 	return true;
 }
 

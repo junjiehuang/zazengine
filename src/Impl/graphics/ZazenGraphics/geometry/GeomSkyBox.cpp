@@ -165,8 +165,6 @@ GeomSkyBox::render()
 	modelViewMat[ 3 ][ 1 ] = 0.0f;
 	modelViewMat[ 3 ][ 2 ] = 0.0f;
 
-	// TODO: need geomskybox program!
-
 	// TODO: update transforms uniform block
 
 	// Front Face

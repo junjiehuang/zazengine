@@ -21,8 +21,6 @@ class Renderer
 	virtual bool shutdown() = 0;
 	virtual bool renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights ) = 0;
 
-	virtual bool toggleDisplay() = 0;
-
 	void printInfo();
 
  protected:

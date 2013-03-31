@@ -136,8 +136,6 @@ class DRRenderer : public Renderer
 		virtual bool initialize( const boost::filesystem::path& );
 		virtual bool shutdown();
 
-		virtual bool toggleDisplay();
-
 		// renders this list of geominstances which must be in front-to-back order
 		bool renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights );
 
@@ -150,6 +148,9 @@ class DRRenderer : public Renderer
 		Program* m_progGeomStage;
 		Shader* m_vertGeomStage;
 		Shader* m_fragGeomStage;
+
+		Program* m_progSkyBox;
+		Shader* m_fragSkyBox;
 		////////////////////////////////////////
 
 		// Program and shaders for lighting-stage with shadowing
@@ -181,8 +182,6 @@ class DRRenderer : public Renderer
 		// utils matrix
 		glm::mat4 m_unitCubeMatrix;
 
-		bool m_displayMRT;
-
 		bool initGeomStage( const boost::filesystem::path& );
 		bool initGBuffer();
 		bool initLightingStage( const boost::filesystem::path& );
@@ -199,8 +198,6 @@ class DRRenderer : public Renderer
 
 		bool renderInstances( Viewer*, std::list<Instance*>&, Program*, bool, bool );
 		bool renderGeom( Viewer*, GeomType*, const glm::mat4& );
-
-		bool showTexture( GLuint texID, int quarter );
 
 };
 

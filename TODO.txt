@@ -1,10 +1,14 @@
-TODO NOW
-- remove ALL legacy calls: create hard-coded vertex-arrays for sky-box, full-screen quad & mrt-visualiation (see geom-type renderBB() )
-	-> using legacy-stuff gives huge performance penalty!!
+TODOs, Refactorings & Optimizations
+- fix sky-box
+- analyse deprecated stuff using gDEBugger
 - extensive comments on pipeline & calls in graphcis
 
+- Program- & Shader-Management: describe by xml, is annoying to manually set up in program-code
+	-> frag-data location
+	-> bind uniform blocks
+	-> ...
+	-> lookup program in program-registry during runtime
 
-Graphics Optimization
 - reduce OpenGL-calls/state-changes
 	-> no need to turn on/off buffer-stuff for each geometry-rendering, turn on for batch-processing and then turn off
 - optimzie shaders
@@ -13,15 +17,17 @@ Graphics Optimization
 - use layout in shaders
 - check if all unbinds are really necessary
 - remove ALL legacy-calls (use gDEBugger for help)
+- remove redundant calls
 - spot-light boundary: load sphere without normals, uv,... & project with perspective into scene using camera MVP
 
-Graphics-Pipeline
 - shadowing of sky-box not wanted
 - split lighting-pass into "ambient&sky-box pass" & lighting-pass for each light
 	 => no lighting/shadowing of sky-box & objects visible also when no light in scene present
 - use stencil buffer to mask skybox from lighting&shading
 - implement #include in shaders: parse loaded string and replace
 	-> problem: compiler error generate other line numbers!
+
+
 
 Rendering-Algorithms
 - shadow-mapping

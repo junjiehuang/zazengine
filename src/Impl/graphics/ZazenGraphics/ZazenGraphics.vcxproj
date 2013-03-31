@@ -127,6 +127,7 @@
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightNoShadowFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl" />

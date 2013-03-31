@@ -29,6 +29,9 @@ DRRenderer::DRRenderer()
 	this->m_vertGeomStage = 0;
 	this->m_fragGeomStage = 0;
 
+	this->m_progSkyBox = NULL;
+	this->m_fragSkyBox = NULL;
+
 	this->m_progLightingStage = 0;
 	this->m_vertLightingStage = 0;
 	this->m_fragLightingStage = 0;
@@ -53,8 +56,6 @@ DRRenderer::DRRenderer()
 		0.0, 0.0, 0.5, 0.0,
 		0.5, 0.5, 0.5, 1.0
 	);
-
-	this->m_displayMRT = false;
 }
 
 DRRenderer::~DRRenderer()
@@ -62,19 +63,10 @@ DRRenderer::~DRRenderer()
 }
 
 bool
-DRRenderer::toggleDisplay()
-{
-	this->m_displayMRT = !this->m_displayMRT;
-
-	return true;
-}
-
-bool
 DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Renderer..." << endl;
 
-	glShadeModel( GL_SMOOTH );								// Enable Smooth Shading
 	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );					// Black Background
 	glClearDepth( 1.0f );									// Depth Buffer Setup
 
@@ -210,6 +202,20 @@ DRRenderer::shutdown()
 		this->m_progGeomStage = NULL;
 	}
 
+	if ( this->m_progSkyBox )
+	{
+		if ( this->m_fragSkyBox )
+		{
+			this->m_progSkyBox->detachShader( this->m_fragSkyBox );
+
+			delete this->m_fragSkyBox;
+			this->m_fragSkyBox = NULL;
+		}
+
+		delete this->m_progSkyBox;
+		this->m_progSkyBox = NULL;
+	}
+
 	// cleaning up uniform blocks
 	if ( this->m_transformsBlock )
 	{
@@ -319,6 +325,13 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
+	this->m_progSkyBox = Program::createProgram( "SkyBoxProgram" );
+	if ( 0 == this->m_progSkyBox )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: coulnd't create program - exit" << endl;
+		return false;
+	}
+
 	this->m_vertGeomStage = Shader::createShader( Shader::VERTEX_SHADER, pipelinePath.generic_string() + "/dr/stages/geom/geomVert.glsl" );
 	if ( 0 == this->m_vertGeomStage )
 	{
@@ -328,6 +341,13 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 
 	this->m_fragGeomStage = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/geom/geomFrag.glsl" );
 	if ( 0 == this->m_fragGeomStage )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: coulnd't create fragment-shader - exit" << endl;
+		return false;
+	}
+
+	this->m_fragSkyBox = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/geom/skyBoxFrag.glsl" );
+	if ( 0 == this->m_fragSkyBox )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: coulnd't create fragment-shader - exit" << endl;
 		return false;
@@ -345,6 +365,12 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
+	if ( false == this->m_fragSkyBox->compile() )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: fragment shader compilation failed - exit" << endl;
+		return false;
+	}
+
 	if ( false == this->m_progGeomStage->attachShader( this->m_vertGeomStage ) )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: attaching vertex shader to program failed - exit" << endl;
@@ -352,6 +378,18 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 	}
 
 	if ( false == this->m_progGeomStage->attachShader( this->m_fragGeomStage ) )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: attaching fragment shader to program failed - exit" << endl;
+		return false;
+	}
+
+	if ( false == this->m_progSkyBox->attachShader( this->m_vertGeomStage ) )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: attaching vertex shader to program failed - exit" << endl;
+		return false;
+	}
+
+	if ( false == this->m_progSkyBox->attachShader( this->m_fragSkyBox ) )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: attaching fragment shader to program failed - exit" << endl;
 		return false;
@@ -379,6 +417,13 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
+	// sky-box only writes diffuse-color
+	if ( false == this->m_progSkyBox->bindFragDataLocation( 0, "out_diffuse" ) )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: binding fragment-data location failed - exit" << endl;
+		return false;
+	}
+
 	if ( false == this->m_progGeomStage->bindAttribLocation( 0, "in_vertPos" ) )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: binding attribute location to program failed - exit" << endl;
@@ -395,7 +440,29 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
+	if ( false == this->m_progSkyBox->bindAttribLocation( 0, "in_vertPos" ) )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: binding attribute location to program failed - exit" << endl;
+		return false;
+	}
+	if ( false == this->m_progSkyBox->bindAttribLocation( 1, "in_vertNorm" ) )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: binding attribute location to program failed - exit" << endl;
+		return false;
+	}
+	if ( false == this->m_progSkyBox->bindAttribLocation( 2, "in_texCoord" ) )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: binding attribute location to program failed - exit" << endl;
+		return false;
+	}
+
 	if ( false == this->m_progGeomStage->link() )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: linking program failed - exit" << endl;
+		return false;
+	}
+	
+	if ( false == this->m_progSkyBox->link() )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: linking program failed - exit" << endl;
 		return false;
@@ -648,6 +715,11 @@ DRRenderer::initUniformBlocks()
 		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
 		return false;
 	}
+	if ( false == this->m_progSkyBox->bindUniformBlock( this->m_transformsBlock ) )
+	{
+		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
+		return false;
+	}
 	if ( false == this->m_progGeomStage->bindUniformBlock( this->m_transformsBlock ) )
 	{
 		cout << "ERROR in DRRenderer::initUniformBlocks: failed binding uniform block - exit" << endl;
@@ -758,37 +830,9 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
-	if ( false == this->m_displayMRT ) 
+	if ( false == this->renderLightingStage( instances, lights ) )
 	{
-		if ( false == this->renderLightingStage( instances, lights ) )
-		{
-			return false;
-		}
-	}
-	else
-	{
-		this->m_camera->restoreViewport();
-
-		glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-		glClearColor( 0.0, 0.0, 0.0, 1.0 );
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-		if ( false == this->showTexture( this->m_gBufferFbo->getAttachedTargets()[ 0 ]->getId(), 0 ) )
-		{
-			return false;
-		}
-		if ( false == this->showTexture( this->m_gBufferFbo->getAttachedTargets()[ 1 ]->getId(), 1 ) )
-		{
-			return false;
-		}
-		if ( false == this->showTexture( this->m_gBufferFbo->getAttachedTargets()[ 2 ]->getId(), 2 ) )
-		{
-			return false;
-		}
-		if ( false == this->showTexture( this->m_gBufferFbo->getAttachedDepthTarget()->getId(), 3 ) )
-		{
-			return false;
-		}
+		return false;
 	}
 
 	this->frame++;
@@ -856,12 +900,6 @@ DRRenderer::renderSkyBox()
 		return true;
 	}
 
-	if ( false == Program::unuse() )
-	{
-		cout << "ERROR in DRRenderer::renderSkyBox: failed deactivating program " << endl;
-		return false;
-	}
-
 	if ( false == this->m_gBufferFbo->drawBuffer( 0 ) )
 	{
 		return false;
@@ -869,6 +907,12 @@ DRRenderer::renderSkyBox()
 
 	if ( false == this->m_gBufferFbo->checkStatus() )
 	{
+		return false;
+	}
+
+	if ( false == this->m_progSkyBox->use() )
+	{
+		cout << "ERROR in DRRenderer::renderSkyBox: using program failed - exit" << endl;
 		return false;
 	}
 
@@ -1203,60 +1247,6 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 			}
 
 			return geom->render();
-		}
-	}
-
-	return true;
-}
-
-bool
-DRRenderer::showTexture( GLuint texID, int quarter )
-{
-	GLint status;
-
-	if ( false == Program::unuse() )
-	{
-		cout << "ERROR in DRRenderer::showTexture: failed deactivating program " << endl;
-		return false;
-	}
-
-	glm::mat4 orthoMat = this->m_camera->createOrthoProj( false, true );
-	glMatrixMode( GL_PROJECTION );
-	glLoadIdentity();
-
-	glLoadMatrixf( glm::value_ptr( orthoMat ) );
-
-	glMatrixMode( GL_MODELVIEW );
-	glLoadIdentity();
-
-	glActiveTexture( GL_TEXTURE0 );
-	glBindTexture( GL_TEXTURE_2D, texID );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in DRRenderer::showTexture: glBindTexture failed with " << gluErrorString( status ) << endl;
-		return false;
-	}
-
-	int counter = 0;
-	float height = ( float ) this->m_camera->getHeight() / 2.0f;
-	float width = ( float ) this->m_camera->getWidth() / 2.0f;
-
-	for ( int i = 0; i < 2; i++ )
-	{
-		for ( int j = 0; j < 2; j++ )
-		{
-			if ( counter == quarter )
-			{
-				// render quad
-				glBegin( GL_QUADS );
-					glTexCoord2f( 0.0f, 1.0f ); glVertex2f( width * j, height * i );
-					glTexCoord2f( 0.0f, 0.0f ); glVertex2f( width * j, height * i + height );
-					glTexCoord2f( 1.0f, 0.0f ); glVertex2f( width * j + width, height * i + height );
-					glTexCoord2f( 1.0f, 1.0f ); glVertex2f( width * j + width, height * i );
-				glEnd();
-			}
-
-			counter++;
 		}
 	}
 
