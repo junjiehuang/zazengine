@@ -24,9 +24,12 @@ class GeometryFactory
 public:
 	static void setDataPath( const boost::filesystem::path& );
 	static void freeAll();
+	static void free( GeomType* );
 
 	static GeomType* get( const std::string& fileName );
 	
+	static GeomType* createQuad( float width, float height );
+
 private:
 	static boost::filesystem::path modelDataPath;
 	static std::map<std::string, GeomType*> allMeshes;

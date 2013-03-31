@@ -1,5 +1,5 @@
-#ifndef MESHNODE_H_
-#define MESHNODE_H_
+#ifndef GEOMMESH_H_
+#define GEOMMESH_H_
 
 #include <GL/glew.h>
 
@@ -38,4 +38,4 @@ class GeomMesh : public GeomType
 
 };
 
-#endif /*MESHNODE_H_*/
+#endif /*GEOMMESH_H_*/

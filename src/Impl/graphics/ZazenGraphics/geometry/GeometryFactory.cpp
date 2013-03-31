@@ -64,6 +64,86 @@ GeometryFactory::get( const std::string& fileName )
 	return geomType;
 }
 
+GeomType*
+GeometryFactory::createQuad( float width, float height )
+{
+	float halfWidth = width / 2 ;
+	float halfHeight = height / 2;
+
+	// consists of 2 triangles
+	int numFaces = 2;
+	// has 4 vertices
+	int numVertices = 4;
+
+	// indexbuffer for faces
+	GLuint* indexBuffer = new GLuint[ numFaces * 3 ];
+	memset( indexBuffer, 0, numFaces * 3 * sizeof( GLuint ) );
+
+	// allocate vertexdata
+	GeomMesh::VertexData* vertexData = new GeomMesh::VertexData[ numVertices ];
+	memset( vertexData, 0, numVertices * sizeof( GeomMesh::VertexData ) );
+
+	/*
+	// top left vertex
+	vertexData[ 0 ].position[ 0 ] = -halfWidth;
+	vertexData[ 0 ].position[ 1 ] = halfHeight;
+	vertexData[ 0 ].position[ 2 ] = 0.0f;
+
+	// bottom left vertex
+	vertexData[ 1 ].position[ 0 ] = -halfWidth;
+	vertexData[ 1 ].position[ 1 ] = -halfHeight;
+	vertexData[ 1 ].position[ 2 ] = 0.0f;
+
+	// bottom right vertex
+	vertexData[ 2 ].position[ 0 ] = halfWidth;
+	vertexData[ 2 ].position[ 1 ] = -halfHeight;
+	vertexData[ 2 ].position[ 2 ] = 0.0f;
+
+	// top right vertex
+	vertexData[ 3 ].position[ 0 ] = halfWidth;
+	vertexData[ 3 ].position[ 1 ] = halfHeight;
+	vertexData[ 3 ].position[ 2 ] = 0.0f;
+	*/
+
+	// top left vertex
+	vertexData[ 0 ].position[ 0 ] = 0.0f;
+	vertexData[ 0 ].position[ 1 ] = 0.0f;
+	vertexData[ 0 ].position[ 2 ] = 0.0f;
+
+	// bottom left vertex
+	vertexData[ 1 ].position[ 0 ] = 0.0f;
+	vertexData[ 1 ].position[ 1 ] = height;
+	vertexData[ 1 ].position[ 2 ] = 0.0f;
+
+	// bottom right vertex
+	vertexData[ 2 ].position[ 0 ] = width;
+	vertexData[ 2 ].position[ 1 ] = height;
+	vertexData[ 2 ].position[ 2 ] = 0.0f;
+
+	// top right vertex
+	vertexData[ 3 ].position[ 0 ] = width;
+	vertexData[ 3 ].position[ 1 ] = 0.0f;
+	vertexData[ 3 ].position[ 2 ] = 0.0f;
+
+	// IMPORTANT: OpenGL defaults front-faces to CounterClockWise => specify indices correct
+
+	// first vertex: top left, bottom left, bottom right
+	indexBuffer[ 0 ] = 0;
+	indexBuffer[ 1 ] = 1;
+	indexBuffer[ 2 ] = 2;
+
+	// second vertex: top left, bottom right, top right
+	indexBuffer[ 0 ] = 0;
+	indexBuffer[ 1 ] = 2;
+	indexBuffer[ 2 ] = 3;
+
+	GeomType* quadMesh = new GeomMesh( numFaces, numVertices, vertexData, indexBuffer );
+	std::string quadMeshKey = "QUAD_MESH" + GeometryFactory::allMeshes.size();
+	GeometryFactory::allMeshes[ quadMeshKey ] = quadMesh;
+
+	return quadMesh;
+}
+
 void
 GeometryFactory::freeAll()
 {

@@ -43,44 +43,20 @@ Light::createDirectionalLight( int width, int height, bool shadowCaster )
 	return light;
 }
 
-Light*
-Light::createPointLight( int side, bool shadowCaster )
-{
-	Light* light = new Light( side, side, Light::POINT, shadowCaster );
-	if ( false == light->createShadowCubeMap( side ) )
-	{
-		delete light;
-		return NULL;
-	}
-
-	light->setFov( 90 );
-	light->setupPerspective();
-
-	return light;
-}
-
 Light::Light( int width, int height, LightType type, bool shadowCaster )
 	: Viewer( width, height ),
 	  m_type( type ),
 	  m_shadowCaster( shadowCaster )
 {
-	this->m_shadowMap = 0;
-	memset( this->m_cubeShadowMap, 0, sizeof( this->m_cubeShadowMap ) );
-
 	this->m_falloff = 0.0f;
 
+	this->m_boundingGeom = NULL;
 	this->m_shadowMap = NULL;
 }
 
 Light::~Light()
 {
 	RenderTarget::destroy( this->m_shadowMap );
-
-	//TODO handle different when implemented
-	if ( this->m_cubeShadowMap[ 0 ] )
-	{
-		glDeleteTextures( 6, this->m_cubeShadowMap );
-	}
 }
 
 bool
@@ -97,12 +73,5 @@ Light::createShadowMap( int width, int height )
 		this->m_shadowMap = shadowMap;
 	}
 
-	return true;
-}
-
-bool
-Light::createShadowCubeMap( int side )
-{
-	// TODO implement
 	return true;
 }

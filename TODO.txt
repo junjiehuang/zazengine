@@ -1,8 +1,17 @@
-Optimization
+TODO NOW
 - remove ALL legacy calls: create hard-coded vertex-arrays for sky-box, full-screen quad & mrt-visualiation (see geom-type renderBB() )
 	-> using legacy-stuff gives huge performance penalty!!
+	-> load box for sky-box
+- cleanup code (consistent creation comment on each file), remove unused stuff
+- extensive comments on pipeline & calls in graphcis
+
+
+Graphics Optimization
+
 - reduce OpenGL-calls/state-changes
+	-> no need to turn on/off buffer-stuff for each geometry-rendering, turn on for batch-processing and then turn off
 - optimzie shaders
+	-> pre multiply matrices in CPU, branching
 - caching of uniform-locations in program: only need for one lookup!
 - use layout in shaders
 - check if all unbinds are really necessary
@@ -16,28 +25,27 @@ Graphics-Pipeline
 - use stencil buffer to mask skybox from lighting&shading
 
 
-Basic Graphics
+Rendering-Algorithms
 - shadow-mapping
 	-> correct lighting&shadowing equations: falloff, cone, ...
 	-> do some sampling on shadow-edges
 - multiple lights
-	-> spot-light boundary
-	-> directional full screen quad
+	-> spot-light boundary: load sphere without normals, uv,... & project with perspective into scene using camera MVP
 	-> blending 
 - normal-mapping
-- sub-surface-scattering brdf
+- advanced brdfs
+	-> sub-surface-scattering brdf
+	-> cook torrance sparrow
+	-> subsurface scattering
+	-> microfacet
 - text-rendering
 - msaa
 	-> do sampling in geometry fragment-shader (centroid)
 - Fix View-Frustum culling
 
-Advanced Graphics
+Advanced Graphic-Techniques
 - transparency
 - reflections
-- advanced brdfs
-	-> cook torrance sparrow
-	-> subsurface scattering
-	-> microfacet
 - culling library (Umbra 3)
 
 Game-Functionality

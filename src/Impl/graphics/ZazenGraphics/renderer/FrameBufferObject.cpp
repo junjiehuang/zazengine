@@ -70,11 +70,13 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 		}
 	}
 
+	if ( false == this->attachTargetTemp( renderTarget ) )
+	{
+		return false;
+	}
+
 	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW == renderTarget->getType() )
 	{
-		// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
-		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, renderTarget->getId(), 0 );
-
 		this->m_depthBuffer = renderTarget->getId();
 		this->m_depthTarget = renderTarget;
 	}
@@ -83,13 +85,42 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 		GLuint id = renderTarget->getId();
 		GLenum colorAttachment = GL_COLOR_ATTACHMENT0 + this->m_colorBufferTargets.size();
 
-		glFramebufferTexture2D( GL_FRAMEBUFFER, colorAttachment, GL_TEXTURE_2D, id, 0 );
-
 		this->m_colorBufferTargets.push_back( colorAttachment );
 		this->m_colorBuffers.push_back( id );
 	}
 
 	this->m_attachedTargets.push_back( renderTarget );
+
+	return true;
+}
+
+bool
+FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
+{
+	GLenum status;
+
+	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW == renderTarget->getType() )
+	{
+		// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
+		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, renderTarget->getId(), 0 );
+		if ( GL_NO_ERROR != ( status = glGetError() ) )
+		{
+			cout << "ERROR in FrameBufferObject::attachTargetTemp DEPTH: glFramebufferTexture failed with " << gluErrorString( status ) << endl;
+			return false;
+		}
+	}
+	else if ( RenderTarget::RT_COLOR == renderTarget->getType() )
+	{
+		GLuint id = renderTarget->getId();
+		GLenum colorAttachment = GL_COLOR_ATTACHMENT0 + this->m_colorBufferTargets.size();
+
+		glFramebufferTexture2D( GL_FRAMEBUFFER, colorAttachment, GL_TEXTURE_2D, id, 0 );
+		if ( GL_NO_ERROR != ( status = glGetError() ) )
+		{
+			cout << "ERROR in FrameBufferObject::attachTargetTemp COLOR: glFramebufferTexture failed with " << gluErrorString( status ) << endl;
+			return false;
+		}
+	}
 
 	return true;
 }

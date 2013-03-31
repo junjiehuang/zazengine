@@ -323,8 +323,9 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 
 			bool castShadow = false;
 			float fov = 90.0f;
-			int shadowMapResX = 800;
-			int shadowMapResY = 800;
+			int shadowMapResX = 512;
+			int shadowMapResY = 512;
+			GeomType* boundingGeom = NULL;
 
 			TiXmlElement* shadowingNode = objectNode->FirstChildElement( "shadowing" );
 			if ( shadowingNode )
@@ -353,17 +354,17 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			if ( lightType == "DIRECTIONAL" )
 			{
 				light = Light::createDirectionalLight( RenderingWindow::getRef().getWidth(), RenderingWindow::getRef().getHeight(), castShadow );
-
-			}
-			else if ( lightType == "POINT" )
-			{
-				light = Light::createPointLight( RenderingWindow::getRef().getHeight(), castShadow );
+				boundingGeom = GeometryFactory::createQuad( ( float ) RenderingWindow::getRef().getWidth(), ( float ) RenderingWindow::getRef().getHeight() );
 			}
 			// default is spot
 			else
 			{
 				light = Light::createSpotLight( fov, shadowMapResX, shadowMapResY, castShadow );
+				// TODO load correct bounding-geometry
+				boundingGeom = GeometryFactory::createQuad( ( float ) RenderingWindow::getRef().getWidth(), ( float ) RenderingWindow::getRef().getHeight() );
 			}
+
+			light->setBoundingGeometry( boundingGeom );
 
 			entity->m_orientation = light;
 			this->m_lights.push_back( light );

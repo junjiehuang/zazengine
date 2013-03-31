@@ -21,7 +21,8 @@ class FrameBufferObject
 		static bool destroy( FrameBufferObject* );
 
 		bool attachTarget( RenderTarget* );
-		
+		bool attachTargetTemp( RenderTarget* );
+
 		bool drawAllBuffers();
 		bool drawBuffer( unsigned int );
 		bool drawNone();

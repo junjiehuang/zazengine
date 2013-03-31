@@ -143,7 +143,7 @@ class DRRenderer : public Renderer
 
  private:
 	// Multiple-Render-Targes & Framebuffer for Deferred Rendering
-	FrameBufferObject* m_fbo;
+	FrameBufferObject* m_gBufferFbo;
 	////////////////////////////////////////
 
 	// Program and shaders for geometry-stage
@@ -183,8 +183,8 @@ class DRRenderer : public Renderer
 
 	bool m_displayMRT;
 
-	bool initFBO();
 	bool initGeomStage( const boost::filesystem::path& );
+	bool initGBuffer();
 	bool initLightingStage( const boost::filesystem::path& );
 	bool initShadowMapping( const boost::filesystem::path& );
 	bool initUniformBlocks();

@@ -8,9 +8,11 @@
 #ifndef LIGHT_H_
 #define LIGHT_H_
 
+#include "../Geometry/GeomType.h"
+
 #include "../Scene/Viewer.h"
 
-#include "../renderer/RenderTarget.h"
+#include "../Renderer/RenderTarget.h"
 
 #include <GL/glew.h>
 
@@ -25,7 +27,6 @@ class Light : public Viewer
 
 	static Light* createSpotLight( float, int, int, bool );
 	static Light* createDirectionalLight( int, int, bool );
-	static Light* createPointLight( int, bool );
 
 	virtual ~Light();
 
@@ -35,14 +36,13 @@ class Light : public Viewer
 
 	bool isShadowCaster() const { return this->m_shadowCaster; };
 
-	glm::vec4 getPosition();
-	glm::vec4 getDirection();
-
 	void setColor( const glm::vec4& color ) { this->m_color = color; };
 	const glm::vec4& getColor() const { return this->m_color; };
 
+	void setBoundingGeometry( GeomType* boundingGeom ) { this->m_boundingGeom = boundingGeom; };
+	GeomType* getBoundingGeometry() { return this->m_boundingGeom; };
+
 	RenderTarget* getShadowMap() { return this->m_shadowMap; };
-	GLuint* getShadowCubeMap() { return this->m_cubeShadowMap; };
 
  private:
 	Light( int, int, LightType, bool );
@@ -53,11 +53,11 @@ class Light : public Viewer
 	LightType m_type;
 	glm::vec4 m_color;
 
+	GeomType* m_boundingGeom;
+
 	RenderTarget* m_shadowMap;
-	GLuint m_cubeShadowMap[ 6 ];
 
 	bool createShadowMap( int width, int height );
-	bool createShadowCubeMap( int side );
 
 };
 

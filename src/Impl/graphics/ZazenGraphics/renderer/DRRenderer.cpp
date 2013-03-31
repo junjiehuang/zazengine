@@ -23,7 +23,7 @@ using namespace std;
 DRRenderer::DRRenderer()
 	: Renderer( )
 {
-	this->m_fbo = 0;
+	this->m_gBufferFbo = 0;
 
 	this->m_progGeomStage = 0;
 	this->m_vertGeomStage = 0;
@@ -89,7 +89,7 @@ DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
 
 	glEnable( GL_TEXTURE_2D );
 
-	if ( false == this->initFBO() )
+	if ( false == this->initGBuffer() )
 	{
 		return false;
 	}
@@ -238,7 +238,7 @@ DRRenderer::shutdown()
 	FrameBufferObject::destroy( this->m_shadowMappingFB );
 
 	// cleaning up framebuffer
-	FrameBufferObject::destroy( this->m_fbo );
+	FrameBufferObject::destroy( this->m_gBufferFbo );
 	
 	GeomSkyBox::shutdown();
 
@@ -248,15 +248,15 @@ DRRenderer::shutdown()
 }
 
 bool
-DRRenderer::initFBO()
+DRRenderer::initGBuffer()
 {
-	this->m_fbo = FrameBufferObject::create();
-	if ( NULL == this->m_fbo )
+	this->m_gBufferFbo = FrameBufferObject::create();
+	if ( NULL == this->m_gBufferFbo )
 	{
 		return false;
 	}
 
-	if ( false == this->m_fbo->bind() )
+	if ( false == this->m_gBufferFbo->bind() )
 	{
 		return false;
 	}
@@ -291,12 +291,12 @@ DRRenderer::initFBO()
 		return false;
 	}
 
-	if ( false == this->m_fbo->checkStatus() )
+	if ( false == this->m_gBufferFbo->checkStatus() )
 	{
 		return false;
 	}
 
-	if ( false == this->m_fbo->unbind() )
+	if ( false == this->m_gBufferFbo->unbind() )
 	{
 		return false;
 	}
@@ -738,7 +738,7 @@ DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType )
 		return false;
 	}
 
-	if ( false == this->m_fbo->attachTarget( renderTarget ) )
+	if ( false == this->m_gBufferFbo->attachTarget( renderTarget ) )
 	{
 		return false;
 	}
@@ -770,19 +770,19 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		glClearColor( 0.0, 0.0, 0.0, 1.0 );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 0 ]->getId(), 0 ) )
+		if ( false == this->showTexture( this->m_gBufferFbo->getAttachedTargets()[ 0 ]->getId(), 0 ) )
 		{
 			return false;
 		}
-		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 1 ]->getId(), 1 ) )
+		if ( false == this->showTexture( this->m_gBufferFbo->getAttachedTargets()[ 1 ]->getId(), 1 ) )
 		{
 			return false;
 		}
-		if ( false == this->showTexture( this->m_fbo->getAttachedTargets()[ 2 ]->getId(), 2 ) )
+		if ( false == this->showTexture( this->m_gBufferFbo->getAttachedTargets()[ 2 ]->getId(), 2 ) )
 		{
 			return false;
 		}
-		if ( false == this->showTexture( this->m_fbo->getAttachedDepthTarget()->getId(), 3 ) )
+		if ( false == this->showTexture( this->m_gBufferFbo->getAttachedDepthTarget()->getId(), 3 ) )
 		{
 			return false;
 		}
@@ -793,11 +793,10 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 	return true;
 }
 
-// TODO cleanup!
 bool
 DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
-	if ( false == this->m_fbo->bind() )
+	if ( false == this->m_gBufferFbo->bind() )
 	{
 		return false;
 	}
@@ -805,7 +804,7 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 	// IMPORTANT: need to re-set the viewport for each FBO
 	this->m_camera->restoreViewport();
 
-	if ( false == this->m_fbo->clearAll() )
+	if ( false == this->m_gBufferFbo->clearAll() )
 	{
 		return false;
 	}
@@ -822,12 +821,12 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
-	if ( false == this->m_fbo->drawAllBuffers() )
+	if ( false == this->m_gBufferFbo->drawAllBuffers() )
 	{
 		return false;
 	}
 
-	if ( false == this->m_fbo->checkStatus() )
+	if ( false == this->m_gBufferFbo->checkStatus() )
 	{
 		return false;
 	}
@@ -838,7 +837,7 @@ DRRenderer::renderGeometryStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
-	if ( false == this->m_fbo->unbind() )
+	if ( false == this->m_gBufferFbo->unbind() )
 	{
 		return false;
 	}
@@ -860,12 +859,12 @@ DRRenderer::renderSkyBox()
 		return false;
 	}
 
-	if ( false == this->m_fbo->drawBuffer( 0 ) )
+	if ( false == this->m_gBufferFbo->drawBuffer( 0 ) )
 	{
 		return false;
 	}
 
-	if ( false == this->m_fbo->checkStatus() )
+	if ( false == this->m_gBufferFbo->checkStatus() )
 	{
 		return false;
 	}
@@ -941,7 +940,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	{
 		activeLightingProgram = this->m_progLightingNoShadowStage;
 	}
-	
+
 	// activate lighting-stage (with shadowing) shader
 	if ( false == activeLightingProgram->use() )
 	{
@@ -949,7 +948,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		return false;
 	}
 
-	if ( false == this->m_fbo->bindAllTargets() )
+	if ( false == this->m_gBufferFbo->bindAllTargets() )
 	{
 		return false;
 	}
@@ -1029,6 +1028,8 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		glVertex2f( ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight() );
 		glVertex2f( ( float ) this->m_camera->getWidth(), 0 );
 	glEnd();
+	
+	//light->getBoundingGeometry()->render();
 
 	if ( light->isShadowCaster() )
 	{
@@ -1038,7 +1039,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		}
 	}
 
-	if ( false == this->m_fbo->unbindAllTargets() )
+	if ( false == this->m_gBufferFbo->unbindAllTargets() )
 	{
 		return false;
 	}
@@ -1055,8 +1056,7 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 		return false;
 	}
 
-	// TODO won't work with multiple shadow-maps! do different when multiple lightsources implemented
-	if ( false == this->m_shadowMappingFB->attachTarget( light->getShadowMap() ) )
+	if ( false == this->m_shadowMappingFB->attachTargetTemp( light->getShadowMap() ) )
 	{
 		return false;
 	}
