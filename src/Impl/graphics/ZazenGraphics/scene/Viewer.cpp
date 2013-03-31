@@ -94,6 +94,7 @@ Viewer::resize( int width, int height )
 Viewer::CullResult
 Viewer::cullBB( const glm::vec3& bbMin, const glm::vec3& bbMax )
 {
+	/*
 	int counter = 0;
 	glm::vec4 clippingCoordsMin = this->m_VPMatrix * glm::vec4( bbMin, 1.0 );
 	glm::vec4 clippingCoordsMax = this->m_VPMatrix * glm::vec4( bbMax, 1.0 );
@@ -141,5 +142,4 @@ Viewer::matrixChanged()
 	// viewingMatrix is changed by Orientation -> recalculate ProjectionView-Matrix
 	this->m_viewMatrix = glm::inverse( this->m_modelMatrix );
 	this->m_VPMatrix = this->m_projectionMatrix * this->m_viewMatrix;
-	this->m_MVPMatrix = this->m_projectionMatrix * this->m_viewMatrix * this->m_modelMatrix;
 }

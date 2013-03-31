@@ -15,36 +15,36 @@
 
 class UniformBlock
 {
- public:
-	static UniformBlock* createBlock( const std::string& name );
+	public:
+		static UniformBlock* createBlock( const std::string& name );
 
-	virtual ~UniformBlock();
+		virtual ~UniformBlock();
 
-	const std::string& getName() { return this->m_name; };
-	GLuint getID() { return this->m_id; };
+		const std::string& getName() const { return this->m_name; };
+		GLuint getID() const { return this->m_id; };
 
-	GLuint getBinding() { return this->m_binding; };
+		GLuint getBinding() const { return this->m_binding; };
 
-	bool bind();
+		bool bind();
 
-	bool bindBuffer();
-	bool unbindBuffer();
+		bool bindBuffer();
+		bool unbindBuffer();
 
-	bool updateMat4( const glm::mat4&, int offset );
-	bool updateVec4( const glm::vec4&, int offset );
+		bool updateMat4( const glm::mat4&, int offset );
+		bool updateVec4( const glm::vec4&, int offset );
 
-	bool updateData( const void* data, int size );
-	bool updateData( const void* data, int offset, int size );
+		bool updateData( const void* data, int size );
+		bool updateData( const void* data, int offset, int size );
 
- private:
-	UniformBlock( const std::string& name );
+	private:
+		UniformBlock( const std::string& name );
 
-	static GLuint nextBinding;
+		static GLuint nextBinding;
 
-	GLuint m_id;
-	const std::string m_name;
+		GLuint m_id;
+		const std::string m_name;
 
-	GLuint m_binding;
+		GLuint m_binding;
 
 };
 

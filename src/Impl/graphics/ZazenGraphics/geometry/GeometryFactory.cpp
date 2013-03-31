@@ -185,10 +185,8 @@ GeometryFactory::loadFolder( const filesystem::path& folderPath )
 		
 		if ( subFolderGeometryFactory )
 		{
-			subFolderGeometryFactory->parent = folderGroup;
-			
 			folderGroup->compareBB( subFolderGeometryFactory->getBBMin(), subFolderGeometryFactory->getBBMin() );
-			folderGroup->children.push_back( subFolderGeometryFactory );
+			folderGroup->addChild( subFolderGeometryFactory );
 		}
 	}
 
@@ -228,7 +226,7 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 	// can return NULL when contains nothing
 	if ( NULL == geomRoot )
 	{
-		geomRoot->name = fileName;
+		geomRoot->setName( fileName );
 	}
 
 	aiReleaseImport( scene );
@@ -243,27 +241,29 @@ GeometryFactory::processNode( const struct aiNode* node, const struct aiScene* s
 {
 	GeomType* geomNode = new GeomType();
 
-	// TODO replace this anoying shit initialization
-	float* data = glm::value_ptr( geomNode->m_modelMatrix );
-	data[ 0 ] = node->mTransformation.a1;
-	data[ 1 ] = node->mTransformation.a2;
-	data[ 2 ] = node->mTransformation.a3;
-	data[ 3 ] = node->mTransformation.a4;
+	glm::mat4 modelMatrix;
+	
+	modelMatrix[ 0 ][ 0 ] = node->mTransformation.a1;
+	modelMatrix[ 0 ][ 1 ] = node->mTransformation.a2;
+	modelMatrix[ 0 ][ 2 ] = node->mTransformation.a3;
+	modelMatrix[ 0 ][ 3 ] = node->mTransformation.a4;
 
-	data[ 4 ] = node->mTransformation.b1;
-	data[ 5 ] = node->mTransformation.b2;
-	data[ 6 ] = node->mTransformation.b3;
-	data[ 7 ] = node->mTransformation.b4;
+	modelMatrix[ 1 ][ 0 ] = node->mTransformation.b1;
+	modelMatrix[ 1 ][ 1 ] = node->mTransformation.b2;
+	modelMatrix[ 1 ][ 2 ] = node->mTransformation.b3;
+	modelMatrix[ 1 ][ 3 ] = node->mTransformation.b4;
 
-	data[ 8 ] = node->mTransformation.c1;
-	data[ 9 ] = node->mTransformation.c2;
-	data[ 10 ] = node->mTransformation.c3;
-	data[ 11 ] = node->mTransformation.c4;
+	modelMatrix[ 2 ][ 0 ] = node->mTransformation.c1;
+	modelMatrix[ 2 ][ 1 ] = node->mTransformation.c2;
+	modelMatrix[ 2 ][ 2 ] = node->mTransformation.c3;
+	modelMatrix[ 2 ][ 3 ] = node->mTransformation.c4;
 
-	data[ 12 ] = node->mTransformation.d1;
-	data[ 13 ] = node->mTransformation.d2;
-	data[ 14 ] = node->mTransformation.d3;
-	data[ 15 ] = node->mTransformation.d4;
+	modelMatrix[ 3 ][ 0 ] = node->mTransformation.d1;
+	modelMatrix[ 3 ][ 1 ] = node->mTransformation.d2;
+	modelMatrix[ 3 ][ 2 ] = node->mTransformation.d3;
+	modelMatrix[ 3 ][ 3 ] = node->mTransformation.d4;
+
+	geomNode->setModelMatrix( modelMatrix );
 
 	for ( unsigned int i = 0; i < node->mNumMeshes; ++i )
 	{
@@ -273,14 +273,14 @@ GeometryFactory::processNode( const struct aiNode* node, const struct aiScene* s
 		if ( NULL != geomMesh )
 		{
 			geomNode->compareBB( geomMesh->getBBMin(), geomMesh->getBBMax() );
-			geomNode->children.push_back( geomMesh );
+			geomNode->addChild( geomMesh );
 		}
 	}
 
 	GeometryFactory::processNodeChildren( geomNode, node, scene );
 
 	// ignore empty nodes
-	if ( 0 == geomNode->children.size() )
+	if ( 0 == geomNode->getChildren().size() )
 	{
 		delete geomNode;
 		geomNode = NULL;
@@ -298,7 +298,7 @@ GeometryFactory::processNodeChildren( GeomType* geomParent, const struct aiNode*
 		if ( NULL != geomChildNode )
 		{
 			geomParent->compareBB( geomChildNode->getBBMin(), geomChildNode->getBBMax() );
-			geomParent->children.push_back( geomChildNode );
+			geomParent->addChild( geomChildNode );
 		}
 	}
 }
@@ -354,7 +354,7 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 
 	GeomMesh* geomMesh = new GeomMesh( mesh->mNumFaces, mesh->mNumVertices, vertexData, indexBuffer );
 	geomMesh->setBB( meshBBmin, meshBBmax );
-	geomMesh->name = mesh->mName.C_Str();
+	geomMesh->setName( mesh->mName.C_Str() );
 
 	return geomMesh;
 }

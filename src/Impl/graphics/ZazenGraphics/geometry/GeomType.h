@@ -1,8 +1,6 @@
 #ifndef GEOMTYPE_H_
 #define GEOMTYPE_H_
 
-#include <GL/glew.h>
-
 #include <glm/glm.hpp>
 
 #include <vector>
@@ -10,35 +8,39 @@
 
 class GeomType
 {
- public:
-	 GeomType();
-	 virtual ~GeomType();
+	public:
+		 GeomType();
+		 virtual ~GeomType();
 
-	 void compareBB( const glm::vec3&, const glm::vec3& );
+		 void compareBB( const glm::vec3&, const glm::vec3& );
 	 
-	 const glm::vec3& getCenter() { return this->center; };
-	 const glm::vec3& getBBMin() { return this->bbMin; };
-	 const glm::vec3& getBBMax() { return this->bbMax; };
+		 const glm::vec3& getCenter() { return this->m_center; };
+		 const glm::vec3& getBBMin() { return this->m_bbMin; };
+		 const glm::vec3& getBBMax() { return this->m_bbMax; };
 	 
-	 void setBB( const glm::vec3&, const glm::vec3& );
+		 void setBB( const glm::vec3&, const glm::vec3& );
 	 
-	 virtual int getFaceCount() { return 0; };
+		 virtual int getFaceCount() { return 0; };
 	 
-	 void renderBB();
-	 virtual bool render();
+		 virtual bool render() { return true; };
 
-	 GeomType* parent;
-	 std::vector<GeomType*> children;
-	 
-	 glm::mat4 m_modelMatrix;
-	 std::string name;
+		 const glm::mat4& getModelMatrix() const { return this->m_modelMatrix; };
+		 void setModelMatrix( const glm::mat4& mat ) { this->m_modelMatrix = mat; };
 
- private:
-	 GLuint bbVBO;
-		
-	 glm::vec3 bbMin;
-	 glm::vec3 bbMax;
-	 glm::vec3 center;
+		 void addChild( GeomType* child ) { this->m_children.push_back( child ); };
+		 const std::vector<GeomType*>& getChildren() const { return this->m_children; };
+
+		 void setName( const std::string& name ) { this->m_name = name; };
+
+	private:
+		 std::vector<GeomType*> m_children;
+	 
+		 glm::mat4 m_modelMatrix;
+		 std::string m_name;
+
+		 glm::vec3 m_bbMin;
+		 glm::vec3 m_bbMax;
+		 glm::vec3 m_center;
 
 };
 

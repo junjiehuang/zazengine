@@ -134,6 +134,16 @@ RenderTarget::destroy( RenderTarget* renderTarget )
 	return true;
 }
 
+void
+RenderTarget::cleanup()
+{
+	for ( unsigned int i = 0; i < RenderTarget::m_shadowMapPool.size(); i++ )
+	{
+		RenderTarget* shadowMap = RenderTarget::m_shadowMapPool[ i ];
+		RenderTarget::destroy( shadowMap );
+	}
+}
+
 RenderTarget::RenderTarget( GLuint id, GLsizei width, GLsizei height, RenderTargetType targetType )
 {
 	this->m_id = id;

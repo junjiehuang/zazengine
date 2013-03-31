@@ -2,7 +2,6 @@ TODO NOW
 - remove ALL legacy calls: create hard-coded vertex-arrays for sky-box, full-screen quad & mrt-visualiation (see geom-type renderBB() )
 	-> using legacy-stuff gives huge performance penalty!!
 	-> load box for sky-box
-- cleanup code (consistent creation comment on each file), remove unused stuff
 - extensive comments on pipeline & calls in graphcis
 
 

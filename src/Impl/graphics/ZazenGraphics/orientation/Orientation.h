@@ -24,43 +24,43 @@
 
 class Orientation
 {
- public:
-	Orientation( glm::mat4& );
-	virtual ~Orientation();
+	public:
+		Orientation( glm::mat4& );
+		virtual ~Orientation();
 
-	void setPosition( const glm::vec3& );
-	void setPositionInv( const glm::vec3& );
+		void setPosition( const glm::vec3& );
+		void setPositionInv( const glm::vec3& );
 
-	void changeHeading( float );
-	void changeHeadingInv( float );
+		void changeHeading( float );
+		void changeHeadingInv( float );
 
-	void changePitch( float );
-	void changePitchInv( float );
+		void changePitch( float );
+		void changePitchInv( float );
 
-	void changeRoll( float );
-	void changeRollInv( float );
+		void changeRoll( float );
+		void changeRollInv( float );
 
-	void strafeZ( float );
-	void strafeForward( float );
+		void strafeZ( float );
+		void strafeForward( float );
 
-	void strafeX( float );
-	void strafeRight( float );
+		void strafeX( float );
+		void strafeRight( float );
 
-	void strafeY( float );
-	void strafeUp( float );
+		void strafeY( float );
+		void strafeUp( float );
 
-	void set( const glm::vec3& pos, float pitch, float heading, float roll, float scale );
-	void setRaw( const float* rotation, const float* position );
+		void set( const glm::vec3& pos, float pitch, float heading, float roll, float scale );
+		void setRaw( const float* rotation, const float* position );
 
-	const glm::mat4& getMatrix() { return this->m_matrix; };
+		const glm::mat4& getModelMatrix() const { return this->m_matrix; };
 
- protected:
-	// this method is called always when one of the upper methods is invoded
-	// this can be overridden by subclasses to react to matrix changes
-	virtual void matrixChanged() {};
+	protected:
+		// this method is called always when one of the upper methods is invoded
+		// this can be overridden by subclasses to react to matrix changes
+		virtual void matrixChanged() {};
 
- private:
-	glm::mat4& m_matrix;
+	private:
+		glm::mat4& m_matrix;
 
 };
 

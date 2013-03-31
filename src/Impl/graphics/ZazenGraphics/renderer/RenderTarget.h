@@ -24,12 +24,12 @@ class RenderTarget
 
 		static RenderTarget* create( GLsizei, GLsizei, RenderTargetType );
 		static bool destroy( RenderTarget* );
-		// TODO need a cleanup of shadow-map pool
+		static void cleanup();
 
-		GLuint getId() { return this->m_id; };
+		GLuint getId() const { return this->m_id; };
 
-		GLsizei getWidth() { return this->m_width; };
-		GLsizei getHeight() { return this->m_height; };
+		GLsizei getWidth() const { return this->m_width; };
+		GLsizei getHeight() const { return this->m_height; };
 
 		bool bind( unsigned int );
 		bool unbind();

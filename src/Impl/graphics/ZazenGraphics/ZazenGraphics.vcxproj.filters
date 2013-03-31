@@ -34,9 +34,6 @@
     <Filter Include="Quelldateien\material">
       <UniqueIdentifier>{4a7cb01f-f308-4f9e-93e1-ebc786fd5bb8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Quelldateien\states">
-      <UniqueIdentifier>{3139ad5a-ef10-4209-a7b8-5106e222b3ae}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Quelldateien\scene">
       <UniqueIdentifier>{ba1bc969-5579-4e4c-8b5c-89f4b58f7776}</UniqueIdentifier>
     </Filter>
@@ -51,9 +48,6 @@
     </Filter>
     <Filter Include="Headerdateien\renderer">
       <UniqueIdentifier>{aef997bd-393a-471c-93ec-7b956401df83}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Headerdateien\states">
-      <UniqueIdentifier>{d63827b6-b595-4680-a337-29870a90db8a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Headerdateien\XML">
       <UniqueIdentifier>{a110fdbe-5da2-4732-911a-a7ab19883f9e}</UniqueIdentifier>
@@ -144,9 +138,6 @@
     <ClCompile Include="scene\Viewer.cpp">
       <Filter>Quelldateien\scene</Filter>
     </ClCompile>
-    <ClCompile Include="states\Statemanager.cpp">
-      <Filter>Quelldateien\states</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\IFaces\core\XML\tinystr.cpp">
       <Filter>Quelldateien\XML</Filter>
     </ClCompile>
@@ -220,18 +211,6 @@
     </ClInclude>
     <ClInclude Include="scene\Viewer.h">
       <Filter>Headerdateien\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="states\Occlusionquerystate.h">
-      <Filter>Headerdateien\states</Filter>
-    </ClInclude>
-    <ClInclude Include="states\ShadowMappingState.h">
-      <Filter>Headerdateien\states</Filter>
-    </ClInclude>
-    <ClInclude Include="states\State.h">
-      <Filter>Headerdateien\states</Filter>
-    </ClInclude>
-    <ClInclude Include="states\Statemanager.h">
-      <Filter>Headerdateien\states</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml.hpp">
       <Filter>Headerdateien\XML</Filter>

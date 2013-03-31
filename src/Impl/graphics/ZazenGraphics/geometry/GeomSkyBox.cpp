@@ -117,7 +117,7 @@ GeomSkyBox::render()
 	// force projective-projection in sky-box (camera could have ortho)
 	glm::mat4 projMat = ZazenGraphics::getInstance().getCamera().createPerspProj();
 	// reset modelview back to origin, to stick with camera, sky-box is so far away that it doesn't move
-	glm::mat4 modelViewMat = cam.m_viewMatrix;
+	glm::mat4 modelViewMat = cam.getViewMatrix();
 	modelViewMat[ 3 ][ 0 ] = 0.0f;
 	modelViewMat[ 3 ][ 1 ] = 0.0f;
 	modelViewMat[ 3 ][ 2 ] = 0.0f;

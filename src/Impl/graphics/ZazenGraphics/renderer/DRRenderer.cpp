@@ -240,6 +240,9 @@ DRRenderer::shutdown()
 	// cleaning up framebuffer
 	FrameBufferObject::destroy( this->m_gBufferFbo );
 	
+	// deleting shadow-map pool
+	RenderTarget::cleanup();
+
 	GeomSkyBox::shutdown();
 
 	cout << "Shutting down Deferred Renderer finished" << endl;
@@ -892,12 +895,12 @@ DRRenderer::renderLightingStage( std::list<Instance*>& instances, std::list<Ligh
 	}
 
 	// upload world-orientation of camera ( its model-matrix )
-	if ( false == this->m_cameraBlock->updateMat4( this->m_camera->getMatrix(), 0 ) )
+	if ( false == this->m_cameraBlock->updateMat4( this->m_camera->getModelMatrix(), 0 ) )
 	{
 		return false;
 	}
 	// upload view-matrix of camera (need to transform e.g. light-world position in EyeCoords/Viewspace)
-	if ( false == this->m_cameraBlock->updateMat4( this->m_camera->m_viewMatrix, 64 ) )
+	if ( false == this->m_cameraBlock->updateMat4( this->m_camera->getViewMatrix(), 64 ) )
 	{
 		return false;
 	}
@@ -985,7 +988,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	{
 		return false;
 	}
-	if ( false == this->m_lightBlock->updateMat4( light->m_modelMatrix, 32 ) )
+	if ( false == this->m_lightBlock->updateMat4( light->getModelMatrix(), 32 ) )
 	{
 		return false;
 	}
@@ -1002,7 +1005,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 
 		// calculate the light-space projection matrix
 		// multiplication with unit-cube is first because has to be carried out the last
-		lightSpaceUnit = this->m_unitCubeMatrix * light->m_VPMatrix;
+		lightSpaceUnit = this->m_unitCubeMatrix * light->getVPMatrix();
 
 		if ( false == this->m_lightBlock->updateMat4( lightSpaceUnit, 96 ) )
 		{
@@ -1103,7 +1106,7 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 		return false;
 	}
 
-	if ( false == this->m_transformsBlock->updateMat4( viewer->m_projectionMatrix, 64 ) )
+	if ( false == this->m_transformsBlock->updateMat4( viewer->getProjMatrix(), 64 ) )
 	{
 		return false;
 	}
@@ -1152,7 +1155,7 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 			}
 		}
 
-		if ( false == this->renderGeom( viewer, instance->geom, instance->getMatrix() ) )
+		if ( false == this->renderGeom( viewer, instance->geom, instance->getModelMatrix() ) )
 		{
 			return false;
 		}
@@ -1170,14 +1173,15 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 bool
 DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootModelMatrix )
 {
-	glm::mat4 modelMatrix = rootModelMatrix * geom->m_modelMatrix;
+	glm::mat4 modelMatrix = rootModelMatrix * geom->getModelMatrix();
+	const std::vector<GeomType*>& children = geom->getChildren();
 
-	if ( geom->children.size() )
+	if ( children.size() )
 	{
-		for ( unsigned int i = 0; i < geom->children.size(); i++ )
+		for ( unsigned int i = 0; i < children.size(); i++ )
 		{
-			GeomType* child = geom->children[ i ];
-			if ( false == this->renderGeom( viewer, geom->children[ i ], modelMatrix ) )
+			GeomType* child = children[ i ];
+			if ( false == this->renderGeom( viewer, children[ i ], modelMatrix ) )
 			{
 				return false;
 			}
@@ -1189,7 +1193,7 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 		if ( Viewer::OUTSIDE != cullResult )
 		{
 			// calculate modelView-Matrix
-			glm::mat4 modelViewMatrix = viewer->m_viewMatrix * modelMatrix;
+			glm::mat4 modelViewMatrix = viewer->getViewMatrix() * modelMatrix;
 			// normal-vectors are transformed different than vertices
 			// take the transpose of the inverse modelView or simply reset the translation vector in the modelview-matrix
 			// in other words: only the rotations are applied to normals and they are guaranteed to leave

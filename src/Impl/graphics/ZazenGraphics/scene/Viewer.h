@@ -28,56 +28,58 @@
 
 class Viewer : public Orientation
 {
- public:
-	enum CullResult {
-		INSIDE = 0,
-		OUTSIDE,
-		INTERSECTING
-	};
+	public:
+		enum CullResult {
+			INSIDE = 0,
+			OUTSIDE,
+			INTERSECTING
+		};
 
-	Viewer( int, int );
-	~Viewer();
+		Viewer( int, int );
+		~Viewer();
 
-	glm::mat4 m_modelMatrix;
-	glm::mat4 m_viewMatrix;
-	glm::mat4 m_projectionMatrix;
+		void restoreViewport();
 
-	glm::mat4 m_VPMatrix;
-	glm::mat4 m_MVPMatrix;
+		void setupPerspective();
+		void setupOrtho();
 
-	void restoreViewport();
+		const int& getHeight() const { return this->m_height; };
+		const int& getWidth() const { return this->m_width; };
 
-    void setupPerspective();
-    void setupOrtho();
+		void setFov( float fov ) { this->m_fov = fov; };
 
-    const int& getHeight() const { return this->m_height; };
-    const int& getWidth() const { return this->m_width; };
-
-    void setFov( float fov ) { this->m_fov = fov; };
-
-	void setNear( float nearDist ) { this->m_nearDist = nearDist; };
-	void setFar( float farDist ) { this->m_farDist = farDist; };
+		void setNear( float nearDist ) { this->m_nearDist = nearDist; };
+		void setFar( float farDist ) { this->m_farDist = farDist; };
 	
-	void resize( int, int );
+		void resize( int, int );
 
-	glm::mat4 createPerspProj() const;
-	glm::mat4 createOrthoProj( bool, bool ) const;
+		glm::mat4 createPerspProj() const;
+		glm::mat4 createOrthoProj( bool, bool ) const;
 
-	CullResult cullBB( const glm::vec3&, const glm::vec3& );
+		const glm::mat4& getViewMatrix() const { return this->m_viewMatrix; };
+		const glm::mat4& getProjMatrix() const { return this->m_projectionMatrix; };
+		const glm::mat4& getVPMatrix() const { return this->m_VPMatrix; };
 
- protected:
-	// overridden from Orientation
-	virtual void matrixChanged();
+		CullResult cullBB( const glm::vec3&, const glm::vec3& );
+
+	protected:
+		// overridden from Orientation
+		virtual void matrixChanged();
 	
- private:
-	int m_width;
-	int m_height;
+		private:
+		int m_width;
+		int m_height;
 
-	float m_fov;
+		float m_fov;
 
-	float m_nearDist;
-	float m_farDist;
+		float m_nearDist;
+		float m_farDist;
 	
+		glm::mat4 m_modelMatrix;
+		glm::mat4 m_viewMatrix;
+		glm::mat4 m_projectionMatrix;
+		glm::mat4 m_VPMatrix; // combination of projection and view: projection * view
+
 };
 
 #endif /*VIEWER_H_*/
