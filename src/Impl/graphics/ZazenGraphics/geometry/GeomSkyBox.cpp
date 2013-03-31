@@ -9,6 +9,8 @@
 
 #include "GeomSkyBox.h"
 
+#include "GeometryFactory.h"
+
 #include "../ZazenGraphics.h"
 #include <glm/gtc/type_ptr.hpp>
 
@@ -25,53 +27,87 @@ GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std:
 	{
 		new GeomSkyBox();
 
-		GeomSkyBox::instance->m_front = Texture::get( textureFolder.generic_string() + "/front." + format );
-		if ( NULL == GeomSkyBox::instance->m_front )
+		GeomSkyBox::instance->m_frontText = Texture::get( textureFolder.generic_string() + "/front." + format );
+		if ( NULL == GeomSkyBox::instance->m_frontText )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get front-texture" << endl;
 			GeomSkyBox::shutdown();
 			return false;
 		}
 
-		GeomSkyBox::instance->m_back = Texture::get( textureFolder.generic_string() + "/back." + format );
-		if ( NULL == GeomSkyBox::instance->m_back )
+		GeomSkyBox::instance->m_backText = Texture::get( textureFolder.generic_string() + "/back." + format );
+		if ( NULL == GeomSkyBox::instance->m_backText )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get back-texture" << endl;
 			GeomSkyBox::shutdown();
 			return false;
 		}
 
-		GeomSkyBox::instance->m_left = Texture::get( textureFolder.generic_string() + "/left." + format );
-		if ( NULL == GeomSkyBox::instance->m_left )
+		GeomSkyBox::instance->m_leftText = Texture::get( textureFolder.generic_string() + "/left." + format );
+		if ( NULL == GeomSkyBox::instance->m_leftText )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get left-texture" << endl;
 			GeomSkyBox::shutdown();
 			return false;
 		}
 
-		GeomSkyBox::instance->m_right = Texture::get( textureFolder.generic_string() + "/right." + format );
-		if ( NULL == GeomSkyBox::instance->m_right )
+		GeomSkyBox::instance->m_rightText = Texture::get( textureFolder.generic_string() + "/right." + format );
+		if ( NULL == GeomSkyBox::instance->m_rightText )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get right-texture" << endl;
 			GeomSkyBox::shutdown();
 			return false;
 		}
 
-		GeomSkyBox::instance->m_up = Texture::get( textureFolder.generic_string() + "/up." + format );
-		if ( NULL == GeomSkyBox::instance->m_up )
+		GeomSkyBox::instance->m_upText = Texture::get( textureFolder.generic_string() + "/up." + format );
+		if ( NULL == GeomSkyBox::instance->m_upText )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get up-texture" << endl;
 			GeomSkyBox::shutdown();
 			return false;
 		}
 
-		GeomSkyBox::instance->m_down = Texture::get( textureFolder.generic_string() + "/down." + format );
-		if ( NULL == GeomSkyBox::instance->m_down )
+		GeomSkyBox::instance->m_downText = Texture::get( textureFolder.generic_string() + "/down." + format );
+		if ( NULL == GeomSkyBox::instance->m_downText )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get down-texture" << endl;
 			GeomSkyBox::shutdown();
 			return false;
 		}
+
+		GeomSkyBox::instance->m_frontGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
+		glm::mat4 frontModelMatrix;
+		frontModelMatrix[ 3 ][ 2 ] = -BOX_SIDE_SIZE;
+		GeomSkyBox::instance->m_frontGeom->setModelMatrix( frontModelMatrix );
+
+		GeomSkyBox::instance->m_backGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
+		glm::mat4 backModelMatrix;
+		backModelMatrix[ 3 ][ 2 ] = BOX_SIDE_SIZE;
+		GeomSkyBox::instance->m_backGeom->setModelMatrix( backModelMatrix );
+
+		GeomSkyBox::instance->m_leftGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
+		glm::mat4 leftModelMatrix;
+		leftModelMatrix[ 2 ][ 0 ] = 1.0f;
+		leftModelMatrix[ 3 ][ 0 ] = -BOX_SIDE_SIZE;
+		GeomSkyBox::instance->m_leftGeom->setModelMatrix( leftModelMatrix );
+
+		GeomSkyBox::instance->m_rightGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
+		glm::mat4 rightModelMatrix;
+		rightModelMatrix[ 2 ][ 0 ] = -1.0f;
+		rightModelMatrix[ 3 ][ 0 ] = BOX_SIDE_SIZE;
+		GeomSkyBox::instance->m_rightGeom->setModelMatrix( rightModelMatrix );
+
+		GeomSkyBox::instance->m_upGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
+		glm::mat4 upModelMatrix;
+		upModelMatrix[ 2 ][ 1 ] = -1.0f;
+		upModelMatrix[ 3 ][ 0 ] = BOX_SIDE_SIZE;
+		GeomSkyBox::instance->m_upGeom->setModelMatrix( upModelMatrix );
+
+		GeomSkyBox::instance->m_downGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
+		glm::mat4 downModelMatrix;
+		downModelMatrix[ 2 ][ 1 ] = 1.0f;
+		downModelMatrix[ 3 ][ 0 ] = BOX_SIDE_SIZE;
+		GeomSkyBox::instance->m_downGeom->setModelMatrix( downModelMatrix );
 	}
 
 	return true;
@@ -90,12 +126,19 @@ GeomSkyBox::shutdown()
 
 GeomSkyBox::GeomSkyBox()
 {
-	this->m_front = NULL;
-	this->m_back = NULL;
-	this->m_left = NULL;
-	this->m_right = NULL;
-	this->m_up = NULL;
-	this->m_down = NULL;
+	this->m_frontText = NULL;
+	this->m_backText = NULL;
+	this->m_leftText = NULL;
+	this->m_rightText = NULL;
+	this->m_upText = NULL;
+	this->m_downText = NULL;
+
+	this->m_frontGeom = NULL;
+	this->m_backGeom = NULL;
+	this->m_leftGeom = NULL;
+	this->m_rightGeom = NULL;
+	this->m_upGeom = NULL;
+	this->m_downGeom = NULL;
 
 	GeomSkyBox::instance = this;
 }
@@ -122,111 +165,56 @@ GeomSkyBox::render()
 	modelViewMat[ 3 ][ 1 ] = 0.0f;
 	modelViewMat[ 3 ][ 2 ] = 0.0f;
 
-	glMatrixMode( GL_PROJECTION );
-	glLoadIdentity();
+	// TODO: need geomskybox program!
 
-	glLoadMatrixf( glm::value_ptr( projMat ) );
-
-	glMatrixMode( GL_MODELVIEW );
-	glLoadIdentity();
-
-	glLoadMatrixf( glm::value_ptr( modelViewMat ) );
+	// TODO: update transforms uniform block
 
 	// Front Face
-	this->m_front->bind( 0 );
+	this->m_frontText->bind( 0 );
 
-	glBegin( GL_QUADS );
-		glTexCoord2f( 0.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  -BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
+	this->m_frontGeom->render();
 
-		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  -BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
-
-		glTexCoord2f( 1.0f, 1.0f ); glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-
-		glTexCoord2f( 0.0f, 1.0f );  glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
-		
-	glEnd();
-
-	this->m_front->unbind();
+	this->m_frontText->unbind();
 	/////////////////////////
 
 	// Back Face
-	this->m_back->bind( 0 );
+	this->m_backText->bind( 0 );
 
-	glBegin(GL_QUADS);
-		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
+	this->m_backGeom->render();
 
-		glTexCoord2f( 1.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE, BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-
-		glTexCoord2f( 0.0f, 1.0f );  glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE, BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
-
-		glTexCoord2f( 0.0f, 0.0f ); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
-		 
-	glEnd();
-
-	this->m_back->unbind();
+	this->m_backText->unbind();
 	/////////////////////////
 
 	// Top Face
-	this->m_up->bind( 0 );
-	glBegin( GL_QUADS );
-		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
+	this->m_upText->bind( 0 );
+	
+	this->m_upGeom->render();
 
-		glTexCoord2f( 0.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE, BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
-
-		glTexCoord2f( 0.0f, 1.0f ); glVertex3f( BOX_SIDE_SIZE, BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
-
-		glTexCoord2f( 1.0f, 1.0f );  glVertex3f( BOX_SIDE_SIZE, BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-	glEnd();
-
-	this->m_up->unbind();
+	this->m_upText->unbind();
 	/////////////////////////
 
 	// Bottom Face
-	this->m_down->bind( 0 );
+	this->m_downText->bind( 0 );
 
-	glBegin( GL_QUADS );
-		glTexCoord2f( 1.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-		
-		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
+	this->m_downGeom->render();
 
-		glTexCoord2f( 0.0f, 0.0f ); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
-		 
-		glTexCoord2f( 0.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
-	glEnd();
-
-	this->m_down->unbind();
+	this->m_downText->unbind();
 	/////////////////////////
 
 	// Right face
-	this->m_right->bind( 0 );
+	this->m_rightText->bind( 0 );
 
-	glBegin(GL_QUADS);
-		glTexCoord2f( 0.0f, 0.0f ); glVertex3f( BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
-		
-		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( BOX_SIDE_SIZE,  -BOX_SIDE_SIZE, BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
+	this->m_rightGeom->render();
 
-		glTexCoord2f( 1.0f, 1.0f ); glVertex3f( BOX_SIDE_SIZE,  BOX_SIDE_SIZE,  BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-		 
-		glTexCoord2f( 0.0f, 1.0f );  glVertex3f( BOX_SIDE_SIZE, BOX_SIDE_SIZE,  -BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
-	glEnd();
-
-	this->m_right->unbind();
+	this->m_rightText->unbind();
 	/////////////////////////
 
 	// Left Face
-	this->m_left->bind( 0 );
+	this->m_leftText->bind( 0 );
 
-	glBegin(GL_QUADS);
-		glTexCoord2f( 0.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, BOX_SIDE_SIZE );	// Bottom Left Of The Texture and Quad
-		 
-		glTexCoord2f( 1.0f, 0.0f ); glVertex3f( -BOX_SIDE_SIZE, -BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Bottom Right Of The Texture and Quad
+	this->m_leftGeom->render();
 
-		glTexCoord2f( 1.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE, -BOX_SIDE_SIZE );	// Top Right Of The Texture and Quad
-		 
-		glTexCoord2f( 0.0f, 1.0f ); glVertex3f( -BOX_SIDE_SIZE,  BOX_SIDE_SIZE, BOX_SIDE_SIZE );	// Top Left Of The Texture and Quad
-	glEnd();
-
-	this->m_left->unbind();
+	this->m_leftText->unbind();
 	/////////////////////////
 
 	// activate z-buffering and face culling

@@ -33,15 +33,23 @@ class GeomSkyBox : public GeomType
 
 		GeomSkyBox();
 
-		Texture* m_front;
-		Texture* m_back;
+		Texture* m_frontText;
+		GeomType* m_frontGeom;
 
-		Texture* m_left;
-		Texture* m_right;
-		
-		Texture* m_up;
-		Texture* m_down;
-	
+		Texture* m_backText;
+		GeomType* m_backGeom;
+
+		Texture* m_leftText;
+		GeomType* m_leftGeom;
+
+		Texture* m_rightText;
+		GeomType* m_rightGeom;
+
+		Texture* m_upText;
+		GeomType* m_upGeom;
+
+		Texture* m_downText;
+		GeomType* m_downGeom;
 };
 
 #endif

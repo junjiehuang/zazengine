@@ -67,6 +67,9 @@ GeometryFactory::get( const std::string& fileName )
 GeomType*
 GeometryFactory::createQuad( float width, float height )
 {
+	float halfWidth = width / 2;
+	float halfHeight = height / 2;
+
 	// consists of 2 triangles
 	int numFaces = 2;
 	// has 4 vertices
@@ -81,9 +84,9 @@ GeometryFactory::createQuad( float width, float height )
 	memset( vertexData, 0, numVertices * sizeof( GeomMesh::VertexData ) );
 
 	// top left vertex
-	vertexData[ 0 ].position[ 0 ] = 0.0f;
-	vertexData[ 0 ].position[ 1 ] = 0.0f;
-	vertexData[ 0 ].position[ 2 ] = 1.0f;
+	vertexData[ 0 ].position[ 0 ] = -halfWidth;
+	vertexData[ 0 ].position[ 1 ] = halfHeight;
+	vertexData[ 0 ].position[ 2 ] = 0.0f;
 	vertexData[ 0 ].normal[ 0 ] = 0.0f;
 	vertexData[ 0 ].normal[ 1 ] = 0.0f;
 	vertexData[ 0 ].normal[ 2 ] = 1.0f;
@@ -91,9 +94,9 @@ GeometryFactory::createQuad( float width, float height )
 	vertexData[ 0 ].texCoord[ 1 ] = 1.0f;
 
 	// bottom left vertex
-	vertexData[ 1 ].position[ 0 ] = 0.0f;
-	vertexData[ 1 ].position[ 1 ] = height;
-	vertexData[ 1 ].position[ 2 ] = 1.0f;
+	vertexData[ 1 ].position[ 0 ] = -halfWidth;
+	vertexData[ 1 ].position[ 1 ] = -halfHeight;
+	vertexData[ 1 ].position[ 2 ] = 0.0f;
 	vertexData[ 1 ].normal[ 0 ] = 0.0f;
 	vertexData[ 1 ].normal[ 1 ] = 0.0f;
 	vertexData[ 1 ].normal[ 2 ] = 1.0f;
@@ -101,9 +104,9 @@ GeometryFactory::createQuad( float width, float height )
 	vertexData[ 1 ].texCoord[ 1 ] = 0.0f;
 
 	// bottom right vertex
-	vertexData[ 2 ].position[ 0 ] = width;
-	vertexData[ 2 ].position[ 1 ] = height;
-	vertexData[ 2 ].position[ 2 ] = 1.0f;
+	vertexData[ 2 ].position[ 0 ] = halfWidth;
+	vertexData[ 2 ].position[ 1 ] = -halfHeight;
+	vertexData[ 2 ].position[ 2 ] = 0.0f;
 	vertexData[ 2 ].normal[ 0 ] = 0.0f;
 	vertexData[ 2 ].normal[ 1 ] = 0.0f;
 	vertexData[ 2 ].normal[ 2 ] = 1.0f;
@@ -111,9 +114,9 @@ GeometryFactory::createQuad( float width, float height )
 	vertexData[ 2 ].texCoord[ 1 ] = 0.0f;
 
 	// top right vertex
-	vertexData[ 3 ].position[ 0 ] = width;
-	vertexData[ 3 ].position[ 1 ] = 0.0f;
-	vertexData[ 3 ].position[ 2 ] = 1.0f;
+	vertexData[ 3 ].position[ 0 ] = halfWidth;
+	vertexData[ 3 ].position[ 1 ] = halfHeight;
+	vertexData[ 3 ].position[ 2 ] = 0.0f;
 	vertexData[ 3 ].normal[ 0 ] = 0.0f;
 	vertexData[ 3 ].normal[ 1 ] = 0.0f;
 	vertexData[ 3 ].normal[ 2 ] = 1.0f;

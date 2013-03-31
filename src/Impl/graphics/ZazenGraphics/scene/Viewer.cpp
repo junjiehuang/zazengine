@@ -50,7 +50,7 @@ Viewer::createOrthoProj( bool centered, bool normalizeZ ) const
 	if ( centered ) 
 	{
 		float halfWidth = ( float ) this->m_width / 2.0f;
-		float halfHeight = ( float ) this->m_width / 2.0f;
+		float halfHeight = ( float ) this->m_height / 2.0f;
 
 		left = -halfWidth;
 		right = halfWidth;

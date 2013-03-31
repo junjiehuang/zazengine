@@ -1016,7 +1016,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	this->m_transformsBlock->bind();
 	// update projection-matrix because changed to orthogonal-projection
 	// OPTIMIZE: store in light once, and only update when change
-	glm::mat4 orthoMat = this->m_camera->createOrthoProj( false, true );
+	glm::mat4 orthoMat = this->m_camera->createOrthoProj( true, true );
 	if ( false == this->m_transformsBlock->updateMat4( orthoMat, 64 ) )
 	{
 		return false;

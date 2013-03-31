@@ -1,7 +1,6 @@
 TODO NOW
 - remove ALL legacy calls: create hard-coded vertex-arrays for sky-box, full-screen quad & mrt-visualiation (see geom-type renderBB() )
 	-> using legacy-stuff gives huge performance penalty!!
-	-> load box for sky-box
 - extensive comments on pipeline & calls in graphcis
 
 
@@ -21,7 +20,8 @@ Graphics-Pipeline
 - split lighting-pass into "ambient&sky-box pass" & lighting-pass for each light
 	 => no lighting/shadowing of sky-box & objects visible also when no light in scene present
 - use stencil buffer to mask skybox from lighting&shading
-
+- implement #include in shaders: parse loaded string and replace
+	-> problem: compiler error generate other line numbers!
 
 Rendering-Algorithms
 - shadow-mapping
