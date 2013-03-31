@@ -6,7 +6,6 @@ TODO NOW
 
 
 Graphics Optimization
-
 - reduce OpenGL-calls/state-changes
 	-> no need to turn on/off buffer-stuff for each geometry-rendering, turn on for batch-processing and then turn off
 - optimzie shaders
@@ -15,7 +14,7 @@ Graphics Optimization
 - use layout in shaders
 - check if all unbinds are really necessary
 - remove ALL legacy-calls (use gDEBugger for help)
-
+- spot-light boundary: load sphere without normals, uv,... & project with perspective into scene using camera MVP
 
 Graphics-Pipeline
 - shadowing of sky-box not wanted
@@ -29,8 +28,8 @@ Rendering-Algorithms
 	-> correct lighting&shadowing equations: falloff, cone, ...
 	-> do some sampling on shadow-edges
 - multiple lights
-	-> spot-light boundary: load sphere without normals, uv,... & project with perspective into scene using camera MVP
 	-> blending 
+- point-lights
 - normal-mapping
 - advanced brdfs
 	-> sub-surface-scattering brdf

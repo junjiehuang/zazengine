@@ -1015,6 +1015,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 
 	this->m_transformsBlock->bind();
 	// update projection-matrix because changed to orthogonal-projection
+	// OPTIMIZE: store in light once, and only update when change
 	glm::mat4 orthoMat = this->m_camera->createOrthoProj( false, true );
 	if ( false == this->m_transformsBlock->updateMat4( orthoMat, 64 ) )
 	{
@@ -1024,15 +1025,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	// TODO: need to set opengl to additiveley blend light-passes
 	// alpha? color modulate?...
 
-	// render quad
-	glBegin( GL_QUADS );
-		glVertex2f( 0, 0 );
-		glVertex2f( 0, ( float ) this->m_camera->getHeight() );
-		glVertex2f( ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight() );
-		glVertex2f( ( float ) this->m_camera->getWidth(), 0 );
-	glEnd();
-	
-	//light->getBoundingGeometry()->render();
+	light->getBoundingGeometry()->render();
 
 	if ( light->isShadowCaster() )
 	{
