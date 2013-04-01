@@ -57,10 +57,7 @@ class Material
 		const MaterialType m_type;
 
 		glm::vec4 m_color;
-		glm::vec4 m_genericParams1;
-		glm::vec4 m_genericParams2;
 
-		Texture* m_normalMap;
 		Texture* m_diffuseTexture;
 };
 

@@ -2,8 +2,8 @@
 
 uniform sampler2D DiffuseMap;
 uniform sampler2D NormalMap;
+uniform sampler2D PositionMap;
 uniform sampler2D DepthMap;
-uniform sampler2D GenericMap1;
 
 uniform sampler2DShadow ShadowMap;
 
@@ -21,11 +21,10 @@ layout( shared ) uniform camera
 
 layout( shared ) uniform light
 {
-	vec4 light_Config; 				// x: type, y: falloff, z: shadowCaster 0/1
-	vec4 light_Color;
+	vec4 light_Config; 					// 0
 
-	mat4 light_Model_Matrix;
-	mat4 light_SpaceUniform_Matrix;
+	mat4 light_Model_Matrix;			// 16
+	mat4 light_SpaceUniform_Matrix;		// 80
 };
 
 vec4
@@ -68,20 +67,21 @@ calculatePhong( in vec4 diffuse, in vec4 normal, in vec4 position )
 
 void main()
 {
-	// fetch the coordinate of this fragment in normalized
-	// screen-space ( 0 – 1 ) 
+	// fetch the coordinate of this fragment in normalized screen-space ( 0 – 1 ) 
 	vec2 screenCoord = vec2( gl_FragCoord.x / camera_rec.x, gl_FragCoord.y / camera_rec.y );
 
+	// fetch diffuse color for this fragment
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
 
 	// IMPORTANT: need to normalize normals due to possible uniform-scaling applied to models
 	// OPTIMIZE: apply SCALE-Matrix only to modelView and not to normalsModelView
 	vec4 normal = normalize( texture( NormalMap, screenCoord ) );
 
-	// position of fragment is stored in model-view coordinates = EyeCoordinates (EC)
+	// position of fragment is stored in model-view coordinates = EyeCoordinates (EC) 
 	// EC is what we need for lighting-calculations
-	vec4 ecPosition = texture( GenericMap1, screenCoord );
+	vec4 ecPosition = texture( PositionMap, screenCoord );
 
+	// shadow true/false
 	float shadow = 0.0;
 
 	// do shadow-calculation only when light is shadow-caster 
@@ -105,8 +105,10 @@ void main()
 			// in the vertex-shader, which is not possible in the deferred renderer without using 
 			// an additional render-target. in forward-rendering between the vertex-shader
 			// and the fragment-shader where the shadow-map lookup happens
-			// interpolation & perspective division is carried out by the fixed-function
-			// so we need to do this here in the fragment-shader of the deferred renderer as well
+			// interpolation is carried out by the fixed-function but no perspective division
+			// the shadowcoord is in our case already multiplied with the projection-transform
+			// but we still need to do the projective-division to reach the according space 0-1
+			// because this is not done when applying the projection transform
 			// ADDITION: either use 	
 			//		vec3 shadowCoordPersp = shadowCoord.xyz / shadowCoord.w; with texture( ShadowMap, shadowCoordPersp ) lookup 
 			//		OR use textureProj( ShadowMap, shadowCoord ); directly

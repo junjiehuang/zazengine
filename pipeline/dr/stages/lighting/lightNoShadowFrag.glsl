@@ -2,8 +2,8 @@
 
 uniform sampler2D DiffuseMap;
 uniform sampler2D NormalMap;
+uniform sampler2D PositionMap;
 uniform sampler2D DepthMap;
-uniform sampler2D GenericMap1;
 
 out vec4 final_color;
 
@@ -76,7 +76,7 @@ void main()
 
 	// position of fragment is stored in model-view coordinates = EyeCoordinates (EC)
 	// EC is what we need for lighting-calculations
-	vec4 ecPosition = texture( GenericMap1, screenCoord );
+	vec4 ecPosition = texture( PositionMap, screenCoord );
 
 	float matId = diffuse.a * 255;
 

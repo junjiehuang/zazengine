@@ -135,21 +135,6 @@ Material::init( const filesystem::path& path )
 						}
 					}
 				}
-				else if ( 0 == strcmp( str, "normalMap" ) )
-				{
-					if ( 0 == material->m_normalMap )
-					{
-						str = materialCfgNode->Attribute( "file" );
-						if ( 0 != str )
-						{
-							Texture* texture = Texture::get( str );
-							if ( texture )
-							{
-								material->m_normalMap = texture;
-							}
-						}
-					}
-				}
 				else if ( 0 == strcmp( str, "color" ) )
 				{
 					glm::vec4 color;
@@ -215,16 +200,9 @@ Material::activate( UniformBlock* materialUniforms, Program* currentProgramm )
 		currentProgramm->setUniformInt( "DiffuseTexture", 0 );
 	}
 
-	if ( this->m_normalMap )
-	{
-		this->m_normalMap->bind( 1 );
-		currentProgramm->setUniformInt( "NormalMap", 1 );
-	}
-
 	glm::vec4 materialCfg;
 	materialCfg[ 0 ] = ( float ) this->m_type;
 	materialCfg[ 1 ] = this->m_diffuseTexture == 0 ? 0.0f : 1.0f;
-	materialCfg[ 2 ] = this->m_normalMap == 0 ? 0.0f : 1.0f;
 
 	// IMPORTANT: materialUniforms->bindBuffer() must have been already called by client 
 	if ( false == materialUniforms->updateVec4( materialCfg, 0 ) )
@@ -232,17 +210,7 @@ Material::activate( UniformBlock* materialUniforms, Program* currentProgramm )
 		return false;
 	}
 
-	if ( false == materialUniforms->updateVec4( this->m_genericParams1, 16 ) )
-	{
-		return false;
-	}
-
-	if ( false == materialUniforms->updateVec4( this->m_genericParams1, 32 ) )
-	{
-		return false;
-	}
-
-	if ( false == materialUniforms->updateVec4( this->m_color, 48 ) )
+	if ( false == materialUniforms->updateVec4( this->m_color, 16 ) )
 	{
 		return false;
 	}
@@ -258,10 +226,6 @@ Material::deactivate()
 		this->m_diffuseTexture->unbind();
 	}
 
-	if ( this->m_normalMap )
-	{
-		this->m_normalMap->unbind();
-	}
 
 	return true;
 }
@@ -270,8 +234,7 @@ Material::Material( const std::string& name, MaterialType type )
 	: m_name( name ),
 	  m_type( type )
 {
-	this->m_normalMap = 0;
-	this->m_diffuseTexture = 0;
+	this->m_diffuseTexture = NULL;
 }
 
 Material::~Material()

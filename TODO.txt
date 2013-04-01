@@ -1,7 +1,8 @@
 TODOs, Refactorings & Optimizations
 - fix sky-box
+	-> shadowing of sky-box not wanted: if materialType == skybox then don't apply shadowing!
 - analyse deprecated stuff using gDEBugger
-- extensive comments on pipeline & calls in graphcis
+	-> force core-profile when creating opengl context from windows
 
 - Program- & Shader-Management: describe by xml, is annoying to manually set up in program-code
 	-> frag-data location
@@ -15,12 +16,13 @@ TODOs, Refactorings & Optimizations
 	-> pre multiply matrices in CPU, branching
 - caching of uniform-locations in program: only need for one lookup!
 - use layout in shaders
-- check if all unbinds are really necessary
-- remove ALL legacy-calls (use gDEBugger for help)
 - remove redundant calls
+	-> check if all unbinds are really necessary
+	-> some checks are only necessary when debugging => use macros for #ifdef (DEBUG)
+		-> e.g. fbo-status checks
+- experiment with different render-target formats for performance
 - spot-light boundary: load sphere without normals, uv,... & project with perspective into scene using camera MVP
 
-- shadowing of sky-box not wanted
 - split lighting-pass into "ambient&sky-box pass" & lighting-pass for each light
 	 => no lighting/shadowing of sky-box & objects visible also when no light in scene present
 - use stencil buffer to mask skybox from lighting&shading

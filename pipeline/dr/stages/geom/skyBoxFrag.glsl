@@ -11,7 +11,8 @@ layout( location = 0 ) out vec4 out_diffuse;
 
 void main()
 {
+	// sky-box does diffuse-color only
 	out_diffuse.rgb = texture( DiffuseTexture, ex_texCoord ).rgb;
-	// store materialtype in diffuse-component alpha-channel
+	// store special material-type for sky-box
 	out_diffuse.a = 255;
 }

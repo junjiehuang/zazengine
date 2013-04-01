@@ -18,12 +18,22 @@ layout( shared ) uniform transforms
 
 void main()
 {
-	// NOTE: that due to multiplication with modelView only and without projection
-	// only interpoation between vertices will happen but no perspective division
+	// IMPORTANT: out-variables are interepolated but no perspective division is applied
+
+	// store position in view-space (EyeCoordinates) 
 	ex_position = modelView_Matrix * vec4( in_vertPos, 1.0 );
+	// store normals in view-space too (EC)
 	ex_normal = normalsModelView_Matrix * vec4( in_vertNorm, 0.0 );
+	// no transform for texture-coords, just interpolated
 	ex_texCoord = in_texCoord;
 
 	// OPTIMIZE: premultiply projection & modelView on CPU 
+	// calculate position of vertex using MVP-matrix. 
+	// will then be in clip-space after this transformation is applied
+	// clipping will be applied
+	// then opengl will apply perspective division 
+	// after this the coordinates will be between -1 to 1 which is NDC
+	// then view-port transform will happen
+	// then fragment-shader takes over
 	gl_Position = projection_Matrix * modelView_Matrix * vec4( in_vertPos, 1.0 );
 }
