@@ -171,48 +171,36 @@ GeomSkyBox::render()
 	this->m_frontText->bind( 0 );
 
 	this->m_frontGeom->render();
-
-	this->m_frontText->unbind();
 	/////////////////////////
 
 	// Back Face
 	this->m_backText->bind( 0 );
 
 	this->m_backGeom->render();
-
-	this->m_backText->unbind();
 	/////////////////////////
 
 	// Top Face
 	this->m_upText->bind( 0 );
 	
 	this->m_upGeom->render();
-
-	this->m_upText->unbind();
 	/////////////////////////
 
 	// Bottom Face
 	this->m_downText->bind( 0 );
 
 	this->m_downGeom->render();
-
-	this->m_downText->unbind();
 	/////////////////////////
 
 	// Right face
 	this->m_rightText->bind( 0 );
 
 	this->m_rightGeom->render();
-
-	this->m_rightText->unbind();
 	/////////////////////////
 
 	// Left Face
 	this->m_leftText->bind( 0 );
 
 	this->m_leftGeom->render();
-
-	this->m_leftText->unbind();
 	/////////////////////////
 
 	// activate z-buffering and face culling

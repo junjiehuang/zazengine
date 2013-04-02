@@ -32,7 +32,6 @@ class RenderTarget
 		GLsizei getHeight() const { return this->m_height; };
 
 		bool bind( unsigned int );
-		bool unbind();
 
 		RenderTargetType getType() { return this->m_targetType; };
 
@@ -41,7 +40,6 @@ class RenderTarget
 		~RenderTarget();
 
 		GLuint m_id;
-		GLuint m_boundIndex;
 
 		GLsizei m_width;
 		GLsizei m_height;

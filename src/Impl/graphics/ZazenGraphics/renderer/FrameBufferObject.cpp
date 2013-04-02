@@ -172,21 +172,6 @@ FrameBufferObject::bindAllTargets()
 }
 
 bool
-FrameBufferObject::unbindAllTargets()
-{
-	// bind the mrts
-	for ( unsigned int i = 0; i < this->m_attachedTargets.size(); i++ )
-	{
-		if ( false == this->m_attachedTargets[ i ]->unbind() )
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
-bool
 FrameBufferObject::drawAllBuffers()
 {
 	GLenum status;

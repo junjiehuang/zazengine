@@ -1094,21 +1094,6 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	// render light boundary (for now only full screen-quad)
 	light->getBoundingGeometry()->render();
 
-	// unbind shadow-map when light is shadow-caster
-	if ( light->isShadowCaster() )
-	{
-		if ( false == light->getShadowMap()->unbind() )
-		{
-			return false;
-		}
-	}
-
-	// unbind all g-buffer textures
-	if ( false == this->m_gBufferFbo->unbindAllTargets() )
-	{
-		return false;
-	}
-
 	return true;
 }
 
@@ -1208,12 +1193,6 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 		if ( false == this->renderGeom( viewer, instance->geom, instance->getModelMatrix() ) )
 		{
 			return false;
-		}
-
-		// when material was applied deactivate it after used
-		if ( instance->material && applyMaterial )
-		{
-			instance->material->deactivate();
 		}
 	}
 

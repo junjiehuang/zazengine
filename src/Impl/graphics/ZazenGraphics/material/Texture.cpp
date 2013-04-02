@@ -82,8 +82,6 @@ Texture::freeAll()
 Texture::Texture( GLuint texID )
 {
 	this->m_textureID = texID;
-
-	this->m_textureUnit = -1;
 }
 
 Texture::~Texture()
@@ -94,16 +92,9 @@ Texture::~Texture()
 void
 Texture::bind( int textureUnit )
 {
-	if ( -1 != this->m_textureUnit )
-	{
-		return;
-	}
-
-	this->m_textureUnit = textureUnit;
-
 	GLenum status;
 
-	glActiveTexture( GL_TEXTURE0 + this->m_textureUnit );
+	glActiveTexture( GL_TEXTURE0 + textureUnit );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR ... in Texture::bind: failed glActiveTexture with " << gluErrorString( status ) << endl;
@@ -116,33 +107,6 @@ Texture::bind( int textureUnit )
 		cout << "ERROR ... in Texture::bind: failed glBindTexture with " << gluErrorString( status ) << endl;
 		return;
 	}
-}
-
-void
-Texture::unbind()
-{
-	if ( -1 == this->m_textureUnit )
-	{
-		return;
-	}
-
-	GLenum status;
-
-	glActiveTexture( GL_TEXTURE0 + this->m_textureUnit );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR ... in Texture::unbind: failed glActiveTexture with " << gluErrorString( status ) << endl;
-		return;
-	}
-
-	glBindTexture( GL_TEXTURE_2D, 0 );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR ... in Texture::unbind: failed glBindTexture with " << gluErrorString( status ) << endl;
-		return;
-	}
-
-	this->m_textureUnit = -1;
 }
 
 GLuint

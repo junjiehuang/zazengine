@@ -31,7 +31,6 @@ class FrameBufferObject
 		bool unbind();
 
 		bool bindAllTargets();
-		bool unbindAllTargets();
 
 		bool clearAll();
 

@@ -3,12 +3,9 @@ TODOs, Refactorings & Optimizations
 	-> shadowing of sky-box not wanted: if materialType == skybox then don't apply shadowing!
 - analyse deprecated stuff using gDEBugger
 	-> force core-profile when creating opengl context from windows
+- remove errors in gDEBugger during glLinkProgram!
 
-- Program- & Shader-Management: describe by xml, is annoying to manually set up in program-code
-	-> frag-data location
-	-> bind uniform blocks
-	-> ...
-	-> lookup program in program-registry during runtime
+- move FBO & rendertargets into own package
 
 - reduce OpenGL-calls/state-changes
 	-> no need to turn on/off buffer-stuff for each geometry-rendering, turn on for batch-processing and then turn off
@@ -17,7 +14,6 @@ TODOs, Refactorings & Optimizations
 - caching of uniform-locations in program: only need for one lookup!
 - use layout in shaders
 - remove redundant calls
-	-> check if all unbinds are really necessary
 	-> some checks are only necessary when debugging => use macros for #ifdef (DEBUG)
 		-> e.g. fbo-status checks
 - experiment with different render-target formats for performance
@@ -31,6 +27,26 @@ TODOs, Refactorings & Optimizations
 
 
 
+
+- Program- & Shader-Management
+	-> move into its own package, no more in material package
+	-> describe by xml, is annoying to manually set up in program-code
+	-> frag-data location
+	-> bind uniform blocks
+	-> ...
+	-> lookup program in program-registry during runtime
+
+	
+- Need generic effect/material functionality
+	-> on top of program- & shader-management
+	-> based upon effect-files like directx/cg shader effects
+	-> custom shader program for material programming
+	-> problem: shaders-effect architecture from 2003 is based upon forward-rendering, we need now to plug it into deferred rendering
+		-> 2 stages: geometry & ligting => potential up to 4 shaders/material: vertex&fragment in geometry & lighting
+			-> BUT: vertex in geometry- & lighting-stage is very hard wired to deferred rendering
+	
+	
+	
 Rendering-Algorithms
 - shadow-mapping
 	-> correct lighting&shadowing equations: falloff, cone, ...
@@ -48,8 +64,6 @@ Rendering-Algorithms
 - msaa
 	-> do sampling in geometry fragment-shader (centroid)
 - Fix View-Frustum culling
-
-Advanced Graphic-Techniques
 - transparency
 - reflections
 - culling library (Umbra 3)

@@ -151,8 +151,6 @@ RenderTarget::RenderTarget( GLuint id, GLsizei width, GLsizei height, RenderTarg
 
 	this->m_width = width;
 	this->m_height = height;
-
-	this->m_boundIndex = -1;
 }
 
 RenderTarget::~RenderTarget()
@@ -164,17 +162,10 @@ RenderTarget::bind( unsigned int index )
 {
 	GLenum status;
 
-	if ( -1 != this->m_boundIndex )
-	{
-		return false;
-	}
-
-	this->m_boundIndex = index;
-
-	glActiveTexture( GL_TEXTURE0 + this->m_boundIndex );
+	glActiveTexture( GL_TEXTURE0 + index );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "ERROR in RenderTarget::bind: glActiveTexture of GL_TEXTURE" << this->m_boundIndex << " failed with " << gluErrorString( status ) << endl;
+		cout << "ERROR in RenderTarget::bind: glActiveTexture of GL_TEXTURE" << index << " failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
 
@@ -184,35 +175,6 @@ RenderTarget::bind( unsigned int index )
 		cout << "ERROR in RenderTarget::bind: glBindTexture with id " << this->m_id << " failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
-
-	return true;
-}
-
-bool 
-RenderTarget::unbind()
-{
-	GLenum status;
-
-	if ( -1 == this->m_boundIndex )
-	{
-		return false;
-	}
-
-	glActiveTexture( GL_TEXTURE0 + this->m_boundIndex );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in RenderTarget::unbind: glActiveTexture GL_TEXTURE" << this->m_boundIndex << " failed with " << gluErrorString( status ) << endl;
-		return false;
-	}
-
-	glBindTexture( GL_TEXTURE_2D, 0 );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in RenderTarget::unbind: glBindTexture( 0 ) failed with " << gluErrorString( status ) << endl;
-		return false;
-	}
-
-	this->m_boundIndex = -1;
 
 	return true;
 }

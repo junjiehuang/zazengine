@@ -26,13 +26,10 @@ class Texture
 		static Texture* get( const std::string& );
 
 		void bind( int textureUnit );
-		void unbind();
 	
 	private:
 		Texture( GLuint );
 		~Texture();
-
-		int m_textureUnit;
 
 		GLuint m_textureID;
 	

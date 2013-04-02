@@ -181,22 +181,6 @@ GeomMesh::render()
 		return false;
 	}
 
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
-	status = glGetError();
-	if ( GL_NO_ERROR != status )
-	{
-		cout << "GeomMesh::render: glBindBuffer( 0 ) GL_ELEMENT_ARRAY_BUFFER - render - failed: " << gluErrorString( status )  << endl;
-		return false;
-	}
-
-	glBindBuffer( GL_ARRAY_BUFFER, 0 );
-	status = glGetError();
-	if ( GL_NO_ERROR != status )
-	{
-		cout << "GeomMesh::render: glBindBuffer( 0 ) GL_ELEMENT_ARRAY_BUFFER - render - failed: " << gluErrorString( status )  << endl;
-		return false;
-	}
-
 	glDisableVertexAttribArray( 0 );
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
@@ -204,7 +188,7 @@ GeomMesh::render()
 		cout << "GeomMesh::render: glDisableVertexAttribArray( 0 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
-
+	
 	glDisableVertexAttribArray( 1 );
 	status = glGetError();
 	if ( GL_NO_ERROR != status )

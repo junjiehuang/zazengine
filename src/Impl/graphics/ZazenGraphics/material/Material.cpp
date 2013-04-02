@@ -218,18 +218,6 @@ Material::activate( UniformBlock* materialUniforms, Program* currentProgramm )
 	return true;
 }
 
-bool
-Material::deactivate()
-{
-	if ( this->m_diffuseTexture )
-	{
-		this->m_diffuseTexture->unbind();
-	}
-
-
-	return true;
-}
-
 Material::Material( const std::string& name, MaterialType type )
 	: m_name( name ),
 	  m_type( type )
