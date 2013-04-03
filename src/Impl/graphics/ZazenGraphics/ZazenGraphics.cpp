@@ -81,10 +81,12 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 		return false;
 	}
 
+	/*
 	if ( false == this->initGL( configNode ) )
 	{
 		return false;
 	}
+	*/
 
 	Texture::init( this->m_textureDataPath );
 

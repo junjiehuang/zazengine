@@ -103,7 +103,13 @@ Program::link()
 	GLint status;
 
 	glLinkProgram( this->m_programObject );
-	glGetProgramiv( this->m_programObject, GL_LINK_STATUS, &status);
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR ... in Program::link for programm " << this->m_programName << ": calling glLinkProgram failed." << endl;
+		return false;
+	}
+
+	glGetProgramiv( this->m_programObject, GL_LINK_STATUS, &status );
 	if ( GL_TRUE != status )
 	{
 		cout << "ERROR ... in Program::link for programm " << this->m_programName << ": linking of program failed. Error-Log:" << endl;
@@ -176,7 +182,9 @@ Program::getAttribLocation( const std::string& name )
 
 	location = glGetAttribLocation( this->m_programObject, name.c_str() );
 	if ( -1 == location )
+	{
 		cout << "ERROR ... in Program::getAttribLocation for programm " << this->m_programName << ": coulnd't glGetAttribLocation location for name \"" << name << "\": " << gluErrorString( glGetError() )  << endl;
+	}
 
 	return location;
 }

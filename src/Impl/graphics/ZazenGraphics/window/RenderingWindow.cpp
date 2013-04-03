@@ -1,6 +1,11 @@
 #include "RenderingWindow.h"
 
 #include <GL/glew.h>
+#include <GL/wglew.h>
+
+#include <iostream>
+
+using namespace std;
 
 #define WINDOW_BITS_PER_PIXEL 32
 
@@ -161,6 +166,82 @@ RenderingWindow::createRenderingWindow( const std::string& title, int width, int
 		return false;								// Return FALSE
 	}
 
+	GLenum err = glewInit();
+	if ( GLEW_OK != err )
+	{
+		cout << "ERROR ... GLEW failed with " <<  glewGetErrorString(err) << endl;
+		return false;
+	}
+	else
+	{
+		cout << "OK ... GLEW " << glewGetString(GLEW_VERSION) << " initialized " << endl;
+	}
+
+	/*
+	wglMakeCurrent(NULL, NULL);
+	wglDeleteContext(RenderingWindow::instance->hRC);
+	DestroyWindow(RenderingWindow::instance->hWnd);
+
+	// TODO create new window
+	// Create The Window
+	if (!(RenderingWindow::instance->hWnd=CreateWindowEx(	dwExStyle,							// Extended Style For The Window
+								"OpenGL",							// Class Name
+								title.c_str(),						// Window Title
+								dwStyle |							// Defined Window Style
+								WS_CLIPSIBLINGS |					// Required Window Style
+								WS_CLIPCHILDREN,					// Required Window Style
+								0, 0,								// Window Position
+								WindowRect.right-WindowRect.left,	// Calculate Window Width
+								WindowRect.bottom-WindowRect.top,	// Calculate Window Height
+								NULL,								// No Parent Window
+								NULL,								// No Menu
+								RenderingWindow::instance->hInstance,							// Instance
+								NULL)))								// Dont Pass Anything To WM_CREATE
+	{
+		RenderingWindow::destroyWindow();
+		MessageBox(NULL,"Window Creation Error.","ERROR",MB_OK|MB_ICONEXCLAMATION);
+		return false;								// Return FALSE
+	}
+
+	if (!(RenderingWindow::instance->hDC=GetDC(RenderingWindow::instance->hWnd)))							// Did We Get A Device Context?
+	{
+		RenderingWindow::destroyWindow();
+		MessageBox(NULL,"Can't Create A GL Device Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
+		return false;								// Return FALSE
+	}
+
+	int majorVersion = 3;
+	int minorVersion = 3;
+
+	const int iPixelFormatAttribList[] =
+		{
+			WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+			WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+			WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+			WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+			WGL_COLOR_BITS_ARB, 32,
+			WGL_DEPTH_BITS_ARB, 32,
+			WGL_STENCIL_BITS_ARB, 8,
+			0 // End of attributes list
+		};
+		int iContextAttribs[] =
+		{
+			WGL_CONTEXT_MAJOR_VERSION_ARB, majorVersion,
+			WGL_CONTEXT_MINOR_VERSION_ARB, minorVersion,
+			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+			0 // End of attributes list
+		};
+
+		int iPixelFormat, iNumFormats;
+		wglChoosePixelFormatARB(RenderingWindow::instance->hDC, iPixelFormatAttribList, NULL, 1, &iPixelFormat, (UINT*)&iNumFormats);
+
+		// PFD seems to be only redundant parameter now
+		if(!SetPixelFormat(RenderingWindow::instance->hDC, iPixelFormat, &pfd))return false;
+
+		RenderingWindow::instance->hRC = wglCreateContextAttribsARB(RenderingWindow::instance->hDC, 0, iContextAttribs);
+		// If everything went OK
+		if(RenderingWindow::instance->hRC) wglMakeCurrent(RenderingWindow::instance->hDC, RenderingWindow::instance->hRC);
+		*/
 	ShowWindow(RenderingWindow::instance->hWnd,SW_SHOW);						// Show The Window
 	SetForegroundWindow(RenderingWindow::instance->hWnd);						// Slightly Higher Priority
 	SetFocus(RenderingWindow::instance->hWnd);									// Sets Keyboard Focus To The Window

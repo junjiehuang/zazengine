@@ -1,11 +1,14 @@
 TODOs, Refactorings & Optimizations
-- fix sky-box
-	-> shadowing of sky-box not wanted: if materialType == skybox then don't apply shadowing!
 - analyse deprecated stuff using gDEBugger
 	-> force core-profile when creating opengl context from windows
 - remove errors in gDEBugger during glLinkProgram!
-
+- use glValidateProgram !
+- fix toggle fullscreen
 - move FBO & rendertargets into own package
+
+- fix sky-box
+	-> shadowing of sky-box not wanted: if materialType == skybox then don't apply shadowing!
+
 
 - reduce OpenGL-calls/state-changes
 	-> no need to turn on/off buffer-stuff for each geometry-rendering, turn on for batch-processing and then turn off
