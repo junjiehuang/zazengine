@@ -12,112 +12,214 @@ using namespace std;
 RenderingWindow* RenderingWindow::instance = NULL;
 
 bool
-RenderingWindow::createRenderingWindow( const std::string& title, int width, int height, bool fullScreenFlag )
+RenderingWindow::initialize( const std::string& title, int width, int height, bool fullScreenFlag )
 {
 	new RenderingWindow();
-	RenderingWindow::instance->m_windowWidth = width;
-	RenderingWindow::instance->m_windowHeight = height;
-
-	GLuint PixelFormat;			// Holds The Results After Searching For A Match
-	WNDCLASS wc;						// Windows Class Structure
-	DWORD dwExStyle;				// Window Extended Style
-	DWORD dwStyle;				// Window Style
-	RECT WindowRect;				// Grabs Rectangle Upper Left / Lower Right Values
-	WindowRect.left = ( long ) 0;			// Set Left Value To 0
-	WindowRect.right = ( long ) width;		// Set Right Value To Requested Width
-	WindowRect.top = ( long ) 0;				// Set Top Value To 0
-	WindowRect.bottom = ( long ) height;		// Set Bottom Value To Requested Height
-
-	RenderingWindow::instance->m_fullScreen = fullScreenFlag;
-
-	RenderingWindow::instance->hInstance			= GetModuleHandle(NULL);				// Grab An Instance For Our Window
-	wc.style			= CS_HREDRAW | CS_VREDRAW | CS_OWNDC;	// Redraw On Size, And Own DC For Window.
-	wc.lpfnWndProc		= (WNDPROC) WndProc;					// WndProc Handles Messages
-	wc.cbClsExtra		= 0;									// No Extra Window Data
-	wc.cbWndExtra		= 0;									// No Extra Window Data
-	wc.hInstance		= RenderingWindow::instance->hInstance;							// Set The Instance
-	wc.hIcon			= LoadIcon(NULL, IDI_WINLOGO);			// Load The Default Icon
-	wc.hCursor			= LoadCursor(NULL, IDC_ARROW);			// Load The Arrow Pointer
-	wc.hbrBackground	= NULL;									// No Background Required For GL
-	wc.lpszMenuName		= NULL;									// We Don't Want A Menu
-	wc.lpszClassName	= "OpenGL";								// Set The Class Name
-
-	if (!RegisterClass(&wc))									// Attempt To Register The Window Class
+	
+	// register new OpenGL window class
+	if ( false == RenderingWindow::registerClass( GetModuleHandle( NULL ) ) )
 	{
-		MessageBox(NULL,"Failed To Register The Window Class.","ERROR",MB_OK|MB_ICONEXCLAMATION);
-		return false;											// Return FALSE
+		RenderingWindow::shutdown();
+		return false;
 	}
 	
-	if ( RenderingWindow::instance->m_fullScreen )												// Attempt Fullscreen Mode?
+	// create window (with according device context & pixelformat )
+	if ( false == RenderingWindow::createWindow( width, height, fullScreenFlag, title ) )
 	{
-		DEVMODE dmScreenSettings;								// Device Mode
-		memset(&dmScreenSettings,0,sizeof(dmScreenSettings));	// Makes Sure Memory's Cleared
-		dmScreenSettings.dmSize=sizeof(dmScreenSettings);		// Size Of The Devmode Structure
-		dmScreenSettings.dmPelsWidth	= width;				// Selected Screen Width
-		dmScreenSettings.dmPelsHeight	= height;				// Selected Screen Height
-		dmScreenSettings.dmBitsPerPel	= WINDOW_BITS_PER_PIXEL;					// Selected Bits Per Pixel
-		dmScreenSettings.dmFields=DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT;
+		RenderingWindow::shutdown();
+		return false;
+	}
+	
+	// create basic OpenGL compatibility rendering-context & initialize GLEW => fetched function pointers for createing core rendering-context
+	if ( false == RenderingWindow::createCompatibilityRenderingContext() )
+	{
+		RenderingWindow::shutdown();
+		return false;
+	}
+
+	// destroy rendering context because we will set up a new ( core ) one
+	if ( false == RenderingWindow::destroyRenderingContext() )
+	{
+		RenderingWindow::shutdown();
+		return false;
+	}
+	
+	// destroy the created window
+	if ( false == RenderingWindow::destroyWindow() )
+	{
+		RenderingWindow::shutdown();
+		return false;
+	}
+	
+	// create window again with then new core rendering-context
+	if ( false == RenderingWindow::createWindow( width, height, fullScreenFlag, title ) )
+	{
+		RenderingWindow::shutdown();
+		return false;
+	}
+
+	// create core rendering context
+	if ( false == RenderingWindow::createCoreRenderingContext() )
+	{
+		RenderingWindow::shutdown();
+		return false;
+	}
+
+	// show and size window
+	ShowWindow( RenderingWindow::instance->hWnd, SW_SHOW );					
+	SetForegroundWindow( RenderingWindow::instance->hWnd );
+	SetFocus( RenderingWindow::instance->hWnd );
+	RenderingWindow::instance->resize( width, height );
+
+	return true;
+}
+
+bool
+RenderingWindow::shutdown()
+{
+	// not initialize, silent fail
+	if ( NULL == RenderingWindow::instance )
+	{
+		return true;
+	}
+
+	// when in fullscreen, un-fullscreen the window
+	if ( RenderingWindow::instance->m_fullScreen )	
+	{
+		ChangeDisplaySettings( NULL,0 );
+		ShowCursor( TRUE );
+	}
+
+	// clean-up in reversed order
+	// destroy OpenGL rendering-context
+	RenderingWindow::destroyRenderingContext();
+	// destroy window (& device context)
+	RenderingWindow::destroyWindow();
+	// unregister OpenGL window-class
+	RenderingWindow::unregisterClass();
+
+	// delete singleton instance 
+	delete RenderingWindow::instance;
+
+	return true;
+}
+
+bool
+RenderingWindow::registerClass( HINSTANCE hInstance )
+{
+	WNDCLASS wc;						
+	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;		// Redraw On Size, And Own DC For Window.
+	wc.lpfnWndProc = (WNDPROC) WndProc;					// WndProc Handles Messages
+	wc.cbClsExtra = 0;									// No Extra Window Data
+	wc.cbWndExtra = 0;									// No Extra Window Data
+	wc.hInstance = hInstance;							// Set The Instance
+	wc.hIcon = LoadIcon( NULL, IDI_WINLOGO );			// Load The Default Icon
+	wc.hCursor = LoadCursor( NULL, IDC_ARROW );			// Load The Arrow Pointer
+	wc.hbrBackground = NULL;							// No Background Required For GL
+	wc.lpszMenuName	= NULL;								// We Don't Want A Menu
+	wc.lpszClassName = "OpenGL";						// Set The Class Name
+
+	if ( 0 == RegisterClass( &wc ) )
+	{
+		cout << "ERROR ... in RenderingWindow::registerClass: Failed To Register The Window Class." << endl;
+		return false;
+	}
+
+	// successful in registering the class, set hInstance
+	RenderingWindow::instance->hInstance = hInstance;
+
+	return true;
+}
+
+bool
+RenderingWindow::createWindow( int width, int height, bool fullScreenFlag, const std::string& title )
+{
+	HWND hWnd = NULL;
+	HDC hDC = NULL;
+	DWORD dwExStyle;		
+	DWORD dwStyle;	
+	RECT WindowRect;
+	GLuint pixelFormat;
+
+	WindowRect.left = ( long ) 0;			
+	WindowRect.right = ( long ) width;		
+	WindowRect.top = ( long ) 0;				
+	WindowRect.bottom = ( long ) height;
+
+	if ( fullScreenFlag )
+	{
+		DEVMODE dmScreenSettings;
+		memset( &dmScreenSettings, 0, sizeof( dmScreenSettings ) );
+		dmScreenSettings.dmSize = sizeof( dmScreenSettings );
+		dmScreenSettings.dmPelsWidth = width;
+		dmScreenSettings.dmPelsHeight = height;
+		dmScreenSettings.dmBitsPerPel = WINDOW_BITS_PER_PIXEL;
+		dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
 
 		// Try To Set Selected Mode And Get Results.  NOTE: CDS_FULLSCREEN Gets Rid Of Start Bar.
-		if (ChangeDisplaySettings(&dmScreenSettings,CDS_FULLSCREEN)!=DISP_CHANGE_SUCCESSFUL)
+		if ( ChangeDisplaySettings( &dmScreenSettings, CDS_FULLSCREEN ) != DISP_CHANGE_SUCCESSFUL )
 		{
-			// If The Mode Fails, Offer Two Options.  Quit Or Use Windowed Mode.
-			if (MessageBox(NULL,"The Requested Fullscreen Mode Is Not Supported By\nYour Video Card. Use Windowed Mode Instead?","NeHe GL",MB_YESNO|MB_ICONEXCLAMATION)==IDYES)
-			{
-				RenderingWindow::instance->m_fullScreen=FALSE;		// Windowed Mode Selected.  Fullscreen = FALSE
-			}
-			else
-			{
-				// Pop Up A Message Box Letting User Know The Program Is Closing.
-				MessageBox(NULL,"Program Will Now Close.","ERROR",MB_OK|MB_ICONSTOP);
-				return false;									// Return FALSE
-			}
+			cout << "WARNING ... in RenderingWindow::createWindow: The Requested Fullscreen Mode Is Not Supported By Your Video Card, fallback to windowed mode." << endl;
+			fullScreenFlag = false;
 		}
 	}
 
-	if ( RenderingWindow::instance->m_fullScreen )												// Are We Still In Fullscreen Mode?
+	if ( fullScreenFlag )
 	{
-		dwExStyle=WS_EX_APPWINDOW;								// Window Extended Style
-		dwStyle=WS_POPUP;										// Windows Style
-		ShowCursor(FALSE);										// Hide Mouse Pointer
+		dwExStyle = WS_EX_APPWINDOW;					
+		dwStyle = WS_POPUP;	
+		ShowCursor( FALSE );
 	}
 	else
 	{
-		dwExStyle=WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;			// Window Extended Style
-		dwStyle=WS_OVERLAPPEDWINDOW;							// Windows Style
+		dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;	
+		dwStyle = WS_OVERLAPPEDWINDOW;
 	}
 
-	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);		// Adjust Window To True Requested Size
+	// Adjust Window To True Requested Size
+	AdjustWindowRectEx( &WindowRect, dwStyle, FALSE, dwExStyle );
 
-	// Create The Window
-	if (!(RenderingWindow::instance->hWnd=CreateWindowEx( dwExStyle,							// Extended Style For The Window
-								"OpenGL",							// Class Name
-								title.c_str(),						// Window Title
-								dwStyle |							// Defined Window Style
-								WS_CLIPSIBLINGS |					// Required Window Style
-								WS_CLIPCHILDREN,					// Required Window Style
-								0, 0,								// Window Position
-								WindowRect.right-WindowRect.left,	// Calculate Window Width
-								WindowRect.bottom-WindowRect.top,	// Calculate Window Height
-								NULL,								// No Parent Window
-								NULL,								// No Menu
-								RenderingWindow::instance->hInstance,							// Instance
-								NULL)))								// Dont Pass Anything To WM_CREATE
+	// create the window
+	hWnd = CreateWindowEx( dwExStyle,
+								"OpenGL",
+								title.c_str(),
+								dwStyle |
+								WS_CLIPSIBLINGS |
+								WS_CLIPCHILDREN,
+								0, 0,
+								WindowRect.right-WindowRect.left,
+								WindowRect.bottom-WindowRect.top,
+								NULL,
+								NULL,
+								RenderingWindow::instance->hInstance,
+								NULL ); 
+	if ( NULL == hWnd )
 	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL,"Window Creation Error.","ERROR",MB_OK|MB_ICONEXCLAMATION);
-		return false;								// Return FALSE
+		cout << "ERROR ... in RenderingWindow::createWindow: Failed To Register The Window Class." << endl;
+		return false;
 	}
 
-	static	PIXELFORMATDESCRIPTOR pfd=				// pfd Tells Windows How We Want Things To Be
+	// creating the window succeeded
+	RenderingWindow::instance->hWnd = hWnd;
+
+	hDC = GetDC( RenderingWindow::instance->hWnd );
+	if ( NULL == hDC )
 	{
-		sizeof(PIXELFORMATDESCRIPTOR),				// Size Of This Pixel Format Descriptor
+		cout << "ERROR ... in RenderingWindow::createWindow: Can't Create A GL Device Context." << endl;
+		return false;
+	}
+
+	RenderingWindow::instance->hDC = hDC;
+
+	static	PIXELFORMATDESCRIPTOR pfd =	
+	{
+		sizeof( PIXELFORMATDESCRIPTOR ),			// Size Of This Pixel Format Descriptor
 		1,											// Version Number
 		PFD_DRAW_TO_WINDOW |						// Format Must Support Window
 		PFD_SUPPORT_OPENGL |						// Format Must Support OpenGL
 		PFD_DOUBLEBUFFER,							// Must Support Double Buffering
 		PFD_TYPE_RGBA,								// Request An RGBA Format
-		WINDOW_BITS_PER_PIXEL,										// Select Our Color Depth
+		WINDOW_BITS_PER_PIXEL,						// Select Our Color Depth
 		0, 0, 0, 0, 0, 0,							// Color Bits Ignored
 		0,											// No Alpha Buffer
 		0,											// Shift Bit Ignored
@@ -130,87 +232,62 @@ RenderingWindow::createRenderingWindow( const std::string& title, int width, int
 		0,											// Reserved
 		0, 0, 0										// Layer Masks Ignored
 	};
-	
-	if (!(RenderingWindow::instance->hDC=GetDC(RenderingWindow::instance->hWnd)))							// Did We Get A Device Context?
+
+	pixelFormat = ChoosePixelFormat( RenderingWindow::instance->hDC, &pfd );
+	if ( 0 == pixelFormat )
 	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL,"Can't Create A GL Device Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
-		return false;								// Return FALSE
+		cout << "ERROR ... in RenderingWindow::createWindow: Can't Find A Suitable PixelFormat." << endl;
+		return false;
 	}
 
-	if (!(PixelFormat=ChoosePixelFormat(RenderingWindow::instance->hDC,&pfd)))	// Did Windows Find A Matching Pixel Format?
+	if ( false == SetPixelFormat( RenderingWindow::instance->hDC, pixelFormat, &pfd ) )
 	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL,"Can't Find A Suitable PixelFormat.","ERROR",MB_OK|MB_ICONEXCLAMATION);
-		return false;								// Return FALSE
+		cout << "ERROR ... in RenderingWindow::createWindow: Can't Set The PixelFormat." << endl;
+		return false;
 	}
 
-	if(!SetPixelFormat(RenderingWindow::instance->hDC,PixelFormat,&pfd))		// Are We Able To Set The Pixel Format?
+	RenderingWindow::instance->m_windowWidth = width;
+	RenderingWindow::instance->m_windowHeight = height;
+	RenderingWindow::instance->m_fullScreen = fullScreenFlag;
+
+	return true;
+}
+
+bool
+RenderingWindow::createCompatibilityRenderingContext()
+{
+	HGLRC hRC = wglCreateContext( RenderingWindow::instance->hDC );
+	if ( NULL == hRC )
 	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL,"Can't Set The PixelFormat.","ERROR",MB_OK|MB_ICONEXCLAMATION);
-		return false;								// Return FALSE
+		cout << "ERROR ... in RenderingWindow::createCompatibilityRenderingContext: Can't Create A GL Rendering Context." << endl;
+		return false;
 	}
 
-	if (!(RenderingWindow::instance->hRC=wglCreateContext(RenderingWindow::instance->hDC)))				// Are We Able To Get A Rendering Context?
-	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL,"Can't Create A GL Rendering Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
-		return false;								// Return FALSE
-	}
+	RenderingWindow::instance->hRC = hRC;
 
-	if(!wglMakeCurrent(RenderingWindow::instance->hDC,RenderingWindow::instance->hRC))					// Try To Activate The Rendering Context
+	if( 0 == wglMakeCurrent( RenderingWindow::instance->hDC, RenderingWindow::instance->hRC ) )
 	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL,"Can't Activate The GL Rendering Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
-		return false;								// Return FALSE
+		cout << "ERROR ... in RenderingWindow::createCompatibilityRenderingContext: Can't Activate The GL Rendering Context." << endl;
+		return false;
 	}
 
 	GLenum err = glewInit();
 	if ( GLEW_OK != err )
 	{
-		cout << "ERROR ... GLEW failed with " <<  glewGetErrorString(err) << endl;
+		cout << "ERROR ... in RenderingWindow::createCompatibilityRenderingContext: GLEW failed with " <<  glewGetErrorString( err ) << endl;
 		return false;
 	}
-	else
-	{
-		cout << "OK ... GLEW " << glewGetString(GLEW_VERSION) << " initialized " << endl;
-	}
 
-	wglMakeCurrent( NULL, NULL );
-	wglDeleteContext( RenderingWindow::instance->hRC );
-	ReleaseDC( RenderingWindow::instance->hWnd,RenderingWindow::instance->hDC );
-	DestroyWindow( RenderingWindow::instance->hWnd );
+	return true;
+}
 
-	// Create The Window
-	if (!(RenderingWindow::instance->hWnd=CreateWindowEx(	dwExStyle,							// Extended Style For The Window
-								"OpenGL",							// Class Name
-								title.c_str(),						// Window Title
-								dwStyle |							// Defined Window Style
-								WS_CLIPSIBLINGS |					// Required Window Style
-								WS_CLIPCHILDREN,					// Required Window Style
-								0, 0,								// Window Position
-								WindowRect.right-WindowRect.left,	// Calculate Window Width
-								WindowRect.bottom-WindowRect.top,	// Calculate Window Height
-								NULL,								// No Parent Window
-								NULL,								// No Menu
-								RenderingWindow::instance->hInstance,							// Instance
-								NULL)))								// Dont Pass Anything To WM_CREATE
-	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL,"Window Creation Error.","ERROR",MB_OK|MB_ICONEXCLAMATION);
-		return false;								// Return FALSE
-	}
-
-	if (!(RenderingWindow::instance->hDC=GetDC(RenderingWindow::instance->hWnd)))							// Did We Get A Device Context?
-	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL,"Can't Create A GL Device Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
-		return false;								// Return FALSE
-	}
-
+bool
+RenderingWindow::createCoreRenderingContext()
+{
+	HGLRC hRC = NULL;
 	int majorVersion = 3;
 	int minorVersion = 3;
+	int iPixelFormat, iNumFormats;
 
 	const int iPixelFormatAttribList[] =
 	{
@@ -223,6 +300,7 @@ RenderingWindow::createRenderingWindow( const std::string& title, int width, int
 		WGL_STENCIL_BITS_ARB, 8,
 		0 // End of attributes list
 	};
+
 	int iContextAttribs[] =
 	{
 		WGL_CONTEXT_MAJOR_VERSION_ARB, majorVersion,
@@ -231,53 +309,93 @@ RenderingWindow::createRenderingWindow( const std::string& title, int width, int
 		0 // End of attributes list
 	};
 
-	int iPixelFormat, iNumFormats;
-	wglChoosePixelFormatARB(RenderingWindow::instance->hDC, iPixelFormatAttribList, NULL, 1, &iPixelFormat, (UINT*)&iNumFormats);
+	wglChoosePixelFormatARB( RenderingWindow::instance->hDC, iPixelFormatAttribList, NULL, 1, &iPixelFormat, ( UINT* ) &iNumFormats );
 
-	if (!(PixelFormat=ChoosePixelFormat(RenderingWindow::instance->hDC,&pfd)))	// Did Windows Find A Matching Pixel Format?
+	hRC = wglCreateContextAttribsARB(RenderingWindow::instance->hDC, 0, iContextAttribs);
+	if ( NULL == hRC )
 	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL,"Can't Find A Suitable PixelFormat.","ERROR",MB_OK|MB_ICONEXCLAMATION);
+		cout << "ERROR ... in RenderingWindow::createCoreRenderingContext: Can't Create A GL Rendering Context." << endl;
 		return false;
 	}
 
-	if(!SetPixelFormat(RenderingWindow::instance->hDC,PixelFormat,&pfd))		// Are We Able To Set The Pixel Format?
+	RenderingWindow::instance->hRC = hRC;
+
+	if( 0 == wglMakeCurrent( RenderingWindow::instance->hDC, RenderingWindow::instance->hRC ) )
 	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL,"Can't Set The PixelFormat.","ERROR",MB_OK|MB_ICONEXCLAMATION);
+		cout << "ERROR ... in RenderingWindow::createCoreRenderingContext: Can't Activate The GL Rendering Context." << endl;
 		return false;
-	}
-
-	if (!(RenderingWindow::instance->hRC=wglCreateContextAttribsARB(RenderingWindow::instance->hDC, 0, iContextAttribs)))				// Are We Able To Get A Rendering Context?
-	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL, "Can't Create A GL Rendering Context.", "ERROR",MB_OK|MB_ICONEXCLAMATION);
-		return false;								// Return FALSE
-	}
-
-	if(!wglMakeCurrent(RenderingWindow::instance->hDC,RenderingWindow::instance->hRC))					// Try To Activate The Rendering Context
-	{
-		RenderingWindow::destroyWindow();
-		MessageBox(NULL,"Can't Activate The GL Rendering Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
-		return false;								// Return FALSE
 	}
 
 	// re-init glew: refetch function pointers because of new context
-	err = glewInit();
+	GLenum err = glewInit();
 	if ( GLEW_OK != err )
 	{
-		cout << "ERROR ... GLEW failed with " <<  glewGetErrorString(err) << endl;
+		cout << "ERROR ... in RenderingWindow::createCoreRenderingContext: GLEW failed with " <<  glewGetErrorString( err ) << endl;
 		return false;
 	}
-	else
+
+	return true;
+}
+
+bool
+RenderingWindow::unregisterClass()
+{
+	if ( NULL != RenderingWindow::instance->hInstance )
 	{
-		cout << "OK ... GLEW " << glewGetString(GLEW_VERSION) << " initialized " << endl;
+		if ( 0 == UnregisterClass( "OpenGL", RenderingWindow::instance->hInstance ) )
+		{
+			cout << "WARNING ... in RenderingWindow::unregisterClass: Could Not Unregister Class." << endl;		
+		}
+
+		RenderingWindow::instance->hInstance = NULL;
 	}
 
-	ShowWindow(RenderingWindow::instance->hWnd,SW_SHOW);						// Show The Window
-	SetForegroundWindow(RenderingWindow::instance->hWnd);						// Slightly Higher Priority
-	SetFocus(RenderingWindow::instance->hWnd);									// Sets Keyboard Focus To The Window
-	RenderingWindow::instance->resize( width, height );
+	return true;
+}
+
+bool
+RenderingWindow::destroyRenderingContext()
+{
+	if ( NULL != RenderingWindow::instance->hRC )
+	{
+		if ( 0 == wglMakeCurrent( NULL, NULL ) )	
+		{
+			cout << "WARNING ... in RenderingWindow::unregisterClass: Release Of DC And RC Failed." << endl;
+		}
+
+		if ( 0 == wglDeleteContext( RenderingWindow::instance->hRC ) )
+		{
+			cout << "WARNING ... in RenderingWindow::unregisterClass: Release Rendering Context Failed." << endl;
+		}
+
+		RenderingWindow::instance->hRC = NULL;
+	}
+
+	return true;
+}
+
+bool
+RenderingWindow::destroyWindow()
+{
+	if ( NULL != RenderingWindow::instance->hDC && NULL != RenderingWindow::instance->hWnd )
+	{
+		if ( 0 == ReleaseDC( RenderingWindow::instance->hWnd,RenderingWindow::instance->hDC ) )
+		{
+			cout << "WARNING ... in RenderingWindow::destroyWindow: Release Device Context Failed." << endl;
+		}
+
+		RenderingWindow::instance->hDC = NULL;
+	}
+
+	if ( NULL != RenderingWindow::instance->hWnd )
+	{
+		if ( 0 == DestroyWindow( RenderingWindow::instance->hWnd ) )
+		{
+			cout << "WARNING ... in RenderingWindow::destroyWindow: Destroy Window Failed." << endl;
+		}
+
+		RenderingWindow::instance->hWnd = NULL;
+	}
 
 	return true;
 }
@@ -306,130 +424,80 @@ RenderingWindow::~RenderingWindow()
 bool
 RenderingWindow::toggleFullscreen()
 {
+	// TODO implement
+
 	return true;
 }
 
 void
-RenderingWindow::resize( int width, int height )		// Resize And Initialize The GL Window
+RenderingWindow::resize( int width, int height )
 {
-	if (height==0)										// Prevent A Divide By Zero By
+	// special case for height: prevent divide by 0 in OpenGL
+	if ( 0 == height )
 	{
-		height=1;										// Making Height Equal One
+		height = 1;
 	}
 
-	glViewport( 0,0, width, height );						// Reset The Current Viewport
+	glViewport( 0,0, width, height );
 
 	// TODO resize camera
 	// TODO reinit renderer
+
+	// TODO refactor: need to do a callback
 }
 
 bool
 RenderingWindow::swapBuffers()
 {
-	SwapBuffers( hDC );				// Swap Buffers (Double Buffering)
-
-	return true;
-}
-
-bool
-RenderingWindow::destroyWindow()								// Properly Kill The Window
-{
-	if ( NULL == RenderingWindow::instance )
-	{
-		return true;
-	}
-
-	if ( RenderingWindow::instance->m_fullScreen )										// Are We In Fullscreen Mode?
-	{
-		ChangeDisplaySettings(NULL,0);					// If So Switch Back To The Desktop
-		ShowCursor(TRUE);								// Show Mouse Pointer
-	}
-
-	if ( RenderingWindow::instance->hRC )											// Do We Have A Rendering Context?
-	{
-		if (!wglMakeCurrent(NULL,NULL))					// Are We Able To Release The DC And RC Contexts?
-		{
-			MessageBox(NULL,"Release Of DC And RC Failed.","SHUTDOWN ERROR",MB_OK | MB_ICONINFORMATION);
-		}
-
-		if (!wglDeleteContext(RenderingWindow::instance->hRC))						// Are We Able To Delete The RC?
-		{
-			MessageBox(NULL,"Release Rendering Context Failed.","SHUTDOWN ERROR",MB_OK | MB_ICONINFORMATION);
-		}
-		RenderingWindow::instance->hRC=NULL;										// Set RC To NULL
-	}
-
-	if (RenderingWindow::instance->hDC && !ReleaseDC(RenderingWindow::instance->hWnd,RenderingWindow::instance->hDC))					// Are We Able To Release The DC
-	{
-		MessageBox(NULL,"Release Device Context Failed.","SHUTDOWN ERROR",MB_OK | MB_ICONINFORMATION);
-		RenderingWindow::instance->hDC=NULL;										// Set DC To NULL
-	}
-
-	if (RenderingWindow::instance->hWnd && !DestroyWindow(RenderingWindow::instance->hWnd))					// Are We Able To Destroy The Window?
-	{
-		MessageBox(NULL,"Could Not Release hWnd.","SHUTDOWN ERROR",MB_OK | MB_ICONINFORMATION);
-		RenderingWindow::instance->hWnd=NULL;										// Set hWnd To NULL
-	}
-
-	if (!UnregisterClass("OpenGL",RenderingWindow::instance->hInstance))			// Are We Able To Unregister Class
-	{
-		MessageBox(NULL,"Could Not Unregister Class.","SHUTDOWN ERROR",MB_OK | MB_ICONINFORMATION);
-		RenderingWindow::instance->hInstance=NULL;									// Set hInstance To NULL
-	}
-
-	delete RenderingWindow::instance;
+	SwapBuffers( RenderingWindow::instance->hDC );
 
 	return true;
 }
 
 LRESULT CALLBACK
-RenderingWindow::WndProc(	HWND	hWnd,			// Handle For This Window
-							UINT	uMsg,			// Message For This Window
-							WPARAM	wParam,			// Additional Message Information
-							LPARAM	lParam)			// Additional Message Information
+RenderingWindow::WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-	switch (uMsg)									// Check For Windows Messages
+	switch ( uMsg ) 
 	{
-		case WM_ACTIVATE:							// Watch For Window Activate Message
+		case WM_ACTIVATE:
 		{
-			if (!HIWORD(wParam))					// Check Minimization State
+			if ( 0 == HIWORD( wParam ) )
 			{
-				//active=TRUE;						// Program Is Active
 				RenderingWindow::instance->m_activeFlag = true;
 			}
 			else
 			{
-				//active=FALSE;						// Program Is No Longer Active
 				RenderingWindow::instance->m_activeFlag = false;
 			}
 
-			return 0;								// Return To The Message Loop
+			return 0;
 		}
 
-		case WM_SYSCOMMAND:							// Intercept System Commands
+		case WM_SYSCOMMAND:
 		{
-			switch (wParam)							// Check System Calls
+			switch ( wParam )
 			{
-				case SC_SCREENSAVE:					// Screensaver Trying To Start?
-				case SC_MONITORPOWER:				// Monitor Trying To Enter Powersave?
-				return 0;							// Prevent From Happening
+				case SC_SCREENSAVE:
+				case SC_MONITORPOWER:
+				return 0;
 			}
-			break;									// Exit
+
+			break;
 		}
 
-		case WM_CLOSE:								// Did We Receive A Close Message?
+		case WM_CLOSE:
 		{
-			PostQuitMessage(0);						// Send A Quit Message
-			return 0;								// Jump Back
+			PostQuitMessage( 0 );
+			return 0;
 		}
 
-		case WM_SIZE:								// Resize The OpenGL Window
+		case WM_SIZE:
 		{
-			RenderingWindow::instance->resize( LOWORD(lParam),HIWORD(lParam) );
-			return 0;								// Jump Back
+			RenderingWindow::instance->resize( LOWORD( lParam ), HIWORD( lParam ) );
+			return 0;
 		}
 	}
 
 	// Pass All Unhandled Messages To DefWindowProc
-	return DefWindowProc(hWnd,uMsg,wParam,lParam);
+	return DefWindowProc( hWnd, uMsg, wParam, lParam );
 }

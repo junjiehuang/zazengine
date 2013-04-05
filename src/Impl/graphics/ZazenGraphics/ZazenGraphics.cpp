@@ -125,7 +125,7 @@ ZazenGraphics::shutdown()
 	Texture::freeAll();
 	GeometryFactory::freeAll();
 	
-	RenderingWindow::destroyWindow();
+	RenderingWindow::shutdown();
 
 	cout << "================ ZazenGraphics shutdown =================" << endl;
 
@@ -583,7 +583,7 @@ ZazenGraphics::createWindow( TiXmlElement* configNode )
 		}
 	}
 
-	if ( false == RenderingWindow::createRenderingWindow( windowTitle, windowWidth, windowHeight, fullScreen ) )
+	if ( false == RenderingWindow::initialize( windowTitle, windowWidth, windowHeight, fullScreen ) )
 	{
 		cout << "ERROR ... in ZazenGraphics::createWindow: failed creating window" << endl;
 		return false;

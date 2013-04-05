@@ -15,8 +15,8 @@
 class RenderingWindow
 {
 	public:
-		static bool createRenderingWindow( const std::string&, int, int, bool );
-		static bool destroyWindow();
+		static bool initialize( const std::string&, int, int, bool );
+		static bool shutdown();
 		static RenderingWindow& getRef() { return *RenderingWindow::instance; };
 
 		bool toggleFullscreen();
@@ -45,12 +45,21 @@ class RenderingWindow
 
 		bool m_activeFlag;
 
-		HDC hDC; // Private GDI Device Context
-		HGLRC hRC; // Permanent Rendering Context
-		HWND hWnd;	// Holds Our Window Handle
-		HINSTANCE hInstance; // Holds The Instance Of The Application
+		HDC hDC;
+		HGLRC hRC;
+		HWND hWnd;
+		HINSTANCE hInstance;
 
 		void resize( int, int );
+
+		static bool registerClass( HINSTANCE );
+		static bool createWindow( int, int, bool, const std::string& );
+		static bool createCompatibilityRenderingContext();
+		static bool createCoreRenderingContext();
+
+		static bool unregisterClass();
+		static bool destroyWindow();
+		static bool destroyRenderingContext();
 
 		static LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
