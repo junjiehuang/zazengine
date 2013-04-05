@@ -13,7 +13,7 @@
 #include "DRRenderer.h"
 
 #include "../Geometry/GeomSkyBox.h"
-#include "../Material/UniformBlock.h"
+#include "../Program/UniformBlock.h"
 
 #include <iostream>
 #include <algorithm>

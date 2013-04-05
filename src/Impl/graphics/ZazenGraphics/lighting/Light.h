@@ -12,7 +12,7 @@
 
 #include "../Scene/Viewer.h"
 
-#include "../Renderer/RenderTarget.h"
+#include "../Framebuffer/RenderTarget.h"
 
 #include <GL/glew.h>
 

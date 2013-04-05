@@ -8,8 +8,8 @@
 #ifndef MATERIAL_H_
 #define MATERIAL_H_
 
-#include "Program.h"
-#include "UniformBlock.h"
+#include "../Program/Program.h"
+#include "../Program/UniformBlock.h"
 #include "Texture.h"
 
 #include <boost/filesystem.hpp>

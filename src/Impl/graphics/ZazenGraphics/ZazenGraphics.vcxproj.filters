@@ -88,6 +88,18 @@
     <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox">
       <UniqueIdentifier>{6686c2b0-0501-479f-a163-8715083f5f8c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Quelldateien\program">
+      <UniqueIdentifier>{cfe55065-216c-45f2-8a6f-a6bbea6ef799}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\program">
+      <UniqueIdentifier>{c52f8de9-26ba-4d01-8e7c-b86c62da0389}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\framebuffer">
+      <UniqueIdentifier>{015847b5-c00f-441b-87dd-5640d179b92c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\framebuffer">
+      <UniqueIdentifier>{458d9348-4c11-4e1b-87c8-802c3c61e41c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -112,15 +124,6 @@
       <Filter>Quelldateien\lighting</Filter>
     </ClCompile>
     <ClCompile Include="material\Material.cpp">
-      <Filter>Quelldateien\material</Filter>
-    </ClCompile>
-    <ClCompile Include="material\UniformBlock.cpp">
-      <Filter>Quelldateien\material</Filter>
-    </ClCompile>
-    <ClCompile Include="material\Program.cpp">
-      <Filter>Quelldateien\material</Filter>
-    </ClCompile>
-    <ClCompile Include="material\Shader.cpp">
       <Filter>Quelldateien\material</Filter>
     </ClCompile>
     <ClCompile Include="material\Texture.cpp">
@@ -156,11 +159,20 @@
     <ClCompile Include="window\RenderingWindow.cpp">
       <Filter>Quelldateien\window</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\FrameBufferObject.cpp">
-      <Filter>Quelldateien\renderer</Filter>
+    <ClCompile Include="program\Program.cpp">
+      <Filter>Quelldateien\program</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\RenderTarget.cpp">
-      <Filter>Quelldateien\renderer</Filter>
+    <ClCompile Include="program\Shader.cpp">
+      <Filter>Quelldateien\program</Filter>
+    </ClCompile>
+    <ClCompile Include="program\UniformBlock.cpp">
+      <Filter>Quelldateien\program</Filter>
+    </ClCompile>
+    <ClCompile Include="framebuffer\FrameBufferObject.cpp">
+      <Filter>Quelldateien\framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="framebuffer\RenderTarget.cpp">
+      <Filter>Quelldateien\framebuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -188,15 +200,6 @@
     <ClInclude Include="material\Material.h">
       <Filter>Headerdateien\material</Filter>
     </ClInclude>
-    <ClInclude Include="material\UniformBlock.h">
-      <Filter>Headerdateien\material</Filter>
-    </ClInclude>
-    <ClInclude Include="material\Program.h">
-      <Filter>Headerdateien\material</Filter>
-    </ClInclude>
-    <ClInclude Include="material\Shader.h">
-      <Filter>Headerdateien\material</Filter>
-    </ClInclude>
     <ClInclude Include="material\Texture.h">
       <Filter>Headerdateien\material</Filter>
     </ClInclude>
@@ -204,9 +207,6 @@
       <Filter>Headerdateien\orientation</Filter>
     </ClInclude>
     <ClInclude Include="renderer\DRRenderer.h">
-      <Filter>Headerdateien\renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\Renderer.h">
       <Filter>Headerdateien\renderer</Filter>
     </ClInclude>
     <ClInclude Include="scene\Instance.h">
@@ -236,11 +236,23 @@
     <ClInclude Include="window\RenderingWindow.h">
       <Filter>Headerdateien\window</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\FrameBufferObject.h">
+    <ClInclude Include="program\Program.h">
+      <Filter>Headerdateien\program</Filter>
+    </ClInclude>
+    <ClInclude Include="program\Shader.h">
+      <Filter>Headerdateien\program</Filter>
+    </ClInclude>
+    <ClInclude Include="program\UniformBlock.h">
+      <Filter>Headerdateien\program</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\Renderer.h">
       <Filter>Headerdateien\renderer</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\RenderTarget.h">
-      <Filter>Headerdateien\renderer</Filter>
+    <ClInclude Include="framebuffer\FrameBufferObject.h">
+      <Filter>Headerdateien\framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="framebuffer\RenderTarget.h">
+      <Filter>Headerdateien\framebuffer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

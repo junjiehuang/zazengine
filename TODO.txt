@@ -3,24 +3,20 @@ TODOs, Refactorings & Optimizations
 	-> http://www.opengl.org/discussion_boards/archive/index.php/t-175619.html
 	-> http://www.opengl.org/wiki/Creating_an_OpenGL_Context_(WGL)
 	-> http://www.opengl.org/registry/specs/ARB/wgl_create_context.txt
-- fix toggle fullscreen
-- fix sky-box
-	-> shadowing of sky-box not wanted: if materialType == skybox then don't apply shadowing!
-- analyse deprecated stuff using gDEBugger
-	-> http://www.gremedy.com/webhelp/
-	-> remove errors in gDEBugger during glLinkProgram!
-	-> use glValidateProgram !
 - remove redundant calls
 	-> some checks are only necessary when debugging => use macros for #ifdef (DEBUG)
 		-> e.g. fbo-status checks, glGetError(), THEY MAKE 50% of all GL CALLS!!!
-- move FBO & rendertargets into own package
-
-
+		-> caching of uniform-locations in program: only need for one lookup!
+- remove errors in gDEBugger during glLinkProgram!
+- need logging to file
+- fix toggle fullscreen
+- fix sky-box
+	-> shadowing of sky-box not wanted: if materialType == skybox then don't apply shadowing!
+	
 - reduce OpenGL-calls/state-changes
 	-> no need to turn on/off buffer-stuff for each geometry-rendering, turn on for batch-processing and then turn off
 - optimzie shaders
 	-> pre multiply matrices in CPU, branching
-- caching of uniform-locations in program: only need for one lookup!
 - use layout in shaders
 - experiment with different render-target formats for performance
 - spot-light boundary: load sphere without normals, uv,... & project with perspective into scene using camera MVP
@@ -39,6 +35,7 @@ TODOs, Refactorings & Optimizations
 	-> describe by xml, is annoying to manually set up in program-code
 	-> frag-data location
 	-> bind uniform blocks
+	-> use glValidateProgram !
 	-> ...
 	-> lookup program in program-registry during runtime
 

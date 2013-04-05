@@ -13,7 +13,7 @@
 #include "GeomType.h"
 
 #include "../Material/Texture.h"
-#include "../material/Program.h"
+#include "../Program/Program.h"
 
 class GeomSkyBox : public GeomType
 {

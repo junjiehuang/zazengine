@@ -11,35 +11,6 @@ using namespace std;
 
 RenderingWindow* RenderingWindow::instance = NULL;
 
-// Create a string with last error message
-std::string GetLastErrorStdStr()
-{
-  DWORD error = GetLastError();
-  if (error)
-  {
-    LPVOID lpMsgBuf;
-    DWORD bufLen = FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-        FORMAT_MESSAGE_FROM_SYSTEM |
-        FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL,
-        error,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR) &lpMsgBuf,
-        0, NULL );
-    if (bufLen)
-    {
-      LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
-      std::string result(lpMsgStr, lpMsgStr+bufLen);
-      
-      LocalFree(lpMsgBuf);
-
-      return result;
-    }
-  }
-  return std::string();
-}
-
 bool
 RenderingWindow::createRenderingWindow( const std::string& title, int width, int height, bool fullScreenFlag )
 {
@@ -119,7 +90,7 @@ RenderingWindow::createRenderingWindow( const std::string& title, int width, int
 	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);		// Adjust Window To True Requested Size
 
 	// Create The Window
-	if (!(RenderingWindow::instance->hWnd=CreateWindowEx(	dwExStyle,							// Extended Style For The Window
+	if (!(RenderingWindow::instance->hWnd=CreateWindowEx( dwExStyle,							// Extended Style For The Window
 								"OpenGL",							// Class Name
 								title.c_str(),						// Window Title
 								dwStyle |							// Defined Window Style
@@ -211,7 +182,6 @@ RenderingWindow::createRenderingWindow( const std::string& title, int width, int
 	ReleaseDC( RenderingWindow::instance->hWnd,RenderingWindow::instance->hDC );
 	DestroyWindow( RenderingWindow::instance->hWnd );
 
-	// TODO create new window
 	// Create The Window
 	if (!(RenderingWindow::instance->hWnd=CreateWindowEx(	dwExStyle,							// Extended Style For The Window
 								"OpenGL",							// Class Name
@@ -280,9 +250,8 @@ RenderingWindow::createRenderingWindow( const std::string& title, int width, int
 
 	if (!(RenderingWindow::instance->hRC=wglCreateContextAttribsARB(RenderingWindow::instance->hDC, 0, iContextAttribs)))				// Are We Able To Get A Rendering Context?
 	{
-		std::string lastErrorStr = "Can't Create A GL Rendering Context. Error: " + GetLastErrorStdStr();
 		RenderingWindow::destroyWindow();
-		MessageBox(NULL, lastErrorStr.c_str(),"ERROR",MB_OK|MB_ICONEXCLAMATION);
+		MessageBox(NULL, "Can't Create A GL Rendering Context.", "ERROR",MB_OK|MB_ICONEXCLAMATION);
 		return false;								// Return FALSE
 	}
 
@@ -293,7 +262,7 @@ RenderingWindow::createRenderingWindow( const std::string& title, int width, int
 		return false;								// Return FALSE
 	}
 
-	// re-init glew
+	// re-init glew: refetch function pointers because of new context
 	err = glewInit();
 	if ( GLEW_OK != err )
 	{

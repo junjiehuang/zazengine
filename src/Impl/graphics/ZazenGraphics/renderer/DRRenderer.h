@@ -10,12 +10,12 @@
 
 #include "Renderer.h"
 
-#include "FrameBufferObject.h"
-#include "RenderTarget.h"
+#include "../Framebuffer/FrameBufferObject.h"
+#include "../Framebuffer/RenderTarget.h"
 
-#include "../Material/UniformBlock.h"
-#include "../Material/Program.h"
-#include "../Material/Shader.h"
+#include "../Program/UniformBlock.h"
+#include "../Program/Program.h"
+#include "../Program/Shader.h"
 
 class DRRenderer : public Renderer
 {
