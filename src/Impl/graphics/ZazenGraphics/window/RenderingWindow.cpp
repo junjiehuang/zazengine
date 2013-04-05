@@ -11,6 +11,35 @@ using namespace std;
 
 RenderingWindow* RenderingWindow::instance = NULL;
 
+// Create a string with last error message
+std::string GetLastErrorStdStr()
+{
+  DWORD error = GetLastError();
+  if (error)
+  {
+    LPVOID lpMsgBuf;
+    DWORD bufLen = FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        error,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR) &lpMsgBuf,
+        0, NULL );
+    if (bufLen)
+    {
+      LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
+      std::string result(lpMsgStr, lpMsgStr+bufLen);
+      
+      LocalFree(lpMsgBuf);
+
+      return result;
+    }
+  }
+  return std::string();
+}
+
 bool
 RenderingWindow::createRenderingWindow( const std::string& title, int width, int height, bool fullScreenFlag )
 {
@@ -177,10 +206,10 @@ RenderingWindow::createRenderingWindow( const std::string& title, int width, int
 		cout << "OK ... GLEW " << glewGetString(GLEW_VERSION) << " initialized " << endl;
 	}
 
-	/*
-	wglMakeCurrent(NULL, NULL);
-	wglDeleteContext(RenderingWindow::instance->hRC);
-	DestroyWindow(RenderingWindow::instance->hWnd);
+	wglMakeCurrent( NULL, NULL );
+	wglDeleteContext( RenderingWindow::instance->hRC );
+	ReleaseDC( RenderingWindow::instance->hWnd,RenderingWindow::instance->hDC );
+	DestroyWindow( RenderingWindow::instance->hWnd );
 
 	// TODO create new window
 	// Create The Window
@@ -214,34 +243,68 @@ RenderingWindow::createRenderingWindow( const std::string& title, int width, int
 	int minorVersion = 3;
 
 	const int iPixelFormatAttribList[] =
-		{
-			WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-			WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-			WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-			WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
-			WGL_COLOR_BITS_ARB, 32,
-			WGL_DEPTH_BITS_ARB, 32,
-			WGL_STENCIL_BITS_ARB, 8,
-			0 // End of attributes list
-		};
-		int iContextAttribs[] =
-		{
-			WGL_CONTEXT_MAJOR_VERSION_ARB, majorVersion,
-			WGL_CONTEXT_MINOR_VERSION_ARB, minorVersion,
-			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-			0 // End of attributes list
-		};
+	{
+		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+		WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+		WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+		WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+		WGL_COLOR_BITS_ARB, 32,
+		WGL_DEPTH_BITS_ARB, 32,
+		WGL_STENCIL_BITS_ARB, 8,
+		0 // End of attributes list
+	};
+	int iContextAttribs[] =
+	{
+		WGL_CONTEXT_MAJOR_VERSION_ARB, majorVersion,
+		WGL_CONTEXT_MINOR_VERSION_ARB, minorVersion,
+		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		0 // End of attributes list
+	};
 
-		int iPixelFormat, iNumFormats;
-		wglChoosePixelFormatARB(RenderingWindow::instance->hDC, iPixelFormatAttribList, NULL, 1, &iPixelFormat, (UINT*)&iNumFormats);
+	int iPixelFormat, iNumFormats;
+	wglChoosePixelFormatARB(RenderingWindow::instance->hDC, iPixelFormatAttribList, NULL, 1, &iPixelFormat, (UINT*)&iNumFormats);
 
-		// PFD seems to be only redundant parameter now
-		if(!SetPixelFormat(RenderingWindow::instance->hDC, iPixelFormat, &pfd))return false;
+	if (!(PixelFormat=ChoosePixelFormat(RenderingWindow::instance->hDC,&pfd)))	// Did Windows Find A Matching Pixel Format?
+	{
+		RenderingWindow::destroyWindow();
+		MessageBox(NULL,"Can't Find A Suitable PixelFormat.","ERROR",MB_OK|MB_ICONEXCLAMATION);
+		return false;
+	}
 
-		RenderingWindow::instance->hRC = wglCreateContextAttribsARB(RenderingWindow::instance->hDC, 0, iContextAttribs);
-		// If everything went OK
-		if(RenderingWindow::instance->hRC) wglMakeCurrent(RenderingWindow::instance->hDC, RenderingWindow::instance->hRC);
-		*/
+	if(!SetPixelFormat(RenderingWindow::instance->hDC,PixelFormat,&pfd))		// Are We Able To Set The Pixel Format?
+	{
+		RenderingWindow::destroyWindow();
+		MessageBox(NULL,"Can't Set The PixelFormat.","ERROR",MB_OK|MB_ICONEXCLAMATION);
+		return false;
+	}
+
+	if (!(RenderingWindow::instance->hRC=wglCreateContextAttribsARB(RenderingWindow::instance->hDC, 0, iContextAttribs)))				// Are We Able To Get A Rendering Context?
+	{
+		std::string lastErrorStr = "Can't Create A GL Rendering Context. Error: " + GetLastErrorStdStr();
+		RenderingWindow::destroyWindow();
+		MessageBox(NULL, lastErrorStr.c_str(),"ERROR",MB_OK|MB_ICONEXCLAMATION);
+		return false;								// Return FALSE
+	}
+
+	if(!wglMakeCurrent(RenderingWindow::instance->hDC,RenderingWindow::instance->hRC))					// Try To Activate The Rendering Context
+	{
+		RenderingWindow::destroyWindow();
+		MessageBox(NULL,"Can't Activate The GL Rendering Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
+		return false;								// Return FALSE
+	}
+
+	// re-init glew
+	err = glewInit();
+	if ( GLEW_OK != err )
+	{
+		cout << "ERROR ... GLEW failed with " <<  glewGetErrorString(err) << endl;
+		return false;
+	}
+	else
+	{
+		cout << "OK ... GLEW " << glewGetString(GLEW_VERSION) << " initialized " << endl;
+	}
+
 	ShowWindow(RenderingWindow::instance->hWnd,SW_SHOW);						// Show The Window
 	SetForegroundWindow(RenderingWindow::instance->hWnd);						// Slightly Higher Priority
 	SetFocus(RenderingWindow::instance->hWnd);									// Sets Keyboard Focus To The Window

@@ -1,5 +1,8 @@
 TODOs, Refactorings & Optimizations
 - force core-profile when creating opengl context from windows
+	-> http://www.opengl.org/discussion_boards/archive/index.php/t-175619.html
+	-> http://www.opengl.org/wiki/Creating_an_OpenGL_Context_(WGL)
+	-> http://www.opengl.org/registry/specs/ARB/wgl_create_context.txt
 - fix toggle fullscreen
 - fix sky-box
 	-> shadowing of sky-box not wanted: if materialType == skybox then don't apply shadowing!
