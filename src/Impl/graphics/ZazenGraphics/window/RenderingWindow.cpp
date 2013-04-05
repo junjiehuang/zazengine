@@ -83,13 +83,6 @@ RenderingWindow::shutdown()
 		return true;
 	}
 
-	// when in fullscreen, un-fullscreen the window
-	if ( RenderingWindow::instance->m_fullScreen )	
-	{
-		ChangeDisplaySettings( NULL,0 );
-		ShowCursor( TRUE );
-	}
-
 	// clean-up in reversed order
 	// destroy OpenGL rendering-context
 	RenderingWindow::destroyRenderingContext();
@@ -389,6 +382,13 @@ RenderingWindow::destroyWindow()
 
 	if ( NULL != RenderingWindow::instance->hWnd )
 	{
+		// when in fullscreen, un-fullscreen the window
+		if ( RenderingWindow::instance->m_fullScreen )	
+		{
+			ChangeDisplaySettings( NULL, 0 );
+			ShowCursor( TRUE );
+		}
+
 		if ( 0 == DestroyWindow( RenderingWindow::instance->hWnd ) )
 		{
 			cout << "WARNING ... in RenderingWindow::destroyWindow: Destroy Window Failed." << endl;

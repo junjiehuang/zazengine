@@ -8,26 +8,20 @@ TODOs, Refactorings & Optimizations
 		-> e.g. fbo-status checks, glGetError(), THEY MAKE 50% of all GL CALLS!!!
 		-> caching of uniform-locations in program: only need for one lookup!
 - remove errors in gDEBugger during glLinkProgram!
-- need logging to file
 - fix toggle fullscreen
 - fix sky-box
 	-> shadowing of sky-box not wanted: if materialType == skybox then don't apply shadowing!
-	
-- reduce OpenGL-calls/state-changes
+- need logging to file
+- optimize OpenGL-calls
 	-> no need to turn on/off buffer-stuff for each geometry-rendering, turn on for batch-processing and then turn off
+	-> use layout in shaders, no need to use uniform-set on textures?
 - optimzie shaders
-	-> pre multiply matrices in CPU, branching
-- use layout in shaders
+	-> pre multiply matrices in CPU
+	-> reduce branching ? (need different shader-architecture, see below)
 - experiment with different render-target formats for performance
-- spot-light boundary: load sphere without normals, uv,... & project with perspective into scene using camera MVP
-
 - split lighting-pass into "ambient&sky-box pass" & lighting-pass for each light
 	 => no lighting/shadowing of sky-box & objects visible also when no light in scene present
 - use stencil buffer to mask skybox from lighting&shading
-- implement #include in shaders: parse loaded string and replace
-	-> problem: compiler error generate other line numbers!
-
-
 
 
 - Program- & Shader-Management
@@ -36,9 +30,9 @@ TODOs, Refactorings & Optimizations
 	-> frag-data location
 	-> bind uniform blocks
 	-> use glValidateProgram !
-	-> ...
 	-> lookup program in program-registry during runtime
-
+	-> implement #include in shaders: parse loaded string and replace
+		-> problem: compiler error generate other line numbers!
 	
 - Need generic effect/material functionality
 	-> on top of program- & shader-management
@@ -53,10 +47,11 @@ TODOs, Refactorings & Optimizations
 Rendering-Algorithms
 - shadow-mapping
 	-> correct lighting&shadowing equations: falloff, cone, ...
-	-> do some sampling on shadow-edges
+	-> do some sampling on shadow-edges#
+- point-light
 - multiple lights
 	-> blending 
-- point-lights
+	-> use bounding-geometry for spot & point light
 - normal-mapping
 - advanced brdfs
 	-> sub-surface-scattering brdf
