@@ -7,6 +7,9 @@ TODOs, Refactorings & Optimizations
 	-> http://www.gremedy.com/webhelp/
 	-> remove errors in gDEBugger during glLinkProgram!
 	-> use glValidateProgram !
+- remove redundant calls
+	-> some checks are only necessary when debugging => use macros for #ifdef (DEBUG)
+		-> e.g. fbo-status checks, glGetError(), THEY MAKE 50% of all GL CALLS!!!
 - move FBO & rendertargets into own package
 
 
@@ -16,9 +19,6 @@ TODOs, Refactorings & Optimizations
 	-> pre multiply matrices in CPU, branching
 - caching of uniform-locations in program: only need for one lookup!
 - use layout in shaders
-- remove redundant calls
-	-> some checks are only necessary when debugging => use macros for #ifdef (DEBUG)
-		-> e.g. fbo-status checks, glGetError()
 - experiment with different render-target formats for performance
 - spot-light boundary: load sphere without normals, uv,... & project with perspective into scene using camera MVP
 
