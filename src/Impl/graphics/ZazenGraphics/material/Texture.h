@@ -11,6 +11,7 @@
 #define _TEXTURE_H_
 
 #include <GL/glew.h>
+#include <IL/ilut.h>
 
 #include <boost/filesystem.hpp>
 
@@ -24,19 +25,34 @@ class Texture
 		static void freeAll();
 	
 		static Texture* get( const std::string& );
+		static Texture* getCube( const boost::filesystem::path&, const std::string& );
 
-		void bind( int textureUnit );
+		bool bind( int textureUnit );
 	
 	private:
-		Texture( GLuint );
+		enum TextureType {
+			TEXTURE_2D,
+			TEXTURE_CUBE
+		};
+
+		static GLint m_currentTextureUnit;
+
+		Texture( GLuint, TextureType );
 		~Texture();
 
 		GLuint m_textureID;
-	
+		TextureType m_textureType;
+
 		static boost::filesystem::path textureDataPath;
 		static std::map<std::string, Texture*> allTextures;
 
-		static GLuint createGLTexture( const boost::filesystem::path& );
+		static bool createImages( const std::vector<std::string>&, ILuint** );
+		static bool createImage( const std::string&, ILuint* );
+
+		static bool loadImage( const std::string&, ILuint );
+
+		static GLuint createTexture( ILuint );
+		static GLuint createCubeTexture( ILuint* );
 };
 
 #endif

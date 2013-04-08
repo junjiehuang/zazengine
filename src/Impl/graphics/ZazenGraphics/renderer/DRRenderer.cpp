@@ -32,6 +32,7 @@ DRRenderer::DRRenderer()
 	this->m_fragGeomStage = NULL;
 
 	this->m_progSkyBox = NULL;
+	this->m_vertSkyBox = NULL;
 	this->m_fragSkyBox = NULL;
 
 	this->m_progLightingStage = NULL;
@@ -206,6 +207,14 @@ DRRenderer::shutdown()
 
 	if ( this->m_progSkyBox )
 	{
+		if ( this->m_vertSkyBox )
+		{
+			this->m_progSkyBox->detachShader( this->m_vertSkyBox );
+
+			delete this->m_vertSkyBox;
+			this->m_vertSkyBox = NULL;
+		}
+
 		if ( this->m_fragSkyBox )
 		{
 			this->m_progSkyBox->detachShader( this->m_fragSkyBox );
@@ -367,6 +376,13 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
+	this->m_vertSkyBox = Shader::createShader( Shader::VERTEX_SHADER, pipelinePath.generic_string() + "/dr/stages/geom/skyBoxVert.glsl" );
+	if ( 0 == this->m_vertSkyBox )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: coulnd't create fragment-shader - exit" << endl;
+		return false;
+	}
+
 	this->m_fragSkyBox = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/geom/skyBoxFrag.glsl" );
 	if ( 0 == this->m_fragSkyBox )
 	{
@@ -383,6 +399,12 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 	if ( false == this->m_fragGeomStage->compile() )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: fragment shader compilation failed - exit" << endl;
+		return false;
+	}
+
+	if ( false == this->m_vertSkyBox->compile() )
+	{
+		cout << "ERROR in DRRenderer::initGeomStage: vertex shader compilation failed - exit" << endl;
 		return false;
 	}
 
@@ -404,7 +426,7 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
-	if ( false == this->m_progSkyBox->attachShader( this->m_vertGeomStage ) )
+	if ( false == this->m_progSkyBox->attachShader( this->m_vertSkyBox ) )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: attaching vertex shader to program failed - exit" << endl;
 		return false;
@@ -458,16 +480,6 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 	}
 
 	if ( false == this->m_progSkyBox->bindAttribLocation( 0, "in_vertPos" ) )
-	{
-		cout << "ERROR in DRRenderer::initGeomStage: binding attribute location to program failed - exit" << endl;
-		return false;
-	}
-	if ( false == this->m_progSkyBox->bindAttribLocation( 1, "in_vertNorm" ) )
-	{
-		cout << "ERROR in DRRenderer::initGeomStage: binding attribute location to program failed - exit" << endl;
-		return false;
-	}
-	if ( false == this->m_progSkyBox->bindAttribLocation( 2, "in_texCoord" ) )
 	{
 		cout << "ERROR in DRRenderer::initGeomStage: binding attribute location to program failed - exit" << endl;
 		return false;
@@ -822,6 +834,9 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
+	// TODO clean-up: different approach in future
+	GeomSkyBox::getRef().setTransformBlock( this->m_transformsBlock );
+
 	return true;
 }
 
@@ -931,6 +946,8 @@ DRRenderer::renderSkyBox()
 		cout << "ERROR in DRRenderer::renderSkyBox: using program failed - exit" << endl;
 		return false;
 	}
+
+	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", 0 );
 
 	// render the geometry
 	GeomSkyBox::getRef().render();
@@ -1079,8 +1096,9 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		}
 	}
 
+	// QUESTION: due to a but only bind was called instead of bindBuffer but it worked!! why?
 	// update projection-matrix because need ortho-projection for full-screen quad
-	this->m_transformsBlock->bind();
+	this->m_transformsBlock->bindBuffer();
 	// OPTIMIZE: store in light once, and only update when change
 	glm::mat4 orthoMat = this->m_camera->createOrthoProj( true, true );
 	if ( false == this->m_transformsBlock->updateMat4( orthoMat, 64 ) )

@@ -40,6 +40,7 @@ class DRRenderer : public Renderer
 		Shader* m_fragGeomStage;
 
 		Program* m_progSkyBox;
+		Shader* m_vertSkyBox;
 		Shader* m_fragSkyBox;
 		////////////////////////////////////////
 

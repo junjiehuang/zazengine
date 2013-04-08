@@ -289,5 +289,8 @@
     <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxFrag.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox</Filter>
     </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox</Filter>
+    </None>
   </ItemGroup>
 </Project>

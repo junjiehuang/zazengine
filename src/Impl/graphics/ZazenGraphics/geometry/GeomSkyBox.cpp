@@ -16,8 +16,6 @@
 
 using namespace std;
 
-#define BOX_SIDE_SIZE 100
-
 GeomSkyBox* GeomSkyBox::instance = NULL;
 
 bool
@@ -27,87 +25,43 @@ GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std:
 	{
 		new GeomSkyBox();
 
-		GeomSkyBox::instance->m_frontText = Texture::get( textureFolder.generic_string() + "/front." + format );
-		if ( NULL == GeomSkyBox::instance->m_frontText )
+		GeomSkyBox::instance->m_cubeMap = Texture::getCube( textureFolder, format );
+		if ( NULL == GeomSkyBox::instance->m_cubeMap )
 		{
-			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get front-texture" << endl;
+			cout << "ERROR ... in GeomSkyBox::initialize: couldn't create cube-map" << endl;
 			GeomSkyBox::shutdown();
 			return false;
 		}
 
-		GeomSkyBox::instance->m_backText = Texture::get( textureFolder.generic_string() + "/back." + format );
-		if ( NULL == GeomSkyBox::instance->m_backText )
-		{
-			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get back-texture" << endl;
-			GeomSkyBox::shutdown();
-			return false;
-		}
+		// cube vertices for vertex buffer object
+		GLfloat cube_vertices[] = {
+		  -1.0,  1.0,  1.0,
+		  -1.0, -1.0,  1.0,
+		   1.0, -1.0,  1.0,
+		   1.0,  1.0,  1.0,
+		  -1.0,  1.0, -1.0,
+		  -1.0, -1.0, -1.0,
+		   1.0, -1.0, -1.0,
+		   1.0,  1.0, -1.0,
+		};
 
-		GeomSkyBox::instance->m_leftText = Texture::get( textureFolder.generic_string() + "/left." + format );
-		if ( NULL == GeomSkyBox::instance->m_leftText )
-		{
-			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get left-texture" << endl;
-			GeomSkyBox::shutdown();
-			return false;
-		}
+		glGenBuffers( 1, &GeomSkyBox::instance->m_dataVBO );
+		glBindBuffer( GL_ARRAY_BUFFER, GeomSkyBox::instance->m_dataVBO );
+		glBufferData( GL_ARRAY_BUFFER, sizeof( cube_vertices ), cube_vertices, GL_STATIC_DRAW );
 
-		GeomSkyBox::instance->m_rightText = Texture::get( textureFolder.generic_string() + "/right." + format );
-		if ( NULL == GeomSkyBox::instance->m_rightText )
-		{
-			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get right-texture" << endl;
-			GeomSkyBox::shutdown();
-			return false;
-		}
+		// cube indices for index buffer object
+		GLint cube_indices[] = {
+		  0, 1, 2, 3,
+		  3, 2, 6, 7,
+		  7, 6, 5, 4,
+		  4, 5, 1, 0,
+		  0, 3, 7, 4,
+		  1, 2, 6, 5,
+		};
 
-		GeomSkyBox::instance->m_upText = Texture::get( textureFolder.generic_string() + "/up." + format );
-		if ( NULL == GeomSkyBox::instance->m_upText )
-		{
-			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get up-texture" << endl;
-			GeomSkyBox::shutdown();
-			return false;
-		}
-
-		GeomSkyBox::instance->m_downText = Texture::get( textureFolder.generic_string() + "/down." + format );
-		if ( NULL == GeomSkyBox::instance->m_downText )
-		{
-			cout << "ERROR ... in GeomSkyBox::initialize: couldn't get down-texture" << endl;
-			GeomSkyBox::shutdown();
-			return false;
-		}
-
-		GeomSkyBox::instance->m_frontGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
-		glm::mat4 frontModelMatrix;
-		frontModelMatrix[ 3 ][ 2 ] = -BOX_SIDE_SIZE;
-		GeomSkyBox::instance->m_frontGeom->setModelMatrix( frontModelMatrix );
-
-		GeomSkyBox::instance->m_backGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
-		glm::mat4 backModelMatrix;
-		backModelMatrix[ 3 ][ 2 ] = BOX_SIDE_SIZE;
-		GeomSkyBox::instance->m_backGeom->setModelMatrix( backModelMatrix );
-
-		GeomSkyBox::instance->m_leftGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
-		glm::mat4 leftModelMatrix;
-		leftModelMatrix[ 2 ][ 0 ] = 1.0f;
-		leftModelMatrix[ 3 ][ 0 ] = -BOX_SIDE_SIZE;
-		GeomSkyBox::instance->m_leftGeom->setModelMatrix( leftModelMatrix );
-
-		GeomSkyBox::instance->m_rightGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
-		glm::mat4 rightModelMatrix;
-		rightModelMatrix[ 2 ][ 0 ] = -1.0f;
-		rightModelMatrix[ 3 ][ 0 ] = BOX_SIDE_SIZE;
-		GeomSkyBox::instance->m_rightGeom->setModelMatrix( rightModelMatrix );
-
-		GeomSkyBox::instance->m_upGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
-		glm::mat4 upModelMatrix;
-		upModelMatrix[ 2 ][ 1 ] = -1.0f;
-		upModelMatrix[ 3 ][ 0 ] = BOX_SIDE_SIZE;
-		GeomSkyBox::instance->m_upGeom->setModelMatrix( upModelMatrix );
-
-		GeomSkyBox::instance->m_downGeom = GeometryFactory::createQuad( BOX_SIDE_SIZE, BOX_SIDE_SIZE );
-		glm::mat4 downModelMatrix;
-		downModelMatrix[ 2 ][ 1 ] = 1.0f;
-		downModelMatrix[ 3 ][ 0 ] = BOX_SIDE_SIZE;
-		GeomSkyBox::instance->m_downGeom->setModelMatrix( downModelMatrix );
+		glGenBuffers( 1, &GeomSkyBox::instance->m_indexVBO );
+		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, GeomSkyBox::instance->m_indexVBO );
+		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( cube_indices ), cube_indices, GL_STATIC_DRAW );
 	}
 
 	return true;
@@ -126,25 +80,26 @@ GeomSkyBox::shutdown()
 
 GeomSkyBox::GeomSkyBox()
 {
-	this->m_frontText = NULL;
-	this->m_backText = NULL;
-	this->m_leftText = NULL;
-	this->m_rightText = NULL;
-	this->m_upText = NULL;
-	this->m_downText = NULL;
+	this->m_cubeMap = NULL;
 
-	this->m_frontGeom = NULL;
-	this->m_backGeom = NULL;
-	this->m_leftGeom = NULL;
-	this->m_rightGeom = NULL;
-	this->m_upGeom = NULL;
-	this->m_downGeom = NULL;
+	this->m_dataVBO = 0;
+	this->m_indexVBO = 0;
 
 	GeomSkyBox::instance = this;
 }
 
 GeomSkyBox::~GeomSkyBox()
 {
+	if ( this->m_dataVBO )
+	{
+		glDeleteBuffers( 1, &this->m_dataVBO );
+	}
+
+	if ( this->m_indexVBO )
+	{
+		glDeleteBuffers( 1, &this->m_indexVBO );
+	}
+
 	GeomSkyBox::instance = NULL;
 }
 
@@ -165,43 +120,28 @@ GeomSkyBox::render()
 	modelViewMat[ 3 ][ 1 ] = 0.0f;
 	modelViewMat[ 3 ][ 2 ] = 0.0f;
 
-	// TODO: update transforms uniform block
+	this->m_transformsBlock->bindBuffer();
 
-	// Front Face
-	this->m_frontText->bind( 0 );
+	if ( false == this->m_transformsBlock->updateMat4( modelViewMat, 0 ) )
+	{
+		return false;
+	}
 
-	this->m_frontGeom->render();
-	/////////////////////////
+	if ( false == this->m_transformsBlock->updateMat4( projMat, 64 ) )
+	{
+		return false;
+	}
 
-	// Back Face
-	this->m_backText->bind( 0 );
+	this->m_cubeMap->bind( 0 );
 
-	this->m_backGeom->render();
-	/////////////////////////
+	glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );
+	glEnableVertexAttribArray( 0 );
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
 
-	// Top Face
-	this->m_upText->bind( 0 );
-	
-	this->m_upGeom->render();
-	/////////////////////////
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->m_indexVBO );
+	glDrawElements( GL_QUADS, 24, GL_UNSIGNED_INT, 0 );
 
-	// Bottom Face
-	this->m_downText->bind( 0 );
-
-	this->m_downGeom->render();
-	/////////////////////////
-
-	// Right face
-	this->m_rightText->bind( 0 );
-
-	this->m_rightGeom->render();
-	/////////////////////////
-
-	// Left Face
-	this->m_leftText->bind( 0 );
-
-	this->m_leftGeom->render();
-	/////////////////////////
+	glDisableVertexAttribArray( 0 );
 
 	// activate z-buffering and face culling
 	glEnable( GL_DEPTH_TEST );

@@ -8,7 +8,7 @@ Sky-Box
 		 -> http://www.keithlantz.net/2011/10/rendering-a-skybox-using-a-cube-map-with-opengl-and-glsl/
 	-> shadowing of sky-box not wanted: if materialType == skybox then don't apply shadowing!
 			
-Remove Get* OpenGL-calls
+Remove Get* OpenGL-calls in main loop
 	-> some checks are only necessary when debugging => use macros for #ifdef (CHECK_GL_ERROR) => if NOT defined do once per frame
 		-> e.g. fbo-status checks, glGetError(), THEY MAKE 50% of all GL CALLS!!!
 		-> caching of uniform-locations in program: only need for one lookup!

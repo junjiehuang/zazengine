@@ -7,13 +7,14 @@
  *
  */
 
-#ifndef _GEOMSPACEBOX_H_
-#define _GEOMSPACEBOX_H_
+#ifndef _GEOMSKYBOX_H_
+#define _GEOMSKYBOX_H_
 
 #include "GeomType.h"
 
 #include "../Material/Texture.h"
 #include "../Program/Program.h"
+#include "../Program/UniformBlock.h"
 
 class GeomSkyBox : public GeomType
 {
@@ -28,28 +29,17 @@ class GeomSkyBox : public GeomType
 	
 		bool render();
 	
+		void setTransformBlock( UniformBlock* block ) { this->m_transformsBlock = block; };
+
 	private:
 		static GeomSkyBox* instance;
 
+		GLuint m_dataVBO;
+		GLuint m_indexVBO;
+		Texture* m_cubeMap;
+		UniformBlock* m_transformsBlock;
+
 		GeomSkyBox();
-
-		Texture* m_frontText;
-		GeomType* m_frontGeom;
-
-		Texture* m_backText;
-		GeomType* m_backGeom;
-
-		Texture* m_leftText;
-		GeomType* m_leftGeom;
-
-		Texture* m_rightText;
-		GeomType* m_rightGeom;
-
-		Texture* m_upText;
-		GeomType* m_upGeom;
-
-		Texture* m_downText;
-		GeomType* m_downGeom;
 };
 
 #endif

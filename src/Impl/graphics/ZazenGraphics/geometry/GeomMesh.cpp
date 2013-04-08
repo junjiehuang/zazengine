@@ -20,16 +20,24 @@ GeomMesh::GeomMesh( int faceCount, int vertexCount, VertexData* data, GLuint* in
 GeomMesh::~GeomMesh()
 {
 	if ( this->m_dataVBO )
+	{
 		glDeleteBuffers( 1, &this->m_dataVBO );
+	}
 
 	if ( this->m_indexVBO )
+	{
 		glDeleteBuffers( 1, &this->m_indexVBO );
+	}
 
 	if ( this->m_vertexData )
+	{
 		delete[] this->m_vertexData;
+	}
 
 	if ( this->m_indexBuffer )
+	{
 		delete[] this->m_indexBuffer;
+	}
 }
 
 bool
@@ -67,6 +75,7 @@ GeomMesh::render()
 			return false;
 		}
 
+		// deprecated: don't need anymore
 		glBindBuffer( GL_ARRAY_BUFFER, 0 );
 		status = glGetError();
 		if ( GL_NO_ERROR != status )
@@ -100,6 +109,7 @@ GeomMesh::render()
 			return false;
 		}
 
+		// deprecated: don't need anymore
 		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 		status = glGetError();
 		if ( GL_NO_ERROR != status )
