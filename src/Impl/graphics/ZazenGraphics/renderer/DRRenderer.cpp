@@ -853,6 +853,16 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
+// if checking of gl-errors is deactivated check once per frame for errors
+#ifndef CHECK_GL_ERROR
+	GLenum status;
+	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	{
+		cout << "ERROR ... in DRRenderer::renderFrame: glGetError reported an error: " << gluErrorString( status ) << endl;
+		return false;
+	}
+#endif
+
 	this->frame++;
 
 	return true;

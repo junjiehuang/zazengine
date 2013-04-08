@@ -160,11 +160,14 @@ Texture::bind( int textureUnit )
 	//if ( Texture::m_currentTextureUnit != textureUnit )
 	{
 		glActiveTexture( GL_TEXTURE0 + textureUnit );
+
+#ifdef CHECK_GL_ERROR
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR ... in Texture::bind: failed glActiveTexture with " << gluErrorString( status ) << endl;
 			return false;
 		}
+#endif
 
 		Texture::m_currentTextureUnit = textureUnit;
 	}
@@ -172,20 +175,27 @@ Texture::bind( int textureUnit )
 	if ( Texture::TEXTURE_2D == this->m_textureType ) 
 	{
 		glBindTexture( GL_TEXTURE_2D, this->m_textureID );
+
+#ifdef CHECK_GL_ERROR
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR ... in Texture::bind: failed glBindTexture with " << gluErrorString( status ) << endl;
 			return false;
 		}
+#endif
+
 	}
 	else if ( Texture::TEXTURE_CUBE == this->m_textureType ) 
 	{
 		glBindTexture( GL_TEXTURE_CUBE_MAP, this->m_textureID );
+
+#ifdef CHECK_GL_ERROR
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR ... in Texture::bind: failed glBindTexture with " << gluErrorString( status ) << endl;
 			return false;
 		}
+#endif
 	}
 
 	return true;

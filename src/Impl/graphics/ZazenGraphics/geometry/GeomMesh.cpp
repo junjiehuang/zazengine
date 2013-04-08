@@ -120,100 +120,136 @@ GeomMesh::render()
 	}
 
 	glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glBindBuffer GL_ARRAY_BUFFER failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	glEnableVertexAttribArray( 0 );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glEnableVertexAttribArray( 0 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	glEnableVertexAttribArray( 1 );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glEnableVertexAttribArray( 1 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	glEnableVertexAttribArray( 2 );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glEnableVertexAttribArray( 2 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( VertexData ), BUFFER_OFFSET( 0 ) );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glVertexAttribPointer( 0 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( VertexData ), BUFFER_OFFSET( 12 ) );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glVertexAttribPointer( 1 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, sizeof( VertexData ), BUFFER_OFFSET( 24 ) );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glVertexAttribPointer( 2 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->m_indexVBO );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glBindBuffer GL_ELEMENT_ARRAY_BUFFER - render - failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	glDrawElements( GL_TRIANGLES, this->faceCount * 3, GL_UNSIGNED_INT, BUFFER_OFFSET( 0 ) );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glDrawElements failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	glDisableVertexAttribArray( 0 );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glDisableVertexAttribArray( 0 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 	
 	glDisableVertexAttribArray( 1 );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glDisableVertexAttribArray( 1 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	glDisableVertexAttribArray( 2 );
+
+#ifdef CHECK_GL_ERROR
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
 		cout << "GeomMesh::render: glDisableVertexAttribArray( 2 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	return true;
 }

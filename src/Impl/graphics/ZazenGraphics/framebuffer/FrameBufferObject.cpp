@@ -103,11 +103,14 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 	{
 		// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
 		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, renderTarget->getId(), 0 );
+
+#ifdef CHECK_GL_ERROR
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR in FrameBufferObject::attachTargetTemp DEPTH: glFramebufferTexture failed with " << gluErrorString( status ) << endl;
 			return false;
 		}
+#endif
 	}
 	else if ( RenderTarget::RT_COLOR == renderTarget->getType() )
 	{
@@ -115,11 +118,13 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 		GLenum colorAttachment = GL_COLOR_ATTACHMENT0 + this->m_colorBufferTargets.size();
 
 		glFramebufferTexture2D( GL_FRAMEBUFFER, colorAttachment, GL_TEXTURE_2D, id, 0 );
+#ifdef CHECK_GL_ERROR
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR in FrameBufferObject::attachTargetTemp COLOR: glFramebufferTexture failed with " << gluErrorString( status ) << endl;
 			return false;
 		}
+#endif
 	}
 
 	return true;
@@ -132,11 +137,14 @@ FrameBufferObject::bind()
 
 	// bind the framebuffer of the geometry-stage
 	glBindFramebuffer( GL_FRAMEBUFFER, this->m_id );
+
+#ifdef CHECK_GL_ERROR
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR in FrameBufferObject::bind: glBindFramebuffer failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -144,14 +152,19 @@ FrameBufferObject::bind()
 bool
 FrameBufferObject::unbind()
 {
-	GLenum status;
 	// bind the framebuffer of the geometry-stage
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+
+#ifdef CHECK_GL_ERROR
+	GLenum status;
+
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR in FrameBufferObject::unbind: glBindFramebuffer( 0 ) failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -178,11 +191,14 @@ FrameBufferObject::drawAllBuffers()
 
 	// activate multiple drawing to our color targets targets
 	glDrawBuffers( this->m_colorBufferTargets.size(), &this->m_colorBufferTargets[ 0 ] );
+
+#ifdef CHECK_GL_ERROR
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR in FrameBufferObject::drawAllBuffers: glDrawBuffers failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -194,11 +210,14 @@ FrameBufferObject::drawBuffer( unsigned int index )
 
 	// activate multiple drawing to our color targets targets
 	glDrawBuffer( this->m_colorBufferTargets[ index ] );
+
+#ifdef CHECK_GL_ERROR
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR in FrameBufferObject::drawBuffer: glDrawBuffer failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -234,6 +253,7 @@ FrameBufferObject::clearAll()
 bool
 FrameBufferObject::checkStatus()
 {
+#ifdef CHECK_GL_ERROR
 	GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
 
 	if ( GL_FRAMEBUFFER_COMPLETE == status )
@@ -274,4 +294,7 @@ FrameBufferObject::checkStatus()
 	}
 	
 	return false;
+#else
+	return true;
+#endif
 }

@@ -163,18 +163,23 @@ RenderTarget::bind( unsigned int index )
 	GLenum status;
 
 	glActiveTexture( GL_TEXTURE0 + index );
+#ifdef CHECK_GL_ERROR
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR in RenderTarget::bind: glActiveTexture of GL_TEXTURE" << index << " failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
+#endif
 
 	glBindTexture( GL_TEXTURE_2D, this->m_id );
+
+#ifdef CHECK_GL_ERROR
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR in RenderTarget::bind: glBindTexture with id " << this->m_id << " failed with " << gluErrorString( status ) << endl;
 		return false;
 	}
+#endif
 
 	return true;
 }

@@ -219,14 +219,17 @@ Program::getFragDataLocation( const std::string& name )
 bool
 Program::use()
 {
+	glUseProgram( this->m_programObject );
+
+#ifdef CHECK_GL_ERROR
 	GLint status;
 
-	glUseProgram( this->m_programObject );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR ... in Program::use for programm " << this->m_programName << ": glUseProgram failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -234,14 +237,17 @@ Program::use()
 bool
 Program::unuse()
 {
+	glUseProgram( 0 );
+
+#ifdef CHECK_GL_ERROR
 	GLint status;
 
-	glUseProgram( 0 );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR ... in Program::unuse: glUseProgram( 0 ) failed: " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -249,7 +255,6 @@ Program::unuse()
 bool
 Program::setUniform4( const std::string& name, const float* value )
 {
-	GLint status;
 	GLint location = this->getUniformLocation( name );
 	if ( -1 == location )
 	{
@@ -257,11 +262,15 @@ Program::setUniform4( const std::string& name, const float* value )
 	}
 
 	glUniform4fv( location, 4, value );
+
+#ifdef CHECK_GL_ERROR
+	GLint status;
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR ... in Program::setUniform4 for programm " << this->m_programName << ": glUniform4fv failed for " << name << ": " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -269,7 +278,6 @@ Program::setUniform4( const std::string& name, const float* value )
 bool
 Program::setUniformInt( const std::string& name, int value )
 {
-	GLint status;
 	GLint location = this->getUniformLocation( name );
 	if ( -1 == location )
 	{
@@ -277,11 +285,15 @@ Program::setUniformInt( const std::string& name, int value )
 	}
 
 	glUniform1i( location, value );
+
+#ifdef CHECK_GL_ERROR
+	GLint status;
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		//cout << "ERROR ... in Program::setUniformInt for programm " << this->m_programName << ": glUniform1i failed for " << name << ": " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -289,18 +301,22 @@ Program::setUniformInt( const std::string& name, int value )
 bool
 Program::setUniformMatrix4( const std::string& name, const float* value )
 {
-	GLint status;
-
 	GLint location = this->getUniformLocation( name );
 	if ( -1 == location )
+	{
 		return false;
+	}
 
 	glUniformMatrix4fv( location, 1, GL_FALSE, value );
+
+#ifdef CHECK_GL_ERROR
+	GLint status;
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		cout << "ERROR ... in Program::setUniformMatrix4 for programm " << this->m_programName << ": glUniformMatrix4fv failed for " << name << ": " << gluErrorString( status )  << endl;
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -312,7 +328,9 @@ Program::getUniformBlockIndex( const std::string& name )
 
 	index = glGetUniformBlockIndex( this->m_programObject, name.c_str() );
 	if ( GL_INVALID_INDEX == index )
+	{
 		cout << "ERROR ... in Program::getUniformBlockIndex for programm " << this->m_programName << ": glGetUniformBlockIndex failed for name \"" << name << "\". OpenGL-Error: GL_INVALID_INDEX" << endl;
+	}
 
 	return index;
 }
@@ -322,11 +340,19 @@ Program::getUniformLocation( const std::string& name )
 {
 	GLint location = 0;
 
+	map<string, GLint>::iterator findIter = this->m_uniformLocations.find( name );
+	if ( findIter != this->m_uniformLocations.end() )
+	{
+		return findIter->second;
+	}
+
 	location = glGetUniformLocation( this->m_programObject, name.c_str() );
 	if ( -1 == location )
 	{
 		//cout << "ERROR ... in Program::getUniformLocation for programm " << this->m_programName << ": coulnd't get Uniform Location for name \"" << name << "\": " << gluErrorString( glGetError() )  << endl;
 	}
+
+	this->m_uniformLocations[ name ] = location;
 
 	return location;
 }

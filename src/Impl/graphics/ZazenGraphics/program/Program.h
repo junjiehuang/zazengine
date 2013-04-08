@@ -11,6 +11,8 @@
 #include "Shader.h"
 #include "UniformBlock.h"
 
+#include <map>
+
 class Program
 {
  public:
@@ -45,6 +47,7 @@ class Program
 
 	std::string m_programName;
 	GLuint m_programObject;
+	std::map<std::string, GLint> m_uniformLocations;
 
 	GLuint getUniformBlockIndex( const std::string& name );
 	GLint getUniformLocation( const std::string& name );

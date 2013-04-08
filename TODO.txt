@@ -13,6 +13,8 @@ Remove Get* OpenGL-calls in main loop
 		-> e.g. fbo-status checks, glGetError(), THEY MAKE 50% of all GL CALLS!!!
 		-> caching of uniform-locations in program: only need for one lookup!
 		
+Cleanup Program.cpp: some methods not used at all
+
 Remove errors in gDEBugger during glLinkProgram!
 
 Calculate position in Fragment-Shader
