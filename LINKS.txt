@@ -1,0 +1,7 @@
+http://www.altdevblogaday.com/2011/03/15/thoughts-on-the-knowledge-of-an-up-to-date-graphics-programmer/
+http://www.altdevblogaday.com/2011/05/29/points-vertices-and-vectors/
+http://www.altdevblogaday.com/2011/06/13/screen-space-rules-for-designing-graphics-sub-systems-part-i/
+http://www.altdevblogaday.com/2011/07/03/no-look-up-tables-rules-for-designing-graphics-sub-systems-part-ii/
+http://www.altdevblogaday.com/2011/07/31/even-error-distribution-rules-for-designing-graphics-sub-systems-part-iii/
+
+http://diaryofagraphicsprogrammer.blogspot.co.at/

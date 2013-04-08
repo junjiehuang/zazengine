@@ -35,8 +35,8 @@ From Viewport- to View-Space Coordinates
 1. Input of Viewport-Coordinates AND depth in NDC-space for each fragment
 		transform x & y to NDC: 
 			- divide by resolutionX/resolutionY => range from 0 to 1
-			- transform x by: ( ... * 2 ) - 1 => in range from -1 to 1
-			- transform y by: 
+			- transform x by: x * 2 - 1 => in range from -1 to 1
+			- transform y by: ( 1 - y ) * 2 - 1 => in range from -1 to 1: need to take care of the origin! it makes a difference wheter its in the left UPPER or left LOWER corner
 2. NDC
 		add depth to x & y-vector because now all in same space
 3. clip-coordinates
@@ -119,6 +119,13 @@ Need generic effect/material functionality
 		-> cook torrance sparrow
 		-> subsurface scattering
 		-> microfacet
+	
+Post-Processing in Screen-Space
+	-> HDR
+	-> Bloom
+	-> Tone-Mapping
+	-> Depth Of Field
+	-> GI
 	
 Allow Toggle fullscreen
 	-> reinit window & render-context!
