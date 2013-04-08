@@ -37,6 +37,7 @@ RenderingWindow::initialize( const std::string& title, int width, int height, bo
 		return false;
 	}
 
+	/* uncomment for core-context
 	// destroy rendering context because we will set up a new ( core ) one
 	if ( false == RenderingWindow::destroyRenderingContext() )
 	{
@@ -64,6 +65,7 @@ RenderingWindow::initialize( const std::string& title, int width, int height, bo
 		RenderingWindow::shutdown();
 		return false;
 	}
+	*/
 
 	// show and size window
 	ShowWindow( RenderingWindow::instance->hWnd, SW_SHOW );					
@@ -132,7 +134,6 @@ RenderingWindow::createWindow( int width, int height, bool fullScreenFlag, const
 	DWORD dwExStyle;		
 	DWORD dwStyle;	
 	RECT WindowRect;
-	GLuint pixelFormat;
 
 	WindowRect.left = ( long ) 0;			
 	WindowRect.right = ( long ) width;		
@@ -204,7 +205,19 @@ RenderingWindow::createWindow( int width, int height, bool fullScreenFlag, const
 
 	RenderingWindow::instance->hDC = hDC;
 
-	static	PIXELFORMATDESCRIPTOR pfd =	
+	RenderingWindow::instance->m_windowWidth = width;
+	RenderingWindow::instance->m_windowHeight = height;
+	RenderingWindow::instance->m_fullScreen = fullScreenFlag;
+
+	return true;
+}
+
+bool
+RenderingWindow::createCompatibilityRenderingContext()
+{
+	GLuint pixelFormat;
+
+	static PIXELFORMATDESCRIPTOR pfd =	
 	{
 		sizeof( PIXELFORMATDESCRIPTOR ),			// Size Of This Pixel Format Descriptor
 		1,											// Version Number
@@ -218,8 +231,8 @@ RenderingWindow::createWindow( int width, int height, bool fullScreenFlag, const
 		0,											// Shift Bit Ignored
 		0,											// No Accumulation Buffer
 		0, 0, 0, 0,									// Accumulation Bits Ignored
-		16,											// 16Bit Z-Buffer (Depth Buffer)  
-		0,											// No Stencil Buffer
+		32,											// 32Bit Z-Buffer (Depth Buffer)  
+		8,											// 8 bit Stencil Buffer
 		0,											// No Auxiliary Buffer
 		PFD_MAIN_PLANE,								// Main Drawing Layer
 		0,											// Reserved
@@ -239,16 +252,6 @@ RenderingWindow::createWindow( int width, int height, bool fullScreenFlag, const
 		return false;
 	}
 
-	RenderingWindow::instance->m_windowWidth = width;
-	RenderingWindow::instance->m_windowHeight = height;
-	RenderingWindow::instance->m_fullScreen = fullScreenFlag;
-
-	return true;
-}
-
-bool
-RenderingWindow::createCompatibilityRenderingContext()
-{
 	HGLRC hRC = wglCreateContext( RenderingWindow::instance->hDC );
 	if ( NULL == hRC )
 	{
@@ -280,6 +283,7 @@ RenderingWindow::createCoreRenderingContext()
 	HGLRC hRC = NULL;
 	int majorVersion = 3;
 	int minorVersion = 3;
+	PIXELFORMATDESCRIPTOR pfd;
 	int iPixelFormat, iNumFormats;
 
 	const int iPixelFormatAttribList[] =
@@ -289,7 +293,7 @@ RenderingWindow::createCoreRenderingContext()
 		WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
 		WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
 		WGL_COLOR_BITS_ARB, 32,
-		WGL_DEPTH_BITS_ARB, 32,
+		WGL_DEPTH_BITS_ARB, 24,
 		WGL_STENCIL_BITS_ARB, 8,
 		0 // End of attributes list
 	};
@@ -298,13 +302,25 @@ RenderingWindow::createCoreRenderingContext()
 	{
 		WGL_CONTEXT_MAJOR_VERSION_ARB, majorVersion,
 		WGL_CONTEXT_MINOR_VERSION_ARB, minorVersion,
-		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB, 
+		//WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 		0 // End of attributes list
 	};
 
-	wglChoosePixelFormatARB( RenderingWindow::instance->hDC, iPixelFormatAttribList, NULL, 1, &iPixelFormat, ( UINT* ) &iNumFormats );
+	if ( 0 == wglChoosePixelFormatARB( RenderingWindow::instance->hDC, iPixelFormatAttribList, NULL, 
+		1, &iPixelFormat, ( UINT* ) &iNumFormats ) )
+	{
+		cout << "ERROR ... in RenderingWindow::createCoreRenderingContext: Failed choosing pixel format." << endl;
+		return false;
+	}
 
-	hRC = wglCreateContextAttribsARB(RenderingWindow::instance->hDC, 0, iContextAttribs);
+	if ( false == SetPixelFormat( RenderingWindow::instance->hDC, iPixelFormat, &pfd ) )
+	{
+		cout << "ERROR ... in RenderingWindow::createWindow: Can't Set The PixelFormat." << endl;
+		return false;
+	}
+
+	hRC = wglCreateContextAttribsARB( RenderingWindow::instance->hDC, 0, iContextAttribs );
 	if ( NULL == hRC )
 	{
 		cout << "ERROR ... in RenderingWindow::createCoreRenderingContext: Can't Create A GL Rendering Context." << endl;
@@ -319,6 +335,7 @@ RenderingWindow::createCoreRenderingContext()
 		return false;
 	}
 
+	/*
 	// re-init glew: refetch function pointers because of new context
 	GLenum err = glewInit();
 	if ( GLEW_OK != err )
@@ -326,6 +343,7 @@ RenderingWindow::createCoreRenderingContext()
 		cout << "ERROR ... in RenderingWindow::createCoreRenderingContext: GLEW failed with " <<  glewGetErrorString( err ) << endl;
 		return false;
 	}
+	*/
 
 	return true;
 }

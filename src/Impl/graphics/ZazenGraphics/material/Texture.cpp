@@ -166,7 +166,7 @@ Texture::createGLTexture( const filesystem::path& fileName )
 					 ilGetInteger( IL_IMAGE_WIDTH ),	// Image width
 					 ilGetInteger( IL_IMAGE_HEIGHT ),	// Image height
 					 0,				// Border width in pixels (can either be 1 or 0)
-					 ilGetInteger( IL_IMAGE_FORMAT ),	// Image format (i.e. RGB, RGBA, BGR etc.)
+					 ilGetInteger( IL_IMAGE_FORMAT ),	// Image format (i.e. RGB, RGBA, BGR etc.) GL_RGB
 					 GL_UNSIGNED_BYTE,		// Image data type
 					 ilGetData() );			// The actual image data itself
 
