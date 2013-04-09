@@ -12,6 +12,10 @@ Sky-Box
 Remove Get* OpenGL-calls in main loop
 	-> Problem of texture-switching: mus implement in render-target too, must know from each other
 
+Rename RenderWindow to RenderContext
+
+Put Texture-Stuff in separate Folder
+
 Remove errors in gDEBugger during glLinkProgram!
 
 Calculate position in Fragment-Shader

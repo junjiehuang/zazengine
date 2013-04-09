@@ -8,11 +8,13 @@
 #ifndef RENDERTARGET_H_
 #define RENDERTARGET_H_
 
+#include "../material/Texture.h"
+
 #include <GL/glew.h>
 
 #include <vector>
 
-class RenderTarget
+class RenderTarget : public Texture
 {
 	public:
 		enum RenderTargetType
@@ -26,20 +28,14 @@ class RenderTarget
 		static bool destroy( RenderTarget* );
 		static void cleanup();
 
-		GLuint getId() const { return this->m_id; };
-
 		GLsizei getWidth() const { return this->m_width; };
 		GLsizei getHeight() const { return this->m_height; };
-
-		bool bind( unsigned int );
 
 		RenderTargetType getType() { return this->m_targetType; };
 
 	private:
 		RenderTarget( GLuint, GLsizei, GLsizei, RenderTargetType );
 		~RenderTarget();
-
-		GLuint m_id;
 
 		GLsizei m_width;
 		GLsizei m_height;

@@ -83,7 +83,6 @@ class ZazenGraphics : public IGraphics
 		bool initSkyBoxFolderPath( TiXmlElement* );
 
 		bool createWindow( TiXmlElement* );
-		bool initGL( TiXmlElement* );
 };
 
 #endif /* ZAZENGRAPHICS_H_ */

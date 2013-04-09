@@ -81,6 +81,7 @@
     <ClCompile Include="lighting\Light.cpp" />
     <ClCompile Include="material\Material.cpp" />
     <ClCompile Include="material\Texture.cpp" />
+    <ClCompile Include="material\TextureFactory.cpp" />
     <ClCompile Include="orientation\Orientation.cpp" />
     <ClCompile Include="program\Program.cpp" />
     <ClCompile Include="program\Shader.cpp" />
@@ -109,6 +110,7 @@
     <ClInclude Include="lighting\Light.h" />
     <ClInclude Include="material\Material.h" />
     <ClInclude Include="material\Texture.h" />
+    <ClInclude Include="material\TextureFactory.h" />
     <ClInclude Include="orientation\Orientation.h" />
     <ClInclude Include="program\Program.h" />
     <ClInclude Include="program\Shader.h" />

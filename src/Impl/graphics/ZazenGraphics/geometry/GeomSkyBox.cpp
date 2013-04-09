@@ -9,6 +9,8 @@
 
 #include "GeomSkyBox.h"
 
+#include "../Material/TextureFactory.h"
+
 #include "GeometryFactory.h"
 
 #include "../ZazenGraphics.h"
@@ -25,7 +27,7 @@ GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std:
 	{
 		new GeomSkyBox();
 
-		GeomSkyBox::instance->m_cubeMap = Texture::getCube( textureFolder, format );
+		GeomSkyBox::instance->m_cubeMap = TextureFactory::getCube( textureFolder, format );
 		if ( NULL == GeomSkyBox::instance->m_cubeMap )
 		{
 			cout << "ERROR ... in GeomSkyBox::initialize: couldn't create cube-map" << endl;

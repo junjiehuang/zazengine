@@ -16,7 +16,6 @@ using namespace boost;
 
 map<string, Texture*> TextureFactory::allTextures;
 boost::filesystem::path TextureFactory::textureDataPath;
-GLint Texture::m_currentTextureUnit = -1;
 
 void
 TextureFactory::init( const boost::filesystem::path& textureDataPath )
@@ -25,19 +24,19 @@ TextureFactory::init( const boost::filesystem::path& textureDataPath )
 	iluInit();
 	ilutInit();
 
-	Texture::textureDataPath = textureDataPath;
+	TextureFactory::textureDataPath = textureDataPath;
 }
 
 Texture*
 TextureFactory::get( const std::string& file )
 {
-	map<string, Texture*>::iterator findIter = Texture::allTextures.find( file );
-	if ( findIter != Texture::allTextures.end() )
+	map<string, Texture*>::iterator findIter = TextureFactory::allTextures.find( file );
+	if ( findIter != TextureFactory::allTextures.end() )
 	{
 		return findIter->second;
 	}
 
-	filesystem::path fullFileName( Texture::textureDataPath.generic_string() + file );
+	filesystem::path fullFileName( TextureFactory::textureDataPath.generic_string() + file );
 
 	if ( false == filesystem::exists( fullFileName ) )
 	{
@@ -52,12 +51,12 @@ TextureFactory::get( const std::string& file )
 	}
 
 	ILuint imageId;
-	if ( false == Texture::createImage( fullFileName.generic_string(), &imageId ) )
+	if ( false == TextureFactory::createImage( fullFileName.generic_string(), &imageId ) )
 	{
 		return NULL;
 	}
 
-	GLuint textureID = Texture::createTexture( imageId );
+	GLuint textureID = TextureFactory::createTexture( imageId );
 	if ( 0 == textureID )
 	{
 		return NULL;
@@ -67,7 +66,7 @@ TextureFactory::get( const std::string& file )
 
 	Texture* newTexture = new Texture( textureID, Texture::TEXTURE_2D );
 	
-	Texture::allTextures[ file ] = newTexture;
+	TextureFactory::allTextures[ file ] = newTexture;
 	
 	return newTexture;
 }
@@ -75,13 +74,13 @@ TextureFactory::get( const std::string& file )
 Texture*
 TextureFactory::getCube( const boost::filesystem::path& cubeMapPath, const std::string& fileType )
 {
-	map<string, Texture*>::iterator findIter = Texture::allTextures.find( cubeMapPath.generic_string() );
-	if ( findIter != Texture::allTextures.end() )
+	map<string, Texture*>::iterator findIter = TextureFactory::allTextures.find( cubeMapPath.generic_string() );
+	if ( findIter != TextureFactory::allTextures.end() )
 	{
 		return findIter->second;
 	}
 
-	filesystem::path fullFileName( Texture::textureDataPath.generic_string() + cubeMapPath.generic_string() );
+	filesystem::path fullFileName( TextureFactory::textureDataPath.generic_string() + cubeMapPath.generic_string() );
 
 	if ( false == filesystem::exists( fullFileName ) )
 	{
@@ -105,12 +104,12 @@ TextureFactory::getCube( const boost::filesystem::path& cubeMapPath, const std::
 	fileNames.push_back( fullFileName.generic_string() + "/zpos" + "." + fileType );
 	fileNames.push_back( fullFileName.generic_string() + "/zneg" + "." + fileType );
 
-	if ( false == Texture::createImages( fileNames, &imageIds ) )
+	if ( false == TextureFactory::createImages( fileNames, &imageIds ) )
 	{
 		return NULL;
 	}
 
-	GLuint textureID = Texture::createCubeTexture( imageIds );
+	GLuint textureID = TextureFactory::createCubeTexture( imageIds );
 	if ( 0 == textureID )
 	{
 		return NULL;
@@ -120,7 +119,7 @@ TextureFactory::getCube( const boost::filesystem::path& cubeMapPath, const std::
 
 	Texture* newTexture = new Texture( textureID, Texture::TEXTURE_CUBE );
 	
-	Texture::allTextures[ cubeMapPath.generic_string() ] = newTexture;
+	TextureFactory::allTextures[ cubeMapPath.generic_string() ] = newTexture;
 	
 	return newTexture;
 }
@@ -128,85 +127,23 @@ TextureFactory::getCube( const boost::filesystem::path& cubeMapPath, const std::
 void
 TextureFactory::freeAll()
 {
-	map<string, Texture*>::iterator iter = Texture::allTextures.begin();
-	while(iter != Texture::allTextures.end())
+	map<string, Texture*>::iterator iter = TextureFactory::allTextures.begin();
+	while(iter != TextureFactory::allTextures.end())
 	{
 		delete iter->second;
 		
 		iter++;
 	}
 	
-	Texture::allTextures.clear();
-}
-
-TextureFactory::Texture( GLuint texID, TextureType type )
-{
-	this->m_textureID = texID;
-	this->m_textureType = type;
-}
-
-TextureFactory::~Texture()
-{
-
-	glDeleteTextures( 1, &this->m_textureID );
+	TextureFactory::allTextures.clear();
 }
 
 bool
-TextureFactory::bind( int textureUnit )
-{
-	GLenum status;
-
-	// seems not to work
-	//if ( Texture::m_currentTextureUnit != textureUnit )
-	{
-		glActiveTexture( GL_TEXTURE0 + textureUnit );
-
-#ifdef CHECK_GL_ERRORS
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
-		{
-			cout << "ERROR ... in Texture::bind: failed glActiveTexture with " << gluErrorString( status ) << endl;
-			return false;
-		}
-#endif
-
-		Texture::m_currentTextureUnit = textureUnit;
-	}
-
-	if ( Texture::TEXTURE_2D == this->m_textureType ) 
-	{
-		glBindTexture( GL_TEXTURE_2D, this->m_textureID );
-
-#ifdef CHECK_GL_ERRORS
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
-		{
-			cout << "ERROR ... in Texture::bind: failed glBindTexture with " << gluErrorString( status ) << endl;
-			return false;
-		}
-#endif
-
-	}
-	else if ( Texture::TEXTURE_CUBE == this->m_textureType ) 
-	{
-		glBindTexture( GL_TEXTURE_CUBE_MAP, this->m_textureID );
-
-#ifdef CHECK_GL_ERRORS
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
-		{
-			cout << "ERROR ... in Texture::bind: failed glBindTexture with " << gluErrorString( status ) << endl;
-			return false;
-		}
-#endif
-	}
-
-	return true;
-}
-
-bool
-Texture::createImage( const std::string& fileName, ILuint* imageId )
+TextureFactory::createImage( const std::string& fileName, ILuint* imageId )
 {
 	ilGenImages( 1, imageId );
 
-	if ( false == Texture::loadImage( fileName, *imageId ) )
+	if ( false == TextureFactory::loadImage( fileName, *imageId ) )
 	{
 		ilDeleteImages( 1, imageId );
 		return false;
@@ -216,7 +153,7 @@ Texture::createImage( const std::string& fileName, ILuint* imageId )
 }
 
 bool
-Texture::createImages( const std::vector<std::string>& fileNames, ILuint** imageIds )
+TextureFactory::createImages( const std::vector<std::string>& fileNames, ILuint** imageIds )
 {
 	bool errorFlag = false;
 	*imageIds = ( ILuint* ) malloc( fileNames.size() * sizeof( ILuint ) );
@@ -226,7 +163,7 @@ Texture::createImages( const std::vector<std::string>& fileNames, ILuint** image
 
 	for ( unsigned int i = 0; i < fileNames.size(); i++ )
 	{
-		if ( false == Texture::loadImage( fileNames[ i ], (*imageIds)[ i ] ) )
+		if ( false == TextureFactory::loadImage( fileNames[ i ], (*imageIds)[ i ] ) )
 		{
 			errorFlag = true;
 			break;
@@ -244,7 +181,7 @@ Texture::createImages( const std::vector<std::string>& fileNames, ILuint** image
 }
 
 bool
-Texture::loadImage( const std::string& fileName, ILuint imageId )
+TextureFactory::loadImage( const std::string& fileName, ILuint imageId )
 {
 	ilBindImage( imageId );
 
@@ -281,7 +218,7 @@ Texture::loadImage( const std::string& fileName, ILuint imageId )
 
 // TODO: error handling glGetError!
 GLuint
-Texture::createTexture( ILuint imageId )
+TextureFactory::createTexture( ILuint imageId )
 {
 	GLuint textureId;			// Create a texture ID as a GLuint
 
@@ -322,7 +259,7 @@ Texture::createTexture( ILuint imageId )
 
 // TODO: error handling glGetError!
 GLuint
-Texture::createCubeTexture( ILuint* imageIds )
+TextureFactory::createCubeTexture( ILuint* imageIds )
 {
 	GLuint textureId;
 

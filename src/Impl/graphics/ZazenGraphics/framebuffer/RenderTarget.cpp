@@ -128,7 +128,6 @@ RenderTarget::destroy( RenderTarget* renderTarget )
 		return true;
 	}
 
-	glDeleteTextures( 1, &renderTarget->m_id );
 	delete renderTarget;
 
 	return true;
@@ -145,8 +144,8 @@ RenderTarget::cleanup()
 }
 
 RenderTarget::RenderTarget( GLuint id, GLsizei width, GLsizei height, RenderTargetType targetType )
+	: Texture( id, Texture::TEXTURE_2D )
 {
-	this->m_id = id;
 	this->m_targetType = targetType;
 
 	this->m_width = width;
@@ -155,31 +154,4 @@ RenderTarget::RenderTarget( GLuint id, GLsizei width, GLsizei height, RenderTarg
 
 RenderTarget::~RenderTarget()
 {
-}
-
-bool
-RenderTarget::bind( unsigned int index )
-{
-	GLenum status;
-
-	glActiveTexture( GL_TEXTURE0 + index );
-#ifdef CHECK_GL_ERRORS
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in RenderTarget::bind: glActiveTexture of GL_TEXTURE" << index << " failed with " << gluErrorString( status ) << endl;
-		return false;
-	}
-#endif
-
-	glBindTexture( GL_TEXTURE_2D, this->m_id );
-
-#ifdef CHECK_GL_ERRORS
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		cout << "ERROR in RenderTarget::bind: glBindTexture with id " << this->m_id << " failed with " << gluErrorString( status ) << endl;
-		return false;
-	}
-#endif
-
-	return true;
 }

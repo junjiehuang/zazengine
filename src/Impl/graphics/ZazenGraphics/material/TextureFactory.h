@@ -1,5 +1,5 @@
 /*
- *  texture.h
+ *  TextureFactory.h
  *  ZENgine
  *
  *  Created by Jonathan Thaler on 30.04.08.
@@ -9,6 +9,8 @@
 
 #ifndef _TEXTUREFACTORY_H_
 #define _TEXTUREFACTORY_H_
+
+#include "Texture.h"
 
 #include <GL/glew.h>
 #include <IL/ilut.h>
@@ -30,18 +32,7 @@ class TextureFactory
 		bool bind( int textureUnit );
 	
 	private:
-		enum TextureType {
-			TEXTURE_2D,
-			TEXTURE_CUBE
-		};
-
 		static GLint m_currentTextureUnit;
-
-		Texture( GLuint, TextureType );
-		~Texture();
-
-		GLuint m_textureID;
-		TextureType m_textureType;
 
 		static boost::filesystem::path textureDataPath;
 		static std::map<std::string, Texture*> allTextures;

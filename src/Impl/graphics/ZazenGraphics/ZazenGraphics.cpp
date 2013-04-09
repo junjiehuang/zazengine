@@ -11,6 +11,7 @@
 #include "Geometry/GeomSkyBox.h"
 
 #include "Material/Material.h"
+#include "Material/TextureFactory.h"
 
 #include "Renderer/DRRenderer.h"
 
@@ -81,14 +82,7 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 		return false;
 	}
 
-	/*
-	if ( false == this->initGL( configNode ) )
-	{
-		return false;
-	}
-	*/
-
-	Texture::init( this->m_textureDataPath );
+	TextureFactory::init( this->m_textureDataPath );
 
 	GeometryFactory::setDataPath( this->m_modelDataPath );
 
@@ -122,7 +116,7 @@ ZazenGraphics::shutdown()
 	this->m_entities.clear();
 
 	Material::freeAll();
-	Texture::freeAll();
+	TextureFactory::freeAll();
 	GeometryFactory::freeAll();
 	
 	RenderingWindow::shutdown();
@@ -754,37 +748,6 @@ ZazenGraphics::initSkyBoxFolderPath( TiXmlElement* configElem )
 		return false;
 	}
 
-	return true;
-}
-
-bool
-ZazenGraphics::initGL( TiXmlElement* configNode )
-{
-	int major, minor;
-
-	GLenum err = glewInit();
-	if ( GLEW_OK != err )
-	{
-		cout << "ERROR ... GLEW failed with " <<  glewGetErrorString(err) << endl;
-		return false;
-	}
-	else
-	{
-		cout << "OK ... GLEW " << glewGetString(GLEW_VERSION) << " initialized " << endl;
-	}
-
-	cout << "OpenGL Version: " << glGetString(GL_VERSION) << endl;
-
-	glGetIntegerv( GL_MAJOR_VERSION, &major );
-	glGetIntegerv( GL_MINOR_VERSION, &minor );
-
-	if ( REQUIRED_MAJOR_OPENGL_VER > major || 
-		 ( REQUIRED_MAJOR_OPENGL_VER == major && REQUIRED_MINOR_OPENGL_VER > minor ) )
-	{
-		cout << "ERROR ... OpenGL " << REQUIRED_MAJOR_OPENGL_VER << "." << REQUIRED_MINOR_OPENGL_VER << " or above required" << endl;
-		return false;
-	}
-	
 	return true;
 }
 

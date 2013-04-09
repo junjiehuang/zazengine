@@ -16,6 +16,8 @@
 #include "../Program/Program.h"
 #include "../Program/UniformBlock.h"
 
+#include <boost/filesystem.hpp>
+
 class GeomSkyBox : public GeomType
 {
 	public:

@@ -126,9 +126,6 @@
     <ClCompile Include="material\Material.cpp">
       <Filter>Quelldateien\material</Filter>
     </ClCompile>
-    <ClCompile Include="material\Texture.cpp">
-      <Filter>Quelldateien\material</Filter>
-    </ClCompile>
     <ClCompile Include="orientation\Orientation.cpp">
       <Filter>Quelldateien\orientation</Filter>
     </ClCompile>
@@ -174,6 +171,12 @@
     <ClCompile Include="framebuffer\RenderTarget.cpp">
       <Filter>Quelldateien\framebuffer</Filter>
     </ClCompile>
+    <ClCompile Include="material\TextureFactory.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
+    <ClCompile Include="material\Texture.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ZazenGraphics.h">
@@ -198,9 +201,6 @@
       <Filter>Headerdateien\lighting</Filter>
     </ClInclude>
     <ClInclude Include="material\Material.h">
-      <Filter>Headerdateien\material</Filter>
-    </ClInclude>
-    <ClInclude Include="material\Texture.h">
       <Filter>Headerdateien\material</Filter>
     </ClInclude>
     <ClInclude Include="orientation\Orientation.h">
@@ -253,6 +253,12 @@
     </ClInclude>
     <ClInclude Include="framebuffer\RenderTarget.h">
       <Filter>Headerdateien\framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="material\TextureFactory.h">
+      <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="material\Texture.h">
+      <Filter>Headerdateien\material</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

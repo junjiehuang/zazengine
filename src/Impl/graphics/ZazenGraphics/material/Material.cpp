@@ -7,6 +7,8 @@
 
 #include "Material.h"
 
+#include "TextureFactory.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
@@ -127,7 +129,7 @@ Material::init( const filesystem::path& path )
 						str = materialCfgNode->Attribute( "file" );
 						if ( 0 != str )
 						{
-							Texture* texture = Texture::get( str );
+							Texture* texture = TextureFactory::get( str );
 							if ( texture )
 							{
 								material->m_diffuseTexture = texture;
