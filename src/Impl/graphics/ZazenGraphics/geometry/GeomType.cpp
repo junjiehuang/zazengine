@@ -6,6 +6,10 @@ GeomType::GeomType()
 
 GeomType::~GeomType()
 {
+	for ( unsigned int i = 0; i < this->m_children.size(); i++ )
+	{
+		delete this->m_children[ i ];
+	}
 }
 
 void

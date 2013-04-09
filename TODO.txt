@@ -1,14 +1,8 @@
-Remove Redundant & Deprecated Calls: use gDEBugger in Profile-Mode
-
 Force core-profile when creating opengl context from windows
 	-> http://www.opengl.org/discussion_boards/archive/index.php/t-175619.html
 	-> http://www.opengl.org/wiki/Creating_an_OpenGL_Context_(WGL)
 	-> http://www.opengl.org/registry/specs/ARB/wgl_create_context.txt
 	
-Sky-Box
-	-> shadowing of sky-box not wanted: if materialType == skybox then don't apply shadowing!
-	-> render AFTER other geometry and utilize stencil-buffer to mask fragments occluding the sky-box
-
 Remove errors in gDEBugger during glLinkProgram!
 
 Calculate position in Fragment-Shader
@@ -139,7 +133,8 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 	-> reduce branching in shaders (need different shader-architecture, see below)
 	-> Experiment with different render-target formats for performance
 	-> really all calls necessary e.g. always bindBuffer, ... ? are some states stored in buffers?
-
+	-> render SKYBOX AFTER other geometry and utilize stencil-buffer to mask fragments occluding the sky-box
+	
 Game-Functionality
 	-> allow mutliple scenes which can be changed during runtime. also specify which subsystems are necessary: load/unload them during runtime
 

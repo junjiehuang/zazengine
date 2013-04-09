@@ -84,72 +84,81 @@ void main()
 	// shadow true/false
 	float shadow = 0.0;
 
-	// do shadow-calculation only when light is shadow-caster 
-	if ( 1.0 == light_Config.z )
+	// sky-box material only diffuse
+	if ( 133 == diffuse.a )
 	{
-		// for shadow-mapping we need to transform the position of the fragment to light-space
-		// before we can apply the light-space transformation we first need to apply
-		// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
-		// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
-		// OPTIMIZE: precalculate inverse camera-view matrix on CPU
-		vec4 wcPosition = inverse( camera_View_Matrix ) * ecPosition;
-		vec4 shadowCoord = light_SpaceUniform_Matrix * wcPosition;
-
-		shadowCoord.z -= shadow_bias;
-
-		// spot-light - do perspective shadow-lookup
-		if ( 0.0 == light_Config.x )
-		{
-			// IMPORTANT: we are only in clip-space, need to divide by w to reach projected NDC.
-			// normally the forward-rendering shadow-mapping calculates the shadow-coord
-			// in the vertex-shader, which is not possible in the deferred renderer without using 
-			// an additional render-target. in forward-rendering between the vertex-shader
-			// and the fragment-shader where the shadow-map lookup happens
-			// interpolation is carried out by the fixed-function but no perspective division
-			// the shadowcoord is in our case already multiplied with the projection-transform
-			// but we still need to do the projective-division to reach the according space 0-1
-			// because this is not done when applying the projection transform
-			// ADDITION: either use 	
-			//		vec3 shadowCoordPersp = shadowCoord.xyz / shadowCoord.w; with texture( ShadowMap, shadowCoordPersp ) lookup 
-			//		OR use textureProj( ShadowMap, shadowCoord ); directly
-		
-			// IMPORTANT: because we installed a compare-function on this shadow-sampler
-			// we don't need to compare it anymore to the z-value of the shadow-coord
-			shadow = textureProj( ShadowMap, shadowCoord );
-		}
-		else if ( 1.0 == light_Config.x )
-		{
-			// IMPORTANT: directionaly light uses orthogonal shadow-map so 
-			// transformation of position to shadow-coord is orthgonal projection too
-			// so no need for perspective lookup (or divide) because orthogonal 
-			// projection has 1 at w so there won't be a foreshortening of values
-			// IMPORTANT: because we installed a compare-function on this shadow-sampler
-			// we don't need to compare it anymore to the z-value of the shadow-coord
-			shadow = texture( ShadowMap, shadowCoord );
-		}
-	}
-
-	// not in shadow
-	if ( shadow != 0.0 )
-	{
-		float matId = diffuse.a * 255;
-
-		if ( 1.0 == matId )
-		{
-			final_color = calculateLambertian( diffuse, normal, ecPosition );
-		}
-		else if ( 2.0 == matId )
-		{
-			final_color = calculatePhong( diffuse, normal, ecPosition );
-		}
-		else
-		{
-			final_color = diffuse;
-		}
+		final_color = diffuse;
+		final_color.a = 1.0;
 	}
 	else
 	{
-		final_color = calculateLambertian( diffuse, normal, ecPosition ) * 0.5;
-		final_color.a = 1.0;
+		// do shadow-calculation only when light is shadow-caster 
+		if ( 1.0 == light_Config.z )
+		{
+			// for shadow-mapping we need to transform the position of the fragment to light-space
+			// before we can apply the light-space transformation we first need to apply
+			// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
+			// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
+			// OPTIMIZE: precalculate inverse camera-view matrix on CPU
+			vec4 wcPosition = inverse( camera_View_Matrix ) * ecPosition;
+			vec4 shadowCoord = light_SpaceUniform_Matrix * wcPosition;
+
+			shadowCoord.z -= shadow_bias;
+
+			// spot-light - do perspective shadow-lookup
+			if ( 0.0 == light_Config.x )
+			{
+				// IMPORTANT: we are only in clip-space, need to divide by w to reach projected NDC.
+				// normally the forward-rendering shadow-mapping calculates the shadow-coord
+				// in the vertex-shader, which is not possible in the deferred renderer without using 
+				// an additional render-target. in forward-rendering between the vertex-shader
+				// and the fragment-shader where the shadow-map lookup happens
+				// interpolation is carried out by the fixed-function but no perspective division
+				// the shadowcoord is in our case already multiplied with the projection-transform
+				// but we still need to do the projective-division to reach the according space 0-1
+				// because this is not done when applying the projection transform
+				// ADDITION: either use 	
+				//		vec3 shadowCoordPersp = shadowCoord.xyz / shadowCoord.w; with texture( ShadowMap, shadowCoordPersp ) lookup 
+				//		OR use textureProj( ShadowMap, shadowCoord ); directly
+		
+				// IMPORTANT: because we installed a compare-function on this shadow-sampler
+				// we don't need to compare it anymore to the z-value of the shadow-coord
+				shadow = textureProj( ShadowMap, shadowCoord );
+			}
+			else if ( 1.0 == light_Config.x )
+			{
+				// IMPORTANT: directionaly light uses orthogonal shadow-map so 
+				// transformation of position to shadow-coord is orthgonal projection too
+				// so no need for perspective lookup (or divide) because orthogonal 
+				// projection has 1 at w so there won't be a foreshortening of values
+				// IMPORTANT: because we installed a compare-function on this shadow-sampler
+				// we don't need to compare it anymore to the z-value of the shadow-coord
+				shadow = texture( ShadowMap, shadowCoord );
+			}
+		}
+
+		// not in shadow
+		if ( shadow != 0.0 )
+		{
+			float matId = diffuse.a * 255;
+
+			if ( 1.0 == matId )
+			{
+				final_color = calculateLambertian( diffuse, normal, ecPosition );
+			}
+			else if ( 2.0 == matId )
+			{
+				final_color = calculatePhong( diffuse, normal, ecPosition );
+			}
+			else
+			{
+				final_color = diffuse;
+			}
+		}
+		else
+		{
+			final_color = calculateLambertian( diffuse, normal, ecPosition ) * 0.5;
+			final_color.a = 1.0;
+		}
 	}
 }

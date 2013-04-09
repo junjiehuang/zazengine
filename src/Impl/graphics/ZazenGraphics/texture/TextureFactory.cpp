@@ -187,18 +187,9 @@ TextureFactory::loadImage( const std::string& fileName, ILuint imageId )
 	ILboolean success = ilLoadImage( fileName.c_str() );
 	if ( success )
 	{
-		// If the image is flipped (i.e. upside-down and mirrored, flip it the right way up!)
-		ILinfo ImageInfo;
-		iluGetImageInfo( &ImageInfo );
-		if ( IL_ORIGIN_UPPER_LEFT == ImageInfo.Origin )
-		{
-			iluFlipImage();
-		}
-
 		// ... then attempt to conver it.
 		// NOTE: If your image contains alpha channel you can replace IL_RGB with IL_RGBA
 		success = ilConvertImage( IL_RGB, IL_UNSIGNED_BYTE );
-
 		// Quit out if we failed the conversion
 		if ( !success )
 		{

@@ -27,15 +27,17 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
 		cout << "ERROR in RenderTarget::create: glGenTextures failed with " << gluErrorString( status ) << " - exit" << endl;
-		return false;
+		return NULL;
 	}
 
 	glBindTexture( GL_TEXTURE_2D, id );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
 		cout << "ERROR in RenderTarget::create: glBindTexture failed with " << gluErrorString( status ) << " - exit" << endl;
-		return false;
+		return NULL;
 	}
+
+	RenderTarget* renderTarget = NULL;
 
 	if ( RenderTarget::RT_DEPTH == targetType )
 	{
@@ -53,8 +55,10 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR in Light::createShadowMap: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
-			return false;
+			return NULL;
 		}
+
+		renderTarget = new RenderTarget( id, width, height, targetType );
 	}
 	else if ( RenderTarget::RT_SHADOW == targetType )
 	{
@@ -75,8 +79,11 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR in Light::createShadowMap: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
-			return false;
+			return NULL;
 		}
+
+		renderTarget = new RenderTarget( id, width, height, targetType );
+		RenderTarget::m_shadowMapPool.push_back( renderTarget );
 	}
 	else if ( RenderTarget::RT_COLOR == targetType )
 	{
@@ -90,16 +97,18 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		if ( GL_NO_ERROR != ( status = glGetError() )  )
 		{
 			cout << "ERROR in RenderTarget::create: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
-			return false;
+			return NULL;
 		}
+
+		renderTarget = new RenderTarget( id, width, height, targetType );
 	}
 	else
 	{
 		cout << "ERROR in RenderTarget::create: unsupported RenderTarget-Type - exit" << endl;
-		return false;
+		return NULL;
 	}
 
-	return new RenderTarget( id, width, height, targetType );
+	return renderTarget;
 }
 
 RenderTarget*
@@ -138,6 +147,8 @@ RenderTarget::cleanup()
 		RenderTarget* shadowMap = RenderTarget::m_shadowMapPool[ i ];
 		RenderTarget::destroy( shadowMap );
 	}
+
+	RenderTarget::m_shadowMapPool.clear();
 }
 
 RenderTarget::RenderTarget( GLuint id, GLsizei width, GLsizei height, RenderTargetType targetType )

@@ -118,7 +118,13 @@ ZazenGraphics::shutdown()
 	Material::freeAll();
 	TextureFactory::freeAll();
 	GeometryFactory::freeAll();
-	
+	GeomSkyBox::shutdown();
+
+	if ( NULL != this->m_renderer )
+	{
+		this->m_renderer->shutdown();
+	}
+
 	RenderingContext::shutdown();
 
 	cout << "================ ZazenGraphics shutdown =================" << endl;

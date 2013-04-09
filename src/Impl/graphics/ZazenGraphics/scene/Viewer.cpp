@@ -15,8 +15,8 @@ Viewer::Viewer( int width, int height )
 	this->m_width = width;
 	this->m_height = height;
 
-	this->m_nearDist = 1;
-	this->m_farDist = 1000;
+	this->m_nearDist = 0.1f;
+	this->m_farDist = 1000.0f;
 
 	this->m_fov = 90.0f;
 }
