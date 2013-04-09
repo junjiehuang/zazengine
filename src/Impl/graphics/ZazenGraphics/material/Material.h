@@ -10,7 +10,7 @@
 
 #include "../Program/Program.h"
 #include "../Program/UniformBlock.h"
-#include "Texture.h"
+#include "../Texture/Texture.h"
 
 #include <boost/filesystem.hpp>
 

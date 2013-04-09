@@ -43,6 +43,7 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>libs/include/;../../../IFaces/;$(BOOST_PATH)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251;4275;</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -72,6 +73,7 @@
     <ClCompile Include="..\..\..\IFaces\core\XML\tinyxml.cpp" />
     <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlerror.cpp" />
     <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlparser.cpp" />
+    <ClCompile Include="context\RenderingContext.cpp" />
     <ClCompile Include="framebuffer\FrameBufferObject.cpp" />
     <ClCompile Include="framebuffer\RenderTarget.cpp" />
     <ClCompile Include="geometry\GeometryFactory.cpp" />
@@ -80,8 +82,6 @@
     <ClCompile Include="geometry\GeomType.cpp" />
     <ClCompile Include="lighting\Light.cpp" />
     <ClCompile Include="material\Material.cpp" />
-    <ClCompile Include="material\Texture.cpp" />
-    <ClCompile Include="material\TextureFactory.cpp" />
     <ClCompile Include="orientation\Orientation.cpp" />
     <ClCompile Include="program\Program.cpp" />
     <ClCompile Include="program\Shader.cpp" />
@@ -90,7 +90,8 @@
     <ClCompile Include="renderer\Renderer.cpp" />
     <ClCompile Include="scene\Instance.cpp" />
     <ClCompile Include="scene\Viewer.cpp" />
-    <ClCompile Include="window\RenderingWindow.cpp" />
+    <ClCompile Include="texture\Texture.cpp" />
+    <ClCompile Include="texture\TextureFactory.cpp" />
     <ClCompile Include="ZazenGraphics.cpp" />
     <ClCompile Include="ZazenGraphicsEntity.cpp" />
   </ItemGroup>
@@ -101,6 +102,7 @@
     <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_utils.hpp" />
     <ClInclude Include="..\..\..\IFaces\core\XML\tinystr.h" />
     <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h" />
+    <ClInclude Include="context\RenderingContext.h" />
     <ClInclude Include="framebuffer\FrameBufferObject.h" />
     <ClInclude Include="framebuffer\RenderTarget.h" />
     <ClInclude Include="geometry\GeometryFactory.h" />
@@ -109,8 +111,6 @@
     <ClInclude Include="geometry\GeomType.h" />
     <ClInclude Include="lighting\Light.h" />
     <ClInclude Include="material\Material.h" />
-    <ClInclude Include="material\Texture.h" />
-    <ClInclude Include="material\TextureFactory.h" />
     <ClInclude Include="orientation\Orientation.h" />
     <ClInclude Include="program\Program.h" />
     <ClInclude Include="program\Shader.h" />
@@ -119,7 +119,8 @@
     <ClInclude Include="renderer\Renderer.h" />
     <ClInclude Include="scene\Instance.h" />
     <ClInclude Include="scene\Viewer.h" />
-    <ClInclude Include="window\RenderingWindow.h" />
+    <ClInclude Include="texture\Texture.h" />
+    <ClInclude Include="texture\TextureFactory.h" />
     <ClInclude Include="ZazenGraphics.h" />
     <ClInclude Include="ZazenGraphicsEntity.h" />
   </ItemGroup>

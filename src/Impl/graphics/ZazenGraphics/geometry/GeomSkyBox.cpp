@@ -9,7 +9,7 @@
 
 #include "GeomSkyBox.h"
 
-#include "../Material/TextureFactory.h"
+#include "../Texture/TextureFactory.h"
 
 #include "GeometryFactory.h"
 

@@ -7,7 +7,7 @@
 
 #include "Material.h"
 
-#include "TextureFactory.h"
+#include "../Texture/TextureFactory.h"
 
 #include <glm/gtc/type_ptr.hpp>
 

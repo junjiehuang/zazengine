@@ -11,11 +11,11 @@
 #include "Geometry/GeomSkyBox.h"
 
 #include "Material/Material.h"
-#include "Material/TextureFactory.h"
+#include "Texture/TextureFactory.h"
 
 #include "Renderer/DRRenderer.h"
 
-#include "window/RenderingWindow.h"
+#include "Context/RenderingContext.h"
 
 #include <GL/glew.h>
 
@@ -119,7 +119,7 @@ ZazenGraphics::shutdown()
 	TextureFactory::freeAll();
 	GeometryFactory::freeAll();
 	
-	RenderingWindow::shutdown();
+	RenderingContext::shutdown();
 
 	cout << "================ ZazenGraphics shutdown =================" << endl;
 
@@ -182,10 +182,10 @@ ZazenGraphics::process( double iterationFactor )
 	else										// If There Are No Messages
 	{
 		// Draw The Scene.  Watch For ESC Key And Quit Messages From DrawGLScene()
-		if ( RenderingWindow::getRef().isActive() )								// Program Active?
+		if ( RenderingContext::getRef().isActive() )								// Program Active?
 		{
 			flag = this->m_renderer->renderFrame( this->m_instances, this->m_lights );
-			RenderingWindow::getRef().swapBuffers();
+			RenderingContext::getRef().swapBuffers();
 		}
 	}
 
@@ -338,15 +338,15 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 
 			if ( lightType == "DIRECTIONAL" )
 			{
-				light = Light::createDirectionalLight( RenderingWindow::getRef().getWidth(), RenderingWindow::getRef().getHeight(), castShadow );
-				boundingGeom = GeometryFactory::createQuad( ( float ) RenderingWindow::getRef().getWidth(), ( float ) RenderingWindow::getRef().getHeight() );
+				light = Light::createDirectionalLight( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), castShadow );
+				boundingGeom = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
 			}
 			// default is spot
 			else
 			{
 				light = Light::createSpotLight( fov, shadowMapResX, shadowMapResY, castShadow );
 				// TODO load correct bounding-geometry
-				boundingGeom = GeometryFactory::createQuad( ( float ) RenderingWindow::getRef().getWidth(), ( float ) RenderingWindow::getRef().getHeight() );
+				boundingGeom = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
 			}
 
 			light->setBoundingGeometry( boundingGeom );
@@ -384,7 +384,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 				mode = str;
 			}
 
-			Viewer* camera = new Viewer( RenderingWindow::getRef().getWidth(), RenderingWindow::getRef().getHeight() );
+			Viewer* camera = new Viewer( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight() );
 			if ( mode == "PROJ" )
 			{
 				camera->setFov( fov );
@@ -523,13 +523,13 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 void*
 ZazenGraphics::getWindowHandle()
 {
-	return RenderingWindow::getRef().getHandle();
+	return RenderingContext::getRef().getHandle();
 }
 
 bool
 ZazenGraphics::toggleFullscreen()
 {
-	RenderingWindow::getRef().toggleFullscreen();
+	RenderingContext::getRef().toggleFullscreen();
 
 	/* TODO fix it, not yet working */
 	this->m_renderer->shutdown();
@@ -577,7 +577,7 @@ ZazenGraphics::createWindow( TiXmlElement* configNode )
 		}
 	}
 
-	if ( false == RenderingWindow::initialize( windowTitle, windowWidth, windowHeight, fullScreen ) )
+	if ( false == RenderingContext::initialize( windowTitle, windowWidth, windowHeight, fullScreen ) )
 	{
 		cout << "ERROR ... in ZazenGraphics::createWindow: failed creating window" << endl;
 		return false;

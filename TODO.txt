@@ -1,9 +1,5 @@
 Remove Redundant & Deprecated Calls: use gDEBugger in Profile-Mode
 
-Rename RenderWindow to RenderContext
-
-Put Texture-Stuff in separate Folder
-
 Force core-profile when creating opengl context from windows
 	-> http://www.opengl.org/discussion_boards/archive/index.php/t-175619.html
 	-> http://www.opengl.org/wiki/Creating_an_OpenGL_Context_(WGL)
@@ -68,6 +64,7 @@ Transparency-Rendering
 	=> opaque Objects in Framebuffer AND colored shadows cast by transparent objects but no transparent objects yet
 3. Render transparent objects 
 	-> now render transparent objects by accessing previous framebuffer & pertubing the normals (no need to transform, we are already in tangent - texture - space )
+	-> simulate refraction (see GPU Gems 1 Chapter)
 		=> all black but transparent objects will show up
 4. finalize
 	-> combine both the opaque framebuffer and the transparent framebuffer into final framebuffer result:
@@ -125,7 +122,12 @@ Post-Processing in Screen-Space
 	-> Bloom
 	-> Tone-Mapping
 	-> Depth Of Field
-	-> GI
+
+Global Illumination Techniques?
+
+Particle System?
+	-> CUDA
+	-> ... ?
 	
 Allow Toggle fullscreen
 	-> reinit window & render-context!

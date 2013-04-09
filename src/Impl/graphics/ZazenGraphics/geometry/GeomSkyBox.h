@@ -12,7 +12,7 @@
 
 #include "GeomType.h"
 
-#include "../Material/Texture.h"
+#include "../Texture/Texture.h"
 #include "../Program/Program.h"
 #include "../Program/UniformBlock.h"
 

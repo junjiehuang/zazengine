@@ -5,19 +5,19 @@
  *      Author: Jonathan Thaler
  */
 
-#ifndef RENDERING_WINDOW_H_
-#define RENDERING_WINDOW_H_
+#ifndef RENDERING_CONTEXT_H_
+#define RENDERING_CONTEXT_H_
 
 #include <Windows.h>
 
 #include <string>
 
-class RenderingWindow
+class RenderingContext
 {
 	public:
 		static bool initialize( const std::string&, int, int, bool );
 		static bool shutdown();
-		static RenderingWindow& getRef() { return *RenderingWindow::instance; };
+		static RenderingContext& getRef() { return *RenderingContext::instance; };
 
 		bool toggleFullscreen();
 
@@ -31,10 +31,10 @@ class RenderingWindow
 		bool swapBuffers();
 
 	private:
-		static RenderingWindow* instance;
+		static RenderingContext* instance;
 
-		RenderingWindow();
-		~RenderingWindow();
+		RenderingContext();
+		~RenderingContext();
 
 		std::string m_windowTitle;
 

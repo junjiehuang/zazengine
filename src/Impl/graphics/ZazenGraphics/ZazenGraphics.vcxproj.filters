@@ -79,12 +79,6 @@
     <Filter Include="Ressourcendateien\Config">
       <UniqueIdentifier>{cdb83d25-5d08-471f-86de-93e1c461edd0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Headerdateien\window">
-      <UniqueIdentifier>{33c9a16b-2315-454b-a3f1-54d93807a5bd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Quelldateien\window">
-      <UniqueIdentifier>{9d306254-532c-4838-b309-901d01a895e8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox">
       <UniqueIdentifier>{6686c2b0-0501-479f-a163-8715083f5f8c}</UniqueIdentifier>
     </Filter>
@@ -99,6 +93,18 @@
     </Filter>
     <Filter Include="Headerdateien\framebuffer">
       <UniqueIdentifier>{458d9348-4c11-4e1b-87c8-802c3c61e41c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\context">
+      <UniqueIdentifier>{48e34871-0af7-4733-af57-a939e8c3066f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\context">
+      <UniqueIdentifier>{f11de94f-425e-46f5-a582-0184d54b0191}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\texture">
+      <UniqueIdentifier>{de5d3e70-b0e4-47ab-846e-00923333b8db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\texture">
+      <UniqueIdentifier>{68e1746b-5ee8-49f4-8ff4-8974c97d78ae}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -153,9 +159,6 @@
     <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlparser.cpp">
       <Filter>Quelldateien\XML</Filter>
     </ClCompile>
-    <ClCompile Include="window\RenderingWindow.cpp">
-      <Filter>Quelldateien\window</Filter>
-    </ClCompile>
     <ClCompile Include="program\Program.cpp">
       <Filter>Quelldateien\program</Filter>
     </ClCompile>
@@ -171,11 +174,14 @@
     <ClCompile Include="framebuffer\RenderTarget.cpp">
       <Filter>Quelldateien\framebuffer</Filter>
     </ClCompile>
-    <ClCompile Include="material\TextureFactory.cpp">
-      <Filter>Quelldateien\material</Filter>
+    <ClCompile Include="context\RenderingContext.cpp">
+      <Filter>Quelldateien\context</Filter>
     </ClCompile>
-    <ClCompile Include="material\Texture.cpp">
-      <Filter>Quelldateien\material</Filter>
+    <ClCompile Include="texture\Texture.cpp">
+      <Filter>Quelldateien\texture</Filter>
+    </ClCompile>
+    <ClCompile Include="texture\TextureFactory.cpp">
+      <Filter>Quelldateien\texture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -233,9 +239,6 @@
     <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h">
       <Filter>Headerdateien\XML</Filter>
     </ClInclude>
-    <ClInclude Include="window\RenderingWindow.h">
-      <Filter>Headerdateien\window</Filter>
-    </ClInclude>
     <ClInclude Include="program\Program.h">
       <Filter>Headerdateien\program</Filter>
     </ClInclude>
@@ -254,11 +257,14 @@
     <ClInclude Include="framebuffer\RenderTarget.h">
       <Filter>Headerdateien\framebuffer</Filter>
     </ClInclude>
-    <ClInclude Include="material\TextureFactory.h">
-      <Filter>Headerdateien\material</Filter>
+    <ClInclude Include="context\RenderingContext.h">
+      <Filter>Headerdateien\context</Filter>
     </ClInclude>
-    <ClInclude Include="material\Texture.h">
-      <Filter>Headerdateien\material</Filter>
+    <ClInclude Include="texture\Texture.h">
+      <Filter>Headerdateien\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="texture\TextureFactory.h">
+      <Filter>Headerdateien\texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

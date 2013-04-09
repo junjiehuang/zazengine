@@ -8,7 +8,7 @@
 #ifndef RENDERTARGET_H_
 #define RENDERTARGET_H_
 
-#include "../material/Texture.h"
+#include "../Texture/Texture.h"
 
 #include <GL/glew.h>
 
