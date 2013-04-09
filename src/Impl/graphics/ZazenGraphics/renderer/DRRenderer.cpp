@@ -70,7 +70,6 @@ DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Renderer..." << endl;
 
-	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );					// Black Background
 	glClearDepth( 1.0f );									// Depth Buffer Setup
 
 	glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );	// Really Nice Perspective Calculations
@@ -283,6 +282,9 @@ DRRenderer::initGBuffer()
 		return false;
 	}
 	
+	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+	glClearColor( 0.0, 0.0, 0.0, 1.0 );
+
 	// render-target at index 0: diffuse color
 	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
 	{
@@ -506,6 +508,9 @@ bool
 DRRenderer::initLightingStage( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Rendering Lighting-Stage..." << endl;
+
+	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 
 	this->m_progLightingStage = Program::createProgram( "LightingStageProgramm" );
 	if ( 0 == this->m_progLightingStage )
@@ -971,8 +976,6 @@ DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>&
 	// IMPORANT: when other fbos are used in this pipeline, they are always unbound after 
 	//		usage so it is ensured that we are rendering to the default framebuffer now
 	// clear default framebuffer
-	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	glm::vec4 cameraRectangle;

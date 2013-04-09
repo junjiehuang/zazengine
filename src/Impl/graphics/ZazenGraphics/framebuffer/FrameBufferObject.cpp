@@ -237,9 +237,6 @@ FrameBufferObject::clearAll()
 	}
 
 	// turn on color drawing ( was turned off in shadowmaping )
-	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-	// set clear-color
-	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 	// clear the colorbuffers AND our depth-buffer ( m_geometryDepth );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
