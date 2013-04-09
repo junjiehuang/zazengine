@@ -45,8 +45,6 @@ GeomMesh::render()
 {
 	GLint status;
 
-	//GeomType::render();
-	
 	// lazy loading
 	if ( 0 == this->m_dataVBO )
 	{
@@ -75,15 +73,6 @@ GeomMesh::render()
 			return false;
 		}
 
-		// deprecated: don't need anymore
-		glBindBuffer( GL_ARRAY_BUFFER, 0 );
-		status = glGetError();
-		if ( GL_NO_ERROR != status )
-		{
-			cout << "GeomMesh::render: glBindBuffer(0) GL_ARRAY_BUFFER failed: " << gluErrorString( status )  << endl;
-			return false;
-		}
-
 		// generate and setup index vbo
 		glGenBuffers( 1, &this->m_indexVBO );
 		status = glGetError();
@@ -106,15 +95,6 @@ GeomMesh::render()
 		if ( GL_NO_ERROR != status )
 		{
 			cout << "GeomMesh::render: glBufferData GL_ELEMENT_ARRAY_BUFFER failed: " << gluErrorString( status )  << endl;
-			return false;
-		}
-
-		// deprecated: don't need anymore
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
-		status = glGetError();
-		if ( GL_NO_ERROR != status )
-		{
-			cout << "GeomMesh::render: glBindBuffer(0) GL_ELEMENT_ARRAY_BUFFER failed: " << gluErrorString( status )  << endl;
 			return false;
 		}
 	}

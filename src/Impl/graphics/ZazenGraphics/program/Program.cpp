@@ -145,11 +145,6 @@ Program::bindUniformBlock( UniformBlock* block )
 		return false;
 	}
 
-	if ( false == block->unbindBuffer() )
-	{
-		return false;
-	}
-
 	glUniformBlockBinding( this->m_programObject, index,  block->getBinding() );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{

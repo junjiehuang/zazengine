@@ -28,7 +28,6 @@ class UniformBlock
 		bool bind();
 
 		bool bindBuffer();
-		bool unbindBuffer();
 
 		bool updateMat4( const glm::mat4&, int offset );
 		bool updateVec4( const glm::vec4&, int offset );
@@ -39,12 +38,14 @@ class UniformBlock
 	private:
 		UniformBlock( const std::string& name );
 
-		static GLuint nextBinding;
+		static GLuint m_nextBinding;
+
+		static int m_currentBoundId;
 
 		GLuint m_id;
-		const std::string m_name;
-
 		GLuint m_binding;
+
+		const std::string m_name;
 
 };
 

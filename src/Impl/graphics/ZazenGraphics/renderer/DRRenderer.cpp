@@ -70,18 +70,16 @@ DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Renderer..." << endl;
 
-	glClearDepth( 1.0f );									// Depth Buffer Setup
-
-	glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );	// Really Nice Perspective Calculations
+	//glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );	// Really Nice Perspective Calculations
 
 	glEnable( GL_DEPTH_TEST );								// Enables Depth Testing
-	glDepthFunc( GL_LESS );									// The Type Of Depth Testing To Do
-	glDepthMask( GL_TRUE );
+	//glDepthFunc( GL_LESS );									// The Type Of Depth Testing To Do
+	//glDepthMask( GL_TRUE );
 
 	// Cull triangles which normal is not towards the camera
 	glEnable( GL_CULL_FACE );
 
-	glEnable( GL_TEXTURE_2D );
+	//glEnable( GL_TEXTURE_2D );
 
 	if ( false == this->initGBuffer() )
 	{
@@ -509,8 +507,8 @@ DRRenderer::initLightingStage( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Rendering Lighting-Stage..." << endl;
 
-	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-	glClearColor( 0.0, 0.0, 0.0, 1.0 );
+	//glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+	//glClearColor( 0.0, 0.0, 0.0, 1.0 );
 
 	this->m_progLightingStage = Program::createProgram( "LightingStageProgramm" );
 	if ( 0 == this->m_progLightingStage )

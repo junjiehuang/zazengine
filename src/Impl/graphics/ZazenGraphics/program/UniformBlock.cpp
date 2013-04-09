@@ -16,7 +16,9 @@ using namespace std;
 // the index used to bind the uniformblock with glBindBufferBase
 // this is the index like the activetexture in texturing. its different because
 // an arbitrary number of uniformblocks can be active
-GLuint UniformBlock::nextBinding = 0;
+GLuint UniformBlock::m_nextBinding = 0;
+
+int UniformBlock::m_currentBoundId = -1;
 
 UniformBlock*
 UniformBlock::createBlock( const std::string& name )
@@ -34,9 +36,9 @@ UniformBlock::createBlock( const std::string& name )
 
 	UniformBlock* block = new UniformBlock( name );
 	block->m_id = id;
-	block->m_binding = UniformBlock::nextBinding;
+	block->m_binding = UniformBlock::m_nextBinding;
 
-	UniformBlock::nextBinding++;
+	UniformBlock::m_nextBinding++;
 
 	return block;
 }
@@ -59,8 +61,9 @@ UniformBlock::~UniformBlock()
 bool
 UniformBlock::bind()
 {
+	
 	glBindBufferBase( GL_UNIFORM_BUFFER, this->m_binding, this->m_id );
-
+	
 #ifdef CHECK_GL_ERRORS
 	GLint status = glGetError();
 	if ( GL_NO_ERROR != status )
@@ -69,6 +72,29 @@ UniformBlock::bind()
 		return false;
 	}
 #endif
+
+	return true;
+}
+
+
+bool
+UniformBlock::bindBuffer()
+{
+	if ( UniformBlock::m_currentBoundId != this->m_id )
+	{
+		glBindBuffer( GL_UNIFORM_BUFFER, this->m_id );
+
+#ifdef CHECK_GL_ERRORS
+		GLint status = glGetError();
+		if ( GL_NO_ERROR != status )
+		{
+			cout << "UniformBlock::bindBuffer: glBindBuffer failed for name \"" << this->m_name << "\": " << gluErrorString( status )  << endl;
+			return false;
+		}
+#endif
+
+		UniformBlock::m_currentBoundId = this->m_id;
+	}
 
 	return true;
 }
@@ -117,38 +143,4 @@ bool
 UniformBlock::updateVec4( const glm::vec4& vec, int offset )
 {
 	return this->updateData( glm::value_ptr( vec ), offset, 16 );
-}
-
-bool
-UniformBlock::bindBuffer()
-{
-	glBindBuffer( GL_UNIFORM_BUFFER, this->m_id );
-
-#ifdef CHECK_GL_ERRORS
-	GLint status = glGetError();
-	if ( GL_NO_ERROR != status )
-	{
-		cout << "UniformBlock::bindBuffer: glBindBuffer failed for name \"" << this->m_name << "\": " << gluErrorString( status )  << endl;
-		return false;
-	}
-#endif
-
-	return true;
-}
-
-bool
-UniformBlock::unbindBuffer()
-{
-	glBindBuffer( GL_UNIFORM_BUFFER, 0 );
-
-#ifdef CHECK_GL_ERRORS
-	GLint status = glGetError();
-	if ( GL_NO_ERROR != status )
-	{
-		cout << "UniformBlock::unbindBuffer: glBindBuffer( 0 ) failed for name \"" << this->m_name << "\": " << gluErrorString( status )  << endl;
-		return false;
-	}
-#endif
-
-	return true;
 }

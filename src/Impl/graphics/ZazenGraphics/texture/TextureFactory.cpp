@@ -22,7 +22,6 @@ TextureFactory::init( const boost::filesystem::path& textureDataPath )
 {
 	ilInit();
 	iluInit();
-	ilutInit();
 
 	TextureFactory::textureDataPath = textureDataPath;
 }
@@ -249,9 +248,6 @@ TextureFactory::createTexture( ILuint imageId )
 					GL_UNSIGNED_BYTE,		// Image data type
 					ilGetData() );			// The actual image data itself
 
-	// deprecated: no more necessary
-	glBindTexture( GL_TEXTURE_2D, 0 );
-
  	ilDeleteImages( 1, &imageId ); // Because we have already copied image data into texture data we can release memory used by image.
 
 	return textureId; // Return the GLuint to the texture so you can use it!
@@ -263,7 +259,6 @@ TextureFactory::createCubeTexture( ILuint* imageIds )
 {
 	GLuint textureId;
 
-	glEnable( GL_TEXTURE_CUBE_MAP );
 	glGenTextures( 1, &textureId );
 	glBindTexture( GL_TEXTURE_CUBE_MAP, textureId );
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST );

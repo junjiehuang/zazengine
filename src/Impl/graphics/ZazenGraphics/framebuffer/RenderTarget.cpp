@@ -99,9 +99,6 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		return false;
 	}
 
-	// unbind framebuffer depth-target
-	glBindTexture( GL_TEXTURE_2D, 0 );
-
 	return new RenderTarget( id, width, height, targetType );
 }
 
