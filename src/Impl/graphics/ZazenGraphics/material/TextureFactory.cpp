@@ -7,19 +7,19 @@
  *
  */
 
-#include "Texture.h"
+#include "TextureFactory.h"
 
 #include <iostream>
 
 using namespace std;
 using namespace boost;
 
-map<string, Texture*> Texture::allTextures;
-boost::filesystem::path Texture::textureDataPath;
+map<string, Texture*> TextureFactory::allTextures;
+boost::filesystem::path TextureFactory::textureDataPath;
 GLint Texture::m_currentTextureUnit = -1;
 
 void
-Texture::init( const boost::filesystem::path& textureDataPath )
+TextureFactory::init( const boost::filesystem::path& textureDataPath )
 {
 	ilInit();
 	iluInit();
@@ -29,7 +29,7 @@ Texture::init( const boost::filesystem::path& textureDataPath )
 }
 
 Texture*
-Texture::get( const std::string& file )
+TextureFactory::get( const std::string& file )
 {
 	map<string, Texture*>::iterator findIter = Texture::allTextures.find( file );
 	if ( findIter != Texture::allTextures.end() )
@@ -73,7 +73,7 @@ Texture::get( const std::string& file )
 }
 
 Texture*
-Texture::getCube( const boost::filesystem::path& cubeMapPath, const std::string& fileType )
+TextureFactory::getCube( const boost::filesystem::path& cubeMapPath, const std::string& fileType )
 {
 	map<string, Texture*>::iterator findIter = Texture::allTextures.find( cubeMapPath.generic_string() );
 	if ( findIter != Texture::allTextures.end() )
@@ -126,7 +126,7 @@ Texture::getCube( const boost::filesystem::path& cubeMapPath, const std::string&
 }
 
 void
-Texture::freeAll()
+TextureFactory::freeAll()
 {
 	map<string, Texture*>::iterator iter = Texture::allTextures.begin();
 	while(iter != Texture::allTextures.end())
@@ -139,20 +139,20 @@ Texture::freeAll()
 	Texture::allTextures.clear();
 }
 
-Texture::Texture( GLuint texID, TextureType type )
+TextureFactory::Texture( GLuint texID, TextureType type )
 {
 	this->m_textureID = texID;
 	this->m_textureType = type;
 }
 
-Texture::~Texture()
+TextureFactory::~Texture()
 {
 
 	glDeleteTextures( 1, &this->m_textureID );
 }
 
 bool
-Texture::bind( int textureUnit )
+TextureFactory::bind( int textureUnit )
 {
 	GLenum status;
 
@@ -161,7 +161,7 @@ Texture::bind( int textureUnit )
 	{
 		glActiveTexture( GL_TEXTURE0 + textureUnit );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR ... in Texture::bind: failed glActiveTexture with " << gluErrorString( status ) << endl;
@@ -176,7 +176,7 @@ Texture::bind( int textureUnit )
 	{
 		glBindTexture( GL_TEXTURE_2D, this->m_textureID );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR ... in Texture::bind: failed glBindTexture with " << gluErrorString( status ) << endl;
@@ -189,7 +189,7 @@ Texture::bind( int textureUnit )
 	{
 		glBindTexture( GL_TEXTURE_CUBE_MAP, this->m_textureID );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
 			cout << "ERROR ... in Texture::bind: failed glBindTexture with " << gluErrorString( status ) << endl;

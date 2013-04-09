@@ -121,7 +121,7 @@ GeomMesh::render()
 
 	glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -132,7 +132,7 @@ GeomMesh::render()
 
 	glEnableVertexAttribArray( 0 );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -143,7 +143,7 @@ GeomMesh::render()
 
 	glEnableVertexAttribArray( 1 );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -154,7 +154,7 @@ GeomMesh::render()
 
 	glEnableVertexAttribArray( 2 );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -165,7 +165,7 @@ GeomMesh::render()
 
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( VertexData ), BUFFER_OFFSET( 0 ) );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -176,7 +176,7 @@ GeomMesh::render()
 
 	glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( VertexData ), BUFFER_OFFSET( 12 ) );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -187,7 +187,7 @@ GeomMesh::render()
 
 	glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, sizeof( VertexData ), BUFFER_OFFSET( 24 ) );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -198,7 +198,7 @@ GeomMesh::render()
 
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->m_indexVBO );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -209,7 +209,7 @@ GeomMesh::render()
 
 	glDrawElements( GL_TRIANGLES, this->faceCount * 3, GL_UNSIGNED_INT, BUFFER_OFFSET( 0 ) );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -220,7 +220,7 @@ GeomMesh::render()
 
 	glDisableVertexAttribArray( 0 );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -231,7 +231,7 @@ GeomMesh::render()
 	
 	glDisableVertexAttribArray( 1 );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -242,7 +242,7 @@ GeomMesh::render()
 
 	glDisableVertexAttribArray( 2 );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{

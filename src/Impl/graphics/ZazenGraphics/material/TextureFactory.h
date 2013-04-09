@@ -7,8 +7,8 @@
  *
  */
 
-#ifndef _TEXTURE_H_
-#define _TEXTURE_H_
+#ifndef _TEXTUREFACTORY_H_
+#define _TEXTUREFACTORY_H_
 
 #include <GL/glew.h>
 #include <IL/ilut.h>
@@ -18,7 +18,7 @@
 #include <string>
 #include <map>
 
-class Texture
+class TextureFactory
 {
 	public:
 		static void init( const boost::filesystem::path& );

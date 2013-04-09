@@ -854,7 +854,7 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 	}
 
 // if checking of gl-errors is deactivated check once per frame for errors
-#ifndef CHECK_GL_ERROR
+#ifndef CHECK_GL_ERRORS
 	GLenum status;
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{

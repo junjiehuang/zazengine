@@ -61,7 +61,7 @@ UniformBlock::bind()
 {
 	glBindBufferBase( GL_UNIFORM_BUFFER, this->m_binding, this->m_id );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	GLint status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -78,7 +78,7 @@ UniformBlock::updateData( const void* data, int offset, int size )
 {
 	glBufferSubData( GL_UNIFORM_BUFFER, offset, size, data );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	GLint status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -95,7 +95,7 @@ UniformBlock::updateData( const void* data, int size )
 {
 	glBufferData( GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	GLint status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -124,7 +124,7 @@ UniformBlock::bindBuffer()
 {
 	glBindBuffer( GL_UNIFORM_BUFFER, this->m_id );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	GLint status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
@@ -141,7 +141,7 @@ UniformBlock::unbindBuffer()
 {
 	glBindBuffer( GL_UNIFORM_BUFFER, 0 );
 
-#ifdef CHECK_GL_ERROR
+#ifdef CHECK_GL_ERRORS
 	GLint status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{

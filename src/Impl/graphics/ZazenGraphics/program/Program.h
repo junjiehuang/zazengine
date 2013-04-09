@@ -25,17 +25,13 @@ class Program
 	bool attachShader( Shader* );
 	bool detachShader( Shader* );
 
-	bool setUniformMatrix4( const std::string& name, const float* );
-	bool setUniform4( const std::string& name, const float* );
 	bool setUniformInt( const std::string& name, int );
 
 	bool bindUniformBlock( UniformBlock* );
 
 	bool bindAttribLocation( GLuint index, const std::string& name );
-	GLint getAttribLocation( const std::string& name );
 
 	bool bindFragDataLocation( GLuint colorNumber, const std::string& name );
-	GLint getFragDataLocation( const std::string& name );
 
 	bool link();
 
