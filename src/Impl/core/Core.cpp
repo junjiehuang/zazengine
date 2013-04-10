@@ -15,6 +15,7 @@
 #include <iostream>
 #include <sstream>
 
+#include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 #include <log4cplus/configurator.h>
 #include <iomanip>
@@ -23,6 +24,8 @@ using namespace std;
 using namespace log4cplus;
 
 Core* Core::instance = 0;
+
+log4cplus::Logger m_logger;
 
 bool
 Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFactory )
@@ -34,7 +37,7 @@ Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFa
 		BasicConfigurator config;
 		config.configure();
 		
-		Core::instance->m_logger = Logger::getInstance( LOG4CPLUS_TEXT( "main" ) );
+		m_logger = Logger::getInstance( LOG4CPLUS_TEXT( "main" ) );
 
 		Core::instance->logInfo( "********************************************************" );
 		Core::instance->logInfo( "***************** Initializing Core... *****************" );
@@ -212,49 +215,49 @@ Core::getSubSystemByID( const std::string& id )
 void
 Core::logError( const std::string& text ) const
 {
-	LOG4CPLUS_ERROR( this->m_logger, LOG4CPLUS_TEXT( "logError" ) );
+	LOG4CPLUS_ERROR( m_logger, LOG4CPLUS_TEXT( "logError" ) );
 }
 
 void
 Core::logError( const std::ostream& os ) const
 {
-	LOG4CPLUS_ERROR( this->m_logger, LOG4CPLUS_TEXT( "logError" ) );
+	LOG4CPLUS_ERROR( m_logger, LOG4CPLUS_TEXT( "logError" ) );
 }
 
 void
 Core::logWarning( const std::string& text ) const
 {
-	LOG4CPLUS_INFO( this->m_logger, LOG4CPLUS_TEXT( "logWarning" ) );
+	LOG4CPLUS_INFO( m_logger, LOG4CPLUS_TEXT( "logWarning" ) );
 }
 
 void
 Core::logWarning( const std::ostream& os ) const
 {
-	LOG4CPLUS_INFO( this->m_logger, LOG4CPLUS_TEXT( "logWarning" ) );
+	LOG4CPLUS_INFO( m_logger, LOG4CPLUS_TEXT( "logWarning" ) );
 }
 
 void
 Core::logInfo( const std::string& text ) const
 {
-	LOG4CPLUS_INFO( this->m_logger, LOG4CPLUS_TEXT( "Test" ) );
+	LOG4CPLUS_INFO( m_logger, LOG4CPLUS_TEXT( "Test" ) );
 }
 
 void
 Core::logInfo( const std::ostream& ) const
 {
-	LOG4CPLUS_INFO( this->m_logger, LOG4CPLUS_TEXT( "Test" ) );
+	LOG4CPLUS_INFO( m_logger, LOG4CPLUS_TEXT( "Test" ) );
 }
 
 void
 Core::logDebug( const std::string& ) const
 {
-	LOG4CPLUS_DEBUG( this->m_logger, LOG4CPLUS_TEXT( "logDebug" ) );
+	LOG4CPLUS_DEBUG( m_logger, LOG4CPLUS_TEXT( "logDebug" ) );
 }
 
 void
 Core::logDebug( const std::ostream& ) const
 {
-	LOG4CPLUS_DEBUG( this->m_logger, LOG4CPLUS_TEXT( "logDebug" ) );
+	LOG4CPLUS_DEBUG( m_logger, LOG4CPLUS_TEXT( "logDebug" ) );
 }
 
 long long

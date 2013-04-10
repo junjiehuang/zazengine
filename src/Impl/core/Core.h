@@ -17,8 +17,6 @@
 
 #include "DllExport.h"
 
-#include <log4cplus/logger.h>
-
 #include <list>
 
 class DLL_API Core : public ICore
@@ -62,8 +60,6 @@ class DLL_API Core : public ICore
 
 	private:
 		static Core* instance;
-
-		log4cplus::Logger m_logger;
 
 		float m_processingFactor;
 
