@@ -19,10 +19,6 @@ using namespace std;
 
 Core* Core::instance = 0;
 
-// TODO when a lib fails to initialize it needs to be uninitialized and leave now resources
-// this is not implemented yet properly in ODE and Graphics!
-// could cause memory leaks when libs are loaded during runtime and won't cause the whole application to go down when they fail
-
 bool
 Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFactory )
 {
@@ -30,9 +26,11 @@ Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFa
 	{
 		new Core();
 
-		cout << "********************************************************" << endl;
-		cout << "***************** Initializing Core... *****************" << endl;
-		cout << "********************************************************" << endl;
+		// TODO init logging facility
+
+		Core::instance->logInfo( "********************************************************" );
+		Core::instance->logInfo( "***************** Initializing Core... *****************" );
+		Core::instance->logInfo( "********************************************************" );
 
 		Core::instance->m_gameObjectFactory = gameObjectFactory;
 		Core::instance->m_subSystemFactory = new ZazenSubSystemFactory();
@@ -41,19 +39,19 @@ Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFa
 
 		if ( false == ScriptSystem::initialize() )
 		{
-			cout << "ERROR ... failed initializing ScriptSystem - exit" << endl;
+			Core::instance->logError( "Failed initializing ScriptSystem - exit" );
 			return false;
 		}
 
 		if ( false == Core::instance->loadConfig( configPath ) )
 		{
-			cout << "ERROR ... failed initializing Core - exit" << endl;
+			Core::instance->logError( "Failed initializing Core - exit" );
 			return false;
 		}
 
-		cout << "********************************************************" << endl;
-		cout << "************** Core successfully initialized ***********" << endl;
-		cout << "********************************************************" << endl;
+		Core::instance->logInfo( "********************************************************" );
+		Core::instance->logInfo( "************** Core successfully initialized ***********" );
+		Core::instance->logInfo( "********************************************************" );
 	}
 
 	return true;
@@ -122,7 +120,7 @@ Core::start()
 		ISubSystem* subSys = *subSysIter++;
 		if ( false == subSys->start() )
 		{
-			cout << "Failed starting SubSystem \"" << subSys->getID() << " - exit" << endl;
+			this->logError( "Failed starting SubSystem \"" + subSys->getID() + " - exit" );
 			return;
 		}
 	}
@@ -130,7 +128,7 @@ Core::start()
 	long long startTicks = 0;
 	long long endTicks = 0;
 	
-	cout << "Start processing" << endl;
+	this->logInfo( "Start processing" );
 
 	this->m_runCore = true;
 	while ( this->m_runCore )
@@ -205,17 +203,68 @@ Core::getSubSystemByID( const std::string& id )
 	return 0;
 }
 
+void
+Core::logError( const std::string& ) const
+{
+	// TODO implement
+}
+
+void
+Core::logError( const std::ostream& os ) const
+{
+	// TODO implement
+}
+
+void
+Core::logWarning( const std::string& ) const
+{
+	// TODO implement
+}
+
+void
+Core::logWarning( const std::ostream& ) const
+{
+	// TODO implement
+}
+
+void
+Core::logInfo( const std::string& ) const
+{
+	// TODO implement
+}
+
+void
+Core::logInfo( const std::ostream& ) const
+{
+	// TODO implement
+}
+
+void
+Core::logDebug( const std::string& ) const
+{
+	// TODO implement
+}
+
+void
+Core::logDebug( const std::ostream& ) const
+{
+	// TODO implement
+}
+
 long long
 Core::getCurrentMillis() const
 {
 	static LARGE_INTEGER s_frequency;
     static BOOL s_use_qpc = QueryPerformanceFrequency( &s_frequency );
 
-    if ( s_use_qpc ) {
+    if ( s_use_qpc ) 
+	{
         LARGE_INTEGER now;
         QueryPerformanceCounter( &now );
         return ( 1000LL * now.QuadPart ) / s_frequency.QuadPart;
-    } else {
+    } 
+	else 
+	{
         return GetTickCount();
     }
 }
@@ -228,7 +277,9 @@ Core::getSubSystemByType( const std::string& type )
 	{
 		ISubSystem* subSys = *iter++;
 		if ( subSys->getType() == type )
+		{
 			return subSys;
+		}
 	}
 
 	return 0;
@@ -243,21 +294,21 @@ Core::loadConfig( const std::string& configPath )
 
 	if ( false == doc.LoadFile() )
 	{
-		cout << "ERROR ... could not load file " << configFileName << " - reason = " << doc.ErrorDesc() << " at row = " << doc.ErrorRow() << " col = " << doc.ErrorCol() << endl;
+		this->logError( "ERROR ... could not load file " + configFileName + " - reason = " + doc.ErrorDesc() );
 		return false;
 	}
 
 	TiXmlElement* rootNode = doc.FirstChildElement( "config" );
 	if ( 0 == rootNode )
 	{
-		cout << "ERROR ... root-node \"config\" in " << configFileName << " not found" << endl;
+		this->logError( "Root-node \"config\" in " + configFileName + " not found" );
 		return false;
 	}
 
 	TiXmlElement* coreScriptNode = rootNode->FirstChildElement( "coreScript" );
 	if ( 0 == coreScriptNode )
 	{
-		cout << "ERROR ... node \"coreScript\" in " << configFileName << " not found" << endl;
+		this->logError( "Node \"coreScript\" in " + configFileName + " not found" );
 		return false;
 	}
 
@@ -276,7 +327,7 @@ Core::loadConfig( const std::string& configPath )
 	TiXmlElement* subSystemListNode = rootNode->FirstChildElement( "subSystemList" );
 	if ( 0 == subSystemListNode )
 	{
-		cout << "ERROR ... node \"subSystemList\" in " << configFileName << " not found" << endl;
+		this->logError( "Node \"subSystemList\" in " + configFileName + " not found" );
 		return false;
 	}
 
@@ -291,16 +342,20 @@ Core::loadConfig( const std::string& configPath )
 			str = subSystemNode->Attribute( "file" );
 			if ( 0 == str )
 			{
-				cout << "No file defined for subSystem - will be ignored" << endl;
+				this->logWarning( "No file defined for subSystem - will be ignored" );
 				continue;
 			}
 			else
 			{
 				ISubSystem* subSystem = this->loadSubSystem( str, configPath );
 				if ( subSystem )
+				{
 					this->m_subSystems.push_back( subSystem );
+				}
 				else
+				{
 					return false;
+				}
 			}
 		}
 	}
@@ -308,7 +363,7 @@ Core::loadConfig( const std::string& configPath )
 	TiXmlElement* objectListNode = rootNode->FirstChildElement( "objectList" );
 	if ( 0 == objectListNode )
 	{
-		cout << "ERROR ... node \"objectList\" in " << configFileName << " not found" << endl;
+		this->logError( "ERROR ... node \"objectList\" in " + configFileName + " not found" );
 		return false;
 	}
 
@@ -316,7 +371,9 @@ Core::loadConfig( const std::string& configPath )
 	{
 		const char* str = objectNode->Value();
 		if ( 0 == str )
+		{
 			continue;
+		}
 
 		if ( 0 == strcmp( str, "object" ) )
 		{
@@ -340,9 +397,13 @@ Core::loadConfig( const std::string& configPath )
 			}
 
 			if ( object->initialize( objectNode ) )
+			{
 				this->m_gameObjects.push_back( object );
+			}
 			else
+			{
 				delete object;
+			}
 		}
 	}
 
@@ -351,14 +412,14 @@ Core::loadConfig( const std::string& configPath )
 	TiXmlElement* controlNode = rootNode->FirstChildElement( "control" );
 	if ( 0 == controlNode )
 	{
-		cout << "INFO ... no controlNode defined - using defaults" << endl;
+		this->logInfo( "No controlNode defined - using defaults" );
 	}
 	else
 	{
 		const char* str = controlNode->Attribute( "target" );
 		if ( 0 == str )
 		{
-			cout << "INFO ... target attribute missing in controlNode - use default " << endl;
+			this->logInfo( "Target attribute missing in controlNode - use default " );
 		}
 		else
 		{
@@ -406,14 +467,14 @@ Core::loadSubSystem( const std::string& fileName, const std::string& configPath 
 
 	if ( false == doc.LoadFile() )
 	{
-		cout << "ERROR ... could not load file " << fullFileName << " - reason = " << doc.ErrorDesc() << endl;
+		this->logError( "ERROR ... could not load file " + fullFileName + " - reason = " + doc.ErrorDesc() );
 		return 0;
 	}
 
 	TiXmlElement* subSystemNode = doc.FirstChildElement( "subSystem" );
 	if ( 0 == subSystemNode )
 	{
-		cout << "ERROR ... no root-node \"subSystem\" defined in " << fullFileName << " - exit " << endl;
+		this->logError( "ERROR ... no root-node \"subSystem\" defined in " + fullFileName + " - exit " );
 		return 0;
 	}
 
@@ -421,8 +482,8 @@ Core::loadSubSystem( const std::string& fileName, const std::string& configPath 
 	const char* str = subSystemNode->Attribute( "type" );
 	if ( 0 == str )
 	{
-		cout << "No type defined for subSystem" << endl;
-		return 0;
+		this->logWarning( "No type defined for subSystem - ignoring" );
+		return NULL;
 	}
 	else
 	{
@@ -433,8 +494,8 @@ Core::loadSubSystem( const std::string& fileName, const std::string& configPath 
 	str = subSystemNode->Attribute( "file" );
 	if ( 0 == str )
 	{
-		cout << "No file defined for subSystem" << endl;
-		return 0;
+		this->logWarning( "No file defined for subSystem - ignoring" );
+		return NULL;
 	}
 	else
 	{
@@ -455,9 +516,9 @@ Core::loadSubSystem( const std::string& fileName, const std::string& configPath 
 
 	if ( false == subSystem->initialize( subSystemNode ) )
 	{
-		cout << "Initializing " << subSystemType << " Subsystem failed - exit" << endl;
+		this->logError( "Initializing " + subSystemType + " Subsystem failed - exit" );
 		delete subSystem;
-		return 0;
+		return NULL;
 	}
 
 
@@ -471,7 +532,7 @@ Core::checkSubSystemType( ISubSystem* subSystem )
 	{
 		if ( NULL != this->m_audio )
 		{
-			cout << "ERROR ... trying to load Audio-Subsystem but is already present, it is not allowed to have two SubSystems of same type" << endl;
+			this->logWarning( "Trying to load Audio-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
 		}
 
 		this->m_audio = ( IAudio* ) subSystem;
@@ -481,7 +542,7 @@ Core::checkSubSystemType( ISubSystem* subSystem )
 	{
 		if ( NULL != this->m_graphics )
 		{
-			cout << "ERROR ... trying to load Graphics-Subsystem but is already present, it is not allowed to have two SubSystems of same type" << endl;
+			this->logWarning( "Trying to load Graphics-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
 		}
 
 		this->m_graphics = ( IGraphics* ) subSystem;
@@ -491,7 +552,7 @@ Core::checkSubSystemType( ISubSystem* subSystem )
 	{
 		if ( NULL != this->m_input )
 		{
-			cout << "ERROR ... trying to load Input-Subsystem but is already present, it is not allowed to have two SubSystems of same type" << endl;
+			this->logWarning( "Trying to load Input-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
 		}
 
 		this->m_input = ( IInput* ) subSystem;
@@ -501,7 +562,7 @@ Core::checkSubSystemType( ISubSystem* subSystem )
 	{
 		if ( NULL != this->m_physics )
 		{
-			cout << "ERROR ... trying to load Physics-Subsystem but is already present, it is not allowed to have two SubSystems of same type" << endl;
+			this->logWarning( "Trying to load Physics-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
 		}
 
 		this->m_physics = ( IPhysics* ) subSystem;

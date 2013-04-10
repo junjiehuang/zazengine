@@ -34,6 +34,18 @@ class DLL_API Core : public ICore
 
 		long long getCurrentMillis() const;
 
+		void logError( const std::string& ) const;
+		void logError( const std::ostream& ) const;
+
+		void logWarning( const std::string& ) const;
+		void logWarning( const std::ostream& ) const;
+
+		void logInfo( const std::string& ) const;
+		void logInfo( const std::ostream& ) const;
+
+		void logDebug( const std::string& ) const;
+		void logDebug( const std::ostream& ) const;
+
 		IAudio* getAudio() { return this->m_audio; };
 		IGraphics* getGraphics() { return this->m_graphics; };
 		IInput* getInput() { return this->m_input; };

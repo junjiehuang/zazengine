@@ -11,6 +11,7 @@
 #include <Windows.h>
 
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -32,28 +33,28 @@ ZazenSubSystemFactory::createSubSystem( const std::string& file, const std::stri
 	HMODULE libHandle = LoadLibrary( fileWString.c_str() );
 	if ( NULL == libHandle )
 	{
-		cout << "ERROR ... failed loading file for SubSystem with error: " << GetLastError() << endl;
-		return 0;
+		Core::getRef().logError( stringstream( "Failed loading file for SubSystem with error: " ) << GetLastError() );
+		return NULL;
 	}
 
 	ISubSystem::constructor_func constrFunc = ( ISubSystem::constructor_func ) GetProcAddress( libHandle, "createInstance" );
 	if ( NULL == constrFunc )
 	{
-		cout << "ERROR ... failed getting ProcAddress for 'createInstance' with error: " << GetLastError() << endl;
-		return 0;
+		Core::getRef().logError( stringstream( "Failed getting ProcAddress for 'createInstance' with error: " ) << GetLastError() );
+		return NULL;
 	}
 
 	ISubSystem::destructor_func destrFunc = ( ISubSystem::destructor_func ) GetProcAddress( libHandle, "deleteInstance" );
 	if ( NULL == destrFunc )
 	{
-		cout << "ERROR ... failed getting ProcAddress for 'deleteInstance' with error: " << GetLastError() << endl;
+		Core::getRef().logError( stringstream( "Failed getting ProcAddress for 'deleteInstance' with error: " ) << GetLastError() );
 		return 0;
 	}
 
 	ISubSystem* subSystemInstance = constrFunc( type.c_str(), Core::getInstance() );
 	if ( NULL == subSystemInstance )
 	{
-		cout << "ERROR ... constructor_func returned NULL-instance of SubSystem." << endl;
+		Core::getRef().logError( "Constructor_func returned NULL-instance of SubSystem." );
 		return 0;
 	}
 

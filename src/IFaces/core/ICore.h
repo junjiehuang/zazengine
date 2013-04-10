@@ -28,6 +28,18 @@ class ICore
 
 		virtual long long getCurrentMillis() const = 0;
 
+		virtual void logError( const std::string& ) const = 0;
+		virtual void logError( const std::ostream& ) const = 0;
+
+		virtual void logWarning( const std::string& ) const = 0;
+		virtual void logWarning( const std::ostream& ) const = 0;
+
+		virtual void logInfo( const std::string& ) const = 0;
+		virtual void logInfo( const std::ostream& ) const = 0;
+
+		virtual void logDebug( const std::string& ) const = 0;
+		virtual void logDebug( const std::ostream& ) const = 0;
+
 		virtual IAudio* getAudio() = 0;
 		virtual IGraphics* getGraphics() = 0;
 		virtual IInput* getInput() = 0;

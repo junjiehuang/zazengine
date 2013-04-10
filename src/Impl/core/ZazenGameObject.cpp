@@ -29,8 +29,6 @@ ZazenGameObject::~ZazenGameObject()
 bool
 ZazenGameObject::sendEvent( Event& e )
 {
-	//cout << "Processing event " << e.id << " in EventProcessor " << this->id << endl;
-
 	map<string, ISubSystemEntity*>::iterator iter = this->m_subSystemEntities.begin();
 	while ( iter != this->m_subSystemEntities.end() )
 	{
@@ -59,7 +57,7 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 	const char* str = objectNode->Attribute( "name" );
 	if ( 0 == str )
 	{
-		cout << "WARNING: no id defined for object - will be ignored" << endl;
+		Core::getRef().logWarning( "No id defined for object - will be ignored" );
 		return false;
 	}
 	else
@@ -70,7 +68,7 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 	str = objectNode->Attribute( "script" );
 	if ( 0 == str )
 	{
-		cout << "INFO: no script defined for object " << objectName << endl;
+		Core::getRef().logInfo( "No script defined for object " + objectName );
 	}
 	else
 	{
@@ -92,9 +90,9 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 		{
 			const char* str = propNode->Value();
 			if ( 0 == str )
+			{
 				continue;
-
-
+			}
 		}
 	}
 
@@ -102,12 +100,15 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 	{
 		const char* str = subSystemEntityNode->Value();
 		if ( 0 == str )
+		{
 			continue;
+		}
 
+		string subSystemType = str;
 		ISubSystem* subSystem = Core::getRef().getSubSystemByType( str );
 		if ( 0 == subSystem )
 		{
-			cout << "ERROR ... no according SubSystem for definition \"" << str << "\" found - object will be ignored" << endl;
+			Core::getRef().logError( "No according SubSystem for definition \"" + subSystemType + "\" found - object will be ignored" );
 			return false;
 		}
 		else
@@ -115,7 +116,7 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 			ISubSystemEntity* subSystemEntity = subSystem->createEntity( subSystemEntityNode, this );
 			if ( 0 == subSystemEntity )
 			{
-				cout << "ERROR ... failed creating instance for subsystem \"" << str << "\"" << endl;
+				Core::getRef().logError( "Failed creating instance for subsystem-type \"" + subSystemType + "\"" );
 				return false;
 			}
 
