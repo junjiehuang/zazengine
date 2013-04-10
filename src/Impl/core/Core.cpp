@@ -15,7 +15,12 @@
 #include <iostream>
 #include <sstream>
 
+#include <log4cplus/loggingmacros.h>
+#include <log4cplus/configurator.h>
+#include <iomanip>
+
 using namespace std;
+using namespace log4cplus;
 
 Core* Core::instance = 0;
 
@@ -26,7 +31,10 @@ Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFa
 	{
 		new Core();
 
-		// TODO init logging facility
+		BasicConfigurator config;
+		config.configure();
+		
+		Core::instance->m_logger = Logger::getInstance( LOG4CPLUS_TEXT( "main" ) );
 
 		Core::instance->logInfo( "********************************************************" );
 		Core::instance->logInfo( "***************** Initializing Core... *****************" );
@@ -161,8 +169,6 @@ Core::start()
 			break;
 		}
 
-		//sleep( 1 );
-
 		subSysIter = this->m_subSystems.begin();
 		while ( subSysIter != this->m_subSystems.end() )
 		{
@@ -204,51 +210,51 @@ Core::getSubSystemByID( const std::string& id )
 }
 
 void
-Core::logError( const std::string& ) const
+Core::logError( const std::string& text ) const
 {
-	// TODO implement
+	LOG4CPLUS_ERROR( this->m_logger, LOG4CPLUS_TEXT( "logError" ) );
 }
 
 void
 Core::logError( const std::ostream& os ) const
 {
-	// TODO implement
+	LOG4CPLUS_ERROR( this->m_logger, LOG4CPLUS_TEXT( "logError" ) );
 }
 
 void
-Core::logWarning( const std::string& ) const
+Core::logWarning( const std::string& text ) const
 {
-	// TODO implement
+	LOG4CPLUS_INFO( this->m_logger, LOG4CPLUS_TEXT( "logWarning" ) );
 }
 
 void
-Core::logWarning( const std::ostream& ) const
+Core::logWarning( const std::ostream& os ) const
 {
-	// TODO implement
+	LOG4CPLUS_INFO( this->m_logger, LOG4CPLUS_TEXT( "logWarning" ) );
 }
 
 void
-Core::logInfo( const std::string& ) const
+Core::logInfo( const std::string& text ) const
 {
-	// TODO implement
+	LOG4CPLUS_INFO( this->m_logger, LOG4CPLUS_TEXT( "Test" ) );
 }
 
 void
 Core::logInfo( const std::ostream& ) const
 {
-	// TODO implement
+	LOG4CPLUS_INFO( this->m_logger, LOG4CPLUS_TEXT( "Test" ) );
 }
 
 void
 Core::logDebug( const std::string& ) const
 {
-	// TODO implement
+	LOG4CPLUS_DEBUG( this->m_logger, LOG4CPLUS_TEXT( "logDebug" ) );
 }
 
 void
 Core::logDebug( const std::ostream& ) const
 {
-	// TODO implement
+	LOG4CPLUS_DEBUG( this->m_logger, LOG4CPLUS_TEXT( "logDebug" ) );
 }
 
 long long
