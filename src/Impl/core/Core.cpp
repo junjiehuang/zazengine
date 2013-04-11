@@ -30,7 +30,10 @@ Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFa
 	{
 		new Core();
 
-		Core::instance->configLogging();
+		if ( false == Core::instance->configLogging( configPath ) )
+		{
+			return false;
+		}
 
 		Core::instance->m_logger->logInfo( "********************************************************" );
 		Core::instance->m_logger->logInfo( "***************** Initializing Core... *****************" );
@@ -62,11 +65,17 @@ Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFa
 }
 
 bool
-Core::configLogging()
+Core::configLogging( const std::string& configPath )
 {
-	log4cplus::BasicConfigurator config;
-	config.configure();
-		
+	try
+	{
+		log4cplus::PropertyConfigurator::doConfigure( log4cplus::helpers::towstring( configPath + "/log4cplus.properties" ) );
+	}
+	catch( exception e )
+	{
+		return false;
+	}
+
 	this->m_logger = new Logger( "zaZenCore" );
 
 	return true;

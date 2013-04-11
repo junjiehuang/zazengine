@@ -77,7 +77,7 @@ class DLL_API Core : public ICore
 		Core();
 		virtual ~Core();
 
-		bool configLogging();
+		bool configLogging( const std::string& );
 		bool loadConfig( const std::string& );
 		ISubSystem* loadSubSystem( const std::string&, const std::string& );
 		bool checkSubSystemType( ISubSystem* ); 
