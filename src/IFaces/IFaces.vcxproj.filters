@@ -49,6 +49,9 @@
     <ClInclude Include="core\IGameObjectFactory.h">
       <Filter>Headerdateien\Core</Filter>
     </ClInclude>
+    <ClInclude Include="core\ILogger.h">
+      <Filter>Headerdateien\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headerdateien">

@@ -10,6 +10,7 @@
 
 #include <core/ICore.h>
 #include <core/IGameObjectFactory.h>
+#include <core/ILogger.h>
 
 #include "ZazenSubSystemFactory.h"
 
@@ -18,6 +19,7 @@
 #include "DllExport.h"
 
 #include <list>
+#include <map>
 
 class DLL_API Core : public ICore
 {
@@ -34,17 +36,8 @@ class DLL_API Core : public ICore
 
 		long long getCurrentMillis() const;
 
-		void logError( const std::string& ) const;
-		void logError( const std::ostream& ) const;
-
-		void logWarning( const std::string& ) const;
-		void logWarning( const std::ostream& ) const;
-
-		void logInfo( const std::string& ) const;
-		void logInfo( const std::ostream& ) const;
-
-		void logDebug( const std::string& ) const;
-		void logDebug( const std::ostream& ) const;
+		ILogger& getCoreLogger() { return *this->m_logger; };
+		ILogger* getLogger( const std::string& );
 
 		IAudio* getAudio() { return this->m_audio; };
 		IGraphics* getGraphics() { return this->m_graphics; };
@@ -78,9 +71,13 @@ class DLL_API Core : public ICore
 		std::list<ISubSystem*> m_subSystems;
 		std::list<IGameObject*> m_gameObjects;
 
+		ILogger* m_logger;
+		std::map<std::string, ILogger*> m_loggers;
+
 		Core();
 		virtual ~Core();
 
+		bool configLogging();
 		bool loadConfig( const std::string& );
 		ISubSystem* loadSubSystem( const std::string&, const std::string& );
 		bool checkSubSystemType( ISubSystem* ); 

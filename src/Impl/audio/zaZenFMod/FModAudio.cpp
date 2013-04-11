@@ -41,7 +41,8 @@ FModAudio::~FModAudio()
 bool
 FModAudio::initialize( TiXmlElement* configElem )
 {
-	this->m_core->logInfo( "=============== FModAudio initializing... ===============" );
+	this->m_logger = this->m_core->getLogger( "zaZenFMod" );
+	this->m_logger->logInfo( "=============== FModAudio initializing... ===============" );
 
 	if ( false == this->initAudioDataPath( configElem ) )
 	{
@@ -63,7 +64,7 @@ FModAudio::initialize( TiXmlElement* configElem )
 		return false;
 	}
 
-	this->m_core->logInfo( "================ FModAudio initialized =================" );
+	this->m_logger->logInfo( "================ FModAudio initialized =================" );
 
 	return true;
 }
@@ -71,7 +72,7 @@ FModAudio::initialize( TiXmlElement* configElem )
 bool
 FModAudio::shutdown()
 {
-	this->m_core->logInfo( "=============== FModAudio shutting down... ===============" );
+	this->m_logger->logInfo( "=============== FModAudio shutting down... ===============" );
 
 	FMOD_RESULT result;
 
@@ -89,7 +90,7 @@ FModAudio::shutdown()
 		result = this->m_bgMusic->release();
 		if ( FMOD_OK != result )
 		{
-			this->m_core->logError( stringstream( "FModAudio::shutdown: bgMusic release failed: " ) << FMOD_ErrorString( result ) );
+			this->m_logger->logError( stringstream( "FModAudio::shutdown: bgMusic release failed: " ) << FMOD_ErrorString( result ) );
 		}
 	}
 
@@ -98,17 +99,17 @@ FModAudio::shutdown()
 		result = this->m_system->close();
 		if ( FMOD_OK != result )
 		{
-			this->m_core->logError( stringstream( "FModAudio::shutdown: system close failed: " ) << FMOD_ErrorString( result ) );
+			this->m_logger->logError( stringstream( "FModAudio::shutdown: system close failed: " ) << FMOD_ErrorString( result ) );
 		}
 
 		result = this->m_system->release();
 		if ( FMOD_OK != result )
 		{
-			this->m_core->logError( stringstream( "FModAudio::shutdown: system release failed: " ) << FMOD_ErrorString( result ) );
+			this->m_logger->logError( stringstream( "FModAudio::shutdown: system release failed: " ) << FMOD_ErrorString( result ) );
 		}
 	}
 
-	this->m_core->logInfo( "================ FModAudio shutdown =================" );
+	this->m_logger->logInfo( "================ FModAudio shutdown =================" );
 
 	return true;
 }
@@ -123,7 +124,7 @@ FModAudio::start()
 		result = this->m_system->playSound( FMOD_CHANNEL_FREE, this->m_bgMusic, false, &this->m_bgMusicCh );
 		if ( FMOD_OK != result )
 		{
-			this->m_core->logError( stringstream( "FModAudio::start: system playSound failed: " ) << FMOD_ErrorString( result ) );
+			this->m_logger->logError( stringstream( "FModAudio::start: system playSound failed: " ) << FMOD_ErrorString( result ) );
 			return false;
 		}
 	}
@@ -162,7 +163,7 @@ FModAudio::process( double factor )
 	FMOD_RESULT result = this->m_system->update();
 	if ( FMOD_OK != result )
 	{
-		this->m_core->logError( stringstream( "FModAudio::process: system update failed: " ) << FMOD_ErrorString( result ) );
+		this->m_logger->logError( stringstream( "FModAudio::process: system update failed: " ) << FMOD_ErrorString( result ) );
 		return false;
 	}
 
@@ -295,14 +296,14 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			FMOD_RESULT result = this->m_system->createSound( fileName.c_str(), FMOD_SOFTWARE | FMOD_3D, 0, &sound );
 		    if ( FMOD_OK != result )
 		    {
-				this->m_core->logError( stringstream( "loading sound from file \"" ) << fileName << ": " << FMOD_ErrorString( result ) );
+				this->m_logger->logError( stringstream( "loading sound from file \"" ) << fileName << ": " << FMOD_ErrorString( result ) );
 		    	return 0;
 		    }
 
 			result = sound->set3DMinMaxDistance( minDist, maxDist );
 			if ( FMOD_OK != result )
 			{
-				this->m_core->logError( stringstream( "setting min-max distance for sound \""  ) << fileName << ": " << FMOD_ErrorString( result ) );
+				this->m_logger->logError( stringstream( "setting min-max distance for sound \""  ) << fileName << ": " << FMOD_ErrorString( result ) );
 		    	return 0;
 			}
 
@@ -311,7 +312,7 @@ FModAudio::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 				result = sound->setMode( FMOD_LOOP_NORMAL );
 				if ( FMOD_OK != result )
 				{
-					this->m_core->logError( stringstream( "setting loop for sound \"" ) << fileName << ": " << FMOD_ErrorString( result ) );
+					this->m_logger->logError( stringstream( "setting loop for sound \"" ) << fileName << ": " << FMOD_ErrorString( result ) );
 		    		return 0;
 				}
 			}
@@ -341,20 +342,20 @@ FModAudio::initFMod( TiXmlElement* configElem )
 	result = FMOD::System_Create( &this->m_system );
     if ( FMOD_OK != result )
 	{
-		this->m_core->logError( stringstream( "FModAudio::initFMod: System_Create failed: " ) << FMOD_ErrorString( result ) );
+		this->m_logger->logError( stringstream( "FModAudio::initFMod: System_Create failed: " ) << FMOD_ErrorString( result ) );
 		return false;
 	}
 
     result = this->m_system->getVersion( &version );
     if ( FMOD_OK != result )
 	{
-		this->m_core->logError( stringstream( "FModAudio::initFMod: getVersion failed: " ) << FMOD_ErrorString( result ) );
+		this->m_logger->logError( stringstream( "FModAudio::initFMod: getVersion failed: " ) << FMOD_ErrorString( result ) );
 		return false;
 	}
 
     if ( FMOD_VERSION > version )
     {
-		this->m_core->logError( stringstream( "FModAudio::initFMod: You are using an old version of FMOD " ) << version << ". This program requires" << FMOD_VERSION );
+		this->m_logger->logError( stringstream( "FModAudio::initFMod: You are using an old version of FMOD " ) << version << ". This program requires" << FMOD_VERSION );
 		return false;
     }
 
@@ -365,7 +366,7 @@ FModAudio::initFMod( TiXmlElement* configElem )
 	result = this->m_system->getNumDrivers( &numDrivers);
     if ( FMOD_OK != result )
 	{
-		this->m_core->logError( stringstream( "FModAudio::initFMod: getNumDrivers failed: " ) << FMOD_ErrorString( result ) );
+		this->m_logger->logError( stringstream( "FModAudio::initFMod: getNumDrivers failed: " ) << FMOD_ErrorString( result ) );
 		return false;
 	}
 
@@ -374,7 +375,7 @@ FModAudio::initFMod( TiXmlElement* configElem )
         result = this->m_system->setOutput( FMOD_OUTPUTTYPE_NOSOUND );
         if ( FMOD_OK != result )
 		{
-			this->m_core->logError( stringstream( "FModAudio::initFMod: setOutput failed: " ) << FMOD_ErrorString( result ) );
+			this->m_logger->logError( stringstream( "FModAudio::initFMod: setOutput failed: " ) << FMOD_ErrorString( result ) );
 			return false;
 		}
     }
@@ -383,14 +384,14 @@ FModAudio::initFMod( TiXmlElement* configElem )
         result = this->m_system->getDriverCaps( 0, &caps, 0, &speakermode );
         if ( FMOD_OK != result )
 		{
-			this->m_core->logError( stringstream( "FModAudio::initFMod: getDriverCaps failed: " ) << FMOD_ErrorString( result ) );
+			this->m_logger->logError( stringstream( "FModAudio::initFMod: getDriverCaps failed: " ) << FMOD_ErrorString( result ) );
 			return false;
 		}
 
         result = this->m_system->setSpeakerMode( speakermode ); 
         if ( FMOD_OK != result )
 		{
-			this->m_core->logError( stringstream( "" ) << FMOD_ErrorString( result ) );
+			this->m_logger->logError( stringstream( "" ) << FMOD_ErrorString( result ) );
 			cout << "ERROR ... in FModAudio::initFMod: setSpeakerMode failed: " << FMOD_ErrorString( result ) << endl;
 			return false;
 		}
@@ -400,7 +401,7 @@ FModAudio::initFMod( TiXmlElement* configElem )
             result = this->m_system->setDSPBufferSize( 1024, 10 );
             if ( FMOD_OK != result )
 			{
-				this->m_core->logError( stringstream( "" ) << FMOD_ErrorString( result ) );
+				this->m_logger->logError( stringstream( "" ) << FMOD_ErrorString( result ) );
 				cout << "ERROR ... in FModAudio::initFMod: setDSPBufferSize failed: " << FMOD_ErrorString( result ) << endl;
 				return false;
 			}
@@ -410,7 +411,7 @@ FModAudio::initFMod( TiXmlElement* configElem )
     result = this->m_system->init( 100, FMOD_INIT_NORMAL, 0 );
     if ( FMOD_OK != result )
 	{
-		this->m_core->logError( stringstream( "" ) << FMOD_ErrorString( result ) );
+		this->m_logger->logError( stringstream( "" ) << FMOD_ErrorString( result ) );
 		cout << "ERROR ... in FModAudio::initFMod: system-init failed: " << FMOD_ErrorString( result ) << endl;
 		return false;
 	}
@@ -430,7 +431,7 @@ FModAudio::loadBackgroundMusic( TiXmlElement* configElem )
 			FMOD_RESULT result = m_system->createSound( str, FMOD_SOFTWARE | FMOD_2D, 0, &this->m_bgMusic );
 			if ( FMOD_OK != result )
 			{
-				this->m_core->logError( stringstream( "" ) << FMOD_ErrorString( result ) );
+				this->m_logger->logError( stringstream( "" ) << FMOD_ErrorString( result ) );
 				cout << "ERROR ... in FModAudio::loadBackgroundMusic: createSound failed: " << FMOD_ErrorString( result ) << endl;
 				return false;
 			}
@@ -446,27 +447,27 @@ FModAudio::initAudioDataPath( TiXmlElement* configElem )
 	TiXmlElement* audioDataNode = configElem->FirstChildElement( "audioData" );
 	if ( 0 == audioDataNode )
 	{
-		this->m_core->logError( stringstream( "missing audioData-config in audio-config" ) );
+		this->m_logger->logError( stringstream( "missing audioData-config in audio-config" ) );
 		return false;
 	}
 
 	const char* str = audioDataNode->Attribute( "path" );
 	if ( 0 == str )
 	{
-		this->m_core->logError( stringstream( "missing audioData-path in audio-config" ) );
+		this->m_logger->logError( stringstream( "missing audioData-path in audio-config" ) );
 		return false;
 	}
 
 	this->m_audioDataPath = filesystem::path( str );
 	if ( ! filesystem::exists( this->m_audioDataPath ) )
 	{
-		this->m_core->logError( stringstream( "audioData-path " ) << this->m_audioDataPath << " does not exist" );
+		this->m_logger->logError( stringstream( "audioData-path " ) << this->m_audioDataPath << " does not exist" );
 		return false;
 	}
 
 	if ( false == filesystem::is_directory( this->m_audioDataPath ) )
 	{
-		this->m_core->logError( stringstream( "audioData-path " ) << this->m_audioDataPath << " is not a directory" );
+		this->m_logger->logError( stringstream( "audioData-path " ) << this->m_audioDataPath << " is not a directory" );
 		return false;
 	}
 
@@ -504,7 +505,7 @@ FModAudio::init3dSettings( TiXmlElement* configElem )
 		FMOD_RESULT result = this->m_system->set3DSettings( dopplerScale, distanceFactor, rollOffScale );
 		if ( FMOD_OK != result )
 		{
-			this->m_core->logError( stringstream( "" ) << FMOD_ErrorString( result ) );
+			this->m_logger->logError( stringstream( "" ) << FMOD_ErrorString( result ) );
 			cout << "ERROR ... in FModAudio::init3dSettings: set3DSettings failed: " << FMOD_ErrorString( result ) << endl;
 			return false;
 		}

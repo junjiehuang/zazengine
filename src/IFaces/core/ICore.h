@@ -11,6 +11,7 @@
 #include "IGameObject.h"
 #include "ISubSystem.h"
 #include "IEventManager.h"
+#include "ILogger.h"
 
 #include "../audio/IAudio.h"
 #include "../graphics/IGraphics.h"
@@ -28,17 +29,7 @@ class ICore
 
 		virtual long long getCurrentMillis() const = 0;
 
-		virtual void logError( const std::string& ) const = 0;
-		virtual void logError( const std::ostream& ) const = 0;
-
-		virtual void logWarning( const std::string& ) const = 0;
-		virtual void logWarning( const std::ostream& ) const = 0;
-
-		virtual void logInfo( const std::string& ) const = 0;
-		virtual void logInfo( const std::ostream& ) const = 0;
-
-		virtual void logDebug( const std::string& ) const = 0;
-		virtual void logDebug( const std::ostream& ) const = 0;
+		virtual ILogger* getLogger( const std::string& ) = 0;
 
 		virtual IAudio* getAudio() = 0;
 		virtual IGraphics* getGraphics() = 0;

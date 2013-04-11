@@ -8,6 +8,7 @@
 #ifndef FMODAUDIO_H_
 #define FMODAUDIO_H_
 
+#include <core/ILogger.h>
 #include <audio/IAudio.h>
 
 #include "FModAudioEntity.h"
@@ -56,6 +57,7 @@ class FModAudio : public IAudio
 		boost::filesystem::path m_audioDataPath;
 
 		ICore* m_core;
+		ILogger* m_logger;
 
 		FMOD::System* m_system;
 		FMOD::Sound* m_bgMusic;

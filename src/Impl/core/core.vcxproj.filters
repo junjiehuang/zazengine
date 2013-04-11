@@ -28,6 +28,9 @@
     <ClCompile Include="..\..\IFaces\core\XML\tinyxmlparser.cpp">
       <Filter>Quelldateien\XML</Filter>
     </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h">
@@ -64,6 +67,9 @@
       <Filter>Headerdateien\XML</Filter>
     </ClInclude>
     <ClInclude Include="DllExport.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

@@ -57,7 +57,7 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 	const char* str = objectNode->Attribute( "name" );
 	if ( 0 == str )
 	{
-		Core::getRef().logWarning( "No id defined for object - will be ignored" );
+		Core::getRef().getCoreLogger().logWarning( "No id defined for object - will be ignored" );
 		return false;
 	}
 	else
@@ -68,7 +68,7 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 	str = objectNode->Attribute( "script" );
 	if ( 0 == str )
 	{
-		Core::getRef().logInfo( "No script defined for object " + objectName );
+		Core::getRef().getCoreLogger().logInfo( "No script defined for object " + objectName );
 	}
 	else
 	{
@@ -108,7 +108,7 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 		ISubSystem* subSystem = Core::getRef().getSubSystemByType( str );
 		if ( 0 == subSystem )
 		{
-			Core::getRef().logError( "No according SubSystem for definition \"" + subSystemType + "\" found - object will be ignored" );
+			Core::getRef().getCoreLogger().logError( "No according SubSystem for definition \"" + subSystemType + "\" found - object will be ignored" );
 			return false;
 		}
 		else
@@ -116,7 +116,7 @@ ZazenGameObject::initialize( TiXmlElement* objectNode )
 			ISubSystemEntity* subSystemEntity = subSystem->createEntity( subSystemEntityNode, this );
 			if ( 0 == subSystemEntity )
 			{
-				Core::getRef().logError( "Failed creating instance for subsystem-type \"" + subSystemType + "\"" );
+				Core::getRef().getCoreLogger().logError( "Failed creating instance for subsystem-type \"" + subSystemType + "\"" );
 				return false;
 			}
 

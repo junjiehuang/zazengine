@@ -7,6 +7,8 @@
 
 #include "Core.h"
 
+#include "Logger.h"
+
 #include "ZazenGameObject.h"
 #include "ScriptSystem.h"
 
@@ -15,17 +17,11 @@
 #include <iostream>
 #include <sstream>
 
-#include <log4cplus/logger.h>
-#include <log4cplus/loggingmacros.h>
 #include <log4cplus/configurator.h>
-#include <iomanip>
 
 using namespace std;
-using namespace log4cplus;
 
 Core* Core::instance = 0;
-
-log4cplus::Logger m_logger;
 
 bool
 Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFactory )
@@ -34,14 +30,11 @@ Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFa
 	{
 		new Core();
 
-		BasicConfigurator config;
-		config.configure();
-		
-		m_logger = Logger::getInstance( LOG4CPLUS_TEXT( "main" ) );
+		Core::instance->configLogging();
 
-		Core::instance->logInfo( "********************************************************" );
-		Core::instance->logInfo( "***************** Initializing Core... *****************" );
-		Core::instance->logInfo( "********************************************************" );
+		Core::instance->m_logger->logInfo( "********************************************************" );
+		Core::instance->m_logger->logInfo( "***************** Initializing Core... *****************" );
+		Core::instance->m_logger->logInfo( "********************************************************" );
 
 		Core::instance->m_gameObjectFactory = gameObjectFactory;
 		Core::instance->m_subSystemFactory = new ZazenSubSystemFactory();
@@ -50,20 +43,31 @@ Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFa
 
 		if ( false == ScriptSystem::initialize() )
 		{
-			Core::instance->logError( "Failed initializing ScriptSystem - exit" );
+			Core::instance->m_logger->logError( "Failed initializing ScriptSystem - exit" );
 			return false;
 		}
 
 		if ( false == Core::instance->loadConfig( configPath ) )
 		{
-			Core::instance->logError( "Failed initializing Core - exit" );
+			Core::instance->m_logger->logError( "Failed initializing Core - exit" );
 			return false;
 		}
 
-		Core::instance->logInfo( "********************************************************" );
-		Core::instance->logInfo( "************** Core successfully initialized ***********" );
-		Core::instance->logInfo( "********************************************************" );
+		Core::instance->m_logger->logInfo( "********************************************************" );
+		Core::instance->m_logger->logInfo( "************** Core successfully initialized ***********" );
+		Core::instance->m_logger->logInfo( "********************************************************" );
 	}
+
+	return true;
+}
+
+bool
+Core::configLogging()
+{
+	log4cplus::BasicConfigurator config;
+	config.configure();
+		
+	this->m_logger = new Logger( "zaZenCore" );
 
 	return true;
 }
@@ -86,10 +90,16 @@ Core::shutdown()
 		}
 
 		if ( Core::instance->m_eventManager )
+		{
 			delete Core::instance->m_eventManager;
+		}
 
 		if ( Core::instance->m_subSystemFactory )
+		{
 			delete Core::instance->m_subSystemFactory;
+		}
+
+		// TODO delete loggers
 
 		ScriptSystem::shutdown();
 
@@ -115,6 +125,8 @@ Core::Core()
 	this->m_graphics = 0;
 	this->m_input = 0;
 	this->m_physics = 0;
+
+	this->m_logger = NULL;
 }
 
 Core::~Core()
@@ -131,7 +143,7 @@ Core::start()
 		ISubSystem* subSys = *subSysIter++;
 		if ( false == subSys->start() )
 		{
-			this->logError( "Failed starting SubSystem \"" + subSys->getID() + " - exit" );
+			this->m_logger->logError( "Failed starting SubSystem \"" + subSys->getID() + " - exit" );
 			return;
 		}
 	}
@@ -139,7 +151,7 @@ Core::start()
 	long long startTicks = 0;
 	long long endTicks = 0;
 	
-	this->logInfo( "Start processing" );
+	this->m_logger->logTrace( "Start processing" );
 
 	this->m_runCore = true;
 	while ( this->m_runCore )
@@ -206,58 +218,29 @@ Core::getSubSystemByID( const std::string& id )
 	{
 		ISubSystem* subSys = *iter++;
 		if ( subSys->getID() == id )
+		{
 			return subSys;
+		}
 	}
 
-	return 0;
+	return NULL;
 }
 
-void
-Core::logError( const std::string& text ) const
+ILogger*
+Core::getLogger( const std::string& name )
 {
-	LOG4CPLUS_ERROR( m_logger, LOG4CPLUS_TEXT( "logError" ) );
-}
+	ILogger* logger = NULL;
 
-void
-Core::logError( const std::ostream& os ) const
-{
-	LOG4CPLUS_ERROR( m_logger, LOG4CPLUS_TEXT( "logError" ) );
-}
+	map<string, ILogger*>::iterator findIter = this->m_loggers.find( name );
+	if ( findIter != this->m_loggers.end() )
+	{
+		return findIter->second;
+	}
 
-void
-Core::logWarning( const std::string& text ) const
-{
-	LOG4CPLUS_INFO( m_logger, LOG4CPLUS_TEXT( "logWarning" ) );
-}
+	logger = new Logger( name );
+	this->m_loggers[ name ] = logger;
 
-void
-Core::logWarning( const std::ostream& os ) const
-{
-	LOG4CPLUS_INFO( m_logger, LOG4CPLUS_TEXT( "logWarning" ) );
-}
-
-void
-Core::logInfo( const std::string& text ) const
-{
-	LOG4CPLUS_INFO( m_logger, LOG4CPLUS_TEXT( "Test" ) );
-}
-
-void
-Core::logInfo( const std::ostream& ) const
-{
-	LOG4CPLUS_INFO( m_logger, LOG4CPLUS_TEXT( "Test" ) );
-}
-
-void
-Core::logDebug( const std::string& ) const
-{
-	LOG4CPLUS_DEBUG( m_logger, LOG4CPLUS_TEXT( "logDebug" ) );
-}
-
-void
-Core::logDebug( const std::ostream& ) const
-{
-	LOG4CPLUS_DEBUG( m_logger, LOG4CPLUS_TEXT( "logDebug" ) );
+	return logger;
 }
 
 long long
@@ -303,21 +286,21 @@ Core::loadConfig( const std::string& configPath )
 
 	if ( false == doc.LoadFile() )
 	{
-		this->logError( "ERROR ... could not load file " + configFileName + " - reason = " + doc.ErrorDesc() );
+		this->m_logger->logError( "ERROR ... could not load file " + configFileName + " - reason = " + doc.ErrorDesc() );
 		return false;
 	}
 
 	TiXmlElement* rootNode = doc.FirstChildElement( "config" );
 	if ( 0 == rootNode )
 	{
-		this->logError( "Root-node \"config\" in " + configFileName + " not found" );
+		this->m_logger->logError( "Root-node \"config\" in " + configFileName + " not found" );
 		return false;
 	}
 
 	TiXmlElement* coreScriptNode = rootNode->FirstChildElement( "coreScript" );
 	if ( 0 == coreScriptNode )
 	{
-		this->logError( "Node \"coreScript\" in " + configFileName + " not found" );
+		this->m_logger->logError( "Node \"coreScript\" in " + configFileName + " not found" );
 		return false;
 	}
 
@@ -336,7 +319,7 @@ Core::loadConfig( const std::string& configPath )
 	TiXmlElement* subSystemListNode = rootNode->FirstChildElement( "subSystemList" );
 	if ( 0 == subSystemListNode )
 	{
-		this->logError( "Node \"subSystemList\" in " + configFileName + " not found" );
+		this->m_logger->logError( "Node \"subSystemList\" in " + configFileName + " not found" );
 		return false;
 	}
 
@@ -351,7 +334,7 @@ Core::loadConfig( const std::string& configPath )
 			str = subSystemNode->Attribute( "file" );
 			if ( 0 == str )
 			{
-				this->logWarning( "No file defined for subSystem - will be ignored" );
+				this->m_logger->logWarning( "No file defined for subSystem - will be ignored" );
 				continue;
 			}
 			else
@@ -372,7 +355,7 @@ Core::loadConfig( const std::string& configPath )
 	TiXmlElement* objectListNode = rootNode->FirstChildElement( "objectList" );
 	if ( 0 == objectListNode )
 	{
-		this->logError( "ERROR ... node \"objectList\" in " + configFileName + " not found" );
+		this->m_logger->logError( "ERROR ... node \"objectList\" in " + configFileName + " not found" );
 		return false;
 	}
 
@@ -421,14 +404,14 @@ Core::loadConfig( const std::string& configPath )
 	TiXmlElement* controlNode = rootNode->FirstChildElement( "control" );
 	if ( 0 == controlNode )
 	{
-		this->logInfo( "No controlNode defined - using defaults" );
+		this->m_logger->logInfo( "No controlNode defined - using defaults" );
 	}
 	else
 	{
 		const char* str = controlNode->Attribute( "target" );
 		if ( 0 == str )
 		{
-			this->logInfo( "Target attribute missing in controlNode - use default " );
+			this->m_logger->logInfo( "Target attribute missing in controlNode - use default " );
 		}
 		else
 		{
@@ -476,14 +459,14 @@ Core::loadSubSystem( const std::string& fileName, const std::string& configPath 
 
 	if ( false == doc.LoadFile() )
 	{
-		this->logError( "ERROR ... could not load file " + fullFileName + " - reason = " + doc.ErrorDesc() );
+		this->m_logger->logError( "ERROR ... could not load file " + fullFileName + " - reason = " + doc.ErrorDesc() );
 		return 0;
 	}
 
 	TiXmlElement* subSystemNode = doc.FirstChildElement( "subSystem" );
 	if ( 0 == subSystemNode )
 	{
-		this->logError( "ERROR ... no root-node \"subSystem\" defined in " + fullFileName + " - exit " );
+		this->m_logger->logError( "ERROR ... no root-node \"subSystem\" defined in " + fullFileName + " - exit " );
 		return 0;
 	}
 
@@ -491,7 +474,7 @@ Core::loadSubSystem( const std::string& fileName, const std::string& configPath 
 	const char* str = subSystemNode->Attribute( "type" );
 	if ( 0 == str )
 	{
-		this->logWarning( "No type defined for subSystem - ignoring" );
+		this->m_logger->logWarning( "No type defined for subSystem - ignoring" );
 		return NULL;
 	}
 	else
@@ -503,7 +486,7 @@ Core::loadSubSystem( const std::string& fileName, const std::string& configPath 
 	str = subSystemNode->Attribute( "file" );
 	if ( 0 == str )
 	{
-		this->logWarning( "No file defined for subSystem - ignoring" );
+		this->m_logger->logWarning( "No file defined for subSystem - ignoring" );
 		return NULL;
 	}
 	else
@@ -525,7 +508,7 @@ Core::loadSubSystem( const std::string& fileName, const std::string& configPath 
 
 	if ( false == subSystem->initialize( subSystemNode ) )
 	{
-		this->logError( "Initializing " + subSystemType + " Subsystem failed - exit" );
+		this->m_logger->logError( "Initializing " + subSystemType + " Subsystem failed - exit" );
 		delete subSystem;
 		return NULL;
 	}
@@ -541,7 +524,7 @@ Core::checkSubSystemType( ISubSystem* subSystem )
 	{
 		if ( NULL != this->m_audio )
 		{
-			this->logWarning( "Trying to load Audio-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
+			this->m_logger->logWarning( "Trying to load Audio-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
 		}
 
 		this->m_audio = ( IAudio* ) subSystem;
@@ -551,7 +534,7 @@ Core::checkSubSystemType( ISubSystem* subSystem )
 	{
 		if ( NULL != this->m_graphics )
 		{
-			this->logWarning( "Trying to load Graphics-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
+			this->m_logger->logWarning( "Trying to load Graphics-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
 		}
 
 		this->m_graphics = ( IGraphics* ) subSystem;
@@ -561,7 +544,7 @@ Core::checkSubSystemType( ISubSystem* subSystem )
 	{
 		if ( NULL != this->m_input )
 		{
-			this->logWarning( "Trying to load Input-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
+			this->m_logger->logWarning( "Trying to load Input-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
 		}
 
 		this->m_input = ( IInput* ) subSystem;
@@ -571,7 +554,7 @@ Core::checkSubSystemType( ISubSystem* subSystem )
 	{
 		if ( NULL != this->m_physics )
 		{
-			this->logWarning( "Trying to load Physics-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
+			this->m_logger->logWarning( "Trying to load Physics-Subsystem but is already present, it is not allowed to have two SubSystems of same type" );
 		}
 
 		this->m_physics = ( IPhysics* ) subSystem;

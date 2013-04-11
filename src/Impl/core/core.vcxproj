@@ -17,6 +17,7 @@
     <ClCompile Include="..\..\IFaces\core\XML\tinyxmlparser.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="EventManager.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="ScriptSystem.cpp" />
     <ClCompile Include="ZazenGameObject.cpp" />
     <ClCompile Include="ZazenSubSystemFactory.cpp" />
@@ -31,6 +32,7 @@
     <ClInclude Include="Core.h" />
     <ClInclude Include="DllExport.h" />
     <ClInclude Include="EventManager.h" />
+    <ClInclude Include="Logger.h" />
     <ClInclude Include="ScriptSystem.h" />
     <ClInclude Include="ZazenGameObject.h" />
     <ClInclude Include="ZazenSubSystemFactory.h" />
