@@ -10,8 +10,7 @@ using namespace std;
 
 Logger::Logger( const std::string& name )
 {
-	// TODO correct name
-	this->m_logger = log4cplus::Logger::getInstance( LOG4CPLUS_TEXT( "name" ) );
+	this->m_logger = log4cplus::Logger::getInstance( log4cplus::helpers::towstring( name.c_str() ) );
 }
 
 Logger::~Logger()
