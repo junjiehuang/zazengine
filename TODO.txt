@@ -1,13 +1,14 @@
 Force core-profile when creating opengl context from windows
-	-> http://www.opengl.org/discussion_boards/archive/index.php/t-175619.html
-	-> http://www.opengl.org/wiki/Creating_an_OpenGL_Context_(WGL)
-	-> http://www.opengl.org/registry/specs/ARB/wgl_create_context.txt
+	-> already working but crashes later on during init. check those things:
+		-> http://stackoverflow.com/questions/4780373/problem-with-opengl-texturing-when-using-core-profile
+		-> glew not supporting http://www.opengl.org/wiki/OpenGL_Loading_Library
+			-> http://rastergrid.com/blog/2010/03/sad-facts-about-opengl-extension-libraries/
+	-> check for version of present opengl, must be at least 3.3
 	
 Remove errors in gDEBugger during glLinkProgram!
 
 Implement logging to file
-	-> boost log: implement interface in ICore for logging
-	-> make configurable: to console or to file (rotating file size,...)
+	-> log4cplus is there, make it actually work
 	
 Program- & Shader-Management
 	-> describe by xml, is VERY annoying to manually set up in program-code
@@ -44,6 +45,8 @@ Multiple lights
 		-> when directional light in scene
 			-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
 
+Mip-Map Creation in TextureFactory
+			
 Normal-mapping
 	-> need to transform view-space normal of the object instead of transforming the viewing-direction and the light-direction to tangent-space
 		-> why? because we have no more access to each tangent&bitangent in the lighting-pass and storing them in additional render-targets would be by far too much of overhead
@@ -60,10 +63,15 @@ Reflections
 Msaa
 	-> do sampling in geometry fragment-shader (centroid)
 
-Text-rendering
-	-> for displaying stuff e.g. framerate
+Instanced Rendering
+	-> high number of meshes rendering
 	
-Do View-Frustum culling
+Text-rendering
+	-> use OGLFT
+	
+Do Culling
+	-> View-Frustum
+	-> Occlusion Culling using queries (like CHC++) 
 	-> Culling library (Umbra 3) ?
 	
 Need generic effect/material functionality
@@ -104,6 +112,7 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 	-> really all calls necessary e.g. always bindBuffer, ... ? are some states stored in buffers?
 	-> render SKYBOX AFTER other geometry and utilize stencil-buffer to mask fragments occluding the sky-box
 	-> Calculate position in Fragment-Shader
+		-> http://www.opengl.org/wiki/Compute_eye_space_from_window_space
 		-> use screen-coordinates & depth instead of spending a whole buffer on it
 		-> compare Performance!!
 		From Object-Coordinates to Viewport-Coordinates
