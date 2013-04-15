@@ -37,6 +37,9 @@
     <ClInclude Include="ZazenGameObject.h" />
     <ClInclude Include="ZazenSubSystemFactory.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\config\log4cplus.properties" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8703EE33-1839-4945-A60C-CDB0D3668D05}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

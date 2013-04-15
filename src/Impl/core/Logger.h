@@ -9,14 +9,19 @@
 #define LOGGER_H_
 
 #include <core/ILogger.h>
+#include <core/ILogReceiver.h>
 
 #include <log4cplus/logger.h>
 
-class Logger : public ILogger
+class Logger : public ILogger, public ILogReceiver
 {
 	public:
 		Logger( const std::string& );
 		~Logger();
+
+		void sendLog( const std::string& ) const;
+
+		ILoggerTarget logTargetTrace(); 
 
 		void logTrace( const std::string& ) const;
 		void logTrace( const std::ostream& ) const;

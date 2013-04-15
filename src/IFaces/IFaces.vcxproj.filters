@@ -52,6 +52,12 @@
     <ClInclude Include="core\ILogger.h">
       <Filter>Headerdateien\Core</Filter>
     </ClInclude>
+    <ClInclude Include="core\ILoggerTarget.h">
+      <Filter>Headerdateien\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ILogReceiver.h">
+      <Filter>Headerdateien\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headerdateien">

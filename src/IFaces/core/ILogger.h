@@ -8,6 +8,8 @@
 #ifndef ILOGGER_H_
 #define ILOGGER_H_
 
+#include "ILoggerTarget.h"
+
 #include <string>
 
 class ILogger
@@ -16,6 +18,8 @@ class ILogger
 		virtual ~ILogger() {};
 
 		virtual void logTrace( const std::string& ) const = 0;
+		virtual ILoggerTarget logTargetTrace() = 0; 
+
 		virtual void logTrace( const std::ostream& ) const = 0;
 
 		virtual void logDebug( const std::string& ) const = 0;

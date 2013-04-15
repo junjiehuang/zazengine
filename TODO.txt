@@ -1,12 +1,3 @@
-Force core-profile when creating opengl context from windows
-	-> already working but crashes later on during init. check those things:
-		-> http://stackoverflow.com/questions/4780373/problem-with-opengl-texturing-when-using-core-profile
-		-> glew not supporting http://www.opengl.org/wiki/OpenGL_Loading_Library
-			-> http://rastergrid.com/blog/2010/03/sad-facts-about-opengl-extension-libraries/
-	-> check for version of present opengl, must be at least 3.3
-	
-Remove errors in gDEBugger during glLinkProgram!
-
 Implement logging to file
 	-> log4cplus is there, make it actually work
 	

@@ -35,6 +35,10 @@ Core::initalize( const std::string& configPath, IGameObjectFactory* gameObjectFa
 			return false;
 		}
 
+		Core::instance->m_logger->logTargetTrace() << "test" << 1234 << 1.2;
+
+		Core::instance->m_logger->logInfo( stringstream( "test" ) << 1234 << "bla" );
+
 		Core::instance->m_logger->logInfo( "********************************************************" );
 		Core::instance->m_logger->logInfo( "***************** Initializing Core... *****************" );
 		Core::instance->m_logger->logInfo( "********************************************************" );

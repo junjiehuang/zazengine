@@ -20,6 +20,8 @@
     <ClInclude Include="core\IGameObject.h" />
     <ClInclude Include="core\IGameObjectFactory.h" />
     <ClInclude Include="core\ILogger.h" />
+    <ClInclude Include="core\ILoggerTarget.h" />
+    <ClInclude Include="core\ILogReceiver.h" />
     <ClInclude Include="core\ISubSystem.h" />
     <ClInclude Include="core\ISubSystemEntity.h" />
     <ClInclude Include="graphics\IGraphics.h" />

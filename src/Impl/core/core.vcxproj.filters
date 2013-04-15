@@ -86,5 +86,16 @@
     <Filter Include="Headerdateien\XML">
       <UniqueIdentifier>{15b09b08-b286-480c-b74d-e22ed74f3687}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien">
+      <UniqueIdentifier>{418feee8-01a6-4fa0-8fe6-a3a7e79c2042}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Config">
+      <UniqueIdentifier>{b152b1cc-a7bf-41c7-a325-8cccb96c8bfd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\config\log4cplus.properties">
+      <Filter>Ressourcendateien\Config</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -38,12 +38,14 @@ RenderingContext::initialize( const std::string& title, int width, int height, b
 		return false;
 	}
 
+	/* WARNING: seems to crash on my ATI Radeon HD 6650M at SOME point...
 	// create core rendering context
 	if ( false == RenderingContext::createCoreRenderingContext() )
 	{
 		RenderingContext::shutdown();
 		return false;
 	}
+	*/
 
 	// show and size window
 	ShowWindow( RenderingContext::instance->hWnd, SW_SHOW );					
@@ -282,14 +284,13 @@ RenderingContext::createCoreRenderingContext()
 	// which leads to a stack-corruption and a crash of the program if not done
 	// found after exhausting search in forums and stackoverflow: this was a bug in GLFW too
 	std::vector<int> attribs( 20 );
-	attribs.push_back( WGL_CONTEXT_MAJOR_VERSION_ARB );
-	attribs.push_back( majorVersion );
-	attribs.push_back( WGL_CONTEXT_MINOR_VERSION_ARB );
-	attribs.push_back( minorVersion );
-	attribs.push_back( WGL_CONTEXT_PROFILE_MASK_ARB );
-	attribs.push_back( WGL_CONTEXT_CORE_PROFILE_BIT_ARB );
-	attribs.push_back( 0 );
-
+	attribs[ 0 ] = WGL_CONTEXT_MAJOR_VERSION_ARB;
+	attribs[ 1 ] = majorVersion;
+	attribs[ 2 ] = WGL_CONTEXT_MINOR_VERSION_ARB;
+	attribs[ 3 ] = minorVersion;
+	attribs[ 4 ] = WGL_CONTEXT_PROFILE_MASK_ARB;
+	attribs[ 5 ] = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
+	
 	if ( 0 == wglChoosePixelFormatARB( RenderingContext::instance->hDC, iPixelFormatAttribList, NULL, 
 		1, &iPixelFormat, ( UINT* ) &iNumFormats ) )
 	{
