@@ -54,7 +54,7 @@ class RenderingContext
 
 		static bool registerClass( HINSTANCE );
 		static bool createWindow( int, int, bool, const std::string& );
-		static bool createCompatibilityRenderingContext();
+		static bool createBaseRenderingContext();
 		static bool createCoreRenderingContext();
 
 		static bool unregisterClass();

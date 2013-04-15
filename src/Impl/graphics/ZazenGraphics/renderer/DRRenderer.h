@@ -91,6 +91,8 @@ class DRRenderer : public Renderer
 		bool renderInstances( Viewer*, std::list<Instance*>&, Program*, bool );
 		bool renderGeom( Viewer*, GeomType*, const glm::mat4& );
 
+		bool peekOpenglErrors();
+
 };
 
 #endif /* DRRENDERER_H_ */

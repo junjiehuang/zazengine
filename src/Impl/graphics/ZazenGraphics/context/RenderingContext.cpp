@@ -4,6 +4,7 @@
 #include <GL/wglew.h>
 
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -15,7 +16,7 @@ bool
 RenderingContext::initialize( const std::string& title, int width, int height, bool fullScreenFlag )
 {
 	new RenderingContext();
-	
+
 	// register new OpenGL window class
 	if ( false == RenderingContext::registerClass( GetModuleHandle( NULL ) ) )
 	{
@@ -30,30 +31,8 @@ RenderingContext::initialize( const std::string& title, int width, int height, b
 		return false;
 	}
 	
-	// create basic OpenGL compatibility rendering-context & initialize GLEW => fetched function pointers for createing core rendering-context
-	if ( false == RenderingContext::createCompatibilityRenderingContext() )
-	{
-		RenderingContext::shutdown();
-		return false;
-	}
-
-	/* uncomment for core-context
-	// destroy rendering context because we will set up a new ( core ) one
-	if ( false == RenderingContext::destroyRenderingContext() )
-	{
-		RenderingContext::shutdown();
-		return false;
-	}
-	
-	// destroy the created window
-	if ( false == RenderingContext::destroyWindow() )
-	{
-		RenderingContext::shutdown();
-		return false;
-	}
-	
-	// create window again with then new core rendering-context
-	if ( false == RenderingContext::createWindow( width, height, fullScreenFlag, title ) )
+	// create basic OpenGL compatibility rendering-context & initialize GLEW => fetched function pointers for creating core rendering-context
+	if ( false == RenderingContext::createBaseRenderingContext() )
 	{
 		RenderingContext::shutdown();
 		return false;
@@ -65,7 +44,6 @@ RenderingContext::initialize( const std::string& title, int width, int height, b
 		RenderingContext::shutdown();
 		return false;
 	}
-	*/
 
 	// show and size window
 	ShowWindow( RenderingContext::instance->hWnd, SW_SHOW );					
@@ -213,7 +191,7 @@ RenderingContext::createWindow( int width, int height, bool fullScreenFlag, cons
 }
 
 bool
-RenderingContext::createCompatibilityRenderingContext()
+RenderingContext::createBaseRenderingContext()
 {
 	GLuint pixelFormat;
 
@@ -242,20 +220,20 @@ RenderingContext::createCompatibilityRenderingContext()
 	pixelFormat = ChoosePixelFormat( RenderingContext::instance->hDC, &pfd );
 	if ( 0 == pixelFormat )
 	{
-		cout << "ERROR ... in RenderingContext::createWindow: Can't Find A Suitable PixelFormat." << endl;
+		cout << "ERROR ... in RenderingContext::createBaseRenderingContext: Can't Find A Suitable PixelFormat." << endl;
 		return false;
 	}
 
 	if ( false == SetPixelFormat( RenderingContext::instance->hDC, pixelFormat, &pfd ) )
 	{
-		cout << "ERROR ... in RenderingContext::createWindow: Can't Set The PixelFormat." << endl;
+		cout << "ERROR ... in RenderingContext::createBaseRenderingContext: Can't Set The PixelFormat." << endl;
 		return false;
 	}
 
 	HGLRC hRC = wglCreateContext( RenderingContext::instance->hDC );
 	if ( NULL == hRC )
 	{
-		cout << "ERROR ... in RenderingContext::createCompatibilityRenderingContext: Can't Create A GL Rendering Context." << endl;
+		cout << "ERROR ... in RenderingContext::createBaseRenderingContext: Can't Create A GL Rendering Context." << endl;
 		return false;
 	}
 
@@ -263,14 +241,15 @@ RenderingContext::createCompatibilityRenderingContext()
 
 	if( 0 == wglMakeCurrent( RenderingContext::instance->hDC, RenderingContext::instance->hRC ) )
 	{
-		cout << "ERROR ... in RenderingContext::createCompatibilityRenderingContext: Can't Activate The GL Rendering Context." << endl;
+		cout << "ERROR ... in RenderingContext::createBaseRenderingContext: Can't Activate The GL Rendering Context." << endl;
 		return false;
 	}
 
+	glewExperimental = TRUE;
 	GLenum err = glewInit();
 	if ( GLEW_OK != err )
 	{
-		cout << "ERROR ... in RenderingContext::createCompatibilityRenderingContext: GLEW failed with " <<  glewGetErrorString( err ) << endl;
+		cout << "ERROR ... in RenderingContext::createBaseRenderingContext: GLEW failed with " <<  glewGetErrorString( err ) << endl;
 		return false;
 	}
 
@@ -285,7 +264,7 @@ RenderingContext::createCoreRenderingContext()
 	int minorVersion = 3;
 	PIXELFORMATDESCRIPTOR pfd;
 	int iPixelFormat, iNumFormats;
-
+	
 	const int iPixelFormatAttribList[] =
 	{
 		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
@@ -298,14 +277,18 @@ RenderingContext::createCoreRenderingContext()
 		0 // End of attributes list
 	};
 
-	int iContextAttribs[] =
-	{
-		WGL_CONTEXT_MAJOR_VERSION_ARB, majorVersion,
-		WGL_CONTEXT_MINOR_VERSION_ARB, minorVersion,
-		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB, 
-		//WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-		0 // End of attributes list
-	};
+	// WARNING: need to set far higher than really necessary because it seems
+	// that wglCreateContextAttribsARB is manipulating it somehow inside
+	// which leads to a stack-corruption and a crash of the program if not done
+	// found after exhausting search in forums and stackoverflow: this was a bug in GLFW too
+	std::vector<int> attribs( 20 );
+	attribs.push_back( WGL_CONTEXT_MAJOR_VERSION_ARB );
+	attribs.push_back( majorVersion );
+	attribs.push_back( WGL_CONTEXT_MINOR_VERSION_ARB );
+	attribs.push_back( minorVersion );
+	attribs.push_back( WGL_CONTEXT_PROFILE_MASK_ARB );
+	attribs.push_back( WGL_CONTEXT_CORE_PROFILE_BIT_ARB );
+	attribs.push_back( 0 );
 
 	if ( 0 == wglChoosePixelFormatARB( RenderingContext::instance->hDC, iPixelFormatAttribList, NULL, 
 		1, &iPixelFormat, ( UINT* ) &iNumFormats ) )
@@ -320,10 +303,17 @@ RenderingContext::createCoreRenderingContext()
 		return false;
 	}
 
-	hRC = wglCreateContextAttribsARB( RenderingContext::instance->hDC, 0, iContextAttribs );
+	hRC = wglCreateContextAttribsARB( RenderingContext::instance->hDC, 0, static_cast<int*>( &attribs[0] ) );
 	if ( NULL == hRC )
 	{
 		cout << "ERROR ... in RenderingContext::createCoreRenderingContext: Can't Create A GL Rendering Context." << endl;
+		return false;
+	}
+
+	// destroy base-context before switching to new core-context
+	if ( false == RenderingContext::destroyRenderingContext() )
+	{
+		cout << "ERROR ... in RenderingContext::createCoreRenderingContext: Couldn't delete base-context." << endl;
 		return false;
 	}
 
@@ -334,16 +324,14 @@ RenderingContext::createCoreRenderingContext()
 		cout << "ERROR ... in RenderingContext::createCoreRenderingContext: Can't Activate The GL Rendering Context." << endl;
 		return false;
 	}
-
-	/*
-	// re-init glew: refetch function pointers because of new context
+	
+	glewExperimental = TRUE;
 	GLenum err = glewInit();
 	if ( GLEW_OK != err )
 	{
 		cout << "ERROR ... in RenderingContext::createCoreRenderingContext: GLEW failed with " <<  glewGetErrorString( err ) << endl;
 		return false;
 	}
-	*/
 
 	return true;
 }
@@ -371,12 +359,12 @@ RenderingContext::destroyRenderingContext()
 	{
 		if ( 0 == wglMakeCurrent( NULL, NULL ) )	
 		{
-			cout << "WARNING ... in RenderingContext::unregisterClass: Release Of DC And RC Failed." << endl;
+			cout << "WARNING ... in RenderingContext::destroyRenderingContext: wglMakeCurrent failed." << endl;
 		}
 
 		if ( 0 == wglDeleteContext( RenderingContext::instance->hRC ) )
 		{
-			cout << "WARNING ... in RenderingContext::unregisterClass: Release Rendering Context Failed." << endl;
+			cout << "WARNING ... in RenderingContext::destroyRenderingContext: wglDeleteContext failed." << endl;
 		}
 
 		RenderingContext::instance->hRC = NULL;

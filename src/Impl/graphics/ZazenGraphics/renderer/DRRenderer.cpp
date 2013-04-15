@@ -70,16 +70,10 @@ DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
 {
 	cout << "Initializing Deferred Renderer..." << endl;
 
-	//glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );	// Really Nice Perspective Calculations
-
 	glEnable( GL_DEPTH_TEST );								// Enables Depth Testing
-	//glDepthFunc( GL_LESS );									// The Type Of Depth Testing To Do
-	//glDepthMask( GL_TRUE );
 
 	// Cull triangles which normal is not towards the camera
 	glEnable( GL_CULL_FACE );
-
-	//glEnable( GL_TEXTURE_2D );
 
 	if ( false == this->initGBuffer() )
 	{
@@ -856,17 +850,28 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
-// if checking of gl-errors is deactivated check once per frame for errors
+	if ( false == this->peekOpenglErrors() )
+	{
+		return false;
+	}
+
+	this->frame++;
+
+	return true;
+}
+
+bool
+DRRenderer::peekOpenglErrors()
+{
+// if checking of gl-errors is deactivated check once per frame for ALL errors
 #ifndef CHECK_GL_ERRORS
 	GLenum status;
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	while ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "ERROR ... in DRRenderer::renderFrame: glGetError reported an error: " << gluErrorString( status ) << endl;
+		cout << "ERROR ... in DRRenderer::peekOpenglErrors: glGetError reported an error: " << gluErrorString( status ) << endl;
 		return false;
 	}
 #endif
-
-	this->frame++;
 
 	return true;
 }
