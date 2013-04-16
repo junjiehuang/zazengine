@@ -15,7 +15,12 @@ class ILogReceiver
 	public:
 		virtual ~ILogReceiver() {};
 
-		virtual void sendLog( const std::string& ) const = 0;
+		virtual void logTrace( const std::string& ) const = 0;
+		virtual void logDebug( const std::string& ) const = 0;
+		virtual void logInfo( const std::string& ) const = 0;
+		virtual void logWarning( const std::string& ) const = 0;
+		virtual void logError( const std::string& ) const = 0;
+		virtual void logFatal( const std::string& ) const = 0;
 
 };
 

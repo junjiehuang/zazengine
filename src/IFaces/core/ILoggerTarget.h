@@ -9,20 +9,56 @@
 #define ILOGGERTARGET_H_
 
 #include "ILogReceiver.h"
+
 #include <sstream>
 
 class ILoggerTarget
 {
 	public:
-		ILoggerTarget( ILogReceiver* receiver )
+		enum LOG_LEVEL
 		{
+			TARGET_TRACE,
+			TARGET_DEBUG,
+			TARGET_INFO,
+			TARGET_WARNING,
+			TARGET_ERROR,
+			TARGET_FATAL
+		};
+
+		ILoggerTarget( ILogReceiver* receiver, LOG_LEVEL level )
+		{
+			this->m_level = level;
 			this->m_logReceiver = receiver;
 			this->m_stream = new std::ostringstream();
 		}
 
 		virtual ~ILoggerTarget()
 		{
-			this->m_logReceiver->sendLog( this->m_stream->str() );
+			if ( TARGET_TRACE == this->m_level )
+			{
+				this->m_logReceiver->logTrace( this->m_stream->str() );
+			}
+			else if ( TARGET_DEBUG == this->m_level )
+			{
+				this->m_logReceiver->logDebug( this->m_stream->str() );
+			}
+			else if ( TARGET_INFO == this->m_level )
+			{
+				this->m_logReceiver->logInfo( this->m_stream->str() );
+			}
+			else if ( TARGET_WARNING == this->m_level )
+			{
+				this->m_logReceiver->logWarning( this->m_stream->str() );
+			}
+			else if ( TARGET_ERROR == this->m_level )
+			{
+				this->m_logReceiver->logError( this->m_stream->str() );
+			}
+			else if ( TARGET_FATAL == this->m_level )
+			{
+				this->m_logReceiver->logFatal( this->m_stream->str() );
+			}
+
 			delete this->m_stream;
 		}
 
@@ -37,6 +73,7 @@ class ILoggerTarget
 
 	private:
 		ILogReceiver* m_logReceiver;
+		LOG_LEVEL m_level;
 
 };
 

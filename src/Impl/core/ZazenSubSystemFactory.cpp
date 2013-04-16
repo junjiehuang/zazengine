@@ -33,21 +33,21 @@ ZazenSubSystemFactory::createSubSystem( const std::string& file, const std::stri
 	HMODULE libHandle = LoadLibrary( fileWString.c_str() );
 	if ( NULL == libHandle )
 	{
-		Core::getRef().getCoreLogger().logError( stringstream( "Failed loading file for SubSystem with error: " ) << GetLastError() );
+		Core::getRef().getCoreLogger().logError() << "Failed loading file for SubSystem with error: " << GetLastError();
 		return NULL;
 	}
 
 	ISubSystem::constructor_func constrFunc = ( ISubSystem::constructor_func ) GetProcAddress( libHandle, "createInstance" );
 	if ( NULL == constrFunc )
 	{
-		Core::getRef().getCoreLogger().logError( stringstream( "Failed getting ProcAddress for 'createInstance' with error: " ) << GetLastError() );
+		Core::getRef().getCoreLogger().logError() << "Failed getting ProcAddress for 'createInstance' with error: " << GetLastError();
 		return NULL;
 	}
 
 	ISubSystem::destructor_func destrFunc = ( ISubSystem::destructor_func ) GetProcAddress( libHandle, "deleteInstance" );
 	if ( NULL == destrFunc )
 	{
-		Core::getRef().getCoreLogger().logError( stringstream( "Failed getting ProcAddress for 'deleteInstance' with error: " ) << GetLastError() );
+		Core::getRef().getCoreLogger().logError() << "Failed getting ProcAddress for 'deleteInstance' with error: " << GetLastError();
 		return 0;
 	}
 
