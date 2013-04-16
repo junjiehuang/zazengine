@@ -1,5 +1,5 @@
 Implement logging to file
-	-> log4cplus is there, make it actually work
+	-> replace ALL cout with corresponding log-calls
 	-> move from console-application to pure windows-app => no more console shows up => debugging through log-file
 
 Program- & Shader-Management
