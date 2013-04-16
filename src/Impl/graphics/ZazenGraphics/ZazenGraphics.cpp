@@ -54,7 +54,8 @@ ZazenGraphics::~ZazenGraphics()
 bool
 ZazenGraphics::initialize( TiXmlElement* configNode )
 {
-	cout << endl << "=============== ZazenGraphics initializing... ===============" << endl;
+	this->m_logger = this->m_core->getLogger( "zaZenGraphics" );
+	this->m_logger->logInfo( "=============== ZazenGraphics initializing... ===============" );
 
 	if ( false == this->initPipelinePath( configNode ) )
 	{
@@ -94,15 +95,15 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 	// cannot initialize renderer now because camera not yet loaded
 	this->m_renderer = new DRRenderer();
 
-	cout << "================ ZazenGraphics initialized =================" << endl;
-	
+	this->m_logger->logInfo( "================ ZazenGraphics initialized =================" );
+
 	return true;
 }
 
 bool
 ZazenGraphics::shutdown()
 {
-	cout << endl << "=============== ZazenGraphics shutting down... ===============" << endl;
+	this->m_logger->logInfo( "=============== ZazenGraphics shutting down... ===============" );
 
 	this->m_core->getEventManager().unregisterForEvent( "KEY_RELEASED", this );
 
@@ -127,7 +128,7 @@ ZazenGraphics::shutdown()
 
 	RenderingContext::shutdown();
 
-	cout << "================ ZazenGraphics shutdown =================" << endl;
+	this->m_logger->logInfo( "================ ZazenGraphics shutdown =================" );
 
 	return true;
 }
@@ -137,14 +138,14 @@ ZazenGraphics::start()
 {
 	if ( 0 == this->m_camera )
 	{
-		cout << "ERROR ... missing camera in ZazenGraphics - exit" << endl;
+		this->m_logger->logError( "missing camera in ZazenGraphics - exit" );
 		return false;
 	}
 
 	this->m_renderer->setCamera( this->m_camera );
 	if ( false == this->m_renderer->initialize( this->m_pipelinePath ) )
 	{
-		cout << "ERROR ... initializing renderer failed - exit" << endl;
+		this->m_logger->logError( "initializing renderer failed - exit" );
 		return false;
 	}
 
@@ -167,7 +168,6 @@ bool
 ZazenGraphics::process( double iterationFactor )
 {
 	bool flag = true;
-	//cout << "ZazenGraphics::process enter" << endl;
 
 	// process events of m_entities
 	std::list<ZazenGraphicsEntity*>::iterator iter = this->m_entities.begin();
@@ -178,7 +178,7 @@ ZazenGraphics::process( double iterationFactor )
 		entity->queuedEvents.clear();
 	}
 
-	MSG		msg;
+	MSG msg;
 
 	if ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) )	// Is There A Message Waiting?
 	{
@@ -195,16 +195,12 @@ ZazenGraphics::process( double iterationFactor )
 		}
 	}
 
-	//cout << "ZazenGraphics::process leave" << endl;
-
 	return flag;
 }
 
 bool
 ZazenGraphics::finalizeProcess()
 {
-	//cout << "ZazenGraphics::finalizeProcess" << endl;
-
 	return true;
 }
 
@@ -230,7 +226,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			instance->geom = GeometryFactory::get( str );
 			if ( NULL == instance->geom )
 			{
-				cout << "WARNING ... couldn't get mesh " << str << " - will be ignored" << endl;
+				this->m_logger->logWarning() << "couldn't get mesh " << str << " - will be ignored";
 			}
 		}
 
@@ -240,7 +236,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			instance->material = Material::get( str );
 			if ( NULL == instance->material )
 			{
-				cout << "WARNING ... couldn't get material " << str << " - will be ignored" << endl;
+				this->m_logger->logWarning() << "couldn't get material " << str << " - will be ignored";
 			}
 		}
 
@@ -261,7 +257,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			const char* str = skyBoxNode->Attribute( "path" );
 			if ( 0 == str )
 			{
-				cout << "ERROR ... missing path-attribute in skybox node" << endl;
+				this->m_logger->logError() << "missing path-attribute in skybox node";
 				return false;
 			}
 
@@ -269,20 +265,20 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			filesystem::path fullSkyBoxFolderPath = filesystem::path( m_textureDataPath.generic_string() + skyFolderPathStr );
 			if ( ! filesystem::exists( fullSkyBoxFolderPath ) )
 			{
-				cout << "ERROR ... skybox-path " << fullSkyBoxFolderPath << " does not exist" << endl;
+				this->m_logger->logError() << "skybox-path " << fullSkyBoxFolderPath << " does not exist";
 				return false;
 			}
 
 			if ( false == filesystem::is_directory( fullSkyBoxFolderPath ) )
 			{
-				cout << "ERROR ... skybox-path " << fullSkyBoxFolderPath << " is not a directory" << endl;
+				this->m_logger->logError() << "skybox-path " << fullSkyBoxFolderPath << " is not a directory";
 				return false;
 			}
 
 			str = skyBoxNode->Attribute( "format" );
 			if ( 0 == str )
 			{
-				cout << "ERROR ... missing format-attribute in skybox node" << endl;
+				this->m_logger->logError( "missing format-attribute in skybox node" );
 				return false;
 			}
 
@@ -291,7 +287,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 
 			if ( false == GeomSkyBox::initialize( skyBoxFolderPath, skyBoxFormat ) )
 			{
-				cout << "ERROR ... failed to initialize Sky-Box" << endl;
+				this->m_logger->logError( "failed to initialize Sky-Box" );
 				return false;
 			}
 		}
@@ -373,7 +369,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			const char* str = cameraNode->Attribute( "fov" );
 			if ( 0 == str )
 			{
-				cout << "INFO ... fov attribute missing in cameraNode - use default " << endl;
+				this->m_logger->logWarning() << "fov attribute missing in cameraNode - use default: " << fov;
 			}
 			else
 			{
@@ -383,7 +379,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			str = cameraNode->Attribute( "view" );
 			if ( 0 == str )
 			{
-				cout << "INFO ... view attribute missing in cameraNode - use default " << endl;
+				this->m_logger->logWarning() << "view attribute missing in cameraNode - use default: " << str;
 			}
 			else
 			{
@@ -408,9 +404,10 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 
 	if ( 0 == entity->m_orientation )
 	{
-		cout << "No valid entity defined in ZazenGraphics for Object \"" << parent->getName() << "\" - error " << endl;
+		this->m_logger->logError() << "No valid entity defined in ZazenGraphics for Object \"" << parent->getName() << "\" - error ";
+
 		delete entity;
-		return 0;
+		return NULL;
 	}
 
 	TiXmlElement* orientationNode = objectNode->FirstChildElement( "orientation" );
@@ -443,7 +440,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		str = orientationNode->Attribute( "heading" );
 		if ( 0 == str )
 		{
-			cout << "INFO ... heading attribute missing in orientation - use default " << endl;
+			this->m_logger->logWarning( "heading attribute missing in orientation - use default: 0.0" ); 
 		}
 		else
 		{
@@ -453,7 +450,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		str = orientationNode->Attribute( "roll" );
 		if ( 0 == str )
 		{
-			cout << "INFO ... roll attribute missing in orientation - use default " << endl;
+			this->m_logger->logWarning( "roll attribute missing in orientation - use default: 0.0" );
 		}
 		else
 		{
@@ -463,7 +460,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		str = orientationNode->Attribute( "pitch" );
 		if ( 0 == str )
 		{
-			cout << "INFO ... pitch attribute missing in orientation - use default " << endl;
+			this->m_logger->logWarning( "pitch attribute missing in orientation - use default: 0.0" );
 		}
 		else
 		{
@@ -473,7 +470,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		str = orientationNode->Attribute( "scale" );
 		if ( 0 == str )
 		{
-			cout << "INFO ... scale attribute missing in orientation - use default " << endl;
+			this->m_logger->logWarning( "scale attribute missing in orientation - use default: 1.0" );
 		}
 		else
 		{
@@ -491,7 +488,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		const char* str = animationNode->Attribute( "heading" );
 		if ( 0 == str )
 		{
-			cout << "INFO ... heading attribute missing in animation - use default " << endl;
+			this->m_logger->logWarning( "heading attribute missing in animation - use default: 0.0" );
 		}
 		else
 		{
@@ -501,7 +498,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		str = animationNode->Attribute( "roll" );
 		if ( 0 == str )
 		{
-			cout << "INFO ... roll attribute missing in animation - use default " << endl;
+			this->m_logger->logWarning( "roll attribute missing in animation - use default: 0.0" );
 		}
 		else
 		{
@@ -511,7 +508,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		str = animationNode->Attribute( "pitch" );
 		if ( 0 == str )
 		{
-			cout << "INFO ... pitch attribute missing in animation - use default " << endl;
+			this->m_logger->logWarning( "pitch attribute missing in animation - use default: 0.0" );
 		}
 		else
 		{
@@ -585,7 +582,7 @@ ZazenGraphics::createWindow( TiXmlElement* configNode )
 
 	if ( false == RenderingContext::initialize( windowTitle, windowWidth, windowHeight, fullScreen ) )
 	{
-		cout << "ERROR ... in ZazenGraphics::createWindow: failed creating window" << endl;
+		this->m_logger->logError( "in ZazenGraphics::createWindow: failed creating window" );
 		return false;
 	}
 
@@ -598,27 +595,27 @@ ZazenGraphics::initPipelinePath( TiXmlElement* configElem )
 	TiXmlElement* pipelineNode = configElem->FirstChildElement( "pipeline" );
 	if ( 0 == pipelineNode )
 	{
-		cout << "ERROR ... missing pipeline-config in graphics-config" << endl;
+		this->m_logger->logError( "missing pipeline-config in graphics-config" );
 		return false;
 	}
 
 	const char* str = pipelineNode->Attribute( "path" );
 	if ( 0 == str )
 	{
-		cout << "ERROR ... missing pipeline-path in graphics-config" << endl;
+		this->m_logger->logError( "missing pipeline-path in graphics-config" );
 		return false;
 	}
 
 	this->m_pipelinePath = filesystem::path( str );
 	if ( ! filesystem::exists( this->m_pipelinePath ) )
 	{
-		cout << "ERROR ... pipeline-path " << this->m_pipelinePath << " does not exist" << endl;
+		this->m_logger->logError() << "pipeline-path " << this->m_pipelinePath << " does not exist";
 		return false;
 	}
 
 	if ( false == filesystem::is_directory( this->m_pipelinePath ) )
 	{
-		cout << "ERROR ... pipeline-path " << this->m_pipelinePath << " is not a directory" << endl;
+		this->m_logger->logError() << "pipeline-path " << this->m_pipelinePath << " is not a directory";
 		return false;
 	}
 
@@ -631,27 +628,27 @@ ZazenGraphics::initModelDataPath( TiXmlElement* configElem )
 	TiXmlElement* modelDataNode = configElem->FirstChildElement( "modelData" );
 	if ( 0 == modelDataNode )
 	{
-		cout << "ERROR ... missing modelData-config in graphics-config" << endl;
+		this->m_logger->logError( "missing modelData-config in graphics-config" );
 		return false;
 	}
 
 	const char* str = modelDataNode->Attribute( "path" );
 	if ( 0 == str )
 	{
-		cout << "ERROR ... missing modelData-path in graphics-config" << endl;
+		this->m_logger->logError( "missing modelData-path in graphics-config" );
 		return false;
 	}
 
 	this->m_modelDataPath = filesystem::path( str );
 	if ( ! filesystem::exists( this->m_modelDataPath ) )
 	{
-		cout << "ERROR ... modelData-path " << this->m_modelDataPath << " does not exist" << endl;
+		this->m_logger->logError() << "modelData-path " << this->m_modelDataPath << " does not exist";
 		return false;
 	}
 
 	if ( false == filesystem::is_directory( this->m_modelDataPath ) )
 	{
-		cout << "ERROR ... modelData-path " << this->m_modelDataPath << " is not a directory" << endl;
+		this->m_logger->logError() << "modelData-path " << this->m_modelDataPath << " is not a directory";
 		return false;
 	}
 
@@ -664,27 +661,27 @@ ZazenGraphics::initTextureDataPath( TiXmlElement* configElem )
 	TiXmlElement* textureDataNode = configElem->FirstChildElement( "textureData" );
 	if ( 0 == textureDataNode )
 	{
-		cout << "ERROR ... missing textureData-config in graphics-config" << endl;
+		this->m_logger->logError( "missing textureData-config in graphics-config" );
 		return false;
 	}
 
 	const char* str = textureDataNode->Attribute( "path" );
 	if ( 0 == str )
 	{
-		cout << "ERROR ... missing textureData-path in graphics-config" << endl;
+		this->m_logger->logError( "missing textureData-path in graphics-config" );
 		return false;
 	}
 
 	this->m_textureDataPath = filesystem::path( str );
 	if ( ! filesystem::exists( this->m_textureDataPath ) )
 	{
-		cout << "ERROR ... textureData-path " << this->m_textureDataPath << " does not exist" << endl;
+		this->m_logger->logError() << "textureData-path " << this->m_textureDataPath << " does not exist";
 		return false;
 	}
 
 	if ( false == filesystem::is_directory( this->m_textureDataPath ) )
 	{
-		cout << "ERROR ... textureData-path " << this->m_textureDataPath << " is not a directory" << endl;
+		this->m_logger->logError() << "textureData-path " << this->m_textureDataPath << " is not a directory";
 		return false;
 	}
 
@@ -697,27 +694,27 @@ ZazenGraphics::initMaterialDataPath( TiXmlElement* configElem )
 	TiXmlElement* materialDataNode = configElem->FirstChildElement( "materialData" );
 	if ( 0 == materialDataNode )
 	{
-		cout << "ERROR ... missing materialData-config in graphics-config" << endl;
+		this->m_logger->logError( "missing materialData-config in graphics-config" );
 		return false;
 	}
 
 	const char* str = materialDataNode->Attribute( "path" );
 	if ( 0 == str )
 	{
-		cout << "ERROR ... missing materialData-path in graphics-config" << endl;
+		this->m_logger->logError( "missing materialData-path in graphics-config" );
 		return false;
 	}
 
 	this->m_materialDataPath = filesystem::path( str );
 	if ( ! filesystem::exists( this->m_materialDataPath ) )
 	{
-		cout << "ERROR ... materialData-path " << this->m_materialDataPath << " does not exist" << endl;
+		this->m_logger->logError() << "materialData-path " << this->m_materialDataPath << " does not exist";
 		return false;
 	}
 
 	if ( false == filesystem::is_directory( this->m_materialDataPath ) )
 	{
-		cout << "ERROR ... materialData-path " << this->m_materialDataPath << " is not a directory" << endl;
+		this->m_logger->logError() << "materialData-path " << this->m_materialDataPath << " is not a directory";
 		return false;
 	}
 
@@ -730,27 +727,27 @@ ZazenGraphics::initSkyBoxFolderPath( TiXmlElement* configElem )
 	TiXmlElement* materialDataNode = configElem->FirstChildElement( "materialData" );
 	if ( 0 == materialDataNode )
 	{
-		cout << "ERROR ... missing materialData-config in graphics-config" << endl;
+		this->m_logger->logError( "missing materialData-config in graphics-config" );
 		return false;
 	}
 
 	const char* str = materialDataNode->Attribute( "path" );
 	if ( 0 == str )
 	{
-		cout << "ERROR ... missing materialData-path in graphics-config" << endl;
+		this->m_logger->logError( "missing materialData-path in graphics-config" );
 		return false;
 	}
 
 	this->m_materialDataPath = filesystem::path( str );
 	if ( ! filesystem::exists( this->m_materialDataPath ) )
 	{
-		cout << "ERROR ... materialData-path " << this->m_materialDataPath << " does not exist" << endl;
+		this->m_logger->logError() << "materialData-path " << this->m_materialDataPath << " does not exist";
 		return false;
 	}
 
 	if ( false == filesystem::is_directory( this->m_materialDataPath ) )
 	{
-		cout << "ERROR ... materialData-path " << this->m_materialDataPath << " is not a directory" << endl;
+		this->m_logger->logError() << "materialData-path " << this->m_materialDataPath << " is not a directory";
 		return false;
 	}
 

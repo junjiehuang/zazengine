@@ -27,7 +27,7 @@ using namespace std;
 ODEPhysics::ODEPhysics( const std::string& id, ICore* core )
 	: id( id ),
 	  type( "physics" ),
-	  core( core )
+	  m_core( core )
 {
 }
 
@@ -38,14 +38,15 @@ ODEPhysics::~ODEPhysics()
 bool
 ODEPhysics::initialize( TiXmlElement* configElem )
 {
-	cout << endl << "=============== ODEPhysics initializing... ===============" << endl;
+	this->m_logger = this->m_core->getLogger( "zaZenODE" );
+	this->m_logger->logInfo( "=============== ODEPhysics initializing... ===============" );
 
 	if ( false == this->initODE( configElem ) )
 	{
 		return false;
 	}
 
-	cout << "================ ODEPhysics initialized =================" << endl;
+	this->m_logger->logInfo( "================ ODEPhysics initialized =================" );
 
 	return true;
 }
@@ -53,7 +54,7 @@ ODEPhysics::initialize( TiXmlElement* configElem )
 bool
 ODEPhysics::shutdown()
 {
-	cout << endl << "=============== ODEPhysics shutting down... ===============" << endl;
+	this->m_logger->logInfo( "=============== ODEPhysics shutting down... ===============" );
 
 	std::list<ODEPhysicsEntity*>::iterator iter = this->entities.begin();
 	while ( iter != this->entities.end() )
@@ -67,7 +68,7 @@ ODEPhysics::shutdown()
 	dSpaceDestroy( this->spaceID );
 	dCloseODE();
 
-	cout << "================ ODEPhysics shutdown =================" << endl;
+	this->m_logger->logInfo( "================ ODEPhysics shutdown =================" );
 
 	return true;
 }
@@ -140,7 +141,7 @@ ODEPhysics::generateEvents()
 			e.addValue( "rot", boost::any( rot ) );
 			e.addValue( "vel", boost::any( vel ) );
 
-			this->core->getEventManager().postEvent( e );
+			this->m_core->getEventManager().postEvent( e );
 		}
 	}
 }
@@ -165,16 +166,16 @@ ODEPhysics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 	TiXmlElement* typeNode = objectNode->FirstChildElement( "type" );
 	if ( 0 == typeNode )
 	{
-		cout << "ERROR ... no type-node found for physics-instance - ignoring object" << endl;
-		return 0;
+		this->m_logger->logError( "ODEPhysics::createEntity: no type-node found for physics-instance - ignoring object" );
+		return NULL;
 	}
 
 	string typeID;
 	const char* str = typeNode->Attribute( "id" );
 	if ( 0 == str)
 	{
-		cout << "ERROR ... no id attribute found in physic type - ignoring object" << endl;
-		return 0;
+		this->m_logger->logError( "ODEPhysics::createEntity: no id attribute found in physic type - ignoring object" );
+		return NULL;
 	}
 	else
 	{
@@ -324,8 +325,6 @@ ODEPhysics::processEvents()
 	while ( eventsIter != this->receivedEvents.end() )
 	{
 		Event& e = *eventsIter++;
-
-		cout << "received Event " << e.getID() << " in ODEPhysics as target" << endl;
 	}
 
 	this->receivedEvents.clear();
@@ -340,8 +339,6 @@ ODEPhysics::processEvents()
 		while ( eventsIter != entity->queuedEvents.end() )
 		{
 			Event& e = *eventsIter++;
-
-			cout << "received Event " << e.getID() << " in ODEPhysics from GO '" << entity->getParent()->getName() << endl;
 
 			if ( e == "moveForward" )
 			{
@@ -435,7 +432,7 @@ ODEPhysics::collisionCallback( void* data, dGeomID o1, dGeomID o2 )
 		dJointAttach( c, b1, b2 );
 	}
 
-	long long currentMillis = instance->core->getCurrentMillis();
+	long long currentMillis = instance->m_core->getCurrentMillis();
 
 	std::list<ODEPhysicsEntity*>::iterator iter = instance->entities.begin();
 	while ( iter != instance->entities.end() )
@@ -456,7 +453,7 @@ ODEPhysics::collisionCallback( void* data, dGeomID o1, dGeomID o2 )
 				Event e( "COLLIDES_WITH" );
 				e.setTarget( entity->getParent() );
 
-				instance->core->getEventManager().postEvent( e );
+				instance->m_core->getEventManager().postEvent( e );
 			}
 
 			break;

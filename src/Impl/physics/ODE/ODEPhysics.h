@@ -11,6 +11,8 @@
 #include "ODEPhysicsEntity.h"
 
 #include <core/ICore.h>
+#include <core/ILogger.h>
+
 #include <physics/IPhysics.h>
 #include <ode/ode.h>
 #include <list>
@@ -51,7 +53,8 @@ class ODEPhysics : public IPhysics
 		std::list<Event> receivedEvents;
 		std::list<ODEPhysicsEntity*> entities;
 
-		ICore* core;
+		ICore* m_core;
+		ILogger* m_logger;
 
 		bool initODE( TiXmlElement* );
 

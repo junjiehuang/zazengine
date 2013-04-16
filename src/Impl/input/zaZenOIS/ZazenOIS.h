@@ -11,6 +11,8 @@
 
 #include <input/IInput.h>
 
+#include <core/ILogger.h>
+
 #include "ZazenOISEntity.h"
 
 #include <OIS.h>
@@ -62,6 +64,7 @@ class ZazenOIS : public IInput, public OIS::KeyListener, public OIS::MouseListen
 		std::string type;
 
 		ICore* m_core;
+		ILogger* m_logger;
 
 		OIS::InputManager* m_inputManager;
 		OIS::Keyboard* m_keyBoard;

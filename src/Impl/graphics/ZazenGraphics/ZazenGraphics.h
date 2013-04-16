@@ -10,6 +10,7 @@
 
 #include <core/ICore.h>
 #include <graphics/IGraphics.h>
+#include <core/ILogger.h>
 
 #include "ZazenGraphicsEntity.h"
 
@@ -26,7 +27,7 @@ class ZazenGraphics : public IGraphics
 {
 	public:
 		static ZazenGraphics& getInstance() { return *ZazenGraphics::instance; };
-
+		
 		ZazenGraphics( const std::string& id, ICore* core );
 		virtual ~ZazenGraphics();
 
@@ -50,6 +51,8 @@ class ZazenGraphics : public IGraphics
 		ZazenGraphicsEntity* createEntity( TiXmlElement*, IGameObject* parent );
 
 		ICore& getCore() { return *this->m_core; };
+		const ILogger& getLogger() const { return *this->m_logger; };
+
 		Viewer& getCamera() { return *this->m_camera; };
 
 		void* getWindowHandle();
@@ -67,6 +70,7 @@ class ZazenGraphics : public IGraphics
 		boost::filesystem::path m_materialDataPath;
 
 		ICore* m_core;
+		ILogger* m_logger;
 
 		Viewer* m_camera;
 		Renderer* m_renderer;

@@ -26,7 +26,7 @@ ZazenSubSystemFactory::~ZazenSubSystemFactory()
 ISubSystem*
 ZazenSubSystemFactory::createSubSystem( const std::string& file, const std::string& type )
 {
-	cout << "INFO ... loading SubSystem-Type " << type << " from file " << file << endl;
+	Core::getRef().getCoreLogger().logInfo() << "loading SubSystem-Type " << type << " from file " << file;
 
 	std::wstring fileWString = std::wstring( file.begin(), file.end() );
 

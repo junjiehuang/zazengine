@@ -34,14 +34,15 @@ ZazenOIS::~ZazenOIS()
 bool
 ZazenOIS::initialize( TiXmlElement* element )
 {
-	cout << endl << "=============== ZazenOIS initializing... ===============" << endl;
+	this->m_logger = this->m_core->getLogger( "zaZenOIS" );
+	this->m_logger->logInfo( "=============== ZazenOIS initializing... ===============" );
 
 	if ( false == this->initOIS( element ) )
 	{
 		return false;
 	}
 
-	cout << "================ ZazenOIS initialized =================" << endl;
+	this->m_logger->logInfo( "================ ZazenOIS initialized =================" );
 
 	return true;
 }
@@ -49,14 +50,14 @@ ZazenOIS::initialize( TiXmlElement* element )
 bool
 ZazenOIS::shutdown()
 {
-	cout << endl << "=============== ZazenOIS shutting down... ===============" << endl;
+	this->m_logger->logInfo( "=============== ZazenOIS shutting down... ===============" );
 
 	if( m_inputManager )
 	{
 		InputManager::destroyInputSystem( m_inputManager );
 	}
 
-	cout << "================ ZazenOIS shutdown =================" << endl;
+	this->m_logger->logInfo( "================ ZazenOIS shutdown =================" );
 
 	return true;
 }
@@ -216,7 +217,7 @@ ZazenOIS::initOIS( TiXmlElement* element )
 	IGraphics* graphics = this->m_core->getGraphics();
 	if ( NULL == graphics )
 	{
-		cout << "ERROR ... in ZazenOIS::initOIS: could not get access to IGraphics but is mandatory to aquire window-handle" << endl;
+		this->m_logger->logError( "in ZazenOIS::initOIS: could not get access to IGraphics but is mandatory to aquire window-handle" );
 		return false;
 	}
 
@@ -235,7 +236,8 @@ ZazenOIS::initOIS( TiXmlElement* element )
 
 	//Print debugging information
 	unsigned int v = m_inputManager->getVersionNumber();
-	std::cout << "OIS Version: " << (v>>16 ) << "." << ((v>>8) & 0x000000FF) << "." << (v & 0x000000FF)
+	this->m_logger->logInfo() 
+		<< "OIS Version: " << (v>>16 ) << "." << ((v>>8) & 0x000000FF) << "." << (v & 0x000000FF)
 		<< "\nRelease Name: " << m_inputManager->getVersionName()
 		<< "\nManager: " << m_inputManager->inputSystemName()
 		<< "\nTotal Keyboards: " << m_inputManager->getNumberOfDevices(OISKeyboard)
@@ -246,7 +248,9 @@ ZazenOIS::initOIS( TiXmlElement* element )
 	//List all devices
 	DeviceList list = m_inputManager->listFreeDevices();
 	for( DeviceList::iterator i = list.begin(); i != list.end(); ++i )
-		std::cout << "\n\tDevice: " << g_DeviceType[ i->first ] << " Vendor: " << i->second << endl;
+	{
+		this->m_logger->logInfo() << "\n\tDevice: " << g_DeviceType[ i->first ] << " Vendor: " << i->second;
+	}
 
 	m_keyBoard = ( Keyboard* ) m_inputManager->createInputObject( OISKeyboard, true );
 	m_keyBoard->setEventCallback( ( KeyListener* ) this );
@@ -270,18 +274,18 @@ ZazenOIS::initOIS( TiXmlElement* element )
 		{
 			m_joys[ i ] = ( JoyStick* )m_inputManager->createInputObject( OISJoyStick, true );
 			m_joys[ i ]->setEventCallback( this );
-			std::cout << "\n\nCreating Joystick " << ( i + 1 )
+			this->m_logger->logInfo() << "\n\nCreating Joystick " << ( i + 1 )
 				<< "\n\tAxes: " << m_joys[ i ]->getNumberOfComponents( OIS_Axis )
 				<< "\n\tSliders: " << m_joys[ i ]->getNumberOfComponents( OIS_Slider )
 				<< "\n\tPOV/HATs: " << m_joys[ i ]->getNumberOfComponents( OIS_POV )
 				<< "\n\tButtons: " << m_joys[ i ]->getNumberOfComponents( OIS_Button )
-				<< "\n\tVector3: " << m_joys[ i] ->getNumberOfComponents( OIS_Vector3 )
-				<< endl;
+				<< "\n\tVector3: " << m_joys[ i] ->getNumberOfComponents( OIS_Vector3 );
 		}
 	}
 	catch(OIS::Exception &ex)
 	{
-		std::cout << "\nException raised on joystick creation: " << ex.eText << std::endl;
+		this->m_logger->logError() << "\nException raised on joystick creation: " << ex.eText;
+		return false;
 	}
 
 	return true;
