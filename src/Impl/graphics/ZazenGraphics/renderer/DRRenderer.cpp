@@ -14,7 +14,7 @@
 
 #include "../ZazenGraphics.h"
 #include "../Geometry/GeomSkyBox.h"
-#include "../Program/UniformBlock.h"
+#include "../Program/UniformBlockManagement.h"
 
 #include <iostream>
 #include <algorithm>
@@ -219,31 +219,6 @@ DRRenderer::shutdown()
 		this->m_progSkyBox = NULL;
 	}
 
-	// cleaning up uniform blocks
-	if ( this->m_transformsBlock )
-	{
-		delete this->m_transformsBlock;
-		this->m_transformsBlock = NULL;
-	}
-
-	if ( this->m_cameraBlock )
-	{
-		delete this->m_cameraBlock;
-		this->m_cameraBlock = NULL;
-	}
-
-	if ( this->m_lightBlock )
-	{
-		delete this->m_lightBlock;
-		this->m_lightBlock = NULL;
-	}
-
-	if ( this->m_materialBlock )
-	{
-		delete this->m_materialBlock;
-		this->m_materialBlock = NULL;
-	}
-
 	FrameBufferObject::destroy( this->m_shadowMappingFB );
 
 	// cleaning up framebuffer
@@ -251,8 +226,6 @@ DRRenderer::shutdown()
 	
 	// deleting shadow-map pool
 	RenderTarget::cleanup();
-
-	GeomSkyBox::shutdown();
 
 	ZazenGraphics::getInstance().getLogger().logInfo( "Shutting down Deferred Renderer finished" );
 
@@ -502,9 +475,6 @@ DRRenderer::initLightingStage( const boost::filesystem::path& pipelinePath )
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Lighting-Stage..." );
 
-	//glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-	//glClearColor( 0.0, 0.0, 0.0, 1.0 );
-
 	this->m_progLightingStage = Program::createProgram( "LightingStageProgramm" );
 	if ( 0 == this->m_progLightingStage )
 	{
@@ -713,31 +683,31 @@ DRRenderer::initShadowMapping( const boost::filesystem::path& pipelinePath )
 bool
 DRRenderer::initUniformBlocks()
 {
-	this->m_transformsBlock = UniformBlock::createBlock( "transforms" );
-	if ( 0 == this->m_transformsBlock )
+	this->m_transformsBlock = UniformBlockManagement::get( "transforms" );
+	if ( NULL == this->m_transformsBlock )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: creating uniform block failed - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find transforms uniform-block - exit" );
 		return false;
 	}
 
-	this->m_cameraBlock = UniformBlock::createBlock( "camera" );
+	this->m_cameraBlock = UniformBlockManagement::get( "camera" );
 	if ( 0 == this->m_cameraBlock )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: creating uniform block failed - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find camera uniform-block - exit" );
 		return false;
 	}
 
-	this->m_lightBlock = UniformBlock::createBlock( "light" );
+	this->m_lightBlock = UniformBlockManagement::get( "light" );
 	if ( 0 == this->m_lightBlock )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: creating uniform block failed - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find light uniform-block - exit" );
 		return false;
 	}
 
-	this->m_materialBlock = UniformBlock::createBlock( "material" );
+	this->m_materialBlock = UniformBlockManagement::get( "material" );
 	if ( 0 == this->m_materialBlock )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: creating uniform block failed - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find material uniform-block - exit" );
 		return false;
 	}
 

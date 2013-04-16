@@ -183,6 +183,9 @@
     <ClCompile Include="texture\TextureFactory.cpp">
       <Filter>Quelldateien\texture</Filter>
     </ClCompile>
+    <ClCompile Include="program\UniformBlockManagement.cpp">
+      <Filter>Quelldateien\program</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ZazenGraphics.h">
@@ -266,6 +269,9 @@
     <ClInclude Include="texture\TextureFactory.h">
       <Filter>Headerdateien\texture</Filter>
     </ClInclude>
+    <ClInclude Include="program\UniformBlockManagement.h">
+      <Filter>Headerdateien\program</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag.glsl">
@@ -303,6 +309,12 @@
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxFrag.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\programConfig.xml">
+      <Filter>Ressourcendateien\Pipeline</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\uniformBlockConfig.xml">
+      <Filter>Ressourcendateien\Pipeline</Filter>
     </None>
   </ItemGroup>
 </Project>

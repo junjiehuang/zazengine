@@ -2,7 +2,7 @@
 
 <subSystem type="graphics" file="../bin/zaZenGraphics.dll">
   <window fullscreen="false" width="1024" height="768"/>
-  
+
   <pipeline path="../pipeline/"/>
   
   <modelData path="../media/models/"/>

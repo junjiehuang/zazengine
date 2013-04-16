@@ -35,7 +35,7 @@ Material::init( const filesystem::path& path )
 		return false;
 	}
 
-	TiXmlElement* rootNode = doc.FirstChildElement("materials");
+	TiXmlElement* rootNode = doc.FirstChildElement( "materials" );
 	if ( 0 == rootNode )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "root-node \"materials\" in " << fullFileName << " not found";

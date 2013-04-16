@@ -86,6 +86,7 @@
     <ClCompile Include="program\Program.cpp" />
     <ClCompile Include="program\Shader.cpp" />
     <ClCompile Include="program\UniformBlock.cpp" />
+    <ClCompile Include="program\UniformBlockManagement.cpp" />
     <ClCompile Include="renderer\DRRenderer.cpp" />
     <ClCompile Include="renderer\Renderer.cpp" />
     <ClCompile Include="scene\Instance.cpp" />
@@ -115,6 +116,7 @@
     <ClInclude Include="program\Program.h" />
     <ClInclude Include="program\Shader.h" />
     <ClInclude Include="program\UniformBlock.h" />
+    <ClInclude Include="program\UniformBlockManagement.h" />
     <ClInclude Include="renderer\DRRenderer.h" />
     <ClInclude Include="renderer\Renderer.h" />
     <ClInclude Include="scene\Instance.h" />
@@ -139,6 +141,8 @@
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpGeom.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpVert.glsl" />
+    <None Include="..\..\..\..\pipeline\programConfig.xml" />
+    <None Include="..\..\..\..\pipeline\uniformBlockConfig.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
