@@ -151,7 +151,7 @@ Program::bindUniformBlock( UniformBlock* block )
 		return false;
 	}
 
-	glUniformBlockBinding( this->m_programObject, index,  block->getBinding() );
+	glUniformBlockBinding( this->m_programObject, index, block->getBinding() );
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "Program::bindUniformBlock for programm " << this->m_programName << ": glUniformBlockBinding failed for name \"" << block->getName() << "\": " << gluErrorString( status );

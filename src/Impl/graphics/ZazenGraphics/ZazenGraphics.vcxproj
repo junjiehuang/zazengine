@@ -43,7 +43,7 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>libs/include/;../../../IFaces/;$(BOOST_PATH)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251;4275;</DisableSpecificWarnings>
-      <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions);CHECK_GL_ERRORS;</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -84,6 +84,7 @@
     <ClCompile Include="material\Material.cpp" />
     <ClCompile Include="orientation\Orientation.cpp" />
     <ClCompile Include="program\Program.cpp" />
+    <ClCompile Include="program\ProgramManagement.cpp" />
     <ClCompile Include="program\Shader.cpp" />
     <ClCompile Include="program\UniformBlock.cpp" />
     <ClCompile Include="program\UniformBlockManagement.cpp" />
@@ -114,6 +115,7 @@
     <ClInclude Include="material\Material.h" />
     <ClInclude Include="orientation\Orientation.h" />
     <ClInclude Include="program\Program.h" />
+    <ClInclude Include="program\ProgramManagement.h" />
     <ClInclude Include="program\Shader.h" />
     <ClInclude Include="program\UniformBlock.h" />
     <ClInclude Include="program\UniformBlockManagement.h" />
@@ -141,7 +143,9 @@
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpGeom.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpVert.glsl" />
-    <None Include="..\..\..\..\pipeline\programConfig.xml" />
+    <None Include="..\..\..\..\pipeline\programConfig.xml">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="..\..\..\..\pipeline\uniformBlockConfig.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -14,6 +14,7 @@
 
 #include "../ZazenGraphics.h"
 #include "../Geometry/GeomSkyBox.h"
+#include "../Program/ProgramManagement.h"
 #include "../Program/UniformBlockManagement.h"
 
 #include <iostream>
@@ -27,27 +28,13 @@ DRRenderer::DRRenderer()
 	: Renderer( )
 {
 	this->m_gBufferFbo = NULL;
+	this->m_shadowMappingFB = NULL;
 
 	this->m_progGeomStage = NULL;
-	this->m_vertGeomStage = NULL;
-	this->m_fragGeomStage = NULL;
-
 	this->m_progSkyBox = NULL;
-	this->m_vertSkyBox = NULL;
-	this->m_fragSkyBox = NULL;
-
 	this->m_progLightingStage = NULL;
-	this->m_vertLightingStage = NULL;
-	this->m_fragLightingStage = NULL;
-
 	this->m_progLightingNoShadowStage = NULL;
-	this->m_fragLightingNoShadowStage = NULL;
-
 	this->m_progShadowMapping = NULL;
-	this->m_vertShadowMapping = NULL;
-	this->m_fragShadowMapping = 0;
-
-	this->m_shadowMappingFB = NULL;
 
 	this->m_transformsBlock = NULL;
 	this->m_cameraBlock = NULL;
@@ -112,112 +99,6 @@ DRRenderer::shutdown()
 	ZazenGraphics::getInstance().getLogger().logInfo( "Shutting down Deferred Renderer..." );
 
 	Program::unuse();
-
-	// cleaning up shadow mapping
-	if ( this->m_progShadowMapping )
-	{
-		if ( this->m_vertShadowMapping )
-		{
-			this->m_progShadowMapping->detachShader( this->m_vertShadowMapping );
-
-			delete this->m_vertShadowMapping;
-			this->m_vertShadowMapping = NULL;
-		}
-
-		if ( this->m_fragShadowMapping )
-		{
-			this->m_progShadowMapping->detachShader( this->m_fragShadowMapping );
-
-			delete this->m_fragShadowMapping;
-			this->m_fragShadowMapping = NULL;
-		}
-
-		delete this->m_progShadowMapping;
-		this->m_progShadowMapping = NULL;
-	}
-
-	// cleaning up lighting stage
-	if ( this->m_progLightingStage )
-	{
-		if ( this->m_vertLightingStage )
-		{
-			this->m_progLightingStage->detachShader( this->m_vertLightingStage );
-
-			delete this->m_vertLightingStage;
-			this->m_vertLightingStage = NULL;
-		}
-
-		if ( this->m_fragLightingStage )
-		{
-			this->m_progLightingStage->detachShader( this->m_fragLightingStage );
-
-			delete this->m_fragLightingStage;
-			this->m_fragLightingStage = NULL;
-		}
-
-		delete this->m_progLightingStage;
-		this->m_progLightingStage = NULL;
-	}
-	
-	// cleaning up lighting stage
-	if ( this->m_progLightingNoShadowStage )
-	{
-		if ( this->m_fragLightingNoShadowStage )
-		{
-			this->m_progLightingNoShadowStage->detachShader( this->m_fragLightingNoShadowStage );
-
-			delete this->m_fragLightingNoShadowStage;
-			this->m_fragLightingNoShadowStage = NULL;
-		}
-
-		delete this->m_progLightingNoShadowStage;
-		this->m_progLightingNoShadowStage = NULL;
-	}
-
-	// cleaning up geometry-stage
-	if ( this->m_progGeomStage )
-	{
-		if ( this->m_vertGeomStage )
-		{
-			this->m_progGeomStage->detachShader( this->m_vertGeomStage );
-
-			delete this->m_vertGeomStage;
-			this->m_vertGeomStage = NULL;
-		}
-
-		if ( this->m_fragGeomStage )
-		{
-			this->m_progGeomStage->detachShader( this->m_fragGeomStage );
-
-			delete this->m_fragGeomStage;
-			this->m_fragGeomStage = NULL;
-		}
-
-		delete this->m_progGeomStage;
-		this->m_progGeomStage = NULL;
-	}
-
-	if ( this->m_progSkyBox )
-	{
-		if ( this->m_vertSkyBox )
-		{
-			this->m_progSkyBox->detachShader( this->m_vertSkyBox );
-
-			delete this->m_vertSkyBox;
-			this->m_vertSkyBox = NULL;
-		}
-
-		if ( this->m_fragSkyBox )
-		{
-			this->m_progSkyBox->detachShader( this->m_fragSkyBox );
-
-			delete this->m_fragSkyBox;
-			this->m_fragSkyBox = NULL;
-		}
-
-		delete this->m_progSkyBox;
-		this->m_progSkyBox = NULL;
-	}
 
 	FrameBufferObject::destroy( this->m_shadowMappingFB );
 
@@ -316,152 +197,17 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Geometry-Stage..." );
 
-	this->m_progGeomStage = Program::createProgram( "GeometryStageProgramm" );
+	this->m_progGeomStage = ProgramManagement::get( "GeometryStageProgramm" );
 	if ( 0 == this->m_progGeomStage )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't create program - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't get program - exit" );
 		return false;
 	}
 
-	this->m_progSkyBox = Program::createProgram( "SkyBoxProgram" );
+	this->m_progSkyBox = ProgramManagement::get( "SkyBoxProgram" );
 	if ( 0 == this->m_progSkyBox )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't create program - exit" );
-		return false;
-	}
-
-	this->m_vertGeomStage = Shader::createShader( Shader::VERTEX_SHADER, pipelinePath.generic_string() + "/dr/stages/geom/geomVert.glsl" );
-	if ( 0 == this->m_vertGeomStage )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't create vertex-shader - exit" );
-		return false;
-	}
-
-	this->m_fragGeomStage = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/geom/geomFrag.glsl" );
-	if ( 0 == this->m_fragGeomStage )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't create fragment-shader - exit" );
-		return false;
-	}
-
-	this->m_vertSkyBox = Shader::createShader( Shader::VERTEX_SHADER, pipelinePath.generic_string() + "/dr/stages/geom/skyBoxVert.glsl" );
-	if ( 0 == this->m_vertSkyBox )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't create fragment-shader - exit" );
-		return false;
-	}
-
-	this->m_fragSkyBox = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/geom/skyBoxFrag.glsl" );
-	if ( 0 == this->m_fragSkyBox )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't create fragment-shader - exit" );
-		return false;
-	}
-
-	if ( false == this->m_vertGeomStage->compile() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: vertex shader compilation failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_fragGeomStage->compile() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: fragment shader compilation failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_vertSkyBox->compile() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: vertex shader compilation failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_fragSkyBox->compile() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: fragment shader compilation failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progGeomStage->attachShader( this->m_vertGeomStage ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: attaching vertex shader to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progGeomStage->attachShader( this->m_fragGeomStage ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: attaching fragment shader to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progSkyBox->attachShader( this->m_vertSkyBox ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: attaching vertex shader to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progSkyBox->attachShader( this->m_fragSkyBox ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: attaching fragment shader to program failed - exit" );
-		return false;
-	}
-
-	// IMPORANT: setting frag-data location is done bevore linking, otherwise linking fails
-	if ( false == this->m_progGeomStage->bindFragDataLocation( 0, "out_diffuse" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: binding fragment-data location failed - exit" );
-		return false;
-	}
-	if ( false == this->m_progGeomStage->bindFragDataLocation( 1, "out_normal" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: binding fragment-data location failed - exit" );
-		return false;
-	}
-	if ( false == this->m_progGeomStage->bindFragDataLocation( 2, "out_position" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: binding fragment-data location failed - exit" );
-		return false;
-	}
-
-	// IMPORANT: setting frag-data location is done bevore linking, otherwise linking fails
-	// sky-box only writes diffuse-color
-	if ( false == this->m_progSkyBox->bindFragDataLocation( 0, "out_diffuse" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: binding fragment-data location failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progGeomStage->bindAttribLocation( 0, "in_vertPos" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: binding attribute location to program failed - exit" );
-		return false;
-	}
-	if ( false == this->m_progGeomStage->bindAttribLocation( 1, "in_vertNorm" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: binding attribute location to program failed - exit" );
-		return false;
-	}
-	if ( false == this->m_progGeomStage->bindAttribLocation( 2, "in_texCoord" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: binding attribute location to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progSkyBox->bindAttribLocation( 0, "in_vertPos" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: binding attribute location to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progGeomStage->link() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: linking program failed - exit" );
-		return false;
-	}
-	
-	if ( false == this->m_progSkyBox->link() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: linking program failed - exit" );
 		return false;
 	}
 
@@ -475,104 +221,17 @@ DRRenderer::initLightingStage( const boost::filesystem::path& pipelinePath )
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Lighting-Stage..." );
 
-	this->m_progLightingStage = Program::createProgram( "LightingStageProgramm" );
+	this->m_progLightingStage = ProgramManagement::get( "LightingStageProgramm" );
 	if ( 0 == this->m_progLightingStage )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: coulnd't create program - exit" );
 		return false;
 	}
 
-	this->m_progLightingNoShadowStage = Program::createProgram( "LightingNoShadowStageProgramm" );
+	this->m_progLightingNoShadowStage = ProgramManagement::get( "LightingNoShadowStageProgramm" );
 	if ( 0 == this->m_progLightingNoShadowStage )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: coulnd't create program - exit" );
-		return false;
-	}
-
-	this->m_vertLightingStage = Shader::createShader( Shader::VERTEX_SHADER, pipelinePath.generic_string() + "/dr/stages/lighting/lightVert.glsl" );
-	if ( 0 == this->m_vertLightingStage )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: coulnd't create vertex-shader - exit" );
-		return false;
-	}
-
-	this->m_fragLightingStage = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/lighting/lightFrag.glsl" );
-	if ( 0 == this->m_fragGeomStage )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: coulnd't create fragment-shader - exit" );
-		return false;
-	}
-
-	this->m_fragLightingNoShadowStage = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/lighting/lightNoShadowFrag.glsl" );
-	if ( 0 == this->m_fragGeomStage )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: coulnd't create fragment-shader - exit" );
-		return false;
-	}
-
-	if ( false == this->m_vertLightingStage->compile() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: vertex shader compilation failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_fragLightingStage->compile() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: fragment shader compilation failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_fragLightingNoShadowStage->compile() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: fragment shader compilation failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progLightingStage->attachShader( this->m_vertLightingStage ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: attaching vertex shader to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progLightingStage->attachShader( this->m_fragLightingStage ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: attaching fragment shader to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progLightingStage->bindAttribLocation( 0, "in_vertPos" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: binding attribute location to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progLightingStage->link() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: linking program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progLightingNoShadowStage->attachShader( this->m_vertLightingStage ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: attaching vertex shader to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progLightingNoShadowStage->attachShader( this->m_fragLightingNoShadowStage ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: attaching fragment shader to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progLightingNoShadowStage->bindAttribLocation( 0, "in_vertPos" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: binding attribute location to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progLightingNoShadowStage->link() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: linking program failed - exit" );
 		return false;
 	}
 
@@ -611,67 +270,10 @@ DRRenderer::initShadowMapping( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
-	this->m_progShadowMapping = Program::createProgram( "ShadowingStageProgramm" );
+	this->m_progShadowMapping = ProgramManagement::get( "ShadowingStageProgramm" );
 	if ( 0 == this->m_progShadowMapping )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: coulnd't create program - exit" );
-		return false;
-	}
-
-	this->m_vertShadowMapping = Shader::createShader( Shader::VERTEX_SHADER, pipelinePath.generic_string() + "/dr/stages/shadowing/shadowVert.glsl" );
-	if ( 0 == this->m_vertShadowMapping )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: coulnd't create vertex shader - exit" );
-		return false;
-	}
-
-	this->m_fragShadowMapping = Shader::createShader( Shader::FRAGMENT_SHADER, pipelinePath.generic_string() + "/dr/stages/shadowing/shadowFrag.glsl" );
-	if ( 0 == this->m_fragShadowMapping )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: coulnd't create fragment shader - exit" );
-		return false;
-	}
-
-	if ( false == this->m_vertShadowMapping->compile() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: vertex shader compilation failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_fragShadowMapping->compile() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: fragment shader compilation failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progShadowMapping->attachShader( this->m_vertShadowMapping ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: attaching vertex shader to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progShadowMapping->attachShader( this->m_fragShadowMapping ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: attaching fragment shader to program failed - exit" );
-		return false;
-	}
-
-	// IMPORANT: setting frag-data location is done bevore linking, otherwise linking fails
-	if ( false == this->m_progShadowMapping->bindFragDataLocation( 0, "fragDepth" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: binding fragment-data location failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progShadowMapping->bindAttribLocation( 0, "in_vertPos" ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: binding attribute location to program failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_progShadowMapping->link() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: linking program failed - exit" );
 		return false;
 	}
 
@@ -711,62 +313,6 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
-	// bind transformation-data to all programs
-	if ( false == this->m_progShadowMapping->bindUniformBlock( this->m_transformsBlock ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: failed binding uniform block - exit" );
-		return false;
-	}
-	if ( false == this->m_progSkyBox->bindUniformBlock( this->m_transformsBlock ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: failed binding uniform block - exit" );
-		return false;
-	}
-	if ( false == this->m_progGeomStage->bindUniformBlock( this->m_transformsBlock ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: failed binding uniform block - exit" );
-		return false;
-	}
-	if ( false == this->m_progLightingStage->bindUniformBlock( this->m_transformsBlock ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: failed binding uniform block - exit" );
-		return false;
-	}
-	if ( false == this->m_progLightingNoShadowStage->bindUniformBlock( this->m_transformsBlock ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: failed binding uniform block - exit" );
-		return false;
-	}
-
-	// lighting-data & camera-data go just to lighting stage program
-	if ( false == this->m_progLightingStage->bindUniformBlock( this->m_lightBlock ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: failed binding uniform block - exit" );
-		return false;
-	}
-	if ( false == this->m_progLightingStage->bindUniformBlock( this->m_cameraBlock ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: failed binding uniform block - exit" );
-		return false;
-	}
-	if ( false == this->m_progLightingNoShadowStage->bindUniformBlock( this->m_lightBlock ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: failed binding uniform block - exit" );
-		return false;
-	}
-	if ( false == this->m_progLightingNoShadowStage->bindUniformBlock( this->m_cameraBlock ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: failed binding uniform block - exit" );
-		return false;
-	}
-
-	// material-data just go to geometry-stage program
-	if ( false == this->m_progGeomStage->bindUniformBlock( this->m_materialBlock ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: failed binding uniform block - exit" );
-		return false;
-	}
-
 	/* IMPORTANT: found this in forums: 
 		On ATI hardware, you have to call
 
@@ -789,17 +335,17 @@ DRRenderer::initUniformBlocks()
 	}
 	if ( false == this->m_cameraBlock->bind() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding camera uniform-block failed - exit" );
 		return false;
 	}
 	if ( false == this->m_lightBlock->bind() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding light uniform-block failed - exit" );
 		return false;
 	}
 	if ( false == this->m_materialBlock->bind() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding material uniform-block failed - exit" );
 		return false;
 	}
 

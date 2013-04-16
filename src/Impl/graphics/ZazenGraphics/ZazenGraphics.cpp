@@ -7,6 +7,7 @@
 
 #include "ZazenGraphics.h"
 
+#include "Program/ProgramManagement.h"
 #include "Program/UniformBlockManagement.h"
 
 #include "Geometry/GeometryFactory.h"
@@ -86,7 +87,7 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 	}
 
 	UniformBlockManagement::init( this->m_pipelinePath );
-
+	ProgramManagement::init( this->m_pipelinePath );
 	TextureFactory::init( this->m_textureDataPath );
 
 	GeometryFactory::setDataPath( this->m_modelDataPath );
@@ -125,6 +126,7 @@ ZazenGraphics::shutdown()
 	GeometryFactory::freeAll();
 	GeomSkyBox::shutdown();
 	UniformBlockManagement::freeAll();
+	ProgramManagement::freeAll();
 
 	if ( NULL != this->m_renderer )
 	{

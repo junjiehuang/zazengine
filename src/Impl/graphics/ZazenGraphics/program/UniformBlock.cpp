@@ -77,7 +77,6 @@ UniformBlock::bind()
 	return true;
 }
 
-
 bool
 UniformBlock::bindBuffer()
 {

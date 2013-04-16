@@ -17,8 +17,7 @@ class Shader
 	public:
 		enum ShaderType {
 			VERTEX_SHADER,
-			FRAGMENT_SHADER,
-			GEOMETRY_SHADER
+			FRAGMENT_SHADER
 		};
 
 		static Shader* createShader( Shader::ShaderType type, const std::string& file );

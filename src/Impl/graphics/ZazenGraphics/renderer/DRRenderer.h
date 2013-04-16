@@ -36,29 +36,19 @@ class DRRenderer : public Renderer
 
 		// Program and shaders for geometry-stage
 		Program* m_progGeomStage;
-		Shader* m_vertGeomStage;
-		Shader* m_fragGeomStage;
-
 		Program* m_progSkyBox;
-		Shader* m_vertSkyBox;
-		Shader* m_fragSkyBox;
 		////////////////////////////////////////
 
 		// Program and shaders for lighting-stage with shadowing
 		Program* m_progLightingStage;
-		Shader* m_vertLightingStage;
-		Shader* m_fragLightingStage;
 		////////////////////////////////////////
 
 		// Program and shaders for lighting-stage withOUT shadowing
 		Program* m_progLightingNoShadowStage;
-		Shader* m_fragLightingNoShadowStage;
 		////////////////////////////////////////
 
 		// Program and shaders for shadow-mapping
 		Program* m_progShadowMapping;
-		Shader* m_vertShadowMapping;
-		Shader* m_fragShadowMapping;
 
 		FrameBufferObject* m_shadowMappingFB;
 		////////////////////////////////////////
