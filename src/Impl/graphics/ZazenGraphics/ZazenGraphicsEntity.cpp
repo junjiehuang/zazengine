@@ -33,7 +33,6 @@ ZazenGraphicsEntity::~ZazenGraphicsEntity()
 {
 }
 
-
 void
 ZazenGraphicsEntity::postPositionChangedEvent()
 {

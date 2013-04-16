@@ -7,6 +7,8 @@
 
 #include "Material.h"
 
+#include "../ZazenGraphics.h"
+
 #include "../Texture/TextureFactory.h"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -29,14 +31,14 @@ Material::init( const filesystem::path& path )
 
 	if ( false == doc.LoadFile() )
 	{
-		cout << "ERROR ... could not load file " << fullFileName << " - reason = " << doc.ErrorDesc() << " at row = " << doc.ErrorRow() << " col = " << doc.ErrorCol() << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "could not load file " << fullFileName << " - reason = " << doc.ErrorDesc() << " at row = " << doc.ErrorRow() << " col = " << doc.ErrorCol();
 		return false;
 	}
 
 	TiXmlElement* rootNode = doc.FirstChildElement("materials");
 	if ( 0 == rootNode )
 	{
-		cout << "ERROR ... root-node \"materials\" in " << fullFileName << " not found" << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "root-node \"materials\" in " << fullFileName << " not found";
 		return false;
 	}
 
@@ -55,7 +57,7 @@ Material::init( const filesystem::path& path )
 			str = materialNode->Attribute( "name" );
 			if ( 0 == str )
 			{
-				cout << "No name for material - will be ignored" << endl;
+				ZazenGraphics::getInstance().getLogger().logWarning( "No name for material - will be ignored" );
 				continue;
 			}
 			else
@@ -63,17 +65,17 @@ Material::init( const filesystem::path& path )
 				name = str;
 			}
 
-			TiXmlElement* materialTypeNode = materialNode->FirstChildElement("type");
+			TiXmlElement* materialTypeNode = materialNode->FirstChildElement( "type" );
 			if ( 0 == materialTypeNode )
 			{
-				cout << "ERROR ... node \"type\" for material " << name << " not found" << endl;
+				ZazenGraphics::getInstance().getLogger().logWarning() << "node \"type\" for material " << name << " not found";
 				return false;
 			}
 
 			str = materialTypeNode->Attribute( "id" );
 			if ( 0 == str )
 			{
-				cout << "No name for material - will be ignored" << endl;
+				ZazenGraphics::getInstance().getLogger().logWarning( "No id for material-type - will be ignored" );
 				continue;
 			}
 			else
@@ -187,10 +189,12 @@ Material*
 Material::get( const std::string& name )
 {
 	map<string, Material*>::iterator findIter = Material::allMaterials.find( name );
-	if (findIter != Material::allMaterials.end())
+	if ( findIter != Material::allMaterials.end() )
+	{
 		return findIter->second;
+	}
 
-	return 0;
+	return NULL;
 }
 
 bool

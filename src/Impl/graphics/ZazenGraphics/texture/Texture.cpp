@@ -9,6 +9,8 @@
 
 #include "Texture.h"
 
+#include "../ZazenGraphics.h"
+
 #include <iostream>
 
 using namespace std;
@@ -37,7 +39,7 @@ Texture::bind( int textureUnit )
 		GLenum status;
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
-			cout << "ERROR ... in Texture::bind: failed glActiveTexture with " << gluErrorString( status ) << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "Zexture::bind: failed glActiveTexture with " << gluErrorString( status );
 			return false;
 		}
 #endif
@@ -53,7 +55,7 @@ Texture::bind( int textureUnit )
 		GLenum status;
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
-			cout << "ERROR ... in Texture::bind: failed glBindTexture with " << gluErrorString( status ) << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "Texture::bind: failed glBindTexture with " << gluErrorString( status );
 			return false;
 		}
 #endif
@@ -67,7 +69,7 @@ Texture::bind( int textureUnit )
 		GLenum status;
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
-			cout << "ERROR ... in Texture::bind: failed glBindTexture with " << gluErrorString( status ) << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "Texture::bind: failed glBindTexture with " << gluErrorString( status );
 			return false;
 		}
 #endif

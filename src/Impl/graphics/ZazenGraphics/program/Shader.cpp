@@ -7,6 +7,8 @@
 
 #include "Shader.h"
 
+#include "../ZazenGraphics.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -31,7 +33,7 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 		shaderObject = glCreateShader( GL_VERTEX_SHADER );
 		if (0 == shaderObject )
 		{
-			cout << "ERROR ... in Shader::createShader: glCreateShader for GL_VERTEX_SHADER \"" << file << "\" failed with " << gluErrorString( glGetError() ) << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_VERTEX_SHADER \"" << file << "\" failed with " << gluErrorString( glGetError() );
 			return 0;
 		}
 	}
@@ -40,16 +42,16 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 		shaderObject = glCreateShader( GL_FRAGMENT_SHADER );
 		if ( 0 == shaderObject )
 		{
-			cout << "ERROR ... in Shader::createShader: glCreateShader for GL_FRAGMENT_SHADER \"" << file << "\" failed with " << gluErrorString( glGetError() ) << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_FRAGMENT_SHADER \"" << file << "\" failed with " << gluErrorString( glGetError() );
 			return 0;
 		}
 	}
 	else if ( Shader::GEOMETRY_SHADER == type )
 	{
-		shaderObject = glCreateShader( GL_GEOMETRY_SHADER_EXT );
+		shaderObject = glCreateShader( GL_GEOMETRY_SHADER );
 		if ( 0 == shaderObject )
 		{
-			cout << "ERROR ... in Shader::createShader: glCreateShader for GL_GEOMETRY_SHADER_EXT \"" << file << "\" failed with " << gluErrorString( glGetError() ) << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_GEOMETRY_SHADER_EXT \"" << file << "\" failed with " << gluErrorString( glGetError() );
 			return 0;
 		}
 	}
@@ -59,7 +61,7 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "ERROR ... Shader::createShader: glShaderSource for \"" << file << "\" failed with " << gluErrorString( status ) << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glShaderSource for \"" << file << "\" failed with " << gluErrorString( status );
 		return 0;
 	}
 
@@ -94,7 +96,9 @@ Shader::printInfoLog()
 		glGetShaderInfoLog( this->m_shaderObject , infoLogLen, &charsWritten, infoLog );
 
 	    if ( charsWritten )
-	    	cout << infoLog << endl;
+		{
+	    	ZazenGraphics::getInstance().getLogger().logError( infoLog );
+		}
 
 	    free( infoLog );
 	}
@@ -109,7 +113,7 @@ Shader::compile()
 	glGetShaderiv( this->m_shaderObject, GL_COMPILE_STATUS, &status );
 	if ( GL_TRUE != status )
 	{
-		cout << "ERROR ... in Shader::compile for shader " << this->m_fileName << ": failed compilation of shader. Error-Log:" << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "Shader::compile for shader " << this->m_fileName << ": failed compilation of shader. Error-Log:";
 		this->printInfoLog();
 		return false;
 	}
@@ -125,13 +129,15 @@ Shader::readShaderSource( const string& file, string& shaderSource )
 
 	if ( 0 != fopen_s( &shaderSourceFile, fullFileName.c_str(), "r" ) )
 	{
-		cout << "ERROR ... in Shader::readShaderSource: couldn't open Shadersource-File " << fullFileName << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "Shader::readShaderSource: couldn't open Shadersource-File " << fullFileName;
 		return false;
 	}
 
 	char c;
 	while ( EOF != ( c = fgetc( shaderSourceFile ) ) )
+	{
 		shaderSource += c;
+	}
 
 	fclose( shaderSourceFile );
 

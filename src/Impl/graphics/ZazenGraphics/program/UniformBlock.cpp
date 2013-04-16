@@ -7,6 +7,8 @@
 
 #include "UniformBlock.h"
 
+#include "../ZazenGraphics.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
@@ -30,7 +32,7 @@ UniformBlock::createBlock( const std::string& name )
 	status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "UniformBlock::createBlock: glGenBuffers failed for name \"" << name << "\": " << gluErrorString( status )  << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::createBlock: glGenBuffers failed for name \"" << name << "\": " << gluErrorString( status );
 		return 0;
 	}
 
@@ -61,14 +63,13 @@ UniformBlock::~UniformBlock()
 bool
 UniformBlock::bind()
 {
-	
 	glBindBufferBase( GL_UNIFORM_BUFFER, this->m_binding, this->m_id );
 	
 #ifdef CHECK_GL_ERRORS
 	GLint status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "UniformBlock::bind: glBindBufferBase failed for name \"" << this->m_name << "\": " << gluErrorString( status )  << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::bind: glBindBufferBase failed for name \"" << this->m_name << "\": " << gluErrorString( status );
 		return false;
 	}
 #endif
@@ -88,7 +89,7 @@ UniformBlock::bindBuffer()
 		GLint status = glGetError();
 		if ( GL_NO_ERROR != status )
 		{
-			cout << "UniformBlock::bindBuffer: glBindBuffer failed for name \"" << this->m_name << "\": " << gluErrorString( status )  << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::bindBuffer: glBindBuffer failed for name \"" << this->m_name << "\": " << gluErrorString( status );
 			return false;
 		}
 #endif
@@ -108,7 +109,7 @@ UniformBlock::updateData( const void* data, int offset, int size )
 	GLint status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\": " << gluErrorString( status )  << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\": " << gluErrorString( status );
 		return false;
 	}
 #endif
@@ -125,7 +126,7 @@ UniformBlock::updateData( const void* data, int size )
 	GLint status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		cout << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\": " << gluErrorString( status )  << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\": " << gluErrorString( status );
 		return false;
 	}
 #endif

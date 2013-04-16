@@ -1,7 +1,3 @@
-Implement logging to file
-	-> replace ALL cout with corresponding log-calls
-	-> move from console-application to pure windows-app => no more console shows up => debugging through log-file
-
 Program- & Shader-Management
 	-> describe by xml, is VERY annoying to manually set up in program-code
 	-> frag-data location

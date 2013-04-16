@@ -1,5 +1,7 @@
 #include "RenderTarget.h"
 
+#include "../ZazenGraphics.h"
+
 #include <iostream>
 
 using namespace std;
@@ -26,14 +28,14 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 	glGenTextures( 1, &id );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
-		cout << "ERROR in RenderTarget::create: glGenTextures failed with " << gluErrorString( status ) << " - exit" << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glGenTextures failed with " << gluErrorString( status ) << " - exit";
 		return NULL;
 	}
 
 	glBindTexture( GL_TEXTURE_2D, id );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
-		cout << "ERROR in RenderTarget::create: glBindTexture failed with " << gluErrorString( status ) << " - exit" << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glBindTexture failed with " << gluErrorString( status ) << " - exit";
 		return NULL;
 	}
 
@@ -54,7 +56,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
-			cout << "ERROR in Light::createShadowMap: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for depth failed with " << gluErrorString( status ) << " - exit";
 			return NULL;
 		}
 
@@ -78,7 +80,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
-			cout << "ERROR in Light::createShadowMap: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for shadow failed with " << gluErrorString( status ) << " - exit";
 			return NULL;
 		}
 
@@ -96,7 +98,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL );
 		if ( GL_NO_ERROR != ( status = glGetError() )  )
 		{
-			cout << "ERROR in RenderTarget::create: glTexImage2D failed with " << gluErrorString( status ) << " - exit" << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for color failed with " << gluErrorString( status ) << " - exit";
 			return NULL;
 		}
 
@@ -104,7 +106,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 	}
 	else
 	{
-		cout << "ERROR in RenderTarget::create: unsupported RenderTarget-Type - exit" << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderTarget::create: unsupported RenderTarget-Type - exit" );
 		return NULL;
 	}
 

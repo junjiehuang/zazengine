@@ -1,5 +1,7 @@
 #include "FrameBufferObject.h"
 
+#include "../ZazenGraphics.h"
+
 #include <iostream>
 
 #include <assert.h>
@@ -16,7 +18,7 @@ FrameBufferObject::create()
 	glGenFramebuffers( 1, &id );
 	if ( GL_NO_ERROR != ( status = glGetError() )  )
 	{
-		cout << "ERROR in FrameBufferObject::create: glGenFramebuffers failed with " << gluErrorString( status ) << " - exit" << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::create: glGenFramebuffers failed with " << gluErrorString( status ) << " - exit";
 		return false;
 	}
 
@@ -106,7 +108,7 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 		GLenum status;
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
-			cout << "ERROR in FrameBufferObject::attachTargetTemp DEPTH: glFramebufferTexture failed with " << gluErrorString( status ) << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::attachTargetTemp DEPTH: glFramebufferTexture failed with " << gluErrorString( status );
 			return false;
 		}
 #endif
@@ -121,7 +123,7 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 		GLenum status;
 		if ( GL_NO_ERROR != ( status = glGetError() ) )
 		{
-			cout << "ERROR in FrameBufferObject::attachTargetTemp COLOR: glFramebufferTexture failed with " << gluErrorString( status ) << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::attachTargetTemp COLOR: glFramebufferTexture failed with " << gluErrorString( status );
 			return false;
 		}
 #endif
@@ -140,7 +142,7 @@ FrameBufferObject::bind()
 	GLenum status;
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "ERROR in FrameBufferObject::bind: glBindFramebuffer failed with " << gluErrorString( status ) << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::bind: glBindFramebuffer failed with " << gluErrorString( status );
 		return false;
 	}
 #endif
@@ -159,7 +161,7 @@ FrameBufferObject::unbind()
 
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "ERROR in FrameBufferObject::unbind: glBindFramebuffer( 0 ) failed with " << gluErrorString( status ) << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::unbind: glBindFramebuffer( 0 ) failed with " << gluErrorString( status );
 		return false;
 	}
 #endif
@@ -192,7 +194,7 @@ FrameBufferObject::drawAllBuffers()
 	GLenum status;
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "ERROR in FrameBufferObject::drawAllBuffers: glDrawBuffers failed with " << gluErrorString( status ) << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::drawAllBuffers: glDrawBuffers failed with " << gluErrorString( status );
 		return false;
 	}
 #endif
@@ -210,7 +212,7 @@ FrameBufferObject::drawBuffer( unsigned int index )
 	GLenum status;
 	if ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		cout << "ERROR in FrameBufferObject::drawBuffer: glDrawBuffer failed with " << gluErrorString( status ) << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::drawBuffer: glDrawBuffer failed with " << gluErrorString( status );
 		return false;
 	}
 #endif
@@ -255,35 +257,35 @@ FrameBufferObject::checkStatus()
 	}
 	else if ( GL_FRAMEBUFFER_UNSUPPORTED == status )
 	{
-		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_UNSUPPORTED" << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "FrameBufferObject::checkStatus: GL_FRAMEBUFFER_UNSUPPORTED" );
 	}
 	else if ( GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT == status )
 	{
-		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT" << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT" );
 	}
 	else if ( GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT == status )
 	{
-		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT" << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT" );
 	}
 	else if ( GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT == status )
 	{
-		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT" << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT" );
 	}
 	else if ( GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT == status )
 	{
-		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT" << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT" );
 	}
 	else if ( GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER == status )
 	{
-		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER" << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER" );
 	}
 	else if ( GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER == status )
 	{
-		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER" << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER" );
 	}
 	 else if ( GL_FRAMEBUFFER_BINDING == status )
 	{
-		cout << "ERROR ... in FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER" << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER" );
 	}
 	
 	return false;

@@ -10,6 +10,8 @@
 
 #include "GeomMesh.h"
 
+#include "../ZazenGraphics.h"
+
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 
@@ -41,7 +43,7 @@ GeometryFactory::get( const std::string& fileName )
 	filesystem::path fullFileName( GeometryFactory::modelDataPath.generic_string() + fileName );
 	if ( ! filesystem::exists( fullFileName ) )
 	{
-		cout << "ERROR ... in GeometryFactory::get: file \"" << fullFileName << "\" does not exist" << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "GeometryFactory::get: file \"" << fullFileName << "\" does not exist";
 		return 0;	
 	}
 
@@ -200,7 +202,7 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 	glm::vec3 geomGroupBBmin;
 	glm::vec3 geomGroupBBmax;
 
-	cout << "LOADING ... " << filePath << endl;
+	ZazenGraphics::getInstance().getLogger().logInfo() << "LOADING ... " << filePath;
 
 	const std::string& fileName = filePath.generic_string();
 
@@ -218,7 +220,7 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 		| aiProcess_OptimizeGraph );
 	if ( NULL == scene )
 	{
-		cout << "ERROR ... in GeometryFactory::loadFile: AssetImporter failed loading the file with error: " << aiGetErrorString() << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "GeometryFactory::loadFile: AssetImporter failed loading the file with error: " << aiGetErrorString();
 		return 0;
 	}
 
@@ -231,8 +233,8 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 
 	aiReleaseImport( scene );
 
-	cout << "LOADED ... " << filePath << endl;
-    
+	ZazenGraphics::getInstance().getLogger().logInfo() << "LOADED ... " << filePath;
+
     return geomRoot;
 }
 

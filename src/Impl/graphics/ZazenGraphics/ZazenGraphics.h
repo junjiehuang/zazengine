@@ -51,7 +51,7 @@ class ZazenGraphics : public IGraphics
 		ZazenGraphicsEntity* createEntity( TiXmlElement*, IGameObject* parent );
 
 		ICore& getCore() { return *this->m_core; };
-		const ILogger& getLogger() const { return *this->m_logger; };
+		ILogger& getLogger() const { return *this->m_logger; };
 
 		Viewer& getCamera() { return *this->m_camera; };
 

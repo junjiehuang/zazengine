@@ -3,6 +3,8 @@
 #include <GL/glew.h>
 #include <GL/wglew.h>
 
+#include "../ZazenGraphics.h"
+
 #include <iostream>
 #include <vector>
 
@@ -96,7 +98,7 @@ RenderingContext::registerClass( HINSTANCE hInstance )
 
 	if ( 0 == RegisterClass( &wc ) )
 	{
-		cout << "ERROR ... in RenderingContext::registerClass: Failed To Register The Window Class." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::registerClass: Failed To Register The Window Class." );
 		return false;
 	}
 
@@ -133,7 +135,7 @@ RenderingContext::createWindow( int width, int height, bool fullScreenFlag, cons
 		// Try To Set Selected Mode And Get Results.  NOTE: CDS_FULLSCREEN Gets Rid Of Start Bar.
 		if ( ChangeDisplaySettings( &dmScreenSettings, CDS_FULLSCREEN ) != DISP_CHANGE_SUCCESSFUL )
 		{
-			cout << "WARNING ... in RenderingContext::createWindow: The Requested Fullscreen Mode Is Not Supported By Your Video Card, fallback to windowed mode." << endl;
+			ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createWindow: The Requested Fullscreen Mode Is Not Supported By Your Video Card, fallback to windowed mode." );
 			fullScreenFlag = false;
 		}
 	}
@@ -169,7 +171,7 @@ RenderingContext::createWindow( int width, int height, bool fullScreenFlag, cons
 								NULL ); 
 	if ( NULL == hWnd )
 	{
-		cout << "ERROR ... in RenderingContext::createWindow: Failed To Register The Window Class." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createWindow: Failed To Register The Window Class." );
 		return false;
 	}
 
@@ -179,7 +181,7 @@ RenderingContext::createWindow( int width, int height, bool fullScreenFlag, cons
 	hDC = GetDC( RenderingContext::instance->hWnd );
 	if ( NULL == hDC )
 	{
-		cout << "ERROR ... in RenderingContext::createWindow: Can't Create A GL Device Context." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createWindow: Can't Create A GL Device Context." );
 		return false;
 	}
 
@@ -222,20 +224,20 @@ RenderingContext::createBaseRenderingContext()
 	pixelFormat = ChoosePixelFormat( RenderingContext::instance->hDC, &pfd );
 	if ( 0 == pixelFormat )
 	{
-		cout << "ERROR ... in RenderingContext::createBaseRenderingContext: Can't Find A Suitable PixelFormat." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createBaseRenderingContext: Can't Find A Suitable PixelFormat." );
 		return false;
 	}
 
 	if ( false == SetPixelFormat( RenderingContext::instance->hDC, pixelFormat, &pfd ) )
 	{
-		cout << "ERROR ... in RenderingContext::createBaseRenderingContext: Can't Set The PixelFormat." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createBaseRenderingContext: Can't Set The PixelFormat." );
 		return false;
 	}
 
 	HGLRC hRC = wglCreateContext( RenderingContext::instance->hDC );
 	if ( NULL == hRC )
 	{
-		cout << "ERROR ... in RenderingContext::createBaseRenderingContext: Can't Create A GL Rendering Context." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createBaseRenderingContext: Can't Create A GL Rendering Context." );
 		return false;
 	}
 
@@ -243,7 +245,7 @@ RenderingContext::createBaseRenderingContext()
 
 	if( 0 == wglMakeCurrent( RenderingContext::instance->hDC, RenderingContext::instance->hRC ) )
 	{
-		cout << "ERROR ... in RenderingContext::createBaseRenderingContext: Can't Activate The GL Rendering Context." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createBaseRenderingContext: Can't Activate The GL Rendering Context." );
 		return false;
 	}
 
@@ -251,7 +253,7 @@ RenderingContext::createBaseRenderingContext()
 	GLenum err = glewInit();
 	if ( GLEW_OK != err )
 	{
-		cout << "ERROR ... in RenderingContext::createBaseRenderingContext: GLEW failed with " <<  glewGetErrorString( err ) << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "RenderingContext::createBaseRenderingContext: GLEW failed with " <<  glewGetErrorString( err );
 		return false;
 	}
 
@@ -294,27 +296,27 @@ RenderingContext::createCoreRenderingContext()
 	if ( 0 == wglChoosePixelFormatARB( RenderingContext::instance->hDC, iPixelFormatAttribList, NULL, 
 		1, &iPixelFormat, ( UINT* ) &iNumFormats ) )
 	{
-		cout << "ERROR ... in RenderingContext::createCoreRenderingContext: Failed choosing pixel format." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createCoreRenderingContext: Failed choosing pixel format." );
 		return false;
 	}
 
 	if ( false == SetPixelFormat( RenderingContext::instance->hDC, iPixelFormat, &pfd ) )
 	{
-		cout << "ERROR ... in RenderingContext::createWindow: Can't Set The PixelFormat." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createWindow: Can't Set The PixelFormat." );
 		return false;
 	}
 
 	hRC = wglCreateContextAttribsARB( RenderingContext::instance->hDC, 0, static_cast<int*>( &attribs[0] ) );
 	if ( NULL == hRC )
 	{
-		cout << "ERROR ... in RenderingContext::createCoreRenderingContext: Can't Create A GL Rendering Context." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createCoreRenderingContext: Can't Create A GL Rendering Context." );
 		return false;
 	}
 
 	// destroy base-context before switching to new core-context
 	if ( false == RenderingContext::destroyRenderingContext() )
 	{
-		cout << "ERROR ... in RenderingContext::createCoreRenderingContext: Couldn't delete base-context." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createCoreRenderingContext: Couldn't delete base-context." );
 		return false;
 	}
 
@@ -322,7 +324,7 @@ RenderingContext::createCoreRenderingContext()
 
 	if( 0 == wglMakeCurrent( RenderingContext::instance->hDC, RenderingContext::instance->hRC ) )
 	{
-		cout << "ERROR ... in RenderingContext::createCoreRenderingContext: Can't Activate The GL Rendering Context." << endl;
+		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createCoreRenderingContext: Can't Activate The GL Rendering Context." );
 		return false;
 	}
 	
@@ -330,7 +332,7 @@ RenderingContext::createCoreRenderingContext()
 	GLenum err = glewInit();
 	if ( GLEW_OK != err )
 	{
-		cout << "ERROR ... in RenderingContext::createCoreRenderingContext: GLEW failed with " <<  glewGetErrorString( err ) << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "RenderingContext::createCoreRenderingContext: GLEW failed with " << glewGetErrorString( err );
 		return false;
 	}
 
@@ -344,7 +346,7 @@ RenderingContext::unregisterClass()
 	{
 		if ( 0 == UnregisterClass( "OpenGL", RenderingContext::instance->hInstance ) )
 		{
-			cout << "WARNING ... in RenderingContext::unregisterClass: Could Not Unregister Class." << endl;		
+			ZazenGraphics::getInstance().getLogger().logWarning( "RenderingContext::unregisterClass: Could Not Unregister Class." );		
 		}
 
 		RenderingContext::instance->hInstance = NULL;
@@ -360,12 +362,12 @@ RenderingContext::destroyRenderingContext()
 	{
 		if ( 0 == wglMakeCurrent( NULL, NULL ) )	
 		{
-			cout << "WARNING ... in RenderingContext::destroyRenderingContext: wglMakeCurrent failed." << endl;
+			ZazenGraphics::getInstance().getLogger().logWarning( "RenderingContext::destroyRenderingContext: wglMakeCurrent failed." );
 		}
 
 		if ( 0 == wglDeleteContext( RenderingContext::instance->hRC ) )
 		{
-			cout << "WARNING ... in RenderingContext::destroyRenderingContext: wglDeleteContext failed." << endl;
+			ZazenGraphics::getInstance().getLogger().logWarning( "RenderingContext::destroyRenderingContext: wglDeleteContext failed." );
 		}
 
 		RenderingContext::instance->hRC = NULL;
@@ -381,7 +383,7 @@ RenderingContext::destroyWindow()
 	{
 		if ( 0 == ReleaseDC( RenderingContext::instance->hWnd,RenderingContext::instance->hDC ) )
 		{
-			cout << "WARNING ... in RenderingContext::destroyWindow: Release Device Context Failed." << endl;
+			ZazenGraphics::getInstance().getLogger().logWarning( "RenderingContext::destroyWindow: Release Device Context Failed." );
 		}
 
 		RenderingContext::instance->hDC = NULL;
@@ -398,7 +400,7 @@ RenderingContext::destroyWindow()
 
 		if ( 0 == DestroyWindow( RenderingContext::instance->hWnd ) )
 		{
-			cout << "WARNING ... in RenderingContext::destroyWindow: Destroy Window Failed." << endl;
+			ZazenGraphics::getInstance().getLogger().logWarning( "RenderingContext::destroyWindow: Destroy Window Failed." );
 		}
 
 		RenderingContext::instance->hWnd = NULL;

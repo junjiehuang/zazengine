@@ -9,6 +9,8 @@
 
 #include "TextureFactory.h"
 
+#include "../ZazenGraphics.h"
+
 #include <iostream>
 
 using namespace std;
@@ -39,13 +41,13 @@ TextureFactory::get( const std::string& file )
 
 	if ( false == filesystem::exists( fullFileName ) )
 	{
-		cout << "ERROR ... in Texture::get: file for texture " << fullFileName << " does not exist" << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "Texture::get: file for texture " << fullFileName << " does not exist";
 		return NULL;
 	}
 
 	if ( filesystem::is_directory( fullFileName ) )
 	{
-		cout << "ERROR ... in Texture::get: file for texture " << fullFileName << " is a directory" << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "Texture::get: file for texture " << fullFileName << " is a directory";
 		return NULL;
 	}
 
@@ -61,7 +63,7 @@ TextureFactory::get( const std::string& file )
 		return NULL;
 	}
 
-	cout << "INFO ... successfully loaded texture from " << fullFileName << endl;
+	ZazenGraphics::getInstance().getLogger().logInfo() << "successfully loaded texture from " << fullFileName;
 
 	Texture* newTexture = new Texture( textureID, Texture::TEXTURE_2D );
 	
@@ -83,13 +85,13 @@ TextureFactory::getCube( const boost::filesystem::path& cubeMapPath, const std::
 
 	if ( false == filesystem::exists( fullFileName ) )
 	{
-		cout << "ERROR ... in Texture::getCube: file for texture " << fullFileName << " does not exist" << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "Texture::getCube: file for texture " << fullFileName << " does not exist";
 		return NULL;
 	}
 
 	if ( false == filesystem::is_directory( fullFileName ) )
 	{
-		cout << "ERROR ... in Texture::getCube: file for texture " << fullFileName << " is NOT a directory" << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "Texture::getCube: file for texture " << fullFileName << " is NOT a directory";
 		return NULL;
 	}
 
@@ -114,7 +116,7 @@ TextureFactory::getCube( const boost::filesystem::path& cubeMapPath, const std::
 		return NULL;
 	}
 
-	cout << "INFO ... successfully loaded texture from " << fullFileName << endl;
+	ZazenGraphics::getInstance().getLogger().logInfo() << "successfully loaded cube-texture from " << fullFileName;
 
 	Texture* newTexture = new Texture( textureID, Texture::TEXTURE_CUBE );
 	
@@ -193,13 +195,13 @@ TextureFactory::loadImage( const std::string& fileName, ILuint imageId )
 		// Quit out if we failed the conversion
 		if ( !success )
 		{
-			cout << "ERROR ... in Texture::loadImage: Image load failed - IL reports error: " << ilGetError() << endl;
+			ZazenGraphics::getInstance().getLogger().logError() << "Texture::loadImage: Image load failed - IL reports error: " << ilGetError();
 			return false;
 		}
  	}
   	else // If we failed to open the image file in the first place...
   	{
-		cout << "ERROR ... in Texture::loadImage: Image load failed - IL reports error: " << ilGetError() << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "Texture::loadImage: Image load failed - IL reports error: " << ilGetError();
 		return false;
   	}
 
