@@ -315,16 +315,16 @@ ProgramManagement::parseAttribLocations( TiXmlElement* programNode, Program* pro
 bool
 ProgramManagement::parseBoundUniforms( TiXmlElement* programNode, Program* program )
 {
-	TiXmlElement* boundUniformBlocksNode = programNode->FirstChildElement( "boundUniformBlocks" );
-	if ( 0 == boundUniformBlocksNode )
+	TiXmlElement* boundUniformBlockParentNode = programNode->FirstChildElement( "boundUniformBlocks" );
+	if ( 0 == boundUniformBlockParentNode )
 	{
 		ZazenGraphics::getInstance().getLogger().logWarning() << "no bound uniform blocks defined for program ";
 		return true;
 	}
 
-	for ( TiXmlElement* boundUniformBlockNode = boundUniformBlocksNode->FirstChildElement(); boundUniformBlocksNode != 0; boundUniformBlocksNode = boundUniformBlocksNode->NextSiblingElement() )
+	for ( TiXmlElement* boundUniformBlockChildNode = boundUniformBlockParentNode->FirstChildElement(); boundUniformBlockParentNode != 0; boundUniformBlockParentNode = boundUniformBlockParentNode->NextSiblingElement() )
 	{
-		const char* str = boundUniformBlockNode->Value();
+		const char* str = boundUniformBlockChildNode->Value();
 		if ( NULL == str )
 		{
 			continue;
@@ -334,7 +334,7 @@ ProgramManagement::parseBoundUniforms( TiXmlElement* programNode, Program* progr
 		{
 			string name;
 
-			str = boundUniformBlockNode->Attribute( "name" );
+			str = boundUniformBlockChildNode->Attribute( "name" );
 			if ( 0 == str )
 			{
 				ZazenGraphics::getInstance().getLogger().logWarning( "No name in boundUniformBlock - will be ignored" );

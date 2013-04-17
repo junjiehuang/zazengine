@@ -1,5 +1,4 @@
 Fix Bug with UniformBuffers
-	-> http://www.packtpub.com/article/opengl-glsl-4-using-uniform-blocks-buffer-objects
 	-> query offsets for names within each buffer and provide interface in uniform
 
 Transparency-Rendering
