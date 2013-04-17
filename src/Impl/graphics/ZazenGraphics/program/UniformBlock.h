@@ -25,8 +25,7 @@ class UniformBlock
 
 		GLuint getBinding() const { return this->m_binding; };
 
-		bool bind();
-
+		bool bindBase();
 		bool bindBuffer();
 
 		bool updateMat4( const glm::mat4&, int offset );

@@ -328,22 +328,22 @@ DRRenderer::initUniformBlocks()
 		THIS IMPLIES: call bind() method on UniformBlock AFTER calling bindUniformBlock() on programm
 	*/
 	// bind uniform blocks
-	if ( false == this->m_transformsBlock->bind() )
+	if ( false == this->m_transformsBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" );
 		return false;
 	}
-	if ( false == this->m_cameraBlock->bind() )
+	if ( false == this->m_cameraBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding camera uniform-block failed - exit" );
 		return false;
 	}
-	if ( false == this->m_lightBlock->bind() )
+	if ( false == this->m_lightBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding light uniform-block failed - exit" );
 		return false;
 	}
-	if ( false == this->m_materialBlock->bind() )
+	if ( false == this->m_materialBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding material uniform-block failed - exit" );
 		return false;

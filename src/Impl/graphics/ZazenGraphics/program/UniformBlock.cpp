@@ -61,7 +61,7 @@ UniformBlock::~UniformBlock()
 }
 
 bool
-UniformBlock::bind()
+UniformBlock::bindBase()
 {
 	glBindBufferBase( GL_UNIFORM_BUFFER, this->m_binding, this->m_id );
 	
@@ -69,7 +69,7 @@ UniformBlock::bind()
 	GLint status = glGetError();
 	if ( GL_NO_ERROR != status )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::bind: glBindBufferBase failed for name \"" << this->m_name << "\": " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::bindBase: glBindBufferBase failed for name \"" << this->m_name << "\": " << gluErrorString( status );
 		return false;
 	}
 #endif
