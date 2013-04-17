@@ -1,11 +1,6 @@
-Program- & Shader-Management
-	-> describe by xml, is VERY annoying to manually set up in program-code
-	-> frag-data location
-	-> bind uniform blocks
-	-> use glValidateProgram !
-	-> lookup program in program-registry during runtime
-	-> implement #include in shaders: parse loaded string and replace
-		-> problem: compiler error generate other line numbers!
+Fix Bug with UniformBuffers
+	-> http://www.packtpub.com/article/opengl-glsl-4-using-uniform-blocks-buffer-objects
+	-> query offsets for names within each buffer and provide interface in uniform
 
 Transparency-Rendering
 1. G-Buffer as usual
@@ -64,6 +59,8 @@ Do Culling
 	
 Need generic effect/material functionality
 	-> on top of program- & shader-management
+		-> implement #include in shaders: parse loaded string and replace
+		-> problem: compiler error generate other line numbers!
 	-> based upon effect-files like directx/cg shader effects
 	-> custom shader program for material programming
 	-> problem: shaders-effect architecture from 2003 is based upon forward-rendering, we need now to plug it into deferred rendering
