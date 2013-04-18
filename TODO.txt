@@ -1,6 +1,12 @@
-Fix Bug with UniformBuffers
-	-> query offsets for names within each buffer and provide interface in uniform
-
+Rework UniformBuffers
+	-> qualify uniforms with instance names e.g rename transforms to TransformsUniformBlock with instancename Transforms,...
+		-> create uniforms by program-introspection and not through xml-definition => no dependencies
+		-> get all uniforms with glGetProgram using GL_ACTIVE_UNIFORMS
+		-> iterate over all returned uniforms and filter all non-block uniforms: glGetActiveUniformsiv with GL_UNIFORM_BLOCK_INDEX, non-blocks will return -1
+		-> get name for each uniform block using  glGetActiveUniformName
+	-> query offsets for names within each buffer and provide interface in uniform for setting through name & mat4/vec4 instead of offsets & raw-bytes
+		-> glGetActiveUniformsiv with GL_UNIFORM_OFFSET?
+		
 Transparency-Rendering
 1. G-Buffer as usual
 2. Lighting-Stage
@@ -126,6 +132,9 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 				( in perspective projection the perspective division by w is done => the inverse would be multiplication 
 					but we apply the inverse projection transform => need again to divide )
 		4. view-coordinates
+		
+When OpenGL 4.3 Available Switch to
+	-> extension ARB_program_interface_query
 		
 Game-Functionality
 	-> allow mutliple scenes which can be changed during runtime. also specify which subsystems are necessary: load/unload them during runtime
