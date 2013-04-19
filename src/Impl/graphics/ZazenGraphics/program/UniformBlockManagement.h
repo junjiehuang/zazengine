@@ -15,6 +15,8 @@
 #include <map>
 #include <string>
 
+class Program;
+
 class UniformBlockManagement
 {
 	public:
@@ -22,6 +24,8 @@ class UniformBlockManagement
 		static bool freeAll();
 
 		static UniformBlock* get( const std::string& );
+
+		static bool initUniformBlocks( Program* );
 
 	private:
 		static std::map<std::string, UniformBlock*> m_uniformBlocks;

@@ -100,3 +100,57 @@ UniformBlockManagement::get( const std::string& name )
 
 	return NULL;
 }
+
+// TODO check for opengl-errors
+bool
+UniformBlockManagement::initUniformBlocks( Program* program )
+{
+	GLint uniformsCount = 0;
+	GLint uniformBlocksCount = 0;
+
+	glGetProgramiv( program->getId(), GL_ACTIVE_UNIFORMS, &uniformsCount );
+	glGetProgramiv( program->getId(), GL_ACTIVE_UNIFORM_BLOCKS, &uniformBlocksCount );
+
+	for ( int i = 0; i < uniformBlocksCount; i++ )
+	{
+		GLsizei nameLength = 0;
+		vector<GLchar> nameBuffer( 1024 );
+
+		glGetActiveUniformBlockName( program->getId(), i, nameBuffer.size() - 1, &nameLength, &nameBuffer[ 0 ] );
+		// TODO check for opengl-errors
+
+		string uniformName( &nameBuffer[ 0 ] );
+
+		UniformBlock* uniformBlock = UniformBlockManagement::get( uniformName );
+		if ( NULL == uniformBlock )
+		{
+			uniformBlock = UniformBlock::createBlock( uniformName );
+			if ( NULL == uniformBlock )
+			{
+				
+			}
+		}
+
+		for ( int j = 0; j < uniformsCount; j++ )
+		{
+			GLint uniformBlockIndex = -1;
+			GLuint uniformIndex = j;
+			
+			glGetActiveUniformsiv( program->getId(), 1, &uniformIndex, GL_UNIFORM_BLOCK_INDEX, &uniformBlockIndex );
+			
+			if ( uniformBlockIndex == i )
+			{
+				GLint uniformSize = 0;
+				GLenum uniformType = 0;
+
+				GLint uniformBlockOffset = -1;
+				glGetActiveUniform( program->getId(), j, nameBuffer.size() - 1, &nameLength, &uniformSize, &uniformType, &nameBuffer[ 0 ] );
+				glGetActiveUniformsiv( program->getId(), 1, &uniformIndex, GL_UNIFORM_OFFSET, &uniformBlockOffset );
+
+				string subUniformName( &nameBuffer[ 0 ] );
+			}
+		}
+	}
+
+	return true;
+}

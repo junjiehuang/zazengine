@@ -22,6 +22,8 @@ class Program
 
 	void printInfoLog();
 
+	GLuint getId() const { return this->m_programObject; };
+
 	bool attachShader( Shader* );
 	bool detachShader( Shader* );
 

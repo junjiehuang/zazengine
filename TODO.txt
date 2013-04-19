@@ -1,11 +1,9 @@
 Rework UniformBuffers
 	-> qualify uniforms with instance names e.g rename transforms to TransformsUniformBlock with instancename Transforms,...
-		-> create uniforms by program-introspection and not through xml-definition => no dependencies
-		-> get all uniforms with glGetProgram using GL_ACTIVE_UNIFORMS
-		-> iterate over all returned uniforms and filter all non-block uniforms: glGetActiveUniformsiv with GL_UNIFORM_BLOCK_INDEX, non-blocks will return -1
-		-> get name for each uniform block using  glGetActiveUniformName
-	-> query offsets for names within each buffer and provide interface in uniform for setting through name & mat4/vec4 instead of offsets & raw-bytes
-		-> glGetActiveUniformsiv with GL_UNIFORM_OFFSET?
+	-> provide new interfaces in uniformblock to update named-fields within a uniform-block by its name & data-type => no more need for raw bytes & offsets
+		
+Todo opengl-error handling
+	-> need to peek opengl-error message as long until GL_NO_ERROR returns otherwise it is possible to have some errors left in the "pipe"
 		
 Transparency-Rendering
 1. G-Buffer as usual

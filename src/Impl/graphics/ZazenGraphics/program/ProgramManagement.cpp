@@ -11,6 +11,8 @@
 
 #include "../ZazenGraphics.h"
 
+#include <GL/glew.h>
+
 #include <iostream>
 
 using namespace std;
@@ -97,6 +99,12 @@ ProgramManagement::init( const boost::filesystem::path& path )
 			}
 
 			if ( false == ProgramManagement::parseBoundUniforms( programNode, program ) )
+			{
+				delete program;
+				return false;
+			}
+
+			if ( false == UniformBlockManagement::initUniformBlocks( program ) )
 			{
 				delete program;
 				return false;
