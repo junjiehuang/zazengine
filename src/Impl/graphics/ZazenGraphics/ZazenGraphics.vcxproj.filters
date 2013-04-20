@@ -106,6 +106,12 @@
     <Filter Include="Quelldateien\texture">
       <UniqueIdentifier>{68e1746b-5ee8-49f4-8ff4-8974c97d78ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headerdateien\util">
+      <UniqueIdentifier>{69dee1ff-7cff-408b-99c7-f8de629769f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\util">
+      <UniqueIdentifier>{e6d1380d-4af3-4242-9e55-ec2ce3cd5c24}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -188,6 +194,9 @@
     </ClCompile>
     <ClCompile Include="program\UniformManagement.cpp">
       <Filter>Quelldateien\program</Filter>
+    </ClCompile>
+    <ClCompile Include="util\GLUtils.cpp">
+      <Filter>Quelldateien\util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -277,6 +286,9 @@
     </ClInclude>
     <ClInclude Include="program\UniformManagement.h">
       <Filter>Headerdateien\program</Filter>
+    </ClInclude>
+    <ClInclude Include="util\GLUtils.h">
+      <Filter>Headerdateien\util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,7 @@
 #include "RenderTarget.h"
 
 #include "../ZazenGraphics.h"
+#include "../Util/GLUtils.h"
 
 #include <iostream>
 
@@ -13,7 +14,6 @@ RenderTarget*
 RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType )
 {
 	GLuint id = 0;
-	GLenum status;
 
 	// use shadow-map pooling: only create maps with different resolution and reuse them
 	if ( RenderTarget::RT_SHADOW == targetType )
@@ -26,16 +26,16 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 	}
 
 	glGenTextures( 1, &id );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glGenTextures failed with " << gluErrorString( status ) << " - exit";
+		ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glGenTextures failed - exit";
 		return NULL;
 	}
 
 	glBindTexture( GL_TEXTURE_2D, id );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glBindTexture failed with " << gluErrorString( status ) << " - exit";
+		ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glBindTexture failed - exit";
 		return NULL;
 	}
 
@@ -54,9 +54,9 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 
 		// for now we create shadowmaps in same width and height as their viewing frustum
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
+		if ( false == GLUtils::peekErrors() )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for depth failed with " << gluErrorString( status ) << " - exit";
+			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for depth failed - exit";
 			return NULL;
 		}
 
@@ -78,9 +78,9 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 
 		// for now we create shadowmaps in same width and height as their viewing frustum
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
+		if ( false == GLUtils::peekErrors() )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for shadow failed with " << gluErrorString( status ) << " - exit";
+			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for shadow failed - exit";
 			return NULL;
 		}
 
@@ -96,9 +96,9 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL );
-		if ( GL_NO_ERROR != ( status = glGetError() )  )
+		if ( false == GLUtils::peekErrors() )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for color failed with " << gluErrorString( status ) << " - exit";
+			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for color failed - exit";
 			return NULL;
 		}
 

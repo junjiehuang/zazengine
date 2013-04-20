@@ -94,6 +94,7 @@
     <ClCompile Include="scene\Viewer.cpp" />
     <ClCompile Include="texture\Texture.cpp" />
     <ClCompile Include="texture\TextureFactory.cpp" />
+    <ClCompile Include="util\GLUtils.cpp" />
     <ClCompile Include="ZazenGraphics.cpp" />
     <ClCompile Include="ZazenGraphicsEntity.cpp" />
   </ItemGroup>
@@ -125,6 +126,7 @@
     <ClInclude Include="scene\Viewer.h" />
     <ClInclude Include="texture\Texture.h" />
     <ClInclude Include="texture\TextureFactory.h" />
+    <ClInclude Include="util\GLUtils.h" />
     <ClInclude Include="ZazenGraphics.h" />
     <ClInclude Include="ZazenGraphicsEntity.h" />
   </ItemGroup>

@@ -1,6 +1,7 @@
 #include "FrameBufferObject.h"
 
 #include "../ZazenGraphics.h"
+#include "../Util/GLUtils.h"
 
 #include <iostream>
 
@@ -12,13 +13,12 @@ FrameBufferObject*
 FrameBufferObject::create()
 {
 	GLuint id = 0;
-	GLenum status;
 
 	// generate the id of our frame-buffer-object
 	glGenFramebuffers( 1, &id );
-	if ( GL_NO_ERROR != ( status = glGetError() )  )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::create: glGenFramebuffers failed with " << gluErrorString( status ) << " - exit";
+		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::create: glGenFramebuffers failed - exit";
 		return false;
 	}
 
@@ -105,10 +105,9 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, renderTarget->getId(), 0 );
 
 #ifdef CHECK_GL_ERRORS
-		GLenum status;
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
+		if ( false == GLUtils::peekErrors() )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::attachTargetTemp DEPTH: glFramebufferTexture failed with " << gluErrorString( status );
+			ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::attachTargetTemp DEPTH: glFramebufferTexture failed ";
 			return false;
 		}
 #endif
@@ -120,10 +119,9 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 
 		glFramebufferTexture2D( GL_FRAMEBUFFER, colorAttachment, GL_TEXTURE_2D, id, 0 );
 #ifdef CHECK_GL_ERRORS
-		GLenum status;
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
+		if ( false == GLUtils::peekErrors() )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::attachTargetTemp COLOR: glFramebufferTexture failed with " << gluErrorString( status );
+			ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::attachTargetTemp COLOR: glFramebufferTexture failed";
 			return false;
 		}
 #endif
@@ -139,10 +137,9 @@ FrameBufferObject::bind()
 	glBindFramebuffer( GL_FRAMEBUFFER, this->m_id );
 
 #ifdef CHECK_GL_ERRORS
-	GLenum status;
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::bind: glBindFramebuffer failed with " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::bind: glBindFramebuffer failed";
 		return false;
 	}
 #endif
@@ -157,11 +154,9 @@ FrameBufferObject::unbind()
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 #ifdef CHECK_GL_ERRORS
-	GLenum status;
-
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::unbind: glBindFramebuffer( 0 ) failed with " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::unbind: glBindFramebuffer( 0 ) failed";
 		return false;
 	}
 #endif
@@ -191,10 +186,9 @@ FrameBufferObject::drawAllBuffers()
 	glDrawBuffers( this->m_colorBufferTargets.size(), &this->m_colorBufferTargets[ 0 ] );
 
 #ifdef CHECK_GL_ERRORS
-	GLenum status;
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::drawAllBuffers: glDrawBuffers failed with " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::drawAllBuffers: glDrawBuffers failed";
 		return false;
 	}
 #endif
@@ -209,10 +203,9 @@ FrameBufferObject::drawBuffer( unsigned int index )
 	glDrawBuffer( this->m_colorBufferTargets[ index ] );
 
 #ifdef CHECK_GL_ERRORS
-	GLenum status;
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::drawBuffer: glDrawBuffer failed with " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::drawBuffer: glDrawBuffer failed";
 		return false;
 	}
 #endif

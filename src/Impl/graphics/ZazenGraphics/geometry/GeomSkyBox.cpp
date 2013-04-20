@@ -9,6 +9,7 @@
 
 #include "GeomSkyBox.h"
 
+#include "../Util/GLUtils.h"
 #include "../Texture/TextureFactory.h"
 
 #include "GeometryFactory.h"
@@ -64,6 +65,13 @@ GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std:
 		glGenBuffers( 1, &GeomSkyBox::instance->m_indexVBO );
 		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, GeomSkyBox::instance->m_indexVBO );
 		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( cube_indices ), cube_indices, GL_STATIC_DRAW );
+
+		if ( false == GLUtils::peekErrors() )
+		{
+			ZazenGraphics::getInstance().getLogger().logError( "GeomSkyBox::initialize: failed initializing geometry" );
+			GeomSkyBox::shutdown();
+			return false;
+		}
 	}
 
 	return true;
@@ -148,6 +156,14 @@ GeomSkyBox::render()
 	// activate z-buffering and face culling
 	glEnable( GL_DEPTH_TEST );
 	glEnable( GL_CULL_FACE );
+
+#ifdef CHECK_GL_ERRORS
+	if ( false == GLUtils::peekErrors() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "GeomSkyBox::render: errors in rendering" );
+		return false;
+	}
+#endif
 
 	return true;
 }

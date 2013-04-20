@@ -1,8 +1,3 @@
-Todo opengl-error handling
-	-> write GLUtils-class with static-only methods
-	-> need to peek opengl-error message as long until GL_NO_ERROR returns otherwise it is possible to have some errors left in the "pipe"
-	-> put magic ids & numbers into constants: uniform-names, uniformblock-names, uniformblock-field names
-		
 Transparency-Rendering
 1. G-Buffer as usual
 2. Lighting-Stage
@@ -63,6 +58,7 @@ Need generic effect/material functionality
 		-> implement #include in shaders: parse loaded string and replace
 		-> problem: compiler error generate other line numbers!
 	-> based upon effect-files like directx/cg shader effects
+	-> need some semantics on uniforms
 	-> custom shader program for material programming
 	-> problem: shaders-effect architecture from 2003 is based upon forward-rendering, we need now to plug it into deferred rendering
 		-> 2 stages: geometry & ligting => potential up to 4 shaders/material: vertex&fragment in geometry & lighting
@@ -175,6 +171,7 @@ Scripting
 - TODO implement during FH-course on computer-languages
 
 Code-Quality
+- put magic ids & numbers into constants: uniform-names, uniformblock-names, uniformblock-field names
 - const-completeness (add const to inline methods were appropriate)
 - replace all strcmp with boost:iequals
 - keep id, type & core in ISubSystem as readable

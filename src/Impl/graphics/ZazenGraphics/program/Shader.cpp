@@ -8,6 +8,7 @@
 #include "Shader.h"
 
 #include "../ZazenGraphics.h"
+#include "../util/GLUtils.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,7 +22,6 @@ Shader*
 Shader::createShader( Shader::ShaderType type, const std::string& file )
 {
 	GLuint shaderObject = 0;
-	GLint status;
 	std::string source;
 	const char* sourcePtr = NULL;
 
@@ -31,9 +31,10 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 	if ( Shader::VERTEX_SHADER == type )
 	{
 		shaderObject = glCreateShader( GL_VERTEX_SHADER );
-		if (0 == shaderObject )
+		if ( 0 == shaderObject )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_VERTEX_SHADER \"" << file << "\" failed with " << gluErrorString( glGetError() );
+			GLUtils::peekErrors();
+			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_VERTEX_SHADER \"" << file << "\" failed";
 			return 0;
 		}
 	}
@@ -42,17 +43,17 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 		shaderObject = glCreateShader( GL_FRAGMENT_SHADER );
 		if ( 0 == shaderObject )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_FRAGMENT_SHADER \"" << file << "\" failed with " << gluErrorString( glGetError() );
+			GLUtils::peekErrors();
+			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_FRAGMENT_SHADER \"" << file << "\" failed";
 			return 0;
 		}
 	}
 
 	sourcePtr = source.c_str();
 	glShaderSource( shaderObject, 1, ( const GLchar** ) &sourcePtr, NULL);
-	status = glGetError();
-	if ( GL_NO_ERROR != status )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glShaderSource for \"" << file << "\" failed with " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glShaderSource for \"" << file << "\" failed";
 		return 0;
 	}
 
@@ -74,24 +75,19 @@ Shader::~Shader()
 void
 Shader::printInfoLog()
 {
-	GLchar* infoLog = 0;
 	GLint infoLogLen = 0;
-	GLint charsWritten  = 0;
 
 	glGetShaderiv( this->m_shaderObject  , GL_INFO_LOG_LENGTH, &infoLogLen );
-	if (infoLogLen > 0)
+	if ( 0 < infoLogLen )
 	{
-		infoLog = ( GLchar* ) malloc( ( infoLogLen + 1 ) * sizeof( GLchar ) );
-		memset( infoLog, 0, infoLogLen + 1 );
-
-		glGetShaderInfoLog( this->m_shaderObject , infoLogLen, &charsWritten, infoLog );
+		GLint charsWritten  = 0;
+		vector<GLchar> buffer( infoLogLen + 1 );
+		glGetShaderInfoLog( this->m_shaderObject, infoLogLen, &charsWritten, &buffer[ 0 ] );
 
 	    if ( charsWritten )
 		{
-	    	ZazenGraphics::getInstance().getLogger().logError( infoLog );
+			ZazenGraphics::getInstance().getLogger().logError( string( &buffer[ 0 ] ) );
 		}
-
-	    free( infoLog );
 	}
 }
 

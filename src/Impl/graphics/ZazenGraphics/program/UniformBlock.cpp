@@ -8,6 +8,7 @@
 #include "UniformBlock.h"
 
 #include "../ZazenGraphics.h"
+#include "../util/GLUtils.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -26,13 +27,11 @@ UniformBlock*
 UniformBlock::createBlock( const std::string& name )
 {
 	GLuint id;
-	GLint status;
 
 	glGenBuffers( 1, &id );
-	status = glGetError();
-	if ( GL_NO_ERROR != status )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::createBlock: glGenBuffers failed for name \"" << name << "\": " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::createBlock: glGenBuffers failed for name \"" << name << "\"";
 		return 0;
 	}
 
@@ -69,10 +68,9 @@ UniformBlock::bindBase()
 	glBindBufferBase( GL_UNIFORM_BUFFER, this->m_binding, this->m_id );
 	
 #ifdef CHECK_GL_ERRORS
-	GLint status = glGetError();
-	if ( GL_NO_ERROR != status )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::bindBase: glBindBufferBase failed for name \"" << this->m_name << "\": " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::bindBase: glBindBufferBase failed for name \"" << this->m_name << "\"";
 		return false;
 	}
 #endif
@@ -88,10 +86,9 @@ UniformBlock::bindBuffer()
 		glBindBuffer( GL_UNIFORM_BUFFER, this->m_id );
 
 #ifdef CHECK_GL_ERRORS
-		GLint status = glGetError();
-		if ( GL_NO_ERROR != status )
+		if ( false == GLUtils::peekErrors() )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::bindBuffer: glBindBuffer failed for name \"" << this->m_name << "\": " << gluErrorString( status );
+			ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::bindBuffer: glBindBuffer failed for name \"" << this->m_name << "\"";
 			return false;
 		}
 #endif
@@ -108,10 +105,9 @@ UniformBlock::updateData( const void* data, int offset, int size )
 	glBufferSubData( GL_UNIFORM_BUFFER, offset, size, data );
 
 #ifdef CHECK_GL_ERRORS
-	GLint status = glGetError();
-	if ( GL_NO_ERROR != status )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\": " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\"";
 		return false;
 	}
 #endif
@@ -125,10 +121,9 @@ UniformBlock::updateData( const void* data, int size )
 	glBufferData( GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW );
 
 #ifdef CHECK_GL_ERRORS
-	GLint status = glGetError();
-	if ( GL_NO_ERROR != status )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\": " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\"";
 		return false;
 	}
 #endif

@@ -8,6 +8,7 @@
 #include "Program.h"
 
 #include "../ZazenGraphics.h"
+#include "../Util/GLUtils.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -20,15 +21,14 @@ using namespace std;
 Program*
 Program::createProgram( const std::string& programName )
 {
-	GLint status;
 	GLuint programObject = 0;
 
 	programObject = glCreateProgram();
 	if ( 0 == programObject )
 	{
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
+		if ( false == GLUtils::peekErrors() )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "Program::createProgram for programm " << programName << ": glCreateProgram failed with " << gluErrorString( status );
+			ZazenGraphics::getInstance().getLogger().logError() << "Program::createProgram for programm " << programName << ": glCreateProgram failed";
 		}
 
 		return NULL;
@@ -59,36 +59,30 @@ Program::~Program()
 void
 Program::printInfoLog()
 {
-	GLchar* infoLog = 0;
 	GLint infoLogLen = 0;
-	GLint charsWritten  = 0;
-
+	
 	glGetProgramiv( this->m_programObject , GL_INFO_LOG_LENGTH, &infoLogLen );
-	if (infoLogLen > 0)
+	if ( 0 < infoLogLen )
 	{
-		infoLog = (GLchar*) malloc( ( infoLogLen + 1 ) * sizeof( GLchar ) );
-		memset( infoLog, 0, infoLogLen + 1 );
+		GLint charsWritten  = 0;
+		vector<GLchar> buffer( infoLogLen + 1 );
 
-		glGetProgramInfoLog( this->m_programObject, infoLogLen, &charsWritten, infoLog );
+		glGetProgramInfoLog( this->m_programObject, infoLogLen, &charsWritten, &buffer[ 0 ] );
 
 	    if ( charsWritten )
 		{
-			ZazenGraphics::getInstance().getLogger().logError( infoLog );
+			ZazenGraphics::getInstance().getLogger().logError( string( &buffer[ 0 ] ) );
 		}
-
-	    free( infoLog );
 	}
 }
 
 bool
 Program::attachShader( Shader* shader )
 {
-	GLint status;
-
 	glAttachShader( this->m_programObject, shader->getObject() );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "Program::attachShader for programm " << this->m_programName << ": glAttachShader failed with " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "Program::attachShader for programm " << this->m_programName << ": glAttachShader";
 		return false;
 	}
 
@@ -99,12 +93,10 @@ Program::attachShader( Shader* shader )
 bool
 Program::detachShader( Shader* shader )
 {
-	GLint status;
-
 	glDetachShader( this->m_programObject, shader->getObject() );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "Program::detachShader for programm " << this->m_programName << ": glDetachShader failed with " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "Program::detachShader for programm " << this->m_programName << ": glDetachShader failed";
 		return false;
 	}
 
@@ -117,7 +109,7 @@ Program::link()
 	GLint status;
 
 	glLinkProgram( this->m_programObject );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "Program::link for programm " << this->m_programName << ": calling glLinkProgram failed.";
 		return false;
@@ -137,7 +129,6 @@ Program::link()
 bool
 Program::bindUniformBlock( UniformBlock* block )
 {
-	GLint status;
 	GLint uniformBlockSize;
 
 	GLuint index = this->getUniformBlockIndex( block->getName() );
@@ -160,9 +151,9 @@ Program::bindUniformBlock( UniformBlock* block )
 	}
 
 	glUniformBlockBinding( this->m_programObject, index, block->getBinding() );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "Program::bindUniformBlock for programm " << this->m_programName << ": glUniformBlockBinding failed for name \"" << block->getName() << "\": " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "Program::bindUniformBlock for programm " << this->m_programName << ": glUniformBlockBinding failed for name \"" << block->getName() << "\"";
 		return false;
 	}
 
@@ -172,12 +163,10 @@ Program::bindUniformBlock( UniformBlock* block )
 bool
 Program::bindAttribLocation( GLuint index, const std::string& name )
 {
-	GLint status;
-
 	glBindAttribLocation( this->m_programObject, index, name.c_str() );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "Program::bindAttribLocation for programm " << this->m_programName << ": glBindAttribLocation failed for name \"" << name << "\": " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "Program::bindAttribLocation for programm " << this->m_programName << ": glBindAttribLocation failed for name \"" << name << "\"";
 		return false;
 	}
 
@@ -187,12 +176,10 @@ Program::bindAttribLocation( GLuint index, const std::string& name )
 bool
 Program::bindFragDataLocation( GLuint index, const std::string& name )
 {
-	GLint status;
-
 	glBindFragDataLocation( this->m_programObject, index, name.c_str() );
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "Program::bindFragDataLocation for programm " << this->m_programName << ": glBindFragDataLocation failed for name \"" << name << "\": " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "Program::bindFragDataLocation for programm " << this->m_programName << ": glBindFragDataLocation failed for name \"" << name << "\"";
 		return false;
 	}
 
@@ -205,11 +192,9 @@ Program::use()
 	glUseProgram( this->m_programObject );
 
 #ifdef CHECK_GL_ERRORS
-	GLint status;
-
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "Program::use for programm " << this->m_programName << ": glUseProgram failed: " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "Program::use for programm " << this->m_programName << ": glUseProgram failed";
 		return false;
 	}
 #endif
@@ -223,11 +208,9 @@ Program::unuse()
 	glUseProgram( 0 );
 
 #ifdef CHECK_GL_ERRORS
-	GLint status;
-
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "Program::unuse: glUseProgram( 0 ) failed: " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "Program::unuse: glUseProgram( 0 ) failed";
 		return false;
 	}
 #endif
@@ -247,10 +230,9 @@ Program::setUniformInt( const std::string& name, int value )
 	glUniform1i( field->m_index, value );
 
 #ifdef CHECK_GL_ERRORS
-	GLint status;
-	if ( GL_NO_ERROR != ( status = glGetError() ) )
+	if ( false == GLUtils::peekErrors() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "Program::setUniformInt for programm " << this->m_programName << ": glUniform1i failed for " << name << ": " << gluErrorString( status );
+		ZazenGraphics::getInstance().getLogger().logError() << "Program::setUniformInt for programm " << this->m_programName << ": glUniform1i failed for " << name;
 		return false;
 	}
 #endif

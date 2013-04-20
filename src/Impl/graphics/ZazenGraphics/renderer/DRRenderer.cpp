@@ -12,6 +12,7 @@
 
 #include "DRRenderer.h"
 
+#include "../Util/GLUtils.h"
 #include "../ZazenGraphics.h"
 #include "../Geometry/GeomSkyBox.h"
 #include "../Program/ProgramManagement.h"
@@ -368,31 +369,19 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
-	if ( false == this->peekOpenglErrors() )
+#ifndef CHECK_GL_ERRORS
+	// if checking of gl-errors is deactivated check once per frame for ALL errors
+	if ( false == GLUtils::peekErrors() )
 	{
 		return false;
 	}
+#endif
 
 	this->frame++;
 
 	return true;
 }
 
-bool
-DRRenderer::peekOpenglErrors()
-{
-// if checking of gl-errors is deactivated check once per frame for ALL errors
-#ifndef CHECK_GL_ERRORS
-	GLenum status;
-	while ( GL_NO_ERROR != ( status = glGetError() ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "DRRenderer::peekOpenglError: " << gluErrorString( status );
-		return false;
-	}
-#endif
-
-	return true;
-}
 
 bool
 DRRenderer::doGeometryStage( std::list<Instance*>& instances, std::list<Light*>& lights )

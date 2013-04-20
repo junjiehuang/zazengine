@@ -10,6 +10,7 @@
 #include "Texture.h"
 
 #include "../ZazenGraphics.h"
+#include "../util/GLUtils.h"
 
 #include <iostream>
 
@@ -36,10 +37,9 @@ Texture::bind( int textureUnit )
 		glActiveTexture( GL_TEXTURE0 + textureUnit );
 
 #ifdef CHECK_GL_ERRORS
-		GLenum status;
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
+		if ( false == GLUtils::peekErrors() )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "Zexture::bind: failed glActiveTexture with " << gluErrorString( status );
+			ZazenGraphics::getInstance().getLogger().logError() << "Zexture::bind: failed glActiveTexture";
 			return false;
 		}
 #endif
@@ -52,10 +52,9 @@ Texture::bind( int textureUnit )
 		glBindTexture( GL_TEXTURE_2D, this->m_id );
 
 #ifdef CHECK_GL_ERRORS
-		GLenum status;
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
+		if ( false == GLUtils::peekErrors() )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "Texture::bind: failed glBindTexture with " << gluErrorString( status );
+			ZazenGraphics::getInstance().getLogger().logError() << "Texture::bind: failed glBindTexture";
 			return false;
 		}
 #endif
@@ -66,10 +65,9 @@ Texture::bind( int textureUnit )
 		glBindTexture( GL_TEXTURE_CUBE_MAP, this->m_id );
 
 #ifdef CHECK_GL_ERRORS
-		GLenum status;
-		if ( GL_NO_ERROR != ( status = glGetError() ) )
+		if ( false == GLUtils::peekErrors() )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "Texture::bind: failed glBindTexture with " << gluErrorString( status );
+			ZazenGraphics::getInstance().getLogger().logError() << "Texture::bind: failed glBindTexture";
 			return false;
 		}
 #endif
