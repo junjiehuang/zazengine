@@ -15,41 +15,52 @@
 
 class Program
 {
- public:
-	~Program();
+	public:
+		friend class UniformManagement;
 
-	static Program* createProgram( const std::string& );
+		static Program* createProgram( const std::string& );
 
-	void printInfoLog();
+		void printInfoLog();
 
-	GLuint getId() const { return this->m_programObject; };
+		GLuint getId() const { return this->m_programObject; };
 
-	bool attachShader( Shader* );
-	bool detachShader( Shader* );
+		bool attachShader( Shader* );
+		bool detachShader( Shader* );
 
-	bool setUniformInt( const std::string& name, int );
+		bool setUniformInt( const std::string& name, int );
 
-	bool bindUniformBlock( UniformBlock* );
+		bool bindUniformBlock( UniformBlock* );
 
-	bool bindAttribLocation( GLuint index, const std::string& name );
+		bool bindAttribLocation( GLuint index, const std::string& name );
 
-	bool bindFragDataLocation( GLuint colorNumber, const std::string& name );
+		bool bindFragDataLocation( GLuint colorNumber, const std::string& name );
 
-	bool link();
+		bool link();
 
-	bool use();
-	static bool unuse();
+		bool use();
+		static bool unuse();
 
- private:
-	Program( GLuint programObject, const std::string& programName );
+		~Program();
 
-	std::string m_programName;
-	GLuint m_programObject;
-	std::map<std::string, GLint> m_uniformLocations;
+	private:
+		struct UniformField {
+			GLuint m_index;
+			GLenum m_type;
+			GLint m_size;
+			std::string m_name;
+		};
 
-	GLuint getUniformBlockIndex( const std::string& name );
-	GLint getUniformLocation( const std::string& name );
-	static void printInfoLog( GLuint obj );
+		Program( GLuint programObject, const std::string& programName );
+
+		std::string m_programName;
+		GLuint m_programObject;
+
+		std::map<std::string, UniformField*> m_uniforms;
+
+		GLuint getUniformBlockIndex( const std::string& name );
+		UniformField* getUniformField( const std::string& name );
+
+		static void printInfoLog( GLuint obj );
 };
 
 #endif /* PROGRAM_H_ */

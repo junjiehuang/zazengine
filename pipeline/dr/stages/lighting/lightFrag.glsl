@@ -11,28 +11,28 @@ out vec4 final_color;
 
 const float shadow_bias = 0.0001;
 
-layout( shared ) uniform camera
+layout( shared ) uniform CameraUniforms
 {
-	mat4 camera_Model_Matrix;			// 0
-	mat4 camera_View_Matrix;			// 64
+	mat4 modelMatrix;
+	mat4 viewMatrix;
 	
-	vec4 camera_rec;					// 128
-};
+	vec4 rectangle;
+} Camera;
 
-layout( shared ) uniform light
+layout( shared ) uniform LightUniforms
 {
-	vec4 light_Config; 					// 0
+	vec4 config;
 
-	mat4 light_Model_Matrix;			// 16
-	mat4 light_SpaceUniform_Matrix;		// 80
-};
+	mat4 modelMatrix;
+	mat4 spaceUniformMatrix;
+} Light;
 
 vec4
 calculateLambertian( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
 	// need to transpose light-model matrix to view-space for eye-coordinates 
 	// OPTIMIZE: premultiply on CPU
-	mat4 lightMV_Matrix = camera_View_Matrix * light_Model_Matrix;
+	mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
 
 	// light-position is stored in 4th vector
 	vec3 lightPos = vec3( lightMV_Matrix[ 3 ] );
@@ -49,12 +49,12 @@ calculatePhong( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
 	// need to transpose light-model matrix to view-space for eye-coordinates 
 	// OPTIMIZE: premultiply on CPU
-	mat4 lightMV_Matrix = camera_View_Matrix * light_Model_Matrix;
+	mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
 
 	vec3 lightPos = vec3( lightMV_Matrix[ 3 ] );
 	vec3 lightDir = normalize( lightPos - vec3( position ) );
     
-	vec3 eyeDir = normalize( vec3( camera_Model_Matrix[ 3 ] ) - vec3( position ) );
+	vec3 eyeDir = normalize( vec3( Camera.modelMatrix[ 3 ] ) - vec3( position ) );
 	vec3 vHalfVector = normalize( lightDir + eyeDir );
     
 	// calculate attenuation-factor
@@ -68,7 +68,7 @@ calculatePhong( in vec4 diffuse, in vec4 normal, in vec4 position )
 void main()
 {
 	// fetch the coordinate of this fragment in normalized screen-space ( 0 – 1 ) 
-	vec2 screenCoord = vec2( gl_FragCoord.x / camera_rec.x, gl_FragCoord.y / camera_rec.y );
+	vec2 screenCoord = vec2( gl_FragCoord.x / Camera.rectangle.x, gl_FragCoord.y / Camera.rectangle.y );
 
 	// fetch diffuse color for this fragment
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
@@ -93,20 +93,20 @@ void main()
 	else
 	{
 		// do shadow-calculation only when light is shadow-caster 
-		if ( 1.0 == light_Config.z )
+		if ( 1.0 == Light.config.z )
 		{
 			// for shadow-mapping we need to transform the position of the fragment to light-space
 			// before we can apply the light-space transformation we first need to apply
 			// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
 			// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
 			// OPTIMIZE: precalculate inverse camera-view matrix on CPU
-			vec4 wcPosition = inverse( camera_View_Matrix ) * ecPosition;
-			vec4 shadowCoord = light_SpaceUniform_Matrix * wcPosition;
+			vec4 wcPosition = inverse( Camera.viewMatrix ) * ecPosition;
+			vec4 shadowCoord = Light.spaceUniformMatrix * wcPosition;
 
 			shadowCoord.z -= shadow_bias;
 
 			// spot-light - do perspective shadow-lookup
-			if ( 0.0 == light_Config.x )
+			if ( 0.0 == Light.config.x )
 			{
 				// IMPORTANT: we are only in clip-space, need to divide by w to reach projected NDC.
 				// normally the forward-rendering shadow-mapping calculates the shadow-coord
@@ -125,7 +125,7 @@ void main()
 				// we don't need to compare it anymore to the z-value of the shadow-coord
 				shadow = textureProj( ShadowMap, shadowCoord );
 			}
-			else if ( 1.0 == light_Config.x )
+			else if ( 1.0 == Light.config.x )
 			{
 				// IMPORTANT: directionaly light uses orthogonal shadow-map so 
 				// transformation of position to shadow-coord is orthgonal projection too

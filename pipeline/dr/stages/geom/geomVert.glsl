@@ -8,22 +8,22 @@ out vec4 ex_position;
 out vec4 ex_normal;
 out vec2 ex_texCoord;
 
-layout( shared ) uniform transforms
+layout( shared ) uniform TransformUniforms
 {
-	mat4 modelView_Matrix;				// 0
-	mat4 projection_Matrix;				// 64
+	mat4 modelViewMatrix;
+	mat4 projectionMatrix;
 
-	mat4 normalsModelView_Matrix;		// 128
-};
+	mat4 normalsModelViewMatrix;
+} Transforms;
 
 void main()
 {
 	// IMPORTANT: out-variables are interepolated but no perspective division is applied
 
 	// store position in view-space (EyeCoordinates) 
-	ex_position = modelView_Matrix * vec4( in_vertPos, 1.0 );
+	ex_position = Transforms.modelViewMatrix * vec4( in_vertPos, 1.0 );
 	// store normals in view-space too (EC)
-	ex_normal = normalsModelView_Matrix * vec4( in_vertNorm, 0.0 );
+	ex_normal = Transforms.normalsModelViewMatrix * vec4( in_vertNorm, 0.0 );
 	// no transform for texture-coords, just interpolated
 	ex_texCoord = in_texCoord;
 
@@ -35,5 +35,5 @@ void main()
 	// after this the coordinates will be between -1 to 1 which is NDC
 	// then view-port transform will happen
 	// then fragment-shader takes over
-	gl_Position = projection_Matrix * modelView_Matrix * vec4( in_vertPos, 1.0 );
+	gl_Position = Transforms.projectionMatrix * Transforms.modelViewMatrix * vec4( in_vertPos, 1.0 );
 }

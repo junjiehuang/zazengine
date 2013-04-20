@@ -43,7 +43,7 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>libs/include/;../../../IFaces/;$(BOOST_PATH)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251;4275;</DisableSpecificWarnings>
-      <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions);CHECK_GL_ERRORS;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -87,7 +87,7 @@
     <ClCompile Include="program\ProgramManagement.cpp" />
     <ClCompile Include="program\Shader.cpp" />
     <ClCompile Include="program\UniformBlock.cpp" />
-    <ClCompile Include="program\UniformBlockManagement.cpp" />
+    <ClCompile Include="program\UniformManagement.cpp" />
     <ClCompile Include="renderer\DRRenderer.cpp" />
     <ClCompile Include="renderer\Renderer.cpp" />
     <ClCompile Include="scene\Instance.cpp" />
@@ -118,7 +118,7 @@
     <ClInclude Include="program\ProgramManagement.h" />
     <ClInclude Include="program\Shader.h" />
     <ClInclude Include="program\UniformBlock.h" />
-    <ClInclude Include="program\UniformBlockManagement.h" />
+    <ClInclude Include="program\UniformManagement.h" />
     <ClInclude Include="renderer\DRRenderer.h" />
     <ClInclude Include="renderer\Renderer.h" />
     <ClInclude Include="scene\Instance.h" />
@@ -146,7 +146,6 @@
     <None Include="..\..\..\..\pipeline\programConfig.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="..\..\..\..\pipeline\uniformBlockConfig.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

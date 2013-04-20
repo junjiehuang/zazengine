@@ -1,12 +1,12 @@
 /*
- * UniformBlockManagement.h
+ * UniformManagement.h
  *
  *  Created on: 16. April 2013
  *      Author: jonathan
  */
 
-#ifndef UNIFORMBLOCKMANAGEMENT_H_
-#define UNIFORMBLOCKMANAGEMENT_H_
+#ifndef UNIFORMMANAGEMENT_H_
+#define UNIFORMMANAGEMENT_H_
 
 #include "UniformBlock.h"
 
@@ -17,15 +17,14 @@
 
 class Program;
 
-class UniformBlockManagement
+class UniformManagement
 {
 	public:
-		static bool init( const boost::filesystem::path& );
-		static bool freeAll();
+		static bool freeAllBlocks();
 
-		static UniformBlock* get( const std::string& );
+		static UniformBlock* getBlock( const std::string& );
 
-		static bool initUniformBlocks( Program* );
+		static bool initUniforms( Program* );
 
 	private:
 		static std::map<std::string, UniformBlock*> m_uniformBlocks;

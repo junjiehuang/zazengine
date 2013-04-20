@@ -1,9 +1,7 @@
-Rework UniformBuffers
-	-> qualify uniforms with instance names e.g rename transforms to TransformsUniformBlock with instancename Transforms,...
-	-> provide new interfaces in uniformblock to update named-fields within a uniform-block by its name & data-type => no more need for raw bytes & offsets
-		
 Todo opengl-error handling
+	-> write GLUtils-class with static-only methods
 	-> need to peek opengl-error message as long until GL_NO_ERROR returns otherwise it is possible to have some errors left in the "pipe"
+	-> put magic ids & numbers into constants: uniform-names, uniformblock-names, uniformblock-field names
 		
 Transparency-Rendering
 1. G-Buffer as usual

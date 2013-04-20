@@ -46,6 +46,14 @@ Program::Program( GLuint programObject, const std::string& programName )
 Program::~Program()
 {
 	glDeleteProgram( this->m_programObject );
+
+	map<string, UniformField*>::iterator deleteIter = this->m_uniforms.begin();
+	while ( deleteIter != this->m_uniforms.end() )
+	{
+		delete deleteIter->second;
+
+		deleteIter++;
+	}
 }
 
 void
@@ -230,13 +238,13 @@ Program::unuse()
 bool
 Program::setUniformInt( const std::string& name, int value )
 {
-	GLint location = this->getUniformLocation( name );
-	if ( -1 == location )
+	UniformField* field = this->getUniformField( name );
+	if ( NULL == field )
 	{
 		return false;
 	}
 
-	glUniform1i( location, value );
+	glUniform1i( field->m_index, value );
 
 #ifdef CHECK_GL_ERRORS
 	GLint status;
@@ -264,24 +272,14 @@ Program::getUniformBlockIndex( const std::string& name )
 	return index;
 }
 
-GLint
-Program::getUniformLocation( const std::string& name )
+Program::UniformField*
+Program::getUniformField( const std::string& name )
 {
-	GLint location = 0;
-
-	map<string, GLint>::iterator findIter = this->m_uniformLocations.find( name );
-	if ( findIter != this->m_uniformLocations.end() )
+	map<string, UniformField*>::iterator findIter = this->m_uniforms.find( name );
+	if ( findIter != this->m_uniforms.end() )
 	{
 		return findIter->second;
 	}
 
-	location = glGetUniformLocation( this->m_programObject, name.c_str() );
-	if ( -1 == location )
-	{
-		ZazenGraphics::getInstance().getLogger().logWarning() << "Program::getUniformLocation for programm " << this->m_programName << ": coulnd't get Uniform Location for name \"" << name << "\": " << gluErrorString( glGetError() );
-	}
-
-	this->m_uniformLocations[ name ] = location;
-
-	return location;
+	return NULL;
 }

@@ -183,10 +183,10 @@
     <ClCompile Include="texture\TextureFactory.cpp">
       <Filter>Quelldateien\texture</Filter>
     </ClCompile>
-    <ClCompile Include="program\UniformBlockManagement.cpp">
+    <ClCompile Include="program\ProgramManagement.cpp">
       <Filter>Quelldateien\program</Filter>
     </ClCompile>
-    <ClCompile Include="program\ProgramManagement.cpp">
+    <ClCompile Include="program\UniformManagement.cpp">
       <Filter>Quelldateien\program</Filter>
     </ClCompile>
   </ItemGroup>
@@ -272,10 +272,10 @@
     <ClInclude Include="texture\TextureFactory.h">
       <Filter>Headerdateien\texture</Filter>
     </ClInclude>
-    <ClInclude Include="program\UniformBlockManagement.h">
+    <ClInclude Include="program\ProgramManagement.h">
       <Filter>Headerdateien\program</Filter>
     </ClInclude>
-    <ClInclude Include="program\ProgramManagement.h">
+    <ClInclude Include="program\UniformManagement.h">
       <Filter>Headerdateien\program</Filter>
     </ClInclude>
   </ItemGroup>
@@ -317,9 +317,6 @@
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox</Filter>
     </None>
     <None Include="..\..\..\..\pipeline\programConfig.xml">
-      <Filter>Ressourcendateien\Pipeline</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\uniformBlockConfig.xml">
       <Filter>Ressourcendateien\Pipeline</Filter>
     </None>
   </ItemGroup>

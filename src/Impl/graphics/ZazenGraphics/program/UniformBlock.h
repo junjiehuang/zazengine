@@ -11,14 +11,15 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 
+#include <map>
 #include <string>
 
 class UniformBlock
 {
 	public:
-		static UniformBlock* createBlock( const std::string& name );
+		friend class UniformManagement;
 
-		virtual ~UniformBlock();
+		static UniformBlock* createBlock( const std::string& name );
 
 		const std::string& getName() const { return this->m_name; };
 		GLuint getID() const { return this->m_id; };
@@ -34,8 +35,21 @@ class UniformBlock
 		bool updateData( const void* data, int size );
 		bool updateData( const void* data, int offset, int size );
 
+		bool updateField( const std::string&, const glm::mat4& );
+		bool updateField( const std::string&, const glm::vec4& );
+
+		~UniformBlock();
+
 	private:
-		UniformBlock( const std::string& name );
+		struct UniformField {
+			GLuint m_index;
+			GLint m_offset;
+			GLenum m_type;
+			GLint m_size;
+			std::string m_name;
+		};
+
+		UniformBlock( GLuint, GLuint, const std::string& name );
 
 		static GLuint m_nextBinding;
 
@@ -45,6 +59,10 @@ class UniformBlock
 		GLuint m_binding;
 
 		const std::string m_name;
+
+		std::map<std::string, UniformField*> m_fields;
+
+		UniformField* getUniformField( const std::string& name );
 
 };
 

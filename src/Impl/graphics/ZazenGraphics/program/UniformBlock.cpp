@@ -36,27 +36,30 @@ UniformBlock::createBlock( const std::string& name )
 		return 0;
 	}
 
-	UniformBlock* block = new UniformBlock( name );
-	block->m_id = id;
-	block->m_binding = UniformBlock::m_nextBinding;
+	UniformBlock* block = new UniformBlock( id, UniformBlock::m_nextBinding, name );
 
 	UniformBlock::m_nextBinding++;
 
 	return block;
 }
 
-UniformBlock::UniformBlock( const std::string& name )
+UniformBlock::UniformBlock( GLuint id, GLuint binding, const std::string& name )
 	: m_name ( name )
 {
-	this->m_id = 0;
-	this->m_binding = 0;
+	this->m_id = id;
+	this->m_binding = binding;
 }
 
 UniformBlock::~UniformBlock()
 {
-	if ( this->m_id )
+	glDeleteBuffers( 1, &this->m_id );
+
+	map<string, UniformField*>::iterator deleteIter = this->m_fields.begin();
+	while ( deleteIter != this->m_fields.end() )
 	{
-		glDeleteBuffers( 1, &this->m_id );
+		delete deleteIter->second;
+
+		deleteIter++;
 	}
 }
 
@@ -143,4 +146,40 @@ bool
 UniformBlock::updateVec4( const glm::vec4& vec, int offset )
 {
 	return this->updateData( glm::value_ptr( vec ), offset, 16 );
+}
+
+bool
+UniformBlock::updateField( const std::string& fieldName, const glm::mat4& data )
+{
+	UniformField* field = this->getUniformField( fieldName );
+	if ( NULL == field )
+	{
+		return false;
+	}
+
+	return this->updateMat4( data, field->m_offset );
+}
+
+bool
+UniformBlock::updateField( const std::string& fieldName, const glm::vec4& data )
+{
+	UniformField* field = this->getUniformField( fieldName );
+	if ( NULL == field )
+	{
+		return false;
+	}
+
+	return this->updateVec4( data, field->m_offset );
+}
+
+UniformBlock::UniformField*
+UniformBlock::getUniformField( const std::string& name )
+{
+	map<string, UniformField*>::iterator findIter = this->m_fields.find( name );
+	if ( findIter != this->m_fields.end() )
+	{
+		return findIter->second;
+	}
+
+	return NULL;
 }

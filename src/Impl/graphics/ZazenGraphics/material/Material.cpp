@@ -211,12 +211,12 @@ Material::activate( UniformBlock* materialUniforms, Program* currentProgramm )
 	materialCfg[ 1 ] = this->m_diffuseTexture == 0 ? 0.0f : 1.0f;
 
 	// IMPORTANT: materialUniforms->bindBuffer() must have been already called by client 
-	if ( false == materialUniforms->updateVec4( materialCfg, 0 ) )
+	if ( false == materialUniforms->updateField( "Material.config", materialCfg ) )
 	{
 		return false;
 	}
 
-	if ( false == materialUniforms->updateVec4( this->m_color, 16 ) )
+	if ( false == materialUniforms->updateField( "Material.color", this->m_color ) )
 	{
 		return false;
 	}

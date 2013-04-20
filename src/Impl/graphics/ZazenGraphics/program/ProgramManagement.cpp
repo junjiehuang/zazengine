@@ -7,7 +7,7 @@
 
 #include "ProgramManagement.h"
 
-#include "UniformBlockManagement.h"
+#include "UniformManagement.h"
 
 #include "../ZazenGraphics.h"
 
@@ -98,13 +98,7 @@ ProgramManagement::init( const boost::filesystem::path& path )
 				return false;
 			}
 
-			if ( false == ProgramManagement::parseBoundUniforms( programNode, program ) )
-			{
-				delete program;
-				return false;
-			}
-
-			if ( false == UniformBlockManagement::initUniformBlocks( program ) )
+			if ( false == UniformManagement::initUniforms( program ) )
 			{
 				delete program;
 				return false;
@@ -275,7 +269,7 @@ ProgramManagement::parseAttribLocations( TiXmlElement* programNode, Program* pro
 		return true;
 	}
 
-	for ( TiXmlElement* attLocNode = attribLocationsNode->FirstChildElement(); attribLocationsNode != 0; attribLocationsNode = attribLocationsNode->NextSiblingElement() )
+	for ( TiXmlElement* attLocNode = attribLocationsNode->FirstChildElement(); attLocNode != 0; attLocNode = attLocNode->NextSiblingElement() )
 	{
 		const char* str = attLocNode->Value();
 		if ( NULL == str )
@@ -311,56 +305,6 @@ ProgramManagement::parseAttribLocations( TiXmlElement* programNode, Program* pro
 			}
 
 			if ( false == program->bindAttribLocation( index, name ) )
-			{
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
-
-bool
-ProgramManagement::parseBoundUniforms( TiXmlElement* programNode, Program* program )
-{
-	TiXmlElement* boundUniformBlockParentNode = programNode->FirstChildElement( "boundUniformBlocks" );
-	if ( 0 == boundUniformBlockParentNode )
-	{
-		ZazenGraphics::getInstance().getLogger().logWarning() << "no bound uniform blocks defined for program ";
-		return true;
-	}
-
-	for ( TiXmlElement* boundUniformBlockChildNode = boundUniformBlockParentNode->FirstChildElement(); boundUniformBlockParentNode != 0; boundUniformBlockParentNode = boundUniformBlockParentNode->NextSiblingElement() )
-	{
-		const char* str = boundUniformBlockChildNode->Value();
-		if ( NULL == str )
-		{
-			continue;
-		}
-
-		if ( 0 == strcmp( str, "boundUniformBlock" ) )
-		{
-			string name;
-
-			str = boundUniformBlockChildNode->Attribute( "name" );
-			if ( 0 == str )
-			{
-				ZazenGraphics::getInstance().getLogger().logWarning( "No name in boundUniformBlock - will be ignored" );
-				continue;
-			}
-			else
-			{
-				name = str;
-			}
-
-			UniformBlock* uniformBlock = UniformBlockManagement::get( name );
-			if ( NULL == uniformBlock )
-			{
-				ZazenGraphics::getInstance().getLogger().logWarning( "Uniformblock for program not found - will be ignored" );
-				continue;
-			}
-
-			if ( false == program->bindUniformBlock( uniformBlock ) )
 			{
 				return false;
 			}

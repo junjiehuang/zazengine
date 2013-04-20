@@ -18,11 +18,6 @@
       <attribLocation index="1" name="in_vertNorm"/>
       <attribLocation index="2" name="in_texCoord"/>
     </attribLocations>
-
-    <boundUniformBlocks>
-		  <boundUniformBlock name="transforms"/>
-		  <boundUniformBlock name="material"/>
-    </boundUniformBlocks>
 	</program>
 	
 	<program name="SkyBoxProgram">
@@ -38,10 +33,6 @@
     <attribLocations>
 		  <attribLocation index="0" name="in_vertPos"/>
     </attribLocations>
-
-    <boundUniformBlocks>
-		  <boundUniformBlock name="transforms"/>
-    </boundUniformBlocks>
 	</program>
 	
 	<program name="LightingStageProgramm">
@@ -53,12 +44,6 @@
     <attribLocations>
 		  <attribLocation index="0" name="in_vertPos"/>
     </attribLocations>
-
-    <boundUniformBlocks>
-		  <boundUniformBlock name="transforms"/>
-		  <boundUniformBlock name="light"/>
-		  <boundUniformBlock name="camera"/>
-    </boundUniformBlocks>
 	</program>
 	
 	<program name="LightingNoShadowStageProgramm">
@@ -70,12 +55,6 @@
     <attribLocations>
 		  <attribLocation index="0" name="in_vertPos"/>
     </attribLocations>
-
-    <boundUniformBlocks>
-		  <boundUniformBlock name="transforms"/>
-		  <boundUniformBlock name="light"/>
-		  <boundUniformBlock name="camera"/>
-    </boundUniformBlocks>
 	</program>
 	
 	<program name="ShadowingStageProgramm">
@@ -91,9 +70,5 @@
     <attribLocations>
 		  <attribLocation index="0" name="in_vertPos"/>
     </attribLocations>
-
-    <boundUniformBlocks>
-		  <boundUniformBlock name="transforms"/>
-    </boundUniformBlocks>
 	</program>
 </programs>

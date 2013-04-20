@@ -15,7 +15,7 @@
 #include "../ZazenGraphics.h"
 #include "../Geometry/GeomSkyBox.h"
 #include "../Program/ProgramManagement.h"
-#include "../Program/UniformBlockManagement.h"
+#include "../Program/UniformManagement.h"
 
 #include <iostream>
 #include <algorithm>
@@ -285,28 +285,28 @@ DRRenderer::initShadowMapping( const boost::filesystem::path& pipelinePath )
 bool
 DRRenderer::initUniformBlocks()
 {
-	this->m_transformsBlock = UniformBlockManagement::get( "transforms" );
+	this->m_transformsBlock = UniformManagement::getBlock( "TransformUniforms" );
 	if ( NULL == this->m_transformsBlock )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find transforms uniform-block - exit" );
 		return false;
 	}
 
-	this->m_cameraBlock = UniformBlockManagement::get( "camera" );
+	this->m_cameraBlock = UniformManagement::getBlock( "CameraUniforms" );
 	if ( 0 == this->m_cameraBlock )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find camera uniform-block - exit" );
 		return false;
 	}
 
-	this->m_lightBlock = UniformBlockManagement::get( "light" );
+	this->m_lightBlock = UniformManagement::getBlock( "LightUniforms" );
 	if ( 0 == this->m_lightBlock )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find light uniform-block - exit" );
 		return false;
 	}
 
-	this->m_materialBlock = UniformBlockManagement::get( "material" );
+	this->m_materialBlock = UniformManagement::getBlock( "MaterialUniforms" );
 	if ( 0 == this->m_materialBlock )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find material uniform-block - exit" );
@@ -510,17 +510,17 @@ DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>&
 	}
 
 	// upload world-orientation of camera ( its model-matrix )
-	if ( false == this->m_cameraBlock->updateMat4( this->m_camera->getModelMatrix(), 0 ) )
+	if ( false == this->m_cameraBlock->updateField( "Camera.modelMatrix", this->m_camera->getModelMatrix() ) )
 	{
 		return false;
 	}
 	// upload view-matrix of camera (need to transform e.g. light-world position in EyeCoords/Viewspace)
-	if ( false == this->m_cameraBlock->updateMat4( this->m_camera->getViewMatrix(), 64 ) )
+	if ( false == this->m_cameraBlock->updateField( "Camera.viewMatrix", this->m_camera->getViewMatrix() ) )
 	{
 		return false;
 	}
 	// upload camera-rectangle
-	if ( false == this->m_cameraBlock->updateVec4( cameraRectangle, 128 ) )
+	if ( false == this->m_cameraBlock->updateField( "Camera.rectangle", cameraRectangle ) )
 	{
 		return false;
 	}
@@ -599,12 +599,12 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	}
 
 	// upload light-config
-	if ( false == this->m_lightBlock->updateVec4( lightConfig, 0 ) )
+	if ( false == this->m_lightBlock->updateField( "Light.config", lightConfig ) )
 	{
 		return false;
 	}
 	// upload light-model matrix = orientation of the light in the world
-	if ( false == this->m_lightBlock->updateMat4( light->getModelMatrix(), 16 ) )
+	if ( false == this->m_lightBlock->updateField( "Light.modelMatrix", light->getModelMatrix() ) )
 	{
 		return false;
 	}
@@ -624,7 +624,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		// multiplication with unit-cube is first because has to be carried out the last
 		lightSpaceUnit = this->m_unitCubeMatrix * light->getVPMatrix();
 
-		if ( false == this->m_lightBlock->updateMat4( lightSpaceUnit, 80 ) )
+		if ( false == this->m_lightBlock->updateField( "Light.spaceUniformMatrix", lightSpaceUnit ) )
 		{
 			return false;
 		}
@@ -635,7 +635,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	this->m_transformsBlock->bindBuffer();
 	// OPTIMIZE: store in light once, and only update when change
 	glm::mat4 orthoMat = this->m_camera->createOrthoProj( true, true );
-	if ( false == this->m_transformsBlock->updateMat4( orthoMat, 64 ) )
+	if ( false == this->m_transformsBlock->updateField( "Transforms.projectionMatrix", orthoMat ) )
 	{
 		return false;
 	}
@@ -709,7 +709,7 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 	}
 
 	// update projection because each viewer can have different projection-transform
-	if ( false == this->m_transformsBlock->updateMat4( viewer->getProjMatrix(), 64 ) )
+	if ( false == this->m_transformsBlock->updateField( "Transforms.projectionMatrix", viewer->getProjMatrix() ) )
 	{
 		return false;
 	}
@@ -786,12 +786,12 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 			glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( modelViewMatrix ) );
 
 			// update model-view matrix
-			if ( false == this->m_transformsBlock->updateMat4( modelViewMatrix, 0 ) )
+			if ( false == this->m_transformsBlock->updateField( "Transforms.modelViewMatrix", modelViewMatrix) )
 			{
 				return false;
 			}
 			// update model-view matrix for normals
-			if ( false == this->m_transformsBlock->updateMat4( normalModelViewMatrix, 128 ) )
+			if ( false == this->m_transformsBlock->updateField( "Transforms.normalsModelViewMatrix", normalModelViewMatrix ) )
 			{
 				return false;
 			}

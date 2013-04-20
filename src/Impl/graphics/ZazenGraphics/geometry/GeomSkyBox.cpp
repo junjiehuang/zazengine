@@ -124,12 +124,12 @@ GeomSkyBox::render()
 
 	this->m_transformsBlock->bindBuffer();
 
-	if ( false == this->m_transformsBlock->updateMat4( modelViewMat, 0 ) )
+	if ( false == this->m_transformsBlock->updateField( "Transforms.modelViewMatrix", modelViewMat ) )
 	{
 		return false;
 	}
 
-	if ( false == this->m_transformsBlock->updateMat4( projMat, 64 ) )
+	if ( false == this->m_transformsBlock->updateField( "Transforms.projectionMatrix", projMat ) )
 	{
 		return false;
 	}

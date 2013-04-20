@@ -7,29 +7,28 @@ uniform sampler2D DepthMap;
 
 out vec4 final_color;
 
-layout( shared ) uniform camera
+layout( shared ) uniform CameraUniforms
 {
-	mat4 camera_Model_Matrix;			// 0
-	mat4 camera_View_Matrix;			// 64
+	mat4 modelMatrix;
+	mat4 viewMatrix;
 	
-	vec4 camera_rec;					// 128
-};
+	vec4 rectangle;
+} Camera;
 
-layout( shared ) uniform light
+layout( shared ) uniform LightUniforms
 {
-	vec4 light_Config; 				// x: type, y: falloff, z: shadowCaster 0/1
-	vec4 light_Color;
+	vec4 config; 				// x: type, y: falloff, z: shadowCaster 0/1
 
-	mat4 light_Model_Matrix;
-	mat4 light_SpaceUniform_Matrix;
-};
+	mat4 modelMatrix;
+	mat4 spaceUniformMatrix;
+} Light;
 
 vec4
 calculateLambertian( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
 	// need to transpose light-model matrix to view-space for eye-coordinates 
 	// OPTIMIZE: premultiply on CPU
-	mat4 lightMV_Matrix = camera_View_Matrix * light_Model_Matrix;
+	mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
 
 	// light-position is stored in 4th vector
 	vec3 lightPos = vec3( lightMV_Matrix[ 3 ] );
@@ -46,12 +45,12 @@ calculatePhong( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
 	// need to transpose light-model matrix to view-space for eye-coordinates 
 	// OPTIMIZE: premultiply on CPU
-	mat4 lightMV_Matrix = camera_View_Matrix * light_Model_Matrix;
+	mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
 
 	vec3 lightPos = vec3( lightMV_Matrix[ 3 ] );
 	vec3 lightDir = normalize( lightPos - vec3( position ) );
     
-	vec3 eyeDir = normalize( vec3( camera_Model_Matrix[ 3 ] ) - vec3( position ) );
+	vec3 eyeDir = normalize( vec3( Camera.modelMatrix[ 3 ] ) - vec3( position ) );
 	vec3 vHalfVector = normalize( lightDir + eyeDir );
     
 	// calculate attenuation-factor
@@ -66,7 +65,7 @@ void main()
 {
 	// fetch the coordinate of this fragment in normalized
 	// screen-space ( 0 – 1 ) 
-	vec2 screenCoord = vec2( gl_FragCoord.x / camera_rec.x, gl_FragCoord.y / camera_rec.y );
+	vec2 screenCoord = vec2( gl_FragCoord.x / Camera.rectangle.x, gl_FragCoord.y / Camera.rectangle.y );
 
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
 
