@@ -2,27 +2,25 @@
 
 in vec3 in_vertPos;
 in vec3 in_vertNorm;
+in vec2 in_texCoord;
 
 out vec4 ex_normal;
+out vec2 ex_texCoord;
 
-layout(shared) uniform transforms
+layout( shared ) uniform TransformUniforms
 {
-	mat4 model_Matrix;					// 0
-	mat4 modelViewMatrix;				// 64
-	mat4 modelViewprojectionMatrix;	// 128
-	
-	mat4 normalsModelViewMatrix;		// 192
-	
-	mat4 projectionMatrix;				// 256
-	mat4 viewing_Matrix;				// 320
-	
-	mat4 projectionInv_Matrix;			// 384
-	mat4 viewingInv_Matrix;				// 448
-};
+	mat4 modelViewMatrix;
+	mat4 projectionMatrix;
+
+	mat4 normalsModelViewMatrix;
+} Transforms;
 
 void main()
 {
-	// TODO: handle texture-coord
-	gl_Position = modelViewprojectionMatrix * vec4( in_vertPos, 1.0 );
-	ex_normal = normalsModelViewMatrix * vec4( in_vertNorm, 0.0 );
+	ex_normal = Transforms.normalsModelViewMatrix * vec4( in_vertNorm, 0.0 );
+	// no transform for texture-coords, just interpolated
+	ex_texCoord = in_texCoord;
+
+	// OPTIMIZE: premultiply projection & modelView on CPU 
+	gl_Position = Transforms.projectionMatrix * Transforms.modelViewMatrix * vec4( in_vertPos, 1.0 );
 }

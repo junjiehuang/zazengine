@@ -3,19 +3,21 @@
 uniform sampler2D lStageBg;
 uniform sampler2D transpAcc;
 
-uniform sampler2D normalMap;
-uniform sampler2D diffuseColor;
+uniform sampler2D NormalMap;
+uniform sampler2D DiffuseColor;
 
-in vec2 ex_screenSpaceTexCoord;
+in vec4 ex_normal;
+in vec2 ex_texCoord;
+
 out vec4 out_color;
 
 void main()
 {
     // fetch normal from normalmap
-    vec3 normal = texture( normalMap, ex_screenSpaceTexCoord );
+    vec3 normal = texture( NormalMap, ex_texCoord );
 
     // perturb texture coordinate
-    vec2 texCoord = ex_screenSpaceTexCoord.xy + normal.xy;
+    vec2 texCoord = ex_texCoord.xy + normal.xy;
     // access the lighting-stage result as background
     vec3 lStageBgColor = texture( lStageBg, texCoord );
     // access transparency accumulation
@@ -28,7 +30,7 @@ void main()
     vec3 bgColor = lStageBgColor * ( 1.0 - transpAccColor.a ) + transpAccColor;
 
     // apply transparency-blending
-    vec3 diffuseColor = texture( diffuseColor, texCoord );
+    vec3 diffuseColor = texture( DiffuseColor, texCoord );
 
     // when using the diffuse-color texture as alpha source:
     out_color.rgb = bgColor * ( 1.0 - diffuseColor.a ) + diffuseColor.rgb * diffuseColor.a;
@@ -38,6 +40,5 @@ void main()
     // bgColor contributes 10% to the color
     // diffuseColor contributes 90% of the color
     out_color.rgb = bgColor * ( 1.0 - alpha ) + diffuseColor.rgb * alpha;
-
     out_color.a = 1.0;
 }

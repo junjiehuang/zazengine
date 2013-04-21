@@ -19,8 +19,26 @@
       <attribLocation index="2" name="in_texCoord"/>
     </attribLocations>
 	</program>
-	
-	<program name="SkyBoxProgram">
+
+  <!--
+  <program name="TransparencyProgram">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/transparency/transpVert.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/transparency/transpFrag.glsl"/>
+    </shaders>
+
+    <fragDataLocations>
+      <fragDataLocation colorNumber="0" name="out_diffuse"/>
+    </fragDataLocations>
+
+    <attribLocations>
+      <attribLocation index="0" name="in_vertPos"/>
+      <attribLocation index="1" name="in_vertNorm"/>
+      <attribLocation index="2" name="in_texCoord"/>
+    </attribLocations>
+  </program>
+  -->
+  <program name="SkyBoxProgram">
     <shaders>
 		  <shader type="VERTEX" file="dr/stages/geom/skyBoxVert.glsl"/>
 		  <shader type="FRAGMENT" file="dr/stages/geom/skyBoxFrag.glsl"/>
@@ -44,6 +62,10 @@
     <attribLocations>
 		  <attribLocation index="0" name="in_vertPos"/>
     </attribLocations>
+
+    <fragDataLocations>
+      <fragDataLocation colorNumber="0" name="final_color"/>
+    </fragDataLocations>
 	</program>
 	
 	<program name="LightingNoShadowStageProgramm">
@@ -55,6 +77,10 @@
     <attribLocations>
 		  <attribLocation index="0" name="in_vertPos"/>
     </attribLocations>
+
+    <fragDataLocations>
+      <fragDataLocation colorNumber="0" name="final_color"/>
+    </fragDataLocations>
 	</program>
 	
 	<program name="ShadowingStageProgramm">

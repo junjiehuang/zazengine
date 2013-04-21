@@ -88,7 +88,6 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 		GLenum colorAttachment = GL_COLOR_ATTACHMENT0 + this->m_colorBufferTargets.size();
 
 		this->m_colorBufferTargets.push_back( colorAttachment );
-		this->m_colorBuffers.push_back( id );
 	}
 
 	this->m_attachedTargets.push_back( renderTarget );
@@ -180,10 +179,49 @@ FrameBufferObject::bindAllTargets()
 }
 
 bool
+FrameBufferObject::bindTargets( std::vector<unsigned int> indices )
+{
+	// bind the mrts
+	for ( unsigned int i = 0; i < indices.size(); i++ )
+	{
+		if ( false == this->m_attachedTargets[ indices[ i ] ]->bind( i ) )
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool
 FrameBufferObject::drawAllBuffers()
 {
 	// activate multiple drawing to our color targets targets
 	glDrawBuffers( this->m_colorBufferTargets.size(), &this->m_colorBufferTargets[ 0 ] );
+
+#ifdef CHECK_GL_ERRORS
+	if ( false == GLUtils::peekErrors() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::drawAllBuffers: glDrawBuffers failed";
+		return false;
+	}
+#endif
+
+	return true;
+}
+
+bool
+FrameBufferObject::drawBuffers( std::vector<unsigned int> indices )
+{
+	std::vector<GLenum> colorBufferTargets;
+
+	for ( unsigned int i = 0; i < indices.size(); i++ )
+	{
+		colorBufferTargets.push_back( this->m_colorBufferTargets[ indices[ i ] ] );
+	}
+
+	// activate multiple drawing to our color targets targets
+	glDrawBuffers( colorBufferTargets.size(), &colorBufferTargets[ 0 ] );
 
 #ifdef CHECK_GL_ERRORS
 	if ( false == GLUtils::peekErrors() )
@@ -212,7 +250,6 @@ FrameBufferObject::drawBuffer( unsigned int index )
 
 	return true;
 }
-
 
 bool
 FrameBufferObject::drawNone()

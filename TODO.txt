@@ -1,17 +1,19 @@
-Transparency-Rendering
+Transparency-Rendering (see GPU Gems 2 Page 295)
 1. G-Buffer as usual
-2. Lighting-Stage
+2. Lighting-Stage 
+	-> render now instead to default framebuffer to intermediate lighting-FB to accumulate opaque color in scene, will be used by transparency rendering later
 	-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
 		=> need additional render-target in shadow-fbo: shadow-color target
 	-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
 	=> opaque Objects in Framebuffer AND colored shadows cast by transparent objects but no transparent objects yet
 3. Render transparent objects 
-	-> now render transparent objects by accessing previous framebuffer & pertubing the normals (no need to transform, we are already in tangent - texture - space )
-	-> simulate refraction (see GPU Gems 1 Chapter)
-		=> all black but transparent objects will show up
+	-> render direct to default framebuffer
+	-> now render transparent objects by accessing previous lighting-FB & pertubing the normals (no need to transform, we are already in tangent - texture - space )
+	-> simulate refraction (see GPU Gems 1)
+	=> all black but transparent objects will show up
 4. finalize
-	-> combine both the opaque framebuffer and the transparent framebuffer into final framebuffer result:
-		 marked pixel of transparent framebuffer will just overwrite pixels of opaque framebuffer	
+	-> blend lighting-fb to default framebuffer to combine. what we need is to achieve blending so that all pixels of transparency rendering are left
+		as they are and the other black pixels are filled up with those of the lighting-fb
 	
 Multiple lights
 	-> blending 

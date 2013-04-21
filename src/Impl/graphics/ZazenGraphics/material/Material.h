@@ -58,6 +58,7 @@ class Material
 		glm::vec4 m_color;
 
 		Texture* m_diffuseTexture;
+		Texture* m_normalTexture;
 };
 
 #endif /* MATERIAL_H_ */

@@ -139,6 +139,21 @@ Material::init( const filesystem::path& path )
 						}
 					}
 				}
+				else if ( 0 == strcmp( str, "normalMap" ) )
+				{
+					if ( 0 == material->m_normalTexture )
+					{
+						str = materialCfgNode->Attribute( "file" );
+						if ( 0 != str )
+						{
+							Texture* texture = TextureFactory::get( str );
+							if ( texture )
+							{
+								material->m_normalTexture = texture;
+							}
+						}
+					}
+				}
 				else if ( 0 == strcmp( str, "color" ) )
 				{
 					glm::vec4 color;
@@ -206,6 +221,12 @@ Material::activate( UniformBlock* materialUniforms, Program* currentProgramm )
 		currentProgramm->setUniformInt( "DiffuseTexture", 0 );
 	}
 
+	if ( this->m_normalTexture )
+	{
+		this->m_normalTexture->bind( 1 );
+		currentProgramm->setUniformInt( "NormalTexture", 1 );
+	}
+
 	glm::vec4 materialCfg;
 	materialCfg[ 0 ] = ( float ) this->m_type;
 	materialCfg[ 1 ] = this->m_diffuseTexture == 0 ? 0.0f : 1.0f;
@@ -229,6 +250,7 @@ Material::Material( const std::string& name, MaterialType type )
 	  m_type( type )
 {
 	this->m_diffuseTexture = NULL;
+	this->m_normalTexture = NULL;
 }
 
 Material::~Material()

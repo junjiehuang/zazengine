@@ -134,25 +134,31 @@ DRRenderer::initGBuffer()
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 
 	// render-target at index 0: diffuse color
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
 	{
 		return false;
 	}
 
 	// render-target at index 1: normals
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
 	{
 		return false;
 	}
 
 	// render-target at index 2: positions in viewing-coords (Eye-Space)
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR ) )		
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
 	{
 		return false;
 	}
 
-	// render-target at index 3: depth-buffer
-	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH ) )		
+	// render-target at index 3: final composition
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
+	{
+		return false;
+	}
+
+	// render-target at index 4: depth-buffer
+	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH, this->m_gBufferFbo ) )		
 	{
 		return false;
 	}
@@ -176,7 +182,7 @@ DRRenderer::initGBuffer()
 }
 
 bool
-DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType )
+DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType, FrameBufferObject* fbo )
 {
 	RenderTarget* renderTarget = RenderTarget::create( ( GLsizei ) this->m_camera->getWidth(), 
 		( GLsizei ) this->m_camera->getHeight(), targetType );
@@ -185,7 +191,7 @@ DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType )
 		return false;
 	}
 
-	if ( false == this->m_gBufferFbo->attachTarget( renderTarget ) )
+	if ( false == fbo->attachTarget( renderTarget ) )
 	{
 		return false;
 	}
@@ -369,6 +375,11 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
+	if ( false == this->doTransparencyStage( instances, lights ) )
+	{
+		return false;
+	}
+	
 #ifndef CHECK_GL_ERRORS
 	// if checking of gl-errors is deactivated check once per frame for ALL errors
 	if ( false == GLUtils::peekErrors() )
@@ -381,7 +392,6 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 
 	return true;
 }
-
 
 bool
 DRRenderer::doGeometryStage( std::list<Instance*>& instances, std::list<Light*>& lights )
@@ -415,8 +425,14 @@ DRRenderer::doGeometryStage( std::list<Instance*>& instances, std::list<Light*>&
 		return false;
 	}
 
+	// OPTIMIZE: create once
+	vector<unsigned int> indices;
+	indices.push_back( 0 );
+	indices.push_back( 1 );
+	indices.push_back( 2 );
+
 	// enable rendering to all render-targets in geometry-stage
-	if ( false == this->m_gBufferFbo->drawAllBuffers() )
+	if ( false == this->m_gBufferFbo->drawBuffers( indices ) )
 	{
 		return false;
 	}
@@ -427,8 +443,8 @@ DRRenderer::doGeometryStage( std::list<Instance*>& instances, std::list<Light*>&
 		return false;
 	}
 
-	// draw all geometry from cameras viewpoint AND apply materials
-	if ( false == this->renderInstances( this->m_camera, instances, this->m_progGeomStage, true ) )
+	// draw all geometry from cameras viewpoint AND apply materials but ignore transparent material
+	if ( false == this->renderInstances( this->m_camera, instances, this->m_progGeomStage, true, false ) )
 	{
 		return false;
 	}
@@ -483,11 +499,6 @@ DRRenderer::renderSkyBox()
 bool
 DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
-	// IMPORANT: when other fbos are used in this pipeline, they are always unbound after 
-	//		usage so it is ensured that we are rendering to the default framebuffer now
-	// clear default framebuffer
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
 	glm::vec4 cameraRectangle;
 	cameraRectangle[ 0 ] = ( float ) this->m_camera->getWidth();
 	cameraRectangle[ 1 ] = ( float ) this->m_camera->getHeight();
@@ -526,6 +537,12 @@ DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>&
 		}
 	}
 
+	// switch back to default framebuffer
+	if ( false == this->m_gBufferFbo->unbind() )
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -552,6 +569,30 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		activeLightingProgram = this->m_progLightingNoShadowStage;
 	}
 
+	// render to g-buffer
+	if ( false == this->m_gBufferFbo->bind() )
+	{
+		return false;
+	}
+
+	// IMPORTANT: need to re-set the viewport for each FBO
+	// could have changed due to shadow-map or other rendering happend in the frame before
+	this->m_camera->restoreViewport();
+
+	// enable rendering to 1st target
+	if ( false == this->m_gBufferFbo->drawBuffer( 3 ) )
+	{
+		return false;
+	}
+
+	// glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+	// check status of FBO, IMPORANT: not before, would have failed
+	if ( false == this->m_gBufferFbo->checkStatus() )
+	{
+		return false;
+	}
+
 	// activate lighting-stage shader
 	if ( false == activeLightingProgram->use() )
 	{
@@ -559,8 +600,15 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		return false;
 	}
 
+	// OPTIMIZE: create once
+	vector<unsigned int> indices;
+	indices.push_back( 0 );
+	indices.push_back( 1 );
+	indices.push_back( 2 );
+	indices.push_back( 4 );
+
 	// lighting stage program need all buffers of g-buffer bound as textures
-	if ( false == this->m_gBufferFbo->bindAllTargets() )
+	if ( false == this->m_gBufferFbo->bindTargets( indices ) )
 	{
 		return false;
 	}
@@ -571,7 +619,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	activeLightingProgram->setUniformInt( "NormalMap", 1 );
 	// tell lighting program that generic map is bound to texture-unit 2
 	activeLightingProgram->setUniformInt( "PositionMap", 2 );
-	// tell lighting program that depth-map of scene is bound to texture-unit MRT_COUNT
+	// tell lighting program that depth-map of scene is bound to texture-unit MRT_COUNT 
 	activeLightingProgram->setUniformInt( "DepthMap", MRT_COUNT );
 	
 	glm::vec4 lightConfig;
@@ -673,8 +721,8 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 	// IMPORTANT: need to set the viewport for each shadow-map, because resolution can be different for each
 	light->restoreViewport();
 
-	// render scene from view of camera - don't apply material, we need only depth
-	if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false ) )
+	// render scene from view of camera - don't apply material, we need only depth, but render transparent materials too
+	if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, true ) )
 	{
 		return false;
 	}
@@ -689,7 +737,18 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 }
 
 bool
-DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program* currentProgramm, bool applyMaterial )
+DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Light*>& lights )
+{
+	// IMPORANT: when other fbos are used in this pipeline, they are always unbound after 
+	//		usage so it is ensured that we are rendering to the default framebuffer now
+	// clear default framebuffer
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+	return true;
+}
+
+bool
+DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program* currentProgramm, bool applyMaterial, bool renderTransparency )
 {
 	// bind transform uniform-block to update model-, view & projection transforms
 	if ( false == this->m_transformsBlock->bindBuffer() )
@@ -708,25 +767,33 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 	{
 		Instance* instance = *iter++;
 
-		// activate material only when there is one present & render-pass enforces usage of materials
-		if ( instance->material && applyMaterial )
+		if ( instance->material )
 		{
-			// need to bind material uniform-block to update data
-			if ( false == this->m_materialBlock->bindBuffer() )
+			if ( Material::MATERIAL_TRANSPARENT == instance->material->getType() && ! renderTransparency )
 			{
-				return false;
+				continue;
 			}
 
-			// activate material
-			if ( false == instance->material->activate( this->m_materialBlock, currentProgramm ) )
+			// activate material only when there is one present & render-pass enforces usage of materials
+			if ( applyMaterial )
 			{
-				return false;
-			}
+				// need to bind material uniform-block to update data
+				if ( false == this->m_materialBlock->bindBuffer() )
+				{
+					return false;
+				}
 
-			// back to transform uniform-block because is needed in the actual rendering of geometry (modelview calculation)
-			if ( false == this->m_transformsBlock->bindBuffer() )
-			{
-				return false;
+				// activate material
+				if ( false == instance->material->activate( this->m_materialBlock, currentProgramm ) )
+				{
+					return false;
+				}
+
+				// back to transform uniform-block because is needed in the actual rendering of geometry (modelview calculation)
+				if ( false == this->m_transformsBlock->bindBuffer() )
+				{
+					return false;
+				}
 			}
 		}
 

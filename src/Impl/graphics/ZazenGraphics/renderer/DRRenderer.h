@@ -69,16 +69,17 @@ class DRRenderer : public Renderer
 		bool initShadowMapping( const boost::filesystem::path& );
 		bool initUniformBlocks();
 
-		bool createMrtBuffer( RenderTarget::RenderTargetType );
+		bool createMrtBuffer( RenderTarget::RenderTargetType, FrameBufferObject* );
 
 		bool doGeometryStage( std::list<Instance*>&, std::list<Light*>& );
 		bool doLightingStage( std::list<Instance*>&, std::list<Light*>& );
+		bool doTransparencyStage( std::list<Instance*>&, std::list<Light*>& );
 
 		bool renderSkyBox();
 		bool renderLight( std::list<Instance*>&, Light* );
 		bool renderShadowMap( std::list<Instance*>&, Light* );
 
-		bool renderInstances( Viewer*, std::list<Instance*>&, Program*, bool );
+		bool renderInstances( Viewer*, std::list<Instance*>&, Program*, bool, bool );
 		bool renderGeom( Viewer*, GeomType*, const glm::mat4& );
 
 };

@@ -25,12 +25,14 @@ class FrameBufferObject
 
 		bool drawAllBuffers();
 		bool drawBuffer( unsigned int );
+		bool drawBuffers( std::vector<unsigned int> );
 		bool drawNone();
 
 		bool bind();
 		bool unbind();
 
 		bool bindAllTargets();
+		bool bindTargets( std::vector<unsigned int> );
 
 		bool clearAll();
 
