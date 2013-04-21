@@ -149,7 +149,7 @@ ZazenGraphics::start()
 	}
 
 	this->m_renderer->setCamera( this->m_camera );
-	if ( false == this->m_renderer->initialize( this->m_pipelinePath ) )
+	if ( false == this->m_renderer->initialize() )
 	{
 		this->m_logger->logError( "initializing renderer failed - exit" );
 		return false;
@@ -542,7 +542,7 @@ ZazenGraphics::toggleFullscreen()
 
 	/* TODO fix it, not yet working */
 	this->m_renderer->shutdown();
-	this->m_renderer->initialize( this->m_pipelinePath );
+	this->m_renderer->initialize();
 
 	return true;
 }

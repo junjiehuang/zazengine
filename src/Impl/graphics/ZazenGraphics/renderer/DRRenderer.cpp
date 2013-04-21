@@ -36,6 +36,7 @@ DRRenderer::DRRenderer()
 	this->m_progLightingStage = NULL;
 	this->m_progLightingNoShadowStage = NULL;
 	this->m_progShadowMapping = NULL;
+	this->m_progTransparency = NULL;
 
 	this->m_transformsBlock = NULL;
 	this->m_cameraBlock = NULL;
@@ -55,7 +56,7 @@ DRRenderer::~DRRenderer()
 }
 
 bool
-DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
+DRRenderer::initialize()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Renderer..." );
 
@@ -69,17 +70,22 @@ DRRenderer::initialize( const boost::filesystem::path& pipelinePath )
 		return false;
 	}
 
-	if ( false == this->initGeomStage( pipelinePath ) )
+	if ( false == this->initGeomStage() )
 	{
 		return false;
 	}
 
-	if ( false == this->initLightingStage( pipelinePath ) )
+	if ( false == this->initLightingStage() )
 	{
 		return false;
 	}
 
-	if ( false == this->initShadowMapping( pipelinePath ) )
+	if ( false == this->initShadowMapping() )
+	{
+		return false;
+	}
+
+	if ( false == this->initTransparency() )
 	{
 		return false;
 	}
@@ -200,7 +206,7 @@ DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType, FrameBuf
 }
 
 bool
-DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
+DRRenderer::initGeomStage()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Geometry-Stage..." );
 
@@ -224,7 +230,7 @@ DRRenderer::initGeomStage( const boost::filesystem::path& pipelinePath )
 }
 
 bool
-DRRenderer::initLightingStage( const boost::filesystem::path& pipelinePath )
+DRRenderer::initLightingStage()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Lighting-Stage..." );
 
@@ -248,7 +254,7 @@ DRRenderer::initLightingStage( const boost::filesystem::path& pipelinePath )
 }
 
 bool
-DRRenderer::initShadowMapping( const boost::filesystem::path& pipelinePath )
+DRRenderer::initShadowMapping()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Shadow-Mapping..." );
 
@@ -285,6 +291,23 @@ DRRenderer::initShadowMapping( const boost::filesystem::path& pipelinePath )
 	}
 
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Shadow-Mapping finished" );
+
+	return true;
+}
+
+bool
+DRRenderer::initTransparency()
+{
+	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Transparency-Stage..." );
+
+	this->m_progTransparency = ProgramManagement::get( "TransparencyProgram" );
+	if ( 0 == this->m_progTransparency )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initTransparency: coulnd't create program - exit" );
+		return false;
+	}
+
+	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Transparency-Stage finished" );
 
 	return true;
 }
@@ -744,6 +767,19 @@ DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Ligh
 	// clear default framebuffer
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+	if ( false == this->m_progTransparency->use() )
+	{
+		return false;
+	}
+
+	this->m_gBufferFbo->getAttachedTargets()[ 3 ]->bind( 2 );
+	this->m_progTransparency->setUniformInt( "Background", 2 );
+
+	if ( false == this->renderInstances( this->m_camera, instances, this->m_progTransparency, true, true ) )
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -769,7 +805,9 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 
 		if ( instance->material )
 		{
-			if ( Material::MATERIAL_TRANSPARENT == instance->material->getType() && ! renderTransparency )
+
+			if ( ( Material::MATERIAL_TRANSPARENT == instance->material->getType() && ! renderTransparency ) ||
+				( Material::MATERIAL_TRANSPARENT != instance->material->getType() && renderTransparency ) )
 			{
 				continue;
 			}

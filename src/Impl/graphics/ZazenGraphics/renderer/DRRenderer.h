@@ -23,7 +23,7 @@ class DRRenderer : public Renderer
 		DRRenderer();
 		virtual ~DRRenderer();
 
-		virtual bool initialize( const boost::filesystem::path& );
+		virtual bool initialize();
 		virtual bool shutdown();
 
 		// renders this list of geominstances which must be in front-to-back order
@@ -47,6 +47,8 @@ class DRRenderer : public Renderer
 		Program* m_progLightingNoShadowStage;
 		////////////////////////////////////////
 
+		Program* m_progTransparency;
+
 		// Program and shaders for shadow-mapping
 		Program* m_progShadowMapping;
 
@@ -63,10 +65,11 @@ class DRRenderer : public Renderer
 		// utils matrix
 		glm::mat4 m_unitCubeMatrix;
 
-		bool initGeomStage( const boost::filesystem::path& );
+		bool initGeomStage();
 		bool initGBuffer();
-		bool initLightingStage( const boost::filesystem::path& );
-		bool initShadowMapping( const boost::filesystem::path& );
+		bool initLightingStage();
+		bool initShadowMapping();
+		bool initTransparency();
 		bool initUniformBlocks();
 
 		bool createMrtBuffer( RenderTarget::RenderTargetType, FrameBufferObject* );

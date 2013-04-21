@@ -310,9 +310,6 @@
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpGeom.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
-    </None>
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
     </None>
@@ -330,6 +327,9 @@
     </None>
     <None Include="..\..\..\..\pipeline\programConfig.xml">
       <Filter>Ressourcendateien\Pipeline</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpFrag.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
     </None>
   </ItemGroup>
 </Project>

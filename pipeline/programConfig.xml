@@ -20,7 +20,6 @@
     </attribLocations>
 	</program>
 
-  <!--
   <program name="TransparencyProgram">
     <shaders>
       <shader type="VERTEX" file="dr/stages/transparency/transpVert.glsl"/>
@@ -37,7 +36,7 @@
       <attribLocation index="2" name="in_texCoord"/>
     </attribLocations>
   </program>
-  -->
+
   <program name="SkyBoxProgram">
     <shaders>
 		  <shader type="VERTEX" file="dr/stages/geom/skyBoxVert.glsl"/>
