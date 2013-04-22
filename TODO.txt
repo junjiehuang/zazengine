@@ -1,20 +1,51 @@
 Transparency-Rendering (see GPU Gems 2 Page 295)
-1. G-Buffer as usual
-2. Lighting-Stage 
-	-> render now instead to default framebuffer to intermediate lighting-FB to accumulate opaque color in scene, will be used by transparency rendering later
-	-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
-		=> need additional render-target in shadow-fbo: shadow-color target
-	-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
-	=> opaque Objects in Framebuffer AND colored shadows cast by transparent objects but no transparent objects yet
-3. Render transparent objects 
-	-> render direct to default framebuffer
-	-> now render transparent objects by accessing previous lighting-FB & pertubing the normals (no need to transform, we are already in tangent - texture - space )
-	-> simulate refraction (see GPU Gems 1)
-	=> all black but transparent objects will show up
-4. finalize
-	-> blend lighting-fb to default framebuffer to combine. what we need is to achieve blending so that all pixels of transparency rendering are left
-		as they are and the other black pixels are filled up with those of the lighting-fb
+	-> Transparency-FBO with 3 Color-Attachments and 1 Depth-Attachment
+		-> because need correct depth-visibility between transparent objects
+		-> because need to access g-buffer depth
+		-> because we want transparency behind transparency
+		
+	-> Render Lighting-Stage output to Transparency-FBO Color-Attachment 1
+		-> bypass all when there are no transparent objects visible
+			-> render opaque-stuff directly to screen
 	
+	-> Render transparent object
+		-> read backgroundColor from Color-Attachment 1
+		-> write output to Color-Attachment 2
+			-> final_color = inputColor * inputAlpha + backgroundColor * ( 1.0 - inputAlpha );
+			-> final_color.a = 0.0; // needed to mark pixels as transparent for later finalize-step
+		-> simulate refraction (see GPU Gems 1)
+		-> prevent artifacts on edges by checking pertubed lookup for g-buffer depth
+
+	-> Render transparency behind transparency - high performance penalty!
+		-> after first object Color-Attachment 2 contains all affected fragments with transparent-color with alpha 0.0 and others black with alpha 1.0
+		-> Color-Attachment 1 still contains Background
+		-> do combining step to Color-Target 3 ( performance: only if there is next object and next object is behind previous object AND intersects in screen-space )
+			-> read from Color-Attachment 1 as Background
+			-> read from Color-Attachment 2 as Transparency-Intermediate
+			-> write to Color-Attachment 3 as new Background
+			-> render full-screen quad & run shader
+				-> in Color-Attachment 2 all affected pixel have transparency of 0.0
+				-> apply combination
+					-> final_color = opaqueColor * transpColor.a + transpColor;
+					-> final_color.a = 1.0;
+		-> now Color-Attachment 3 becomes the new Background
+		-> Color-Attachment 2 will still servces as Transparency-Intermediate
+		-> Color-Attachment 1 will be used for the next final combination
+		-> proceed with next transparent object
+		
+	-> finalize
+		-> blit last Color-Attachment combination to default framebuffer
+		
+	-> Do Colored Shadow-Rendering for Transparent objects
+		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
+			-> optimization: when material is transparent write to 1.0 to alpha-channel, else 0.0
+			=> need additional render-target in shadow-fbo: shadow-color target
+		-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
+			-> optimization: only do additional lookup when alpha-channel is 1.0
+		
+	-> bypass all when there are no transparent objects visible
+		-> render opaque-stuff directly to screen
+		
 Multiple lights
 	-> blending 
 	-> correct lighting-equations: falloff, cone, ...
