@@ -194,6 +194,17 @@ FrameBufferObject::bindTargets( std::vector<unsigned int> indices )
 }
 
 bool
+FrameBufferObject::bindTarget( unsigned int index )
+{
+	if ( false == this->m_attachedTargets[ index ]->bind( 0 ) )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool
 FrameBufferObject::drawAllBuffers()
 {
 	// activate multiple drawing to our color targets targets

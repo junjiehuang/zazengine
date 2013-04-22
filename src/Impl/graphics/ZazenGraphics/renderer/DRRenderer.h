@@ -32,7 +32,11 @@ class DRRenderer : public Renderer
 	private:
 		// Multiple-Render-Targes & Framebuffer for Deferred Rendering
 		FrameBufferObject* m_gBufferFbo;
+		FrameBufferObject* m_shadowMappingFB;
+		FrameBufferObject* m_transparencyFbo;
 		////////////////////////////////////////
+
+		GeomType* m_fullScreenQuad;
 
 		// Program and shaders for geometry-stage
 		Program* m_progGeomStage;
@@ -48,11 +52,10 @@ class DRRenderer : public Renderer
 		////////////////////////////////////////
 
 		Program* m_progTransparency;
+		Program* m_progBlendTransparency;
 
 		// Program and shaders for shadow-mapping
 		Program* m_progShadowMapping;
-
-		FrameBufferObject* m_shadowMappingFB;
 		////////////////////////////////////////
 
 		// Uniform-Blocks

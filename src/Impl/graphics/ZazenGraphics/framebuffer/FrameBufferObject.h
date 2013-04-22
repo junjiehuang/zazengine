@@ -33,6 +33,7 @@ class FrameBufferObject
 
 		bool bindAllTargets();
 		bool bindTargets( std::vector<unsigned int> );
+		bool bindTarget( unsigned int );
 
 		bool clearAll();
 

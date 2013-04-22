@@ -37,6 +37,22 @@
     </attribLocations>
   </program>
 
+  <program name="BlendTransparencyProgram">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/transparency/blendTranspVert.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/transparency/blendTranspFrag.glsl"/>
+    </shaders>
+
+    <attribLocations>
+      <attribLocation index="0" name="in_vertPos"/>
+      <attribLocation index="2" name="in_texCoord"/>
+    </attribLocations>
+
+    <fragDataLocations>
+      <fragDataLocation colorNumber="0" name="final_color"/>
+    </fragDataLocations>
+  </program>
+  
   <program name="SkyBoxProgram">
     <shaders>
 		  <shader type="VERTEX" file="dr/stages/geom/skyBoxVert.glsl"/>
