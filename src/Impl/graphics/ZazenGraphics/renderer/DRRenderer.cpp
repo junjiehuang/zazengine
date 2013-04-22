@@ -818,40 +818,37 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 bool
 DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
-	// IMPORANT: when other fbos are used in this pipeline, they are always unbound after 
-	//		usage so it is ensured that we are rendering to the default framebuffer now
-	// clear default framebuffer
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
 	if ( false == this->m_progTransparency->use() )
 	{
 		return false;
 	}
 
-	// TODO: this is wrong: will bind target with index 2 to texture-unit 0!! 
-
 	// bind to index 2 because DiffuseColor of Material is at index 0 and NormalMap of Material is at index 1
-	this->m_transparencyFbo->bindTarget( 2 );
+	this->m_transparencyFbo->getAttachedTargets()[ 0 ]->bind( 2 );
+	
 	this->m_progTransparency->setUniformInt( "Background", 2 );
+
+	this->m_transparencyFbo->bind();
+	this->m_transparencyFbo->drawBuffer( 1 );
+
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	if ( false == this->renderInstances( this->m_camera, instances, this->m_progTransparency, true, true ) )
 	{
 		return false;
 	}
 
+	this->m_transparencyFbo->unbind();
+
 	if ( false == this->m_progBlendTransparency->use() )
 	{
 		return false;
 	}
 
-	vector<unsigned int> indices;
-	indices.push_back( 0 );
-	indices.push_back( 1 );
+	this->m_transparencyFbo->getAttachedTargets()[ 1 ]->bind( 1 );
 
-	this->m_transparencyFbo->bindTargets( indices );
-
-	this->m_progBlendTransparency->setUniformInt( "BackgroundPass", 0 );
-	this->m_progBlendTransparency->setUniformInt( "TransparentIntermediate", 1 );
+	this->m_progBlendTransparency->setUniformInt( "Background", 2 );
+	this->m_progBlendTransparency->setUniformInt( "Transparent", 1 );
 
 	// QUESTION: due to a but only bind was called instead of bindBuffer but it worked!! why?
 	// update projection-matrix because need ortho-projection for full-screen quad
