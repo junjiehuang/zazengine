@@ -1,40 +1,61 @@
 Transparency-Rendering (see GPU Gems 2 Page 295)
-	-> Transparency-FBO with 3 Color-Attachments and 1 Depth-Attachment
-		-> because need correct depth-visibility between transparent objects
-		-> because need to access g-buffer depth
-		-> because we want transparency behind transparency
-		
-	-> Render Lighting-Stage output to Transparency-FBO Color-Attachment 1
-		-> bypass all when there are no transparent objects visible
+	-> rename shadowmapping-fbo to intermediate-depth FBO
+	
+	-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
+	
+	-> shadow-mapping seems to be broken => fix it
+	-> depth of 0.5 overall means: full-screen quad with unit ortho-box is written to depth
+	
+	-> need to render all lighting-passes with existing g-buffer because need depth-tests for light-boundary
+		=> turn off depth-writing for light-boundaries but leave depth-test enabled
+		=> check if this is really possible, if not use intermediate-depth FBO
+	-> we want correct depth-visibility between transparent objects
+	-> need to access g-buffer depth to remove artifacts on transparency boundaries
+	-> we want to render correct transparency behind transparency
+	-> reuse 2 Color Render-Targets from g-buffer as intermediate results
+		=> Diffuse-Color Target
+		=> Normals Target
+	-> add 1 additional Color Render-Target to g-buffer to gather lighting-pass result
+		=> if ec-position target is no more needed because calculated in fragment-shader, no more additional target necessary
+	-> need additional FBO (intermediate-depth) with only depth-attachment for intermediate depth
+		-> reuse shadowmapping-fbo (renamed to intermediate-depth fbo) with one separate depth-attachment
+	
+	-> Render Lighting-Stage output to G-Buffer Color-Attachment 4
+		-> bypass all when there are no transparent objects visible/available
 			-> render opaque-stuff directly to screen
 	
 	-> Render transparent object
-		-> read backgroundColor from Color-Attachment 1
-		-> write output to Color-Attachment 2
+		-> copy depth from g-buffer to intermediate-depth FBO
+			-> the reason for this is because we need to access the background-depth (as stored in g-buffer) but will write to it in same process when rendering the transparent object
+				=> we cannot write to an already bound render-target (depth will be bound as sampler) so we need to copy it and bind it to another texture
+		-> read backgroundColor from Color-Attachment 4
+			-> it was written beforehand by lighting-passes
+		-> write output to Color-Attachment 1
 			-> final_color = inputColor * inputAlpha + backgroundColor * ( 1.0 - inputAlpha );
 			-> final_color.a = 0.0; // needed to mark pixels as transparent for later finalize-step
 		-> simulate refraction (see GPU Gems 1)
-		-> prevent artifacts on edges by checking pertubed lookup for g-buffer depth
+		-> prevent artifacts on edges by checking pertubed fragment depth by reading depth from intermediate-depth fbo depth
 
 	-> Render transparency behind transparency - high performance penalty!
-		-> after first object Color-Attachment 2 contains all affected fragments with transparent-color with alpha 0.0 and others black with alpha 1.0
-		-> Color-Attachment 1 still contains Background
-		-> do combining step to Color-Target 3 ( performance: only if there is next object and next object is behind previous object AND intersects in screen-space )
-			-> read from Color-Attachment 1 as Background
-			-> read from Color-Attachment 2 as Transparency-Intermediate
-			-> write to Color-Attachment 3 as new Background
+		-> after first object Color-Attachment 1 contains all affected fragments with transparent-color with alpha 0.0 and others black with alpha 1.0
+		-> Color-Attachment 4 still contains Background
+		-> do combining step to Color-Target 2 ( performance: only if there is next object and next object is behind previous object AND intersects in screen-space )
+			-> read from Color-Attachment 4 as Background
+			-> read from Color-Attachment 1 as Transparency-Intermediate
+			-> write to Color-Attachment 2 as new Background
 			-> render full-screen quad & run shader
 				-> in Color-Attachment 2 all affected pixel have transparency of 0.0
 				-> apply combination
 					-> final_color = opaqueColor * transpColor.a + transpColor;
 					-> final_color.a = 1.0;
-		-> now Color-Attachment 3 becomes the new Background
-		-> Color-Attachment 2 will still servces as Transparency-Intermediate
-		-> Color-Attachment 1 will be used for the next final combination
+		-> now Color-Attachment 2 becomes the new Background
+		-> Color-Attachment 1 will still serve as Transparency-Intermediate
+		-> Color-Attachment 4 will be used for the next final combination
+			=> background ping-pongs always between target 2 and target 4
 		-> proceed with next transparent object
 		
 	-> finalize
-		-> blit last Color-Attachment combination to default framebuffer
+		-> blit last Color-Attachment (2 or 4) combination to default framebuffer
 		
 	-> Do Colored Shadow-Rendering for Transparent objects
 		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
@@ -42,9 +63,6 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 			=> need additional render-target in shadow-fbo: shadow-color target
 		-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
 			-> optimization: only do additional lookup when alpha-channel is 1.0
-		
-	-> bypass all when there are no transparent objects visible
-		-> render opaque-stuff directly to screen
 		
 Multiple lights
 	-> blending 
