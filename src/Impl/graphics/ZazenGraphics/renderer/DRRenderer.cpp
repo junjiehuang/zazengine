@@ -22,16 +22,13 @@
 #include <iostream>
 #include <algorithm>
 
-#define MRT_COUNT 3
-
 using namespace std;
 
 DRRenderer::DRRenderer()
 	: Renderer( )
 {
 	this->m_gBufferFbo = NULL;
-	this->m_transparencyFbo = NULL;
-	this->m_shadowMappingFB = NULL;
+	this->m_intermediateDepthFB = NULL;
 
 	this->m_progGeomStage = NULL;
 	this->m_progSkyBox = NULL;
@@ -70,6 +67,11 @@ DRRenderer::initialize()
 	// Cull triangles which normal is not towards the camera
 	glEnable( GL_CULL_FACE );
 
+	if ( false == this->initFBOs() )
+	{
+		return false;
+	}
+
 	if ( false == this->initGeomStage() )
 	{
 		return false;
@@ -107,9 +109,7 @@ DRRenderer::shutdown()
 
 	Program::unuse();
 
-	FrameBufferObject::destroy( this->m_transparencyFbo );
-
-	FrameBufferObject::destroy( this->m_shadowMappingFB );
+	FrameBufferObject::destroy( this->m_intermediateDepthFB );
 
 	// cleaning up framebuffer
 	FrameBufferObject::destroy( this->m_gBufferFbo );
@@ -118,6 +118,22 @@ DRRenderer::shutdown()
 	RenderTarget::cleanup();
 
 	ZazenGraphics::getInstance().getLogger().logInfo( "Shutting down Deferred Renderer finished" );
+
+	return true;
+}
+
+bool
+DRRenderer::initFBOs()
+{
+	if ( false == this->initGBuffer() )
+	{
+		return false;
+	}
+
+	if ( false == this->initIntermediateDepthBuffer() )
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -159,6 +175,12 @@ DRRenderer::initGBuffer()
 		return false;
 	}
 
+	// render-target at index 3: intermediate lighting-result
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
+	{
+		return false;
+	}
+
 	// render-target at index 4: depth-buffer
 	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH, this->m_gBufferFbo ) )		
 	{
@@ -177,6 +199,37 @@ DRRenderer::initGBuffer()
 	// unbind => switch back to default framebuffer
 	if ( false == this->m_gBufferFbo->unbind() )
 	{
+		return false;
+	}
+
+	return true;
+}
+
+bool
+DRRenderer::initIntermediateDepthBuffer()
+{
+	// shadow-mapping is done by rendering the depth of the current processing light into an own FBO
+	this->m_intermediateDepthFB = FrameBufferObject::create();
+	if ( NULL == this->m_intermediateDepthFB )
+	{
+		return false;
+	}
+
+	// bind the shadow FBO to init stuff
+	if ( false == this->m_intermediateDepthFB->bind() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initIntermediateDepthBuffer: coulnd't bind shadow FBO - exit" );
+		return false;
+	}
+
+	// IMPORTANT: disable drawing&reading from this fbo is important, otherwise will fail as incomplete with depth-only attachment
+	// no drawing & reading in shadow-fbo, set initial, fbo will keep this state, no need to set it every bind
+	this->m_intermediateDepthFB->drawNone();
+
+	// back to default frame-buffer
+	if ( false == this->m_intermediateDepthFB->unbind() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initIntermediateDepthBuffer: coulnd't unbind shadow FBO - exit" );
 		return false;
 	}
 
@@ -205,11 +258,6 @@ bool
 DRRenderer::initGeomStage()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Geometry-Stage..." );
-
-	if ( false == this->initGBuffer() )
-	{
-		return false;
-	}
 
 	this->m_progGeomStage = ProgramManagement::get( "GeometryStageProgramm" );
 	if ( 0 == this->m_progGeomStage )
@@ -259,31 +307,6 @@ DRRenderer::initShadowMapping()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Shadow-Mapping..." );
 
-	// shadow-mapping is done by rendering the depth of the current processing light into an own FBO
-	this->m_shadowMappingFB = FrameBufferObject::create();
-	if ( NULL == this->m_shadowMappingFB )
-	{
-		return false;
-	}
-
-	// bind the shadow FBO to init stuff
-	if ( false == this->m_shadowMappingFB->bind() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: coulnd't bind shadow FBO - exit" );
-		return false;
-	}
-
-	// IMPORTANT: disable drawing&reading from this fbo is important, otherwise will fail as incomplete with depth-only attachment
-	// no drawing & reading in shadow-fbo, set initial, fbo will keep this state, no need to set it every bind
-	this->m_shadowMappingFB->drawNone();
-
-	// back to default frame-buffer
-	if ( false == this->m_shadowMappingFB->unbind() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: coulnd't unbind shadow FBO - exit" );
-		return false;
-	}
-
 	this->m_progShadowMapping = ProgramManagement::get( "ShadowingStageProgramm" );
 	if ( 0 == this->m_progShadowMapping )
 	{
@@ -315,61 +338,6 @@ DRRenderer::initTransparency()
 		return false;
 	}
 	
-	this->m_transparencyFbo = FrameBufferObject::create();
-	if ( NULL == this->m_transparencyFbo )
-	{
-		return false;
-	}
-
-	// needs to be bound to attach render-targets
-	// the order of the following calls is important and depermines the index
-	if ( false == this->m_transparencyFbo->bind() )
-	{
-		return false;
-	}
-	
-	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-	glClearColor( 0.0, 0.0, 0.0, 1.0 );
-
-	// render-target at index 0
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_transparencyFbo ) )		
-	{
-		return false;
-	}
-
-	// render-target at index 1
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_transparencyFbo ) )		
-	{
-		return false;
-	}
-
-	// render-target at index 2
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_transparencyFbo ) )		
-	{
-		return false;
-	}
-
-	// render-target at index 4: depth-buffer
-	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH, this->m_transparencyFbo ) )		
-	{
-		return false;
-	}
-
-	// IMPORTANT: don't check status until all necessary buffers are created
-	// and attached to the according fbo (e.g. after each attach) otherwise
-	// it will be incomplete at some point and will fail.
-	// check status of FBO AFTER all buffers are set-up and attached
-	if ( false == this->m_transparencyFbo->checkStatus() )
-	{
-		return false;
-	}
-
-	// unbind => switch back to default framebuffer
-	if ( false == this->m_transparencyFbo->unbind() )
-	{
-		return false;
-	}
-
 	this->m_fullScreenQuad = GeometryFactory::createQuad( ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight() );
 	if ( NULL == this->m_fullScreenQuad )
 	{
@@ -517,8 +485,13 @@ DRRenderer::doGeometryStage( std::list<Instance*>& instances, std::list<Light*>&
 		return false;
 	}
 
+	vector<unsigned int> indices;
+	indices.push_back( 0 ); // diffuse
+	indices.push_back( 1 );	// normal
+	indices.push_back( 2 );	// position
+
 	// enable rendering to all render-targets in geometry-stage
-	if ( false == this->m_gBufferFbo->drawAllBuffers() )
+	if ( false == this->m_gBufferFbo->drawBuffers( indices ) )
 	{
 		return false;
 	}
@@ -624,7 +597,7 @@ DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>&
 	}
 
 	// switch back to default framebuffer
-	if ( false == this->m_transparencyFbo->unbind() )
+	if ( false == this->m_intermediateDepthFB->unbind() )
 	{
 		return false;
 	}
@@ -656,7 +629,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	}
 
 	// render to g-buffer
-	if ( false == this->m_transparencyFbo->bind() )
+	if ( false == this->m_gBufferFbo->bind() )
 	{
 		return false;
 	}
@@ -665,16 +638,14 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	// could have changed due to shadow-map or other rendering happend in the frame before
 	this->m_camera->restoreViewport();
 
-	// enable rendering to 1st target
-	if ( false == this->m_transparencyFbo->drawBuffer( 0 ) )
+	// enable rendering to 3rd target
+	if ( false == this->m_gBufferFbo->drawBuffer( 3 ) )
 	{
 		return false;
 	}
 
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
 	// check status of FBO, IMPORANT: not before, would have failed
-	if ( false == this->m_transparencyFbo->checkStatus() )
+	if ( false == this->m_gBufferFbo->checkStatus() )
 	{
 		return false;
 	}
@@ -686,8 +657,15 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		return false;
 	}
 
+	vector<unsigned int> indices;
+	indices.push_back( 0 ); // diffuse
+	indices.push_back( 1 );	// normals
+	indices.push_back( 2 );	// positions
+	indices.push_back( 4 );	// depth
+
+	// OPTIMIZE: no need to do for every light!
 	// lighting stage program need all buffers of g-buffer bound as textures
-	if ( false == this->m_gBufferFbo->bindAllTargets() )
+	if ( false == this->m_gBufferFbo->bindTargets( indices ) )
 	{
 		return false;
 	}
@@ -698,8 +676,8 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	activeLightingProgram->setUniformInt( "NormalMap", 1 );
 	// tell lighting program that generic map is bound to texture-unit 2
 	activeLightingProgram->setUniformInt( "PositionMap", 2 );
-	// tell lighting program that depth-map of scene is bound to texture-unit MRT_COUNT 
-	activeLightingProgram->setUniformInt( "DepthMap", MRT_COUNT );
+	// tell lighting program that depth-map of scene is bound to texture-unit 3 
+	activeLightingProgram->setUniformInt( "DepthMap", 3 );
 	
 	glm::vec4 lightConfig;
 	glm::mat4 lightSpaceUnit;
@@ -728,10 +706,10 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	// bind shadow-map when light is shadow-caster
 	if ( light->isShadowCaster() )
 	{
-		// tell program that the shadowmap of spot/directional-light will be available at texture unit MRT_COUNT + 1
-		activeLightingProgram->setUniformInt( "ShadowMap", MRT_COUNT + 1 );
+		// tell program that the shadowmap of spot/directional-light will be available at texture unit 4
+		activeLightingProgram->setUniformInt( "ShadowMap", 4 );
 
-		if ( false == light->getShadowMap()->bind( MRT_COUNT + 1 ) )
+		if ( false == light->getShadowMap()->bind( 4 ) )
 		{
 			return false;
 		}
@@ -759,8 +737,15 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	// TODO: need to set opengl to additiveley blend light-passes
 	// alpha? color modulate?...
 
+	// disable writing to depth: light-boundaries should not update depth
+	// we also need to READ from depth so no update 
+	glDepthMask( GL_FALSE );
+
 	// render light boundary (for now only full screen-quad)
 	light->getBoundingGeometry()->render();
+	
+	// enable depth-writing again
+	glDepthMask( GL_TRUE );
 
 	return true;
 }
@@ -769,20 +754,20 @@ bool
 DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 {
 	// use shadow-mapping fbo to render depth of light view-point to
-	if ( false == this->m_shadowMappingFB->bind() )
+	if ( false == this->m_intermediateDepthFB->bind() )
 	{
 		return false;
 	}
 
 	// attach this shadow-map temporarily to the fbo (other light will use the same fbo)
-	if ( false == this->m_shadowMappingFB->attachTargetTemp( light->getShadowMap() ) )
+	if ( false == this->m_intermediateDepthFB->attachTargetTemp( light->getShadowMap() ) )
 	{
 		return false;
 	}
 
 	// check status now
 	// IMPORANT: don't check too early
-	if ( false == this->m_shadowMappingFB->checkStatus() )
+	if ( false == this->m_intermediateDepthFB->checkStatus() )
 	{
 		return false;
 	}
@@ -807,7 +792,7 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 	}
 
 	// back to default framebuffer
-	if ( false == this->m_shadowMappingFB->unbind() )
+	if ( false == this->m_intermediateDepthFB->unbind() )
 	{
 		return false;
 	}
@@ -824,31 +809,31 @@ DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Ligh
 	}
 
 	// bind to index 2 because DiffuseColor of Material is at index 0 and NormalMap of Material is at index 1
-	this->m_transparencyFbo->getAttachedTargets()[ 0 ]->bind( 2 );
+	this->m_gBufferFbo->getAttachedTargets()[ 3 ]->bind( 2 );
 	
 	this->m_progTransparency->setUniformInt( "Background", 2 );
 
-	this->m_transparencyFbo->bind();
-	this->m_transparencyFbo->drawBuffer( 1 );
+	this->m_gBufferFbo->bind();
+	this->m_gBufferFbo->drawBuffer( 0 );
 
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glClear( GL_COLOR_BUFFER_BIT );
 
 	if ( false == this->renderInstances( this->m_camera, instances, this->m_progTransparency, true, true ) )
 	{
 		return false;
 	}
 
-	this->m_transparencyFbo->unbind();
+	this->m_gBufferFbo->unbind();
 
 	if ( false == this->m_progBlendTransparency->use() )
 	{
 		return false;
 	}
 
-	this->m_transparencyFbo->getAttachedTargets()[ 1 ]->bind( 1 );
+	this->m_gBufferFbo->getAttachedTargets()[ 0 ]->bind( 0 );
 
 	this->m_progBlendTransparency->setUniformInt( "Background", 2 );
-	this->m_progBlendTransparency->setUniformInt( "Transparent", 1 );
+	this->m_progBlendTransparency->setUniformInt( "Transparent", 0 );
 
 	// QUESTION: due to a but only bind was called instead of bindBuffer but it worked!! why?
 	// update projection-matrix because need ortho-projection for full-screen quad

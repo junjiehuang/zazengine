@@ -32,8 +32,7 @@ class DRRenderer : public Renderer
 	private:
 		// Multiple-Render-Targes & Framebuffer for Deferred Rendering
 		FrameBufferObject* m_gBufferFbo;
-		FrameBufferObject* m_shadowMappingFB;
-		FrameBufferObject* m_transparencyFbo;
+		FrameBufferObject* m_intermediateDepthFB;
 		////////////////////////////////////////
 
 		GeomType* m_fullScreenQuad;
@@ -68,8 +67,11 @@ class DRRenderer : public Renderer
 		// utils matrix
 		glm::mat4 m_unitCubeMatrix;
 
-		bool initGeomStage();
+		bool initFBOs();
 		bool initGBuffer();
+		bool initIntermediateDepthBuffer();
+
+		bool initGeomStage();
 		bool initLightingStage();
 		bool initShadowMapping();
 		bool initTransparency();

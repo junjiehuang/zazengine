@@ -1,13 +1,11 @@
 Transparency-Rendering (see GPU Gems 2 Page 295)
-	-> rename shadowmapping-fbo to intermediate-depth FBO
-	
 	-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
 	
 	-> shadow-mapping seems to be broken => fix it
-	-> depth of 0.5 overall means: full-screen quad with unit ortho-box is written to depth
+		-> depth of 0.5 overall means: full-screen quad with unit ortho-box is written to depth
 	
 	-> need to render all lighting-passes with existing g-buffer because need depth-tests for light-boundary
-		=> turn off depth-writing for light-boundaries but leave depth-test enabled
+		=> turn off depth-writing for light-boundaries but leave depth-test enabled: glDepthMask( GL_FALSE );
 		=> check if this is really possible, if not use intermediate-depth FBO
 	-> we want correct depth-visibility between transparent objects
 	-> need to access g-buffer depth to remove artifacts on transparency boundaries
@@ -28,6 +26,7 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 		-> copy depth from g-buffer to intermediate-depth FBO
 			-> the reason for this is because we need to access the background-depth (as stored in g-buffer) but will write to it in same process when rendering the transparent object
 				=> we cannot write to an already bound render-target (depth will be bound as sampler) so we need to copy it and bind it to another texture
+			-> during first implementation, ignore this detail, no reading from depth yet
 		-> read backgroundColor from Color-Attachment 4
 			-> it was written beforehand by lighting-passes
 		-> write output to Color-Attachment 1
