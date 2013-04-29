@@ -67,6 +67,9 @@ DRRenderer::initialize()
 	// Cull triangles which normal is not towards the camera
 	glEnable( GL_CULL_FACE );
 
+	glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+	glClearColor( 0.0, 0.0, 0.0, 1.0 );
+
 	if ( false == this->initFBOs() )
 	{
 		return false;
@@ -823,7 +826,11 @@ DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
+	// back to default-framebuffer
 	this->m_gBufferFbo->unbind();
+
+	// clear default-framebuffer color & depth
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	if ( false == this->m_progBlendTransparency->use() )
 	{
