@@ -788,8 +788,14 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 	// IMPORTANT: need to set the viewport for each shadow-map, because resolution can be different for each
 	light->restoreViewport();
 
-	// render scene from view of camera - don't apply material, we need only depth, but render transparent materials too
+	// render scene from view of camera - don't apply material, we need only depth, render transparent materials
 	if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, true ) )
+	{
+		return false;
+	}
+
+	// render scene from view of camera - don't apply material, we need only depth, render opaque materials
+	if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, false ) )
 	{
 		return false;
 	}
