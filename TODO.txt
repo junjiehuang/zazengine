@@ -62,9 +62,12 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 			=> need additional render-target in shadow-fbo: shadow-color target
 		-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
 			-> optimization: only do additional lookup when alpha-channel is 1.0
-		
+		-> for better quality: do multisampling texture lookups
+	
 Multiple lights
 	-> blending 
+	-> use stencil buffer to reduce lighting to geometry only
+		-> use only for point- & spotlight because directional light will affect sky-box and ambient too
 	-> correct lighting-equations: falloff, cone, ...
 		-> point-light
 	-> Solve Problem of Ambient + Sky-Box Lighting
@@ -73,7 +76,11 @@ Multiple lights
 			-> other lights accumulate by blending
 		-> when directional light in scene
 			-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
-
+	->  bounding geometry for light
+		-> point-light: sphere with radius 1 and then scale according to light distance & some epsilon
+			-> low-poly count
+		-> spot-light: ?
+	
 Mip-Map Creation in TextureFactory
 			
 Normal-mapping
@@ -84,14 +91,16 @@ Normal-mapping
 Shadow-mapping
 	-> shadow-mapping of point-light
 	-> do some sampling on shadow-edges
-
+		-> multisampling
+		
 Reflections
 	-> environment (cube-mapping)
 	-> planar (?)
 		
 Msaa
 	-> do sampling in geometry fragment-shader (centroid)
-
+	-> dual source blending?
+	
 Instanced Rendering
 	-> high number of meshes rendering
 	
@@ -104,9 +113,13 @@ Do Culling
 	-> Culling library (Umbra 3) ?
 	
 Need generic effect/material functionality
+	-> no need to set input or output indices in shaders, can be done with layout ( location = ... ) 
 	-> on top of program- & shader-management
 		-> implement #include in shaders: parse loaded string and replace
 		-> problem: compiler error generate other line numbers!
+	-> use shaders-subroutines
+		-> compile all possible material stuff in the shader and select by setting propriate subroutine
+			-> needs includes
 	-> based upon effect-files like directx/cg shader effects
 	-> need some semantics on uniforms
 	-> custom shader program for material programming
