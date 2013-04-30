@@ -43,6 +43,8 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 			=> background ping-pongs always between target 2 and target 4
 		-> proceed with next transparent object
 		
+	-> final output to default will happen when last transparent object is rendered, then combination will be done to default-framebuffer instead of g-buffer attachment
+	
 	-> Do Colored Shadow-Rendering for Transparent objects
 		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
 			-> optimization: when material is transparent write to 1.0 to alpha-channel, else 0.0
@@ -50,6 +52,44 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 		-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
 			-> optimization: only do additional lookup when alpha-channel is 1.0
 		-> for better quality: do multisampling texture lookups
+	
+Reflections
+	-> environment (cube-mapping)
+		-> need very generic renderFrame-method which allows to be called recursively
+			-> need for every recursion level one CubeMap-FBO
+			-> need to generify much of the code of the renderer-loop
+			-> pass in some render-Context struct 
+				-> holds recursion-level
+				-> holds render-target where to render or null when to default framebuffer
+				-> holds flag if shadow-rendering in environment-rendering
+				-> holds flag if transparency-rendering in environment-rendering
+				-> holds flag if interreflection-rendering in environment-rendering
+				-> holds max recursion depth
+		-> can be done directly with deferred renderning, no need for fallback to forward-rendering
+			-> but need additional environment-rendering fbo
+				-> render 6 faces of a cubemap, each with deferred rendering => fucking huge impact on bandwith and performance
+					-> dramatic reduced resolution of cube-map sides e.g. 512x512
+		-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
+		-> can to do refraction & reflection
+		-> different texture-binding because material could or could not use binding points
+		-> more flexible renderInstances: need finer control over which materials to draw
+		-> new material-type:
+			<material name="Glass">
+				<type id="ENVIRONMENTAL">
+				  <reflection>
+					... params
+				  </reflection>
+
+				  <refraction>
+					... params
+				  </refraction>
+      
+				  <diffuseColor file="cross_diffuse.jpg"/>
+				  <color r="0.54" g="0.89" b="0.63"/>
+				</type>
+			  </material>
+	-> planar (?)
+
 	
 Multiple lights
 	-> blending 
@@ -79,34 +119,7 @@ Shadow-mapping
 	-> shadow-mapping of point-light
 	-> do some sampling on shadow-edges
 		-> multisampling
-		
-Reflections
-	-> environment (cube-mapping)
-		-> can be done directly with deferred renderning, no need for fallback to forward-rendering
-			-> but need additional environment-rendering fbo
-				-> render 6 faces of a cubemap, each with deferred rendering => fucking huge impact on bandwith and performance
-					-> dramatic reduced resolution of cube-map sides
-		-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
-		-> can to do refraction & reflection
-		-> different texture-binding because material could or could not use binding points
-		-> more flexible renderInstances: need finer control over which materials to draw
-		-> new material-type:
-			<material name="Glass">
-				<type id="ENVIRONMENTAL">
-				  <reflection>
-					... params
-				  </reflection>
-
-				  <refraction>
-					... params
-				  </refraction>
-      
-				  <diffuseColor file="cross_diffuse.jpg"/>
-				  <color r="0.54" g="0.89" b="0.63"/>
-				</type>
-			  </material>
-	-> planar (?)
-		
+				
 Msaa
 	-> do sampling in geometry fragment-shader (centroid)
 	-> dual source blending?
