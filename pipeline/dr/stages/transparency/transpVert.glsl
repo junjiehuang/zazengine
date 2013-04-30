@@ -4,6 +4,7 @@ in vec3 in_vertPos;
 in vec3 in_vertNorm;
 in vec2 in_texCoord;
 
+out vec4 ex_pos;
 out vec4 ex_normal;
 out vec2 ex_texCoord;
 
@@ -23,4 +24,6 @@ void main()
 
 	// OPTIMIZE: premultiply projection & modelView on CPU 
 	gl_Position = Transforms.projectionMatrix * Transforms.modelViewMatrix * vec4( in_vertPos, 1.0 );
+	
+	ex_pos = gl_Position;
 }

@@ -1,23 +1,4 @@
 Transparency-Rendering (see GPU Gems 2 Page 295)
-	-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
-	
-	-> shadow-mapping seems to be broken => fix it
-		-> depth of 0.5 overall means: full-screen quad with unit ortho-box is written to depth
-	
-	-> need to render all lighting-passes with existing g-buffer because need depth-tests for light-boundary
-		=> turn off depth-writing for light-boundaries but leave depth-test enabled: glDepthMask( GL_FALSE );
-		=> check if this is really possible, if not use intermediate-depth FBO
-	-> we want correct depth-visibility between transparent objects
-	-> need to access g-buffer depth to remove artifacts on transparency boundaries
-	-> we want to render correct transparency behind transparency
-	-> reuse 2 Color Render-Targets from g-buffer as intermediate results
-		=> Diffuse-Color Target
-		=> Normals Target
-	-> add 1 additional Color Render-Target to g-buffer to gather lighting-pass result
-		=> if ec-position target is no more needed because calculated in fragment-shader, no more additional target necessary
-	-> need additional FBO (intermediate-depth) with only depth-attachment for intermediate depth
-		-> reuse shadowmapping-fbo (renamed to intermediate-depth fbo) with one separate depth-attachment
-	
 	-> Render Lighting-Stage output to G-Buffer Color-Attachment 4
 		-> bypass all when there are no transparent objects visible/available
 			-> render opaque-stuff directly to screen
@@ -33,6 +14,7 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 			-> final_color = inputColor * inputAlpha + backgroundColor * ( 1.0 - inputAlpha );
 			-> final_color.a = 0.0; // needed to mark pixels as transparent for later finalize-step
 		-> simulate refraction (see GPU Gems 1)
+		-> simulate chromatic abberration
 		-> prevent artifacts on edges by checking pertubed fragment depth by reading depth from intermediate-depth fbo depth
 
 	-> Render transparency behind transparency - high performance penalty!
@@ -52,9 +34,6 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 		-> Color-Attachment 4 will be used for the next final combination
 			=> background ping-pongs always between target 2 and target 4
 		-> proceed with next transparent object
-		
-	-> finalize
-		-> blit last Color-Attachment (2 or 4) combination to default framebuffer
 		
 	-> Do Colored Shadow-Rendering for Transparent objects
 		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
@@ -95,6 +74,29 @@ Shadow-mapping
 		
 Reflections
 	-> environment (cube-mapping)
+		-> can be done directly with deferred renderning, no need for fallback to forward-rendering
+			-> but need additional environment-rendering fbo
+				-> render 6 faces of a cubemap, each with deferred rendering => fucking huge impact on bandwith and performance
+					-> dramatic reduced resolution of cube-map sides
+		-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
+		-> can to do refraction & reflection
+		-> different texture-binding because material could or could not use binding points
+		-> more flexible renderInstances: need finer control over which materials to draw
+		-> new material-type:
+			<material name="Glass">
+				<type id="ENVIRONMENTAL">
+				  <reflection>
+					... params
+				  </reflection>
+
+				  <refraction>
+					... params
+				  </refraction>
+      
+				  <diffuseColor file="cross_diffuse.jpg"/>
+				  <color r="0.54" g="0.89" b="0.63"/>
+				</type>
+			  </material>
 	-> planar (?)
 		
 Msaa
