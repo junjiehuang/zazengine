@@ -11,13 +11,23 @@ in vec2 ex_texCoord;
 
 out vec4 out_color;
 
-const float constantAlpha = 0.5;
+layout( shared ) uniform CameraUniforms
+{
+	mat4 modelMatrix;
+	mat4 viewMatrix;
+	
+	vec4 rectangle;
+} Camera;
+
+const float constantAlpha = 0.001;
 
 void main()
 {
 	vec4 bumpTex = 2.0 * texture( NormalTexture, ex_texCoord ) - 1.0;
 
-	vec2 newTexCoord = ( ( ( ex_pos.xy / ex_pos.w ) + bumpTex.xy ) + 2.0) * 0.25;
+	vec2 screenCoord = vec2( gl_FragCoord.x / Camera.rectangle.x, gl_FragCoord.y / Camera.rectangle.y );
+
+	vec2 newTexCoord = screenCoord + bumpTex.xy;
 
 	vec4 bgColor = texture( Background, newTexCoord );
     vec4 diffuseColor = texture( DiffuseTexture, ex_texCoord );
