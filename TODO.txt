@@ -14,7 +14,15 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 			-> final_color = inputColor * inputAlpha + backgroundColor * ( 1.0 - inputAlpha );
 			-> final_color.a = 0.0; // needed to mark pixels as transparent for later finalize-step
 		-> simulate refraction (see GPU Gems 1)
-		-> simulate chromatic abberration
+			-> everything happens in screen-space!
+			-> take normal from geometry or lookup from normal-map
+			-> need screenspace-position in NDC [ -1 to 1 ] for fragment
+			-> calculate perturbed texture-coordinate for lookup into background
+					-> vec2 pertTexCoord = ( ( screenSpacePos.xy + normal.xy ) + 2.0 ) * 0.25;
+						-> needs to be transformed either in range 0.0 - 1.0 for texture lookup ( => ... + 2.0 ) * 0.25;
+						-> or set texture-parameter from GL_GLAMP to GL_REPEAT but this could cause things to show up repated in refraction when using extreme geometry
+		-> simulate chromatic abberration (see Orange Book)
+			-> need to simulate different wavelengths for red, green and blue channels
 		-> prevent artifacts on edges by checking pertubed fragment depth by reading depth from intermediate-depth fbo depth
 
 	-> Render transparency behind transparency - high performance penalty!
