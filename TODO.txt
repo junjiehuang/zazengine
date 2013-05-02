@@ -1,3 +1,23 @@
+Port To Linux & do parallel development
+	-> use newest openSuse
+	-> eclipse CDT as IDE
+	-> use nouvou drivers
+		-> compile them with debug mode available
+			-> allows to step into driver-calls which should be VERY interesting
+	-> compile as x86 x64?
+	-> check if all libs are available
+		-> Boost: 		YES
+		-> OIS: 			YES
+		-> lua:				YES
+		-> luabind:		YES
+		-> assimp:		YES
+		-> glew:			YES
+		-> devil:			YES
+		-> fmod:			YES
+		-> log4cp:		YES
+		-> ode:				YES
+	
+		
 Transparency-Rendering (see GPU Gems 2 Page 295)
 	-> Render Lighting-Stage output to G-Buffer Color-Attachment 4
 		-> bypass all when there are no transparent objects visible/available
@@ -72,6 +92,13 @@ Reflections
 		-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
 		-> can to do refraction & reflection
 		-> different texture-binding because material could or could not use binding points
+			-> general texture binding-point management
+				-> giving next free n slots
+				-> call to bind of texture, will return binding-point or -1 if fails
+				-> but need to release texture to keep track of usage
+				-> keep track for all texture-types (2d & cube so far)
+					-> every binding-point can have each type active
+				-> keep track of max_texture_units
 		-> more flexible renderInstances: need finer control over which materials to draw
 		-> new material-type:
 			<material name="Glass">
@@ -88,6 +115,8 @@ Reflections
 				  <color r="0.54" g="0.89" b="0.63"/>
 				</type>
 			  </material>
+		-> material subclasses
+			-> environment holds cube-map and params for shaders. it knows how often update cube-map per second
 	-> planar (?)
 
 	
