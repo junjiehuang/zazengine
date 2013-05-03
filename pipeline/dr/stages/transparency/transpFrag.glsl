@@ -4,7 +4,7 @@ uniform sampler2D DiffuseTexture;
 uniform sampler2D NormalTexture;
 
 uniform sampler2D Background;
-uniform sampler2D BackgroundDepth;
+uniform sampler2DShadow BackgroundDepth;
 
 in vec4 ex_pos;
 in vec4 ex_normal;
@@ -35,17 +35,12 @@ void main()
 
     vec4 materialColor = texture( DiffuseTexture, ex_texCoord );
 	
-	vec3 refractFragDepth = texture( BackgroundDepth, refractTexCoord );
+	vec3 depthTexCoord = vec3( refractTexCoord, gl_FragCoord.z );
+	float refractFragDepthComparison = texture( BackgroundDepth, depthTexCoord );
 
-	if ( refractFragDepth.r < gl_FragDepth )
-	{
-		out_color.rgb = materialColor.rgb * blendingFactor + bgColorScreen.rgb * ( 1.0 - blendingFactor );
-	}
-	else
-	{
-		out_color.rgb = materialColor.rgb * blendingFactor + bgColorRefract.rgb * ( 1.0 - blendingFactor );
-	}
+	out_color.rgb = materialColor.rgb * blendingFactor + 
+		( bgColorRefract.rgb * ( 1.0 - blendingFactor ) ) * refractFragDepthComparison + 
+		( bgColorScreen.rgb * ( 1.0 - blendingFactor ) ) * ( 1.0 - refractFragDepthComparison );
 
-	out_color.rgb = texture( BackgroundDepth, ex_texCoord );
     out_color.a = 0.0;
 }

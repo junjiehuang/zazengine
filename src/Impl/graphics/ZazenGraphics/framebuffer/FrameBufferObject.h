@@ -28,6 +28,8 @@ class FrameBufferObject
 		bool drawBuffers( std::vector<unsigned int> );
 		bool drawNone();
 
+		bool copyDepthToTarget( RenderTarget* );
+
 		bool bind();
 		bool unbind();
 

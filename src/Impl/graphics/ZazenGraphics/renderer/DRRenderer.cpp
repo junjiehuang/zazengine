@@ -30,6 +30,8 @@ DRRenderer::DRRenderer()
 	this->m_gBufferFbo = NULL;
 	this->m_intermediateDepthFB = NULL;
 
+	this->m_depthCopy = NULL;
+
 	this->m_progGeomStage = NULL;
 	this->m_progSkyBox = NULL;
 	this->m_progLightingStage = NULL;
@@ -343,6 +345,12 @@ DRRenderer::initTransparency()
 	
 	this->m_fullScreenQuad = GeometryFactory::createQuad( ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight() );
 	if ( NULL == this->m_fullScreenQuad )
+	{
+		return false;
+	}
+
+	this->m_depthCopy = RenderTarget::create( ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), RenderTarget::RT_SHADOW );
+	if ( NULL == this->m_depthCopy )
 	{
 		return false;
 	}
@@ -819,12 +827,18 @@ DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Ligh
 
 	// bind to index 2 because DiffuseColor of Material is at index 0 and NormalMap of Material is at index 1
 	this->m_gBufferFbo->getAttachedTargets()[ 3 ]->bind( 2 );
-	this->m_gBufferFbo->getAttachedDepthTarget()->bind( 3 );
+	this->m_depthCopy->bind( 3 );
 
 	this->m_progTransparency->setUniformInt( "Background", 2 );
 	this->m_progTransparency->setUniformInt( "BackgroundDepth", 3 );
 
 	this->m_gBufferFbo->bind();
+
+	if ( false == this->m_gBufferFbo->copyDepthToTarget( this->m_depthCopy ) )
+	{
+		return false;
+	}
+
 	this->m_gBufferFbo->drawBuffer( 0 );
 
 	glClear( GL_COLOR_BUFFER_BIT );

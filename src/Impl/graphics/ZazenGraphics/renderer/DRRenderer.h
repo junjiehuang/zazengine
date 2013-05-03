@@ -33,6 +33,8 @@ class DRRenderer : public Renderer
 		// Multiple-Render-Targes & Framebuffer for Deferred Rendering
 		FrameBufferObject* m_gBufferFbo;
 		FrameBufferObject* m_intermediateDepthFB;
+
+		RenderTarget* m_depthCopy;
 		////////////////////////////////////////
 
 		GeomType* m_fullScreenQuad;

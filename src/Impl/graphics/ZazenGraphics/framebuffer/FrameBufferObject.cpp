@@ -147,6 +147,16 @@ FrameBufferObject::bind()
 }
 
 bool
+FrameBufferObject::copyDepthToTarget( RenderTarget* target )
+{
+	glReadBuffer( GL_NONE );
+
+	glCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 0, 0, target->getWidth(), target->getHeight() );
+
+	return true;
+}
+
+bool
 FrameBufferObject::unbind()
 {
 	// bind the framebuffer of the geometry-stage
