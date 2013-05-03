@@ -19,32 +19,23 @@ Port To Linux & do parallel development
 	
 		
 Transparency-Rendering (see GPU Gems 2 Page 295)
+	-> is used to render colored glass, with simulated
+	-> is NOT used to render reflections and refractions and chromatic aberration
+		-> this is done with environmental rendering
+	
+	-> put normal-factor and blending weight into material-property
+		-> subclass of material
+
 	-> Render Lighting-Stage output to G-Buffer Color-Attachment 4
 		-> bypass all when there are no transparent objects visible/available
 			-> render opaque-stuff directly to screen
 	
 	-> Render transparent object
-		-> copy depth from g-buffer to intermediate-depth FBO
-			-> the reason for this is because we need to access the background-depth (as stored in g-buffer) but will write to it in same process when rendering the transparent object
-				=> we cannot write to an already bound render-target (depth will be bound as sampler) so we need to copy it and bind it to another texture
-			-> during first implementation, ignore this detail, no reading from depth yet
-		-> read backgroundColor from Color-Attachment 4
-			-> it was written beforehand by lighting-passes
-		-> write output to Color-Attachment 1
-			-> final_color = inputColor * inputAlpha + backgroundColor * ( 1.0 - inputAlpha );
-			-> final_color.a = 0.0; // needed to mark pixels as transparent for later finalize-step
-		-> simulate refraction (see GPU Gems 1)
-			-> everything happens in screen-space!
-			-> take normal from geometry or lookup from normal-map
-			-> need screenspace-position in NDC [ -1 to 1 ] for fragment
-			-> calculate perturbed texture-coordinate for lookup into background
-					-> vec2 pertTexCoord = ( ( screenSpacePos.xy + normal.xy ) + 2.0 ) * 0.25;
-						-> needs to be transformed either in range 0.0 - 1.0 for texture lookup ( => ... + 2.0 ) * 0.25;
-						-> or set texture-parameter from GL_GLAMP to GL_REPEAT but this could cause things to show up repated in refraction when using extreme geometry
-		-> simulate chromatic abberration (see Orange Book)
-			-> need to simulate different wavelengths for red, green and blue channels
 		-> prevent artifacts on edges by checking pertubed fragment depth by reading depth from intermediate-depth fbo depth
-
+			-> copy depth from g-buffer to intermediate-depth FBO
+				-> the reason for this is because we need to access the background-depth (as stored in g-buffer) but will write to it in same process when rendering the transparent object
+					=> we cannot write to an already bound render-target (depth will be bound as sampler) so we need to copy it and bind it to another texture
+			
 	-> Render transparency behind transparency - high performance penalty!
 		-> after first object Color-Attachment 1 contains all affected fragments with transparent-color with alpha 0.0 and others black with alpha 1.0
 		-> Color-Attachment 4 still contains Background
@@ -91,6 +82,8 @@ Reflections
 					-> dramatic reduced resolution of cube-map sides e.g. 512x512
 		-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
 		-> can to do refraction & reflection
+		-> simulate chromatic abberration (see Orange Book)
+			-> need to simulate different wavelengths for red, green and blue channels
 		-> different texture-binding because material could or could not use binding points
 			-> general texture binding-point management
 				-> giving next free n slots

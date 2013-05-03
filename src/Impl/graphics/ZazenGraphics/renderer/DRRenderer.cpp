@@ -819,8 +819,10 @@ DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Ligh
 
 	// bind to index 2 because DiffuseColor of Material is at index 0 and NormalMap of Material is at index 1
 	this->m_gBufferFbo->getAttachedTargets()[ 3 ]->bind( 2 );
-	
+	this->m_gBufferFbo->getAttachedDepthTarget()->bind( 3 );
+
 	this->m_progTransparency->setUniformInt( "Background", 2 );
+	this->m_progTransparency->setUniformInt( "BackgroundDepth", 3 );
 
 	this->m_gBufferFbo->bind();
 	this->m_gBufferFbo->drawBuffer( 0 );
@@ -847,7 +849,7 @@ DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Ligh
 
 	this->m_progBlendTransparency->setUniformInt( "Background", 2 );
 	this->m_progBlendTransparency->setUniformInt( "Transparent", 0 );
-
+	
 	// QUESTION: due to a but only bind was called instead of bindBuffer but it worked!! why?
 	// update projection-matrix because need ortho-projection for full-screen quad
 	this->m_transformsBlock->bindBuffer();
