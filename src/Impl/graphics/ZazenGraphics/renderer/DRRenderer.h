@@ -89,7 +89,10 @@ class DRRenderer : public Renderer
 		bool renderLight( std::list<Instance*>&, Light* );
 		bool renderShadowMap( std::list<Instance*>&, Light* );
 
+		bool renderTransparentInstance( Instance*, unsigned int, unsigned int, bool );
+
 		bool renderInstances( Viewer*, std::list<Instance*>&, Program*, bool, bool );
+		bool renderInstance( Viewer*, Instance*, Program* );
 		bool renderGeom( Viewer*, GeomType*, const glm::mat4& );
 
 };

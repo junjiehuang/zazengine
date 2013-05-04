@@ -820,20 +820,62 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 bool
 DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
+	vector<Instance*> transparentInstances;
+
+	list<Instance*>::iterator iter = instances.begin();
+	while ( iter != instances.end() )
+	{
+		Instance* instance = *iter++;
+
+		if ( instance->material )
+		{
+			if ( Material::MATERIAL_TRANSPARENT == instance->material->getType() )
+			{
+				transparentInstances.push_back( instance );
+			}
+		}
+	}
+
+	unsigned int combinationTarget = 1;
+	unsigned int backgroundIndex = 3;
+
+	for ( unsigned int i = 0; i < transparentInstances.size(); i++ )
+	{
+		Instance* instance = transparentInstances[ i ];
+
+		if ( false == this->renderTransparentInstance( instance, backgroundIndex, combinationTarget,
+			i == transparentInstances.size() - 1 ) )
+		{
+			return false;
+		}
+
+		std::swap( combinationTarget, backgroundIndex );
+	}
+
+	return true;
+}
+
+bool
+DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgroundIndex, unsigned int combinationTarget, bool lastInstance )
+{
 	if ( false == this->m_progTransparency->use() )
 	{
 		return false;
 	}
 
-	// bind to index 2 because DiffuseColor of Material is at index 0 and NormalMap of Material is at index 1
-	this->m_gBufferFbo->getAttachedTargets()[ 3 ]->bind( 2 );
+	// bind background to index 2 because DiffuseColor of Material is at index 0 and NormalMap of Material is at index 1
+	this->m_gBufferFbo->getAttachedTargets()[ backgroundIndex ]->bind( 2 );
+	// bind depth-copy to index 3
 	this->m_depthCopy->bind( 3 );
 
 	this->m_progTransparency->setUniformInt( "Background", 2 );
 	this->m_progTransparency->setUniformInt( "BackgroundDepth", 3 );
 
 	this->m_gBufferFbo->bind();
-
+	
+	// copy depth of g-buffer to target, because we need to access the depth in transparency-rendering
+	// to prevent artifacts. at the same time we write depth when rendering transparency so
+	// we cannot bind the g-buffer depth => need to copy
 	if ( false == this->m_gBufferFbo->copyDepthToTarget( this->m_depthCopy ) )
 	{
 		return false;
@@ -843,16 +885,26 @@ DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Ligh
 
 	glClear( GL_COLOR_BUFFER_BIT );
 
-	if ( false == this->renderInstances( this->m_camera, instances, this->m_progTransparency, true, true ) )
+	if ( false == this->renderInstance( this->m_camera, instance, this->m_progTransparency ) )
 	{
 		return false;
 	}
 
-	// back to default-framebuffer
-	this->m_gBufferFbo->unbind();
+	// after rendering last instance we will combine to default-framebuffer for final result
+	if ( lastInstance )
+	{
+		// back to default-framebuffer
+		this->m_gBufferFbo->unbind();
 
-	// clear default-framebuffer color & depth
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		// clear default-framebuffer color & depth
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	}
+	else 
+	{
+		this->m_gBufferFbo->drawBuffer( combinationTarget );
+
+		glClear( GL_COLOR_BUFFER_BIT );
+	}
 
 	if ( false == this->m_progBlendTransparency->use() )
 	{
@@ -874,10 +926,24 @@ DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Ligh
 		return false;
 	}
 
+	// disable writing to depth when not last instance because would destroy our depth-buffer
+	// when last instance it doesnt matter because we render to screen-buffer
+	if ( !lastInstance )
+	{
+		glDepthMask( GL_FALSE );
+	}
+
 	this->m_fullScreenQuad->render();
+
+	// enable depth-writing again
+	if ( !lastInstance )
+	{
+		glDepthMask( GL_TRUE );
+	}
 
 	return true;
 }
+
 
 bool
 DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program* currentProgramm, bool applyMaterial, bool renderTransparency )
@@ -940,6 +1006,49 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 
 	return true;
 }
+
+bool
+DRRenderer::renderInstance( Viewer* viewer, Instance* instance, Program* currentProgramm )
+{
+	// bind transform uniform-block to update model-, view & projection transforms
+	if ( false == this->m_transformsBlock->bindBuffer() )
+	{
+		return false;
+	}
+
+	// update projection because each viewer can have different projection-transform
+	if ( false == this->m_transformsBlock->updateField( "Transforms.projectionMatrix", viewer->getProjMatrix() ) )
+	{
+		return false;
+	}
+
+	// need to bind material uniform-block to update data
+	if ( false == this->m_materialBlock->bindBuffer() )
+	{
+		return false;
+	}
+
+	// activate material
+	if ( false == instance->material->activate( this->m_materialBlock, currentProgramm ) )
+	{
+		return false;
+	}
+
+	// back to transform uniform-block because is needed in the actual rendering of geometry (modelview calculation)
+	if ( false == this->m_transformsBlock->bindBuffer() )
+	{
+		return false;
+	}
+		
+	// render geometry of this instance
+	if ( false == this->renderGeom( viewer, instance->geom, instance->getModelMatrix() ) )
+	{
+		return false;
+	}
+
+	return true;
+}
+
 
 bool
 DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootModelMatrix )
