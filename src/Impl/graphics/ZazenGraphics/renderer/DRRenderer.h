@@ -64,6 +64,7 @@ class DRRenderer : public Renderer
 		UniformBlock* m_cameraBlock;
 		UniformBlock* m_lightBlock;
 		UniformBlock* m_materialBlock;
+		UniformBlock* m_transparentMaterialBlock;
 		////////////////////////////////////////
 
 		// utils matrix

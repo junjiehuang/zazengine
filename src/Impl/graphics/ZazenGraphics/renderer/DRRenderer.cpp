@@ -44,6 +44,7 @@ DRRenderer::DRRenderer()
 	this->m_cameraBlock = NULL;
 	this->m_lightBlock = NULL;
 	this->m_materialBlock = NULL;
+	this->m_transparentMaterialBlock = NULL;
 
 	this->m_fullScreenQuad = NULL;
 
@@ -391,6 +392,13 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
+	this->m_transparentMaterialBlock = UniformManagement::getBlock( "TransparentMaterialUniforms" );
+	if ( 0 == this->m_transparentMaterialBlock )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find transparent material uniform-block - exit" );
+		return false;
+	}
+
 	/* IMPORTANT: found this in forums: 
 		On ATI hardware, you have to call
 
@@ -426,7 +434,12 @@ DRRenderer::initUniformBlocks()
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding material uniform-block failed - exit" );
 		return false;
 	}
-
+	if ( false == this->m_transparentMaterialBlock->bindBase() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding transparent material uniform-block failed - exit" );
+		return false;
+	}
+	
 	// TODO clean-up: different approach in future
 	GeomSkyBox::getRef().setTransformBlock( this->m_transformsBlock );
 
@@ -1004,14 +1017,8 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 			// activate material only when there is one present & render-pass enforces usage of materials
 			if ( applyMaterial )
 			{
-				// need to bind material uniform-block to update data
-				if ( false == this->m_materialBlock->bindBuffer() )
-				{
-					return false;
-				}
-
 				// activate material
-				if ( false == instance->material->activate( this->m_materialBlock, currentProgramm ) )
+				if ( false == instance->material->activate( currentProgramm ) )
 				{
 					return false;
 				}
@@ -1049,14 +1056,8 @@ DRRenderer::renderInstance( Viewer* viewer, Instance* instance, Program* current
 		return false;
 	}
 
-	// need to bind material uniform-block to update data
-	if ( false == this->m_materialBlock->bindBuffer() )
-	{
-		return false;
-	}
-
 	// activate material
-	if ( false == instance->material->activate( this->m_materialBlock, currentProgramm ) )
+	if ( false == instance->material->activate( currentProgramm ) )
 	{
 		return false;
 	}

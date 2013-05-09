@@ -82,6 +82,9 @@
     <ClCompile Include="geometry\GeomType.cpp" />
     <ClCompile Include="lighting\Light.cpp" />
     <ClCompile Include="material\Material.cpp" />
+    <ClCompile Include="material\MaterialClassic.cpp" />
+    <ClCompile Include="material\MaterialFactory.cpp" />
+    <ClCompile Include="material\MaterialTransparent.cpp" />
     <ClCompile Include="orientation\Orientation.cpp" />
     <ClCompile Include="program\Program.cpp" />
     <ClCompile Include="program\ProgramManagement.cpp" />
@@ -114,6 +117,9 @@
     <ClInclude Include="geometry\GeomType.h" />
     <ClInclude Include="lighting\Light.h" />
     <ClInclude Include="material\Material.h" />
+    <ClInclude Include="material\MaterialClassic.h" />
+    <ClInclude Include="material\MaterialFactory.h" />
+    <ClInclude Include="material\MaterialTransparent.h" />
     <ClInclude Include="orientation\Orientation.h" />
     <ClInclude Include="program\Program.h" />
     <ClInclude Include="program\ProgramManagement.h" />

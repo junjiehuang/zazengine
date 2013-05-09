@@ -1,7 +1,4 @@
 Transparency-Rendering (see GPU Gems 2 Page 295)
-	-> put normal-factor and blending weight into material-property
-		-> subclass of material
-
 	-> Do Colored Shadow-Rendering for Transparent objects
 		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
 			-> optimization: when material is transparent write to 1.0 to alpha-channel, else 0.0

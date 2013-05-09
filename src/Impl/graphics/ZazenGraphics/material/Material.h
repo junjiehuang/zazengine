@@ -9,16 +9,10 @@
 #define MATERIAL_H_
 
 #include "../Program/Program.h"
-#include "../Program/UniformBlock.h"
-#include "../Texture/Texture.h"
-
-#include <boost/filesystem.hpp>
 
 #include <glm/glm.hpp>
 
 #include <string>
-#include <map>
-#include <vector>
 
 class Material
 {
@@ -35,30 +29,17 @@ class Material
 			MATERIAL_TRANSPARENT = 99
 		};
 
-		static bool init( const boost::filesystem::path& );
-		static void freeAll();
-
-		static Material* get( const std::string& );
-
-		~Material();
+		Material( const std::string&, MaterialType );
+		virtual ~Material();
 
 		const std::string& getName() const { return this->m_name; };
 		MaterialType getType() const { return this->m_type; };
 
-		bool activate( UniformBlock*, Program* );
+		virtual bool activate( Program* ) = 0;
 
 	private:
-		static std::map<std::string, Material*> allMaterials;
-
-		Material( const std::string&, MaterialType );
-
 		const std::string m_name;
 		const MaterialType m_type;
-
-		glm::vec4 m_color;
-
-		Texture* m_diffuseTexture;
-		Texture* m_normalTexture;
 };
 
 #endif /* MATERIAL_H_ */

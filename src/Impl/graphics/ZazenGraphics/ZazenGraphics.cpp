@@ -13,7 +13,7 @@
 #include "Geometry/GeometryFactory.h"
 #include "Geometry/GeomSkyBox.h"
 
-#include "Material/Material.h"
+#include "Material/MaterialFactory.h"
 #include "Texture/TextureFactory.h"
 
 #include "Renderer/DRRenderer.h"
@@ -91,7 +91,7 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 
 	GeometryFactory::setDataPath( this->m_modelDataPath );
 
-	if ( false == Material::init( this->m_materialDataPath ) )
+	if ( false == MaterialFactory::init( this->m_materialDataPath ) )
 	{
 		return false;
 	}
@@ -120,7 +120,7 @@ ZazenGraphics::shutdown()
 
 	this->m_entities.clear();
 
-	Material::freeAll();
+	MaterialFactory::freeAll();
 	TextureFactory::freeAll();
 	GeometryFactory::freeAll();
 	GeomSkyBox::shutdown();
@@ -239,7 +239,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		str = instanceNode->Attribute( "material" );
 		if ( 0 != str )
 		{
-			instance->material = Material::get( str );
+			instance->material = MaterialFactory::get( str );
 			if ( NULL == instance->material )
 			{
 				this->m_logger->logWarning() << "couldn't get material " << str << " - will be ignored";
