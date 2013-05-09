@@ -831,10 +831,16 @@ DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Ligh
 		{
 			if ( Material::MATERIAL_TRANSPARENT == instance->material->getType() )
 			{
+				// need to relcalculate distance from viewer for depth-sorting
+				instance->recalculateDistance( this->m_camera->getViewMatrix() );
+
 				transparentInstances.push_back( instance );
 			}
 		}
 	}
+
+	// do depth-sorting
+	std::sort( transparentInstances.begin(), transparentInstances.end(), DRRenderer::depthSortingFunc );
 
 	unsigned int combinationTarget = 1;
 	unsigned int backgroundIndex = 3;
@@ -881,8 +887,10 @@ DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgrou
 		return false;
 	}
 
+	// transparent objects are always rendered intermediate to g-buffer color target 0
 	this->m_gBufferFbo->drawBuffer( 0 );
 
+	// clear buffer 
 	glClear( GL_COLOR_BUFFER_BIT );
 
 	if ( false == this->renderInstance( this->m_camera, instance, this->m_progTransparency ) )
@@ -901,6 +909,7 @@ DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgrou
 	}
 	else 
 	{
+		// draw combination to new target (swap-rendering)
 		this->m_gBufferFbo->drawBuffer( combinationTarget );
 
 		glClear( GL_COLOR_BUFFER_BIT );
@@ -911,6 +920,7 @@ DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgrou
 		return false;
 	}
 
+	// transparent object was rendered to g-buffer color target 0
 	this->m_gBufferFbo->getAttachedTargets()[ 0 ]->bind( 0 );
 
 	this->m_progBlendTransparency->setUniformInt( "Background", 2 );
@@ -928,7 +938,7 @@ DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgrou
 
 	// disable writing to depth when not last instance because would destroy our depth-buffer
 	// when last instance it doesnt matter because we render to screen-buffer
-	if ( !lastInstance )
+	if ( ! lastInstance )
 	{
 		glDepthMask( GL_FALSE );
 	}
@@ -936,7 +946,7 @@ DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgrou
 	this->m_fullScreenQuad->render();
 
 	// enable depth-writing again
-	if ( !lastInstance )
+	if ( ! lastInstance )
 	{
 		glDepthMask( GL_TRUE );
 	}
@@ -1049,7 +1059,6 @@ DRRenderer::renderInstance( Viewer* viewer, Instance* instance, Program* current
 	return true;
 }
 
-
 bool
 DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootModelMatrix )
 {
@@ -1101,4 +1110,12 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 	}
 
 	return true;
+}
+
+bool
+DRRenderer::depthSortingFunc( Instance* a, Instance* b )
+{
+	// depth sorting: distance holds the z-value of the center in view-space
+	// the larger the negative values the farther way
+	return a->distance < b->distance; 
 }

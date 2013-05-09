@@ -95,6 +95,8 @@ class DRRenderer : public Renderer
 		bool renderInstance( Viewer*, Instance*, Program* );
 		bool renderGeom( Viewer*, GeomType*, const glm::mat4& );
 
+		static bool depthSortingFunc( Instance* a, Instance* b );
+
 };
 
 #endif /* DRRENDERER_H_ */

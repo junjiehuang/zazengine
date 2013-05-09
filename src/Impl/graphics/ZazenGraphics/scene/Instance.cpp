@@ -15,16 +15,14 @@ Instance::~Instance()
 {
 }
 
-float
-Instance::recalculateDistance()
+void
+Instance::recalculateDistance( const glm::mat4& viewMatrix )
 {
-	// TODO: implement
+	// calculate model-view for this instance
+	glm::mat4 modelView = viewMatrix * this->m_modelMatrix;
+	// calculate center of instance in view-space
+	glm::vec4 vsCenter = modelView * glm::vec4( this->geom->getCenter(), 1.0 );
 
-	//Vector wTranfCenter( this->geom->getCenter() );
-	//this->transform.matrix.transform( wTranfCenter );
-	
-	//this->distance = wTranfCenter.length();
-	this->distance = 0;
-	
-	return this->distance;
+	// distance from the viewer is the z-component of the center
+	this->distance = vsCenter.z;
 }

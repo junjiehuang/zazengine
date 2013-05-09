@@ -20,7 +20,7 @@ class Instance : public Orientation
 
 	glm::mat4 m_modelMatrix;
 
-	float recalculateDistance();
+	void recalculateDistance( const glm::mat4& viewMatrix );
 
 };
 
