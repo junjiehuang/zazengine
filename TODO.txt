@@ -1,7 +1,4 @@
 Transparency-Rendering (see GPU Gems 2 Page 295)
-	-> bypass all when there are no transparent objects visible/available
-		-> render/blit opaque-stuff directly to screen
-
 	-> put normal-factor and blending weight into material-property
 		-> subclass of material
 
@@ -152,6 +149,8 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 	-> Experiment with different render-target formats for performance
 	-> really all calls necessary e.g. always bindBuffer, ... ? are some states stored in buffers?
 	-> render SKYBOX AFTER other geometry and utilize stencil-buffer to mask fragments occluding the sky-box
+	-> do depth-sorting for ALL objects in scene
+		-> calculate model-view once and then reuse in geometry-rendering
 	-> no need to do depth copy: WARNING DO IN-DEPTH PROFILING!
 		-> render transparent object without write do depth
 			-> can bind g-buffer depth as texture

@@ -436,6 +436,8 @@ DRRenderer::initUniformBlocks()
 bool
 DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
+	this->preprocessTransparency( instances );
+
 	if ( false == this->doGeometryStage( instances, lights ) )
 	{
 		return false;
@@ -462,6 +464,32 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 	this->frame++;
 
 	return true;
+}
+
+void
+DRRenderer::preprocessTransparency( std::list<Instance*>& instances )
+{
+	this->m_transparentInstances.clear();
+
+	list<Instance*>::iterator iter = instances.begin();
+	while ( iter != instances.end() )
+	{
+		Instance* instance = *iter++;
+
+		if ( instance->material )
+		{
+			if ( Material::MATERIAL_TRANSPARENT == instance->material->getType() )
+			{
+				// need to relcalculate distance from viewer for depth-sorting
+				instance->recalculateDistance( this->m_camera->getViewMatrix() );
+
+				this->m_transparentInstances.push_back( instance );
+			}
+		}
+	}
+
+	// do depth-sorting
+	std::sort( this->m_transparentInstances.begin(), this->m_transparentInstances.end(), DRRenderer::depthSortingFunc );
 }
 
 bool
@@ -595,6 +623,13 @@ DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>&
 		return false;
 	}
 
+	// no transparent objects in scene, render lighting to default framebuffer
+	if ( 0 == this->m_transparentInstances.size() )
+	{
+		// clear frame-buffer
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	}
+
 	// render the contribution of each light to the scene
 	std::list<Light*>::iterator iter = lights.begin();
 	while ( iter != lights.end() )
@@ -607,10 +642,9 @@ DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>&
 		}
 	}
 
-	// switch back to default framebuffer
-	if ( false == this->m_intermediateDepthFB->unbind() )
+	if ( 0 < this->m_transparentInstances.size() )
 	{
-		return false;
+		this->m_gBufferFbo->unbind();
 	}
 
 	return true;
@@ -639,27 +673,32 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		activeLightingProgram = this->m_progLightingNoShadowStage;
 	}
 
-	// render to g-buffer
-	if ( false == this->m_gBufferFbo->bind() )
+	// if there are some transparent objects in scene, render lighting result to intermediate 
+	// 3rd g-buffer target because needed as background for transparency blending
+	if ( 0 < this->m_transparentInstances.size() )
 	{
-		return false;
+		// render to g-buffer
+		if ( false == this->m_gBufferFbo->bind() )
+		{
+			return false;
+		}
+
+		// enable rendering to 3rd target
+		if ( false == this->m_gBufferFbo->drawBuffer( 3 ) )
+		{
+			return false;
+		}
+
+		// check status of FBO, IMPORANT: not before, would have failed
+		if ( false == this->m_gBufferFbo->checkStatus() )
+		{
+			return false;
+		}
 	}
 
 	// IMPORTANT: need to re-set the viewport for each FBO
 	// could have changed due to shadow-map or other rendering happend in the frame before
 	this->m_camera->restoreViewport();
-
-	// enable rendering to 3rd target
-	if ( false == this->m_gBufferFbo->drawBuffer( 3 ) )
-	{
-		return false;
-	}
-
-	// check status of FBO, IMPORANT: not before, would have failed
-	if ( false == this->m_gBufferFbo->checkStatus() )
-	{
-		return false;
-	}
 
 	// activate lighting-stage shader
 	if ( false == activeLightingProgram->use() )
@@ -820,37 +859,15 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 bool
 DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
-	vector<Instance*> transparentInstances;
-
-	list<Instance*>::iterator iter = instances.begin();
-	while ( iter != instances.end() )
-	{
-		Instance* instance = *iter++;
-
-		if ( instance->material )
-		{
-			if ( Material::MATERIAL_TRANSPARENT == instance->material->getType() )
-			{
-				// need to relcalculate distance from viewer for depth-sorting
-				instance->recalculateDistance( this->m_camera->getViewMatrix() );
-
-				transparentInstances.push_back( instance );
-			}
-		}
-	}
-
-	// do depth-sorting
-	std::sort( transparentInstances.begin(), transparentInstances.end(), DRRenderer::depthSortingFunc );
-
 	unsigned int combinationTarget = 1;
 	unsigned int backgroundIndex = 3;
 
-	for ( unsigned int i = 0; i < transparentInstances.size(); i++ )
+	for ( unsigned int i = 0; i < this->m_transparentInstances.size(); i++ )
 	{
-		Instance* instance = transparentInstances[ i ];
+		Instance* instance = this->m_transparentInstances[ i ];
 
 		if ( false == this->renderTransparentInstance( instance, backgroundIndex, combinationTarget,
-			i == transparentInstances.size() - 1 ) )
+			i == this->m_transparentInstances.size() - 1 ) )
 		{
 			return false;
 		}

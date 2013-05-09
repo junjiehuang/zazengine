@@ -69,6 +69,8 @@ class DRRenderer : public Renderer
 		// utils matrix
 		glm::mat4 m_unitCubeMatrix;
 
+		std::vector<Instance*> m_transparentInstances;
+
 		bool initFBOs();
 		bool initGBuffer();
 		bool initIntermediateDepthBuffer();
@@ -81,6 +83,7 @@ class DRRenderer : public Renderer
 
 		bool createMrtBuffer( RenderTarget::RenderTargetType, FrameBufferObject* );
 
+		void preprocessTransparency( std::list<Instance*>& instances );
 		bool doGeometryStage( std::list<Instance*>&, std::list<Light*>& );
 		bool doLightingStage( std::list<Instance*>&, std::list<Light*>& );
 		bool doTransparencyStage( std::list<Instance*>&, std::list<Light*>& );
