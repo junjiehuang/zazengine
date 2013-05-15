@@ -1,4 +1,9 @@
 Transparency-Rendering (see GPU Gems 2 Page 295)
+	-> Differentiate between normal transparency and refractive transparency
+		-> normal transparency can be rendered at the very last using normal opengl blending
+			-> no overhead of copying depth, reading background and combining results into new background
+		-> split into two types: TRANSPARENT_BLENDING & TRANSPARENT_REFRACTION
+	
 	-> Do Colored Shadow-Rendering for Transparent objects
 		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
 			-> optimization: when material is transparent write to 1.0 to alpha-channel, else 0.0
@@ -6,8 +11,58 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 		-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
 			-> optimization: only do additional lookup when alpha-channel is 1.0
 		-> for better quality: do multisampling texture lookups
-
+		
 Fix errors with uniformbuffers
+
+No more bindbufferbase of uniformblocks in renderer
+	-> do it after programs are linked in uniformmanagement
+
+Multiple lights
+	-> blending 
+	-> use stencil buffer to reduce lighting to geometry only
+		-> use only for point- & spotlight because directional light will affect sky-box and ambient too
+	-> correct lighting-equations: falloff, cone, ...
+		-> point-light
+	-> Solve Problem of Ambient + Sky-Box Lighting
+		-> when no directional light in scene
+			-> render full-screen quad and apply ambient-term to non-sky-box material and diffuse-only to sky-box material => need new program
+			-> other lights accumulate by blending
+		-> when directional light in scene
+			-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
+	->  bounding geometry for light
+		-> point-light: sphere with radius 1 and then scale according to light distance & some epsilon
+			-> low-poly count
+		-> spot-light: ?
+	-> lighting of transparency?
+	
+Mip-Map Creation in TextureFactory
+			
+Normal-mapping
+	-> need to transform view-space normal of the object instead of transforming the viewing-direction and the light-direction to tangent-space
+		-> why? because we have no more access to each tangent&bitangent in the lighting-pass and storing them in additional render-targets would be by far too much of overhead
+		=> do it in geometry-stage fragment-shader
+	-> specular maps in materials
+	-> use texture-arrays to combine multi-textures for one material in one texture to only need one bind
+	
+Shadow-mapping
+	-> shadow-mapping of point-light
+	-> do some sampling on shadow-edges
+		-> multisampling
+				
+Msaa
+	-> do sampling in geometry fragment-shader (centroid)
+	-> dual source blending?
+	
+Instanced Rendering
+	-> high number of meshes rendering
+	
+Text-rendering
+	-> use OGLFT
+	
+Do Culling
+	-> View-Frustum
+	-> Occlusion Culling using queries (like CHC++) 
+	-> Culling library (Umbra 3) ?
 	
 Reflections
 	-> environment (cube-mapping)
@@ -26,6 +81,7 @@ Reflections
 				-> render 6 faces of a cubemap, each with deferred rendering => fucking huge impact on bandwith and performance
 					-> dramatic reduced resolution of cube-map sides e.g. 512x512
 		-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
+		-> use geometry-shader to render to cube-map layers ?
 		-> can to do refraction & reflection
 		-> simulate chromatic abberration (see Orange Book)
 			-> need to simulate different wavelengths for red, green and blue channels
@@ -57,51 +113,6 @@ Reflections
 			-> environment holds cube-map and params for shaders. it knows how often update cube-map per second
 	-> planar (?)
 
-	
-Multiple lights
-	-> blending 
-	-> use stencil buffer to reduce lighting to geometry only
-		-> use only for point- & spotlight because directional light will affect sky-box and ambient too
-	-> correct lighting-equations: falloff, cone, ...
-		-> point-light
-	-> Solve Problem of Ambient + Sky-Box Lighting
-		-> when no directional light in scene
-			-> render full-screen quad and apply ambient-term to non-sky-box material and diffuse-only to sky-box material => need new program
-			-> other lights accumulate by blending
-		-> when directional light in scene
-			-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
-	->  bounding geometry for light
-		-> point-light: sphere with radius 1 and then scale according to light distance & some epsilon
-			-> low-poly count
-		-> spot-light: ?
-	
-Mip-Map Creation in TextureFactory
-			
-Normal-mapping
-	-> need to transform view-space normal of the object instead of transforming the viewing-direction and the light-direction to tangent-space
-		-> why? because we have no more access to each tangent&bitangent in the lighting-pass and storing them in additional render-targets would be by far too much of overhead
-		=> do it in geometry-stage fragment-shader
-		
-Shadow-mapping
-	-> shadow-mapping of point-light
-	-> do some sampling on shadow-edges
-		-> multisampling
-				
-Msaa
-	-> do sampling in geometry fragment-shader (centroid)
-	-> dual source blending?
-	
-Instanced Rendering
-	-> high number of meshes rendering
-	
-Text-rendering
-	-> use OGLFT
-	
-Do Culling
-	-> View-Frustum
-	-> Occlusion Culling using queries (like CHC++) 
-	-> Culling library (Umbra 3) ?
-	
 Need generic effect/material functionality
 	-> no need to set input or output indices in shaders, can be done with layout ( location = ... ) 
 	-> on top of program- & shader-management
@@ -141,11 +152,17 @@ Allow Toggle fullscreen
 		=> lot of work to do, because everything needs to be re-init-able
 
 Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
+	-> DO IN-DEPTH PERFORMANCE-MEASUREMENTS (premature optimiziation is the root of all evil!)
+		-> use nvidia nsight
 	-> pre multiply matrices in CPU instead of doing in shaders
 	-> reduce branching in shaders (need different shader-architecture, see below)
+	-> check if all glClear-commands are necessary
+		-> g-buffer color-targets will be overwritten anyway
+		-> use invalidate on FBO, check if this will improve performance
 	-> Experiment with different render-target formats for performance
 	-> really all calls necessary e.g. always bindBuffer, ... ? are some states stored in buffers?
 	-> render SKYBOX AFTER other geometry and utilize stencil-buffer to mask fragments occluding the sky-box
+	-> opengl 4.3 allows for READ & WRITE of textures (images) at the same time
 	-> do depth-sorting for ALL objects in scene
 		-> calculate model-view once and then reuse in geometry-rendering
 	-> no need to do depth copy: WARNING DO IN-DEPTH PROFILING!
