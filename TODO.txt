@@ -36,7 +36,10 @@ Multiple lights
 	-> lighting of transparency?
 	
 Mip-Map Creation in TextureFactory
-			
+
+Anisotropic filtering
+	-> GL_EXT_texture_filter_anisotropic
+	
 Normal-mapping
 	-> need to transform view-space normal of the object instead of transforming the viewing-direction and the light-direction to tangent-space
 		-> why? because we have no more access to each tangent&bitangent in the lighting-pass and storing them in additional render-targets would be by far too much of overhead
@@ -144,16 +147,30 @@ Global Illumination Techniques?
 
 Particle System?
 	-> CUDA
-	-> ... ?
+	-> transform-feedback rendering
+	-> compute-shaders
+	-> tesselation-shaders
+	-> geometry-shaders
 	
 Allow Toggle fullscreen
 	-> reinit window & render-context!
 		=> need to reinig glew, programs, textures,... (?)
 		=> lot of work to do, because everything needs to be re-init-able
 
+Debugging
+	-> Debugging-Context
+	-> ARB_debug_output
+	-> 4.3 debugging-features
+	
 Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 	-> DO IN-DEPTH PERFORMANCE-MEASUREMENTS (premature optimiziation is the root of all evil!)
 		-> use nvidia nsight
+	-> use EXT_direct_state_access
+		-> no more need to bind textures, ...
+		-> http://www.g-truc.net/post-0363.html#menu
+		-> http://www.opengl.org/registry/specs/EXT/direct_state_access.txt
+	-> EXT_swap_control_tear ?
+	-> ARB_sampler_objects
 	-> pre multiply matrices in CPU instead of doing in shaders
 	-> reduce branching in shaders (need different shader-architecture, see below)
 	-> check if all glClear-commands are necessary
@@ -163,9 +180,10 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 	-> really all calls necessary e.g. always bindBuffer, ... ? are some states stored in buffers?
 	-> render SKYBOX AFTER other geometry and utilize stencil-buffer to mask fragments occluding the sky-box
 	-> opengl 4.3 allows for READ & WRITE of textures (images) at the same time
+		-> use for rendering transparent-glass
 	-> do depth-sorting for ALL objects in scene
 		-> calculate model-view once and then reuse in geometry-rendering
-	-> no need to do depth copy: WARNING DO IN-DEPTH PROFILING!
+	-> no need to do depth copy during transparent-glass rendering: WARNING DO IN-DEPTH PROFILING!
 		-> render transparent object without write do depth
 			-> can bind g-buffer depth as texture
 		-> then when object was not last one, render it again but only depth
@@ -220,15 +238,15 @@ Port To Linux & do parallel development
 	-> compile as x86 x64?
 	-> check if all libs are available
 		-> Boost: 		YES
-		-> OIS: 		YES
-		-> lua:			YES
+		-> OIS: 			YES
+		-> lua:				YES
 		-> luabind:		YES
 		-> assimp:		YES
-		-> glew:		YES
-		-> devil:		YES
-		-> fmod:		YES
+		-> glew:			YES
+		-> devil:			YES
+		-> fmod:			YES
 		-> log4cp:		YES
-		-> ode:			YES
+		-> ode:				YES
 		
 Game-Functionality
 	-> allow mutliple scenes which can be changed during runtime. also specify which subsystems are necessary: load/unload them during runtime
