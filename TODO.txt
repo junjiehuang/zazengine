@@ -157,6 +157,11 @@ Allow Toggle fullscreen
 		=> need to reinig glew, programs, textures,... (?)
 		=> lot of work to do, because everything needs to be re-init-able
 
+Animation-System
+	-> all on GPU, not on CPU
+	-> load & animate doom3 models
+	-> other animations?
+	
 Debugging
 	-> Debugging-Context
 	-> ARB_debug_output
@@ -226,7 +231,7 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 					but we apply the inverse projection transform => need again to divide )
 		4. view-coordinates
 		
-When OpenGL 4.3 Available Switch to
+Switch all to OpenGL 4.3 with new System (NVidia!)
 	-> extension ARB_program_interface_query
 	
 Port To Linux & do parallel development
