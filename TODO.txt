@@ -67,9 +67,12 @@ Text-rendering
 	-> use OGLFT
 	
 Need generic effect/material functionality
-	-> no need to set input or output indices in shaders, can be done with layout ( location = ... ) 
+	-> no need to set input or output indices in shaders, can be done with layout ( location = ... )
+		-> remove glGetFragDataLocation, glBindFragDataLocation, glGetAttribLocation, glBindAttribLocation
+		-> remove glUniform1i and glUniformBlockBinding
 	-> on top of program- & shader-management
 		-> implement #include in shaders: parse loaded string and replace
+			-> GL_ARB_shading_language_include is an extension that provides an #include directive to GLSL
 		-> problem: compiler error generate other line numbers!
 	-> use shaders-subroutines
 		-> compile all possible material stuff in the shader and select by setting propriate subroutine
@@ -174,6 +177,7 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 		-> no more need to bind textures, ...
 		-> http://www.g-truc.net/post-0363.html#menu
 		-> http://www.opengl.org/registry/specs/EXT/direct_state_access.txt
+	-> explore Vertex Array Objects for specifying vertex-formats
 	-> EXT_swap_control_tear ?
 	-> ARB_sampler_objects
 	-> Do Culling
