@@ -171,6 +171,7 @@ Debugging
 	-> 4.3 debugging-features
 	
 Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
+	-> create most important render-targets (g-buffer) & depth-buffers (G-buffer, shadow-maps,...) first
 	-> DO IN-DEPTH PERFORMANCE-MEASUREMENTS (premature optimiziation is the root of all evil!)
 		-> use nvidia nsight
 	-> use EXT_direct_state_access
@@ -178,6 +179,7 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 		-> http://www.g-truc.net/post-0363.html#menu
 		-> http://www.opengl.org/registry/specs/EXT/direct_state_access.txt
 	-> explore Vertex Array Objects for specifying vertex-formats
+		-> http://www.arcsynthesis.org/gltut/Positioning/Tutorial%2005.html
 	-> EXT_swap_control_tear ?
 	-> ARB_sampler_objects
 	-> Do Culling
