@@ -1,7 +1,15 @@
-http://www.altdevblogaday.com/2011/03/15/thoughts-on-the-knowledge-of-an-up-to-date-graphics-programmer/
-http://www.altdevblogaday.com/2011/05/29/points-vertices-and-vectors/
-http://www.altdevblogaday.com/2011/06/13/screen-space-rules-for-designing-graphics-sub-systems-part-i/
-http://www.altdevblogaday.com/2011/07/03/no-look-up-tables-rules-for-designing-graphics-sub-systems-part-ii/
-http://www.altdevblogaday.com/2011/07/31/even-error-distribution-rules-for-designing-graphics-sub-systems-part-iii/
+Techniques
+http://de.slideshare.net/Mark_Kilgard/using-vertex-bufferobjectswell
+http://diaryofagraphicsprogrammer.blogspot.co.at/2009/06/multisample-anti-aliasing.html?m=1
 
-http://diaryofagraphicsprogrammer.blogspot.co.at/
+Information on basic & advanced shadow-mapping
+http://www.fabiensanglard.net/shadowmapping/index.php
+http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
+http://wiki.delphigl.com/index.php/GLSL_Licht_und_Schatten
+
+matrices
+http://www.cs.princeton.edu/~gewang/projects/darth/stuff/quat_faq.html
+
+Performance
+http://www.opengl.org/wiki/Performance
+http://www.mesa3d.org/brianp/sig97/perfopt.htm

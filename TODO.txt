@@ -251,6 +251,11 @@ Port To Linux & do parallel development
 		-> compile them with debug mode available
 			-> allows to step into driver-calls which should be VERY interesting
 	-> compile as x86 x64?
+	-> Software & Tools
+		-> gDEBugger
+		-> blender
+		-> audacity
+		-> open asset import library
 	-> check if all libs are available
 		-> Boost: 		YES
 		-> OIS: 			YES
