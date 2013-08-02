@@ -12,7 +12,8 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 			-> optimization: only do additional lookup when alpha-channel is 1.0
 		-> for better quality: do multisampling texture lookups
 		
-Replace Win32-specific context-creation with GLWF
+
+GLFW Context
 	-> Allow Toggle fullscreen
 		-> reinit window & render-context!
 			=> need to reinig glew, programs, textures,... (?)

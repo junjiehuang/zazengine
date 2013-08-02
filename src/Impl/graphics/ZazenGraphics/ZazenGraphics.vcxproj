@@ -48,7 +48,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(BOOST_PATH)/lib/;libs/lib/;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libboost_filesystem-vc100-mt-gd-1_51.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;opengl32.lib;glu32.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libboost_filesystem-vc100-mt-gd-1_51.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;opengl32.lib;glu32.lib;assimp.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy $(ProjectDir)libs\lib\*.dll $(SolutionDir)$(Configuration)</Command>

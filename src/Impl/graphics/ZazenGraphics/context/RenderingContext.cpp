@@ -1,12 +1,11 @@
 #include "RenderingContext.h"
 
-#include <GL/glew.h>
-#include <GL/wglew.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WGL
+
+#include <GLFW/glfw3native.h>
 
 #include "../ZazenGraphics.h"
-
-#include <iostream>
-#include <vector>
 
 using namespace std;
 
@@ -17,43 +16,65 @@ RenderingContext* RenderingContext::instance = NULL;
 bool
 RenderingContext::initialize( const std::string& title, int width, int height, bool fullScreenFlag )
 {
-	new RenderingContext();
+	new RenderingContext( title, width, height, fullScreenFlag );
 
-	// register new OpenGL window class
-	if ( false == RenderingContext::registerClass( GetModuleHandle( NULL ) ) )
+	if ( false == RenderingContext::initGLFW() )
 	{
 		RenderingContext::shutdown();
-		return false;
+        return false;
+	}
+
+	if ( false == RenderingContext::initGlew() )
+	{
+		RenderingContext::shutdown();
+        return false;
 	}
 	
-	// create window (with according device context & pixelformat )
-	if ( false == RenderingContext::createWindow( width, height, fullScreenFlag, title ) )
+	return true;
+}
+
+bool
+RenderingContext::initGLFW()
+{
+	/* Initialize the library */
+    if ( false == glfwInit() )
 	{
-		RenderingContext::shutdown();
-		return false;
+		ZazenGraphics::getInstance().getLogger().logError() << "RenderingContext::initGLFW: init GLFW failed";
+        return false;
 	}
-	
-	// create basic OpenGL compatibility rendering-context & initialize GLEW => fetched function pointers for creating core rendering-context
-	if ( false == RenderingContext::createBaseRenderingContext() )
+
+    /* Create a windowed mode window and its OpenGL context */
+	RenderingContext::instance->m_window = glfwCreateWindow( RenderingContext::instance->m_windowWidth, RenderingContext::instance->m_windowHeight, 
+		RenderingContext::instance->m_windowTitle.c_str(), NULL, NULL );
+    if ( NULL == RenderingContext::instance->m_window )
+    {
+		ZazenGraphics::getInstance().getLogger().logError() << "RenderingContext::initGLFW: creating window failed";
+        return false;
+    }
+
+    /* Make the window's context current */
+    glfwMakeContextCurrent( RenderingContext::instance->m_window );
+
+	RenderingContext::instance->m_hWnd = glfwGetWin32Window( RenderingContext::instance->m_window );
+	if ( NULL == RenderingContext::instance->m_hWnd )
 	{
-		RenderingContext::shutdown();
+		ZazenGraphics::getInstance().getLogger().logError() << "RenderingContext::initGLFW: retrieving HWND failed";
 		return false;
 	}
 
-	/* WARNING: seems to crash on my ATI Radeon HD 6650M at SOME point...
-	// create core rendering context
-	if ( false == RenderingContext::createCoreRenderingContext() )
+	return true;
+}
+
+bool
+RenderingContext::initGlew()
+{
+	glewExperimental = TRUE;
+	GLenum err = glewInit();
+	if ( GLEW_OK != err )
 	{
-		RenderingContext::shutdown();
+		ZazenGraphics::getInstance().getLogger().logError() << "RenderingContext::initGlew: GLEW failed with " << glewGetErrorString( err );
 		return false;
 	}
-	*/
-
-	// show and size window
-	ShowWindow( RenderingContext::instance->hWnd, SW_SHOW );					
-	SetForegroundWindow( RenderingContext::instance->hWnd );
-	SetFocus( RenderingContext::instance->hWnd );
-	RenderingContext::instance->resize( width, height );
 
 	return true;
 }
@@ -67,13 +88,10 @@ RenderingContext::shutdown()
 		return true;
 	}
 
-	// clean-up in reversed order
-	// destroy OpenGL rendering-context
-	RenderingContext::destroyRenderingContext();
-	// destroy window (& device context)
-	RenderingContext::destroyWindow();
-	// unregister OpenGL window-class
-	RenderingContext::unregisterClass();
+	if ( NULL != RenderingContext::instance->m_window )
+	{
+		glfwTerminate();
+	}
 
 	// delete singleton instance 
 	delete RenderingContext::instance;
@@ -81,344 +99,15 @@ RenderingContext::shutdown()
 	return true;
 }
 
-bool
-RenderingContext::registerClass( HINSTANCE hInstance )
+RenderingContext::RenderingContext( const std::string& title, int width, int height, bool fullScreenFlag )
 {
-	WNDCLASS wc;						
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;		// Redraw On Size, And Own DC For Window.
-	wc.lpfnWndProc = (WNDPROC) WndProc;					// WndProc Handles Messages
-	wc.cbClsExtra = 0;									// No Extra Window Data
-	wc.cbWndExtra = 0;									// No Extra Window Data
-	wc.hInstance = hInstance;							// Set The Instance
-	wc.hIcon = LoadIcon( NULL, IDI_WINLOGO );			// Load The Default Icon
-	wc.hCursor = LoadCursor( NULL, IDC_ARROW );			// Load The Arrow Pointer
-	wc.hbrBackground = NULL;							// No Background Required For GL
-	wc.lpszMenuName	= NULL;								// We Don't Want A Menu
-	wc.lpszClassName = "OpenGL";						// Set The Class Name
+	this->m_windowTitle = title;
+	this->m_windowWidth = width;
+	this->m_windowHeight = height;
+	this->m_fullScreen = fullScreenFlag;
 
-	if ( 0 == RegisterClass( &wc ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::registerClass: Failed To Register The Window Class." );
-		return false;
-	}
-
-	// successful in registering the class, set hInstance
-	RenderingContext::instance->hInstance = hInstance;
-
-	return true;
-}
-
-bool
-RenderingContext::createWindow( int width, int height, bool fullScreenFlag, const std::string& title )
-{
-	HWND hWnd = NULL;
-	HDC hDC = NULL;
-	DWORD dwExStyle;		
-	DWORD dwStyle;	
-	RECT WindowRect;
-
-	WindowRect.left = ( long ) 0;			
-	WindowRect.right = ( long ) width;		
-	WindowRect.top = ( long ) 0;				
-	WindowRect.bottom = ( long ) height;
-
-	if ( fullScreenFlag )
-	{
-		DEVMODE dmScreenSettings;
-		memset( &dmScreenSettings, 0, sizeof( dmScreenSettings ) );
-		dmScreenSettings.dmSize = sizeof( dmScreenSettings );
-		dmScreenSettings.dmPelsWidth = width;
-		dmScreenSettings.dmPelsHeight = height;
-		dmScreenSettings.dmBitsPerPel = WINDOW_BITS_PER_PIXEL;
-		dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-
-		// Try To Set Selected Mode And Get Results.  NOTE: CDS_FULLSCREEN Gets Rid Of Start Bar.
-		if ( ChangeDisplaySettings( &dmScreenSettings, CDS_FULLSCREEN ) != DISP_CHANGE_SUCCESSFUL )
-		{
-			ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createWindow: The Requested Fullscreen Mode Is Not Supported By Your Video Card, fallback to windowed mode." );
-			fullScreenFlag = false;
-		}
-	}
-
-	if ( fullScreenFlag )
-	{
-		dwExStyle = WS_EX_APPWINDOW;					
-		dwStyle = WS_POPUP;	
-		ShowCursor( FALSE );
-	}
-	else
-	{
-		dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;	
-		dwStyle = WS_OVERLAPPEDWINDOW;
-	}
-
-	// Adjust Window To True Requested Size
-	AdjustWindowRectEx( &WindowRect, dwStyle, FALSE, dwExStyle );
-
-	// create the window
-	hWnd = CreateWindowEx( dwExStyle,
-								"OpenGL",
-								title.c_str(),
-								dwStyle |
-								WS_CLIPSIBLINGS |
-								WS_CLIPCHILDREN,
-								0, 0,
-								WindowRect.right-WindowRect.left,
-								WindowRect.bottom-WindowRect.top,
-								NULL,
-								NULL,
-								RenderingContext::instance->hInstance,
-								NULL ); 
-	if ( NULL == hWnd )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createWindow: Failed To Register The Window Class." );
-		return false;
-	}
-
-	// creating the window succeeded
-	RenderingContext::instance->hWnd = hWnd;
-
-	hDC = GetDC( RenderingContext::instance->hWnd );
-	if ( NULL == hDC )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createWindow: Can't Create A GL Device Context." );
-		return false;
-	}
-
-	RenderingContext::instance->hDC = hDC;
-
-	RenderingContext::instance->m_windowWidth = width;
-	RenderingContext::instance->m_windowHeight = height;
-	RenderingContext::instance->m_fullScreen = fullScreenFlag;
-
-	return true;
-}
-
-bool
-RenderingContext::createBaseRenderingContext()
-{
-	GLuint pixelFormat;
-
-	static PIXELFORMATDESCRIPTOR pfd =	
-	{
-		sizeof( PIXELFORMATDESCRIPTOR ),			// Size Of This Pixel Format Descriptor
-		1,											// Version Number
-		PFD_DRAW_TO_WINDOW |						// Format Must Support Window
-		PFD_SUPPORT_OPENGL |						// Format Must Support OpenGL
-		PFD_DOUBLEBUFFER,							// Must Support Double Buffering
-		PFD_TYPE_RGBA,								// Request An RGBA Format
-		WINDOW_BITS_PER_PIXEL,						// Select Our Color Depth
-		0, 0, 0, 0, 0, 0,							// Color Bits Ignored
-		0,											// No Alpha Buffer
-		0,											// Shift Bit Ignored
-		0,											// No Accumulation Buffer
-		0, 0, 0, 0,									// Accumulation Bits Ignored
-		32,											// 32Bit Z-Buffer (Depth Buffer)  
-		8,											// 8 bit Stencil Buffer
-		0,											// No Auxiliary Buffer
-		PFD_MAIN_PLANE,								// Main Drawing Layer
-		0,											// Reserved
-		0, 0, 0										// Layer Masks Ignored
-	};
-
-	pixelFormat = ChoosePixelFormat( RenderingContext::instance->hDC, &pfd );
-	if ( 0 == pixelFormat )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createBaseRenderingContext: Can't Find A Suitable PixelFormat." );
-		return false;
-	}
-
-	if ( false == SetPixelFormat( RenderingContext::instance->hDC, pixelFormat, &pfd ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createBaseRenderingContext: Can't Set The PixelFormat." );
-		return false;
-	}
-
-	HGLRC hRC = wglCreateContext( RenderingContext::instance->hDC );
-	if ( NULL == hRC )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createBaseRenderingContext: Can't Create A GL Rendering Context." );
-		return false;
-	}
-
-	RenderingContext::instance->hRC = hRC;
-
-	if( 0 == wglMakeCurrent( RenderingContext::instance->hDC, RenderingContext::instance->hRC ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createBaseRenderingContext: Can't Activate The GL Rendering Context." );
-		return false;
-	}
-
-	glewExperimental = TRUE;
-	GLenum err = glewInit();
-	if ( GLEW_OK != err )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "RenderingContext::createBaseRenderingContext: GLEW failed with " <<  glewGetErrorString( err );
-		return false;
-	}
-
-	return true;
-}
-
-bool
-RenderingContext::createCoreRenderingContext()
-{
-	HGLRC hRC = NULL;
-	int majorVersion = 3;
-	int minorVersion = 3;
-	PIXELFORMATDESCRIPTOR pfd;
-	int iPixelFormat, iNumFormats;
-	
-	const int iPixelFormatAttribList[] =
-	{
-		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-		WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-		WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-		WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
-		WGL_COLOR_BITS_ARB, 32,
-		WGL_DEPTH_BITS_ARB, 24,
-		WGL_STENCIL_BITS_ARB, 8,
-		0 // End of attributes list
-	};
-
-	// WARNING: need to set far higher than really necessary because it seems
-	// that wglCreateContextAttribsARB is manipulating it somehow inside
-	// which leads to a stack-corruption and a crash of the program if not done
-	// found after exhausting search in forums and stackoverflow: this was a bug in GLFW too
-	std::vector<int> attribs( 20 );
-	attribs[ 0 ] = WGL_CONTEXT_MAJOR_VERSION_ARB;
-	attribs[ 1 ] = majorVersion;
-	attribs[ 2 ] = WGL_CONTEXT_MINOR_VERSION_ARB;
-	attribs[ 3 ] = minorVersion;
-	attribs[ 4 ] = WGL_CONTEXT_PROFILE_MASK_ARB;
-	attribs[ 5 ] = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
-	
-	if ( 0 == wglChoosePixelFormatARB( RenderingContext::instance->hDC, iPixelFormatAttribList, NULL, 
-		1, &iPixelFormat, ( UINT* ) &iNumFormats ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createCoreRenderingContext: Failed choosing pixel format." );
-		return false;
-	}
-
-	if ( false == SetPixelFormat( RenderingContext::instance->hDC, iPixelFormat, &pfd ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createWindow: Can't Set The PixelFormat." );
-		return false;
-	}
-
-	hRC = wglCreateContextAttribsARB( RenderingContext::instance->hDC, 0, static_cast<int*>( &attribs[0] ) );
-	if ( NULL == hRC )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createCoreRenderingContext: Can't Create A GL Rendering Context." );
-		return false;
-	}
-
-	// destroy base-context before switching to new core-context
-	if ( false == RenderingContext::destroyRenderingContext() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createCoreRenderingContext: Couldn't delete base-context." );
-		return false;
-	}
-
-	RenderingContext::instance->hRC = hRC;
-
-	if( 0 == wglMakeCurrent( RenderingContext::instance->hDC, RenderingContext::instance->hRC ) )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "RenderingContext::createCoreRenderingContext: Can't Activate The GL Rendering Context." );
-		return false;
-	}
-	
-	glewExperimental = TRUE;
-	GLenum err = glewInit();
-	if ( GLEW_OK != err )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "RenderingContext::createCoreRenderingContext: GLEW failed with " << glewGetErrorString( err );
-		return false;
-	}
-
-	return true;
-}
-
-bool
-RenderingContext::unregisterClass()
-{
-	if ( NULL != RenderingContext::instance->hInstance )
-	{
-		if ( 0 == UnregisterClass( "OpenGL", RenderingContext::instance->hInstance ) )
-		{
-			ZazenGraphics::getInstance().getLogger().logWarning( "RenderingContext::unregisterClass: Could Not Unregister Class." );		
-		}
-
-		RenderingContext::instance->hInstance = NULL;
-	}
-
-	return true;
-}
-
-bool
-RenderingContext::destroyRenderingContext()
-{
-	if ( NULL != RenderingContext::instance->hRC )
-	{
-		if ( 0 == wglMakeCurrent( NULL, NULL ) )	
-		{
-			ZazenGraphics::getInstance().getLogger().logWarning( "RenderingContext::destroyRenderingContext: wglMakeCurrent failed." );
-		}
-
-		if ( 0 == wglDeleteContext( RenderingContext::instance->hRC ) )
-		{
-			ZazenGraphics::getInstance().getLogger().logWarning( "RenderingContext::destroyRenderingContext: wglDeleteContext failed." );
-		}
-
-		RenderingContext::instance->hRC = NULL;
-	}
-
-	return true;
-}
-
-bool
-RenderingContext::destroyWindow()
-{
-	if ( NULL != RenderingContext::instance->hDC && NULL != RenderingContext::instance->hWnd )
-	{
-		if ( 0 == ReleaseDC( RenderingContext::instance->hWnd,RenderingContext::instance->hDC ) )
-		{
-			ZazenGraphics::getInstance().getLogger().logWarning( "RenderingContext::destroyWindow: Release Device Context Failed." );
-		}
-
-		RenderingContext::instance->hDC = NULL;
-	}
-
-	if ( NULL != RenderingContext::instance->hWnd )
-	{
-		// when in fullscreen, un-fullscreen the window
-		if ( RenderingContext::instance->m_fullScreen )	
-		{
-			ChangeDisplaySettings( NULL, 0 );
-			ShowCursor( TRUE );
-		}
-
-		if ( 0 == DestroyWindow( RenderingContext::instance->hWnd ) )
-		{
-			ZazenGraphics::getInstance().getLogger().logWarning( "RenderingContext::destroyWindow: Destroy Window Failed." );
-		}
-
-		RenderingContext::instance->hWnd = NULL;
-	}
-
-	return true;
-}
-
-RenderingContext::RenderingContext()
-{
-	this->m_windowWidth = 800;
-	this->m_windowHeight = 600;
-	this->m_fullScreen = false;
-
-	this->hDC = NULL;
-	this->hRC = NULL;
-	this->hWnd = NULL;
-	this->hInstance = NULL;
+	this->m_window = NULL;
+	this->m_hWnd = NULL;
 
 	this->m_activeFlag = true;
 
@@ -458,11 +147,12 @@ RenderingContext::resize( int width, int height )
 bool
 RenderingContext::swapBuffers()
 {
-	SwapBuffers( RenderingContext::instance->hDC );
+	glfwSwapBuffers( RenderingContext::instance->m_window );
 
 	return true;
 }
 
+/*
 LRESULT CALLBACK
 RenderingContext::WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
@@ -510,3 +200,4 @@ RenderingContext::WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 	// Pass All Unhandled Messages To DefWindowProc
 	return DefWindowProc( hWnd, uMsg, wParam, lParam );
 }
+*/

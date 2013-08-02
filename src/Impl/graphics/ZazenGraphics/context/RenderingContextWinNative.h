@@ -1,15 +1,14 @@
 /*
- * RenderingContext.h
+ * RenderingContextWinNative.h
  *
- *  Created on: 13.03.2013
+ *  Created on: 02.08.2013
  *      Author: Jonathan Thaler
  */
+
 #ifndef RENDERING_CONTEXT_H_
 #define RENDERING_CONTEXT_H_
 
-#include <GL/glew.h>
-
-#include <GLFW/glfw3.h>
+#include <Windows.h>
 
 #include <string>
 
@@ -22,7 +21,7 @@ class RenderingContext
 
 		bool toggleFullscreen();
 
-		void* getHandle() { return this->m_hWnd; };
+		HWND getHandle() { return this->hWnd; };
 
 		int getWidth() { return this->m_windowWidth; };
 		int getHeight() { return this->m_windowHeight; };
@@ -34,7 +33,7 @@ class RenderingContext
 	private:
 		static RenderingContext* instance;
 
-		RenderingContext( const std::string& title, int width, int height, bool fullScreenFlag );
+		RenderingContext();
 		~RenderingContext();
 
 		std::string m_windowTitle;
@@ -46,14 +45,24 @@ class RenderingContext
 
 		bool m_activeFlag;
 
-		void* m_hWnd;
-		GLFWwindow* m_window;
+		HDC hDC;
+		HGLRC hRC;
+		HWND hWnd;
+		HINSTANCE hInstance;
 
 		void resize( int, int );
 
-		static bool initGLFW();
-		static bool initGlew();
+		static bool registerClass( HINSTANCE );
+		static bool createWindow( int, int, bool, const std::string& );
+		static bool createBaseRenderingContext();
+		static bool createCoreRenderingContext();
+
+		static bool unregisterClass();
+		static bool destroyWindow();
+		static bool destroyRenderingContext();
+
+		static LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
 };
 
-#endif /* RENDERING_CONTEXT_H_ */
+#endif /* WINDOW_H_ */

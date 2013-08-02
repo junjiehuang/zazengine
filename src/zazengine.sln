@@ -17,6 +17,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{BD6407B5-5
 	ProjectSection(SolutionItems) = preProject
 		..\INSTALL.txt = ..\INSTALL.txt
 		..\TODO.txt = ..\TODO.txt
+		..\TODO_ARCHITECTURE.txt = ..\TODO_ARCHITECTURE.txt
+		..\TODO_REFACTORING.txt = ..\TODO_REFACTORING.txt
+		..\TODO_RENDERING.txt = ..\TODO_RENDERING.txt
+		..\TODO_SCRIPTING.txt = ..\TODO_SCRIPTING.txt
 	EndProjectSection
 EndProject
 Global
