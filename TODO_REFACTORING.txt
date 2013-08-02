@@ -1,0 +1,35 @@
+Code-Quality
+	- put magic ids & numbers into constants: uniform-names, uniformblock-names, uniformblock-field names
+	- const-completeness (add const to inline methods were appropriate)
+	- replace all strcmp with boost:iequals
+	- keep id, type & core in ISubSystem as readable
+	- remove friend-initialisation bullshit from entities
+	- project buildable as RELEASE
+	- check if everything is cleaned up when a subsystem cannot be initialized
+	- A GOOD SOLUTION FOR THE PROBLEM OF INCLUDING TINY-XML IN ALL SUBSYSTEMS
+	- fmod-subsystem should do a proper loading and managing of its loaded sound (same as e.g. textures in graphics)
+	- UNIT-Tests?
+	
+Port To Linux & do parallel development
+	-> use newest openSuse
+	-> eclipse CDT as IDE
+	-> use nouvou drivers
+		-> compile them with debug mode available
+			-> allows to step into driver-calls which should be VERY interesting
+	-> compile as x86 x64?
+	-> Software & Tools
+		-> gDEBugger
+		-> blender
+		-> audacity
+		-> open asset import library
+	-> check if all libs are available
+		-> Boost: 		YES
+		-> OIS: 			YES
+		-> lua:				YES
+		-> luabind:		YES
+		-> assimp:		YES
+		-> glew:			YES
+		-> devil:			YES
+		-> fmod:			YES
+		-> log4cp:		YES
+		-> ode:				YES

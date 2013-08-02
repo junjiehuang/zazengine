@@ -1,0 +1,2 @@
+Game-Functionality
+	-> allow mutliple scenes which can be changed during runtime. also specify which subsystems are necessary: load/unload them during runtime

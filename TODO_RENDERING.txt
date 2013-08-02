@@ -1,0 +1,259 @@
+Transparency-Rendering (see GPU Gems 2 Page 295)
+	-> Differentiate between normal transparency and refractive transparency
+		-> normal transparency can be rendered at the very last using normal opengl blending
+			-> no overhead of copying depth, reading background and combining results into new background
+		-> split into two types: TRANSPARENT_BLENDING & TRANSPARENT_REFRACTION
+	
+	-> Do Colored Shadow-Rendering for Transparent objects
+		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
+			-> optimization: when material is transparent write to 1.0 to alpha-channel, else 0.0
+			=> need additional render-target in shadow-fbo: shadow-color target
+		-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
+			-> optimization: only do additional lookup when alpha-channel is 1.0
+		-> for better quality: do multisampling texture lookups
+		
+Replace Win32-specific context-creation with GLWF
+	-> Allow Toggle fullscreen
+		-> reinit window & render-context!
+			=> need to reinig glew, programs, textures,... (?)
+			=> lot of work to do, because everything needs to be re-init-able
+		
+Fix errors with uniformbuffers
+
+No more bindbufferbase of uniformblocks in renderer
+	-> do it after programs are linked in uniformmanagement
+
+Multiple lights
+	-> blending 
+	-> use stencil buffer to reduce lighting to geometry only
+		-> use only for point- & spotlight because directional light will affect sky-box and ambient too
+	-> correct lighting-equations: falloff, cone, ...
+		-> point-light
+	-> Solve Problem of Ambient + Sky-Box Lighting
+		-> when no directional light in scene
+			-> render full-screen quad and apply ambient-term to non-sky-box material and diffuse-only to sky-box material => need new program
+			-> other lights accumulate by blending
+		-> when directional light in scene
+			-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
+	->  bounding geometry for light
+		-> point-light: sphere with radius 1 and then scale according to light distance & some epsilon
+			-> low-poly count
+		-> spot-light: ?
+	-> lighting of transparency?
+	
+Mip-Map Creation in TextureFactory
+
+Anisotropic filtering
+	-> GL_EXT_texture_filter_anisotropic
+	
+Normal-mapping
+	-> need to transform view-space normal of the object instead of transforming the viewing-direction and the light-direction to tangent-space
+		-> why? because we have no more access to each tangent&bitangent in the lighting-pass and storing them in additional render-targets would be by far too much of overhead
+		=> do it in geometry-stage fragment-shader
+	-> specular maps in materials
+	-> use texture-arrays to combine multi-textures for one material in one texture to only need one bind
+	
+Shadow-mapping
+	-> shadow-mapping of point-light
+	-> do some sampling on shadow-edges
+		-> multisampling
+		-> Percentage-Closer Filtering
+				
+Msaa
+	-> do sampling in geometry fragment-shader (centroid)
+	-> dual source blending?
+	
+Text-rendering
+	-> use OGLFT
+	
+Need generic effect/material functionality
+	-> no need to set input or output indices in shaders, can be done with layout ( location = ... )
+		-> remove glGetFragDataLocation, glBindFragDataLocation, glGetAttribLocation, glBindAttribLocation
+		-> remove glUniform1i and glUniformBlockBinding
+	-> on top of program- & shader-management
+		-> implement #include in shaders: parse loaded string and replace
+			-> GL_ARB_shading_language_include is an extension that provides an #include directive to GLSL
+		-> problem: compiler error generate other line numbers!
+	-> use shaders-subroutines
+		-> compile all possible material stuff in the shader and select by setting propriate subroutine
+			-> needs includes
+	-> based upon effect-files like directx/cg shader effects
+	-> need some semantics on uniforms
+	-> custom shader program for material programming
+	-> problem: shaders-effect architecture from 2003 is based upon forward-rendering, we need now to plug it into deferred rendering
+		-> 2 stages: geometry & ligting => potential up to 4 shaders/material: vertex&fragment in geometry & lighting
+			-> BUT: vertex in geometry- & lighting-stage is very hard wired to deferred rendering
+	-> important FIRST finish all special algorithms: shadow mapping, normal mapping, transparency, lighting, reflections, MSAA, ... (?)
+	-> can be seen as a generic framework to implement BRDFs (?)
+		-> sub-surface-scattering
+		-> cook torrance sparrow
+		-> subsurface scattering
+		-> microfacet
+
+Particle System
+	-> techniques
+		-> transform-feedback rendering
+		-> compute-shaders ?
+		-> tesselation-shaders ?
+		-> geometry-shaders ?
+	-> gravity
+	-> global physically simulated
+		-> bounce off other geometry
+	-> local physically simulated
+		-> no bouncing off other geometry
+	-> poing-lights
+		-> glowing huge number of point-light particles illuminate dark scene
+			-> no shadow-casting
+	-> no poing-lights
+		-> don't illuminate scene
+	
+Animation-System
+	-> all on GPU, not on CPU
+	-> load & animate doom3 models
+	-> other animations?
+	
+	Reflections
+	-> environment (cube-mapping)
+		-> need very generic renderFrame-method which allows to be called recursively
+			-> need for every recursion level one CubeMap-FBO
+			-> need to generify much of the code of the renderer-loop
+			-> pass in some render-Context struct 
+				-> holds recursion-level
+				-> holds render-target where to render or null when to default framebuffer
+				-> holds flag if shadow-rendering in environment-rendering
+				-> holds flag if transparency-rendering in environment-rendering
+				-> holds flag if interreflection-rendering in environment-rendering
+				-> holds max recursion depth
+		-> can be done directly with deferred renderning, no need for fallback to forward-rendering
+			-> but need additional environment-rendering fbo
+				-> render 6 faces of a cubemap, each with deferred rendering => fucking huge impact on bandwith and performance
+					-> dramatic reduced resolution of cube-map sides e.g. 512x512
+		-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
+		-> use geometry-shader to render to cube-map layers ?
+		-> can to do refraction & reflection
+		-> simulate chromatic abberration (see Orange Book)
+			-> need to simulate different wavelengths for red, green and blue channels
+		-> different texture-binding because material could or could not use binding points
+			-> general texture binding-point management
+				-> giving next free n slots
+				-> call to bind of texture, will return binding-point or -1 if fails
+				-> but need to release texture to keep track of usage
+				-> keep track for all texture-types (2d & cube so far)
+					-> every binding-point can have each type active
+				-> keep track of max_texture_units
+		-> more flexible renderInstances: need finer control over which materials to draw
+		-> new material-type:
+			<material name="Glass">
+				<type id="ENVIRONMENTAL">
+				  <reflection>
+					... params
+				  </reflection>
+
+				  <refraction>
+					... params
+				  </refraction>
+      
+				  <diffuseColor file="cross_diffuse.jpg"/>
+				  <color r="0.54" g="0.89" b="0.63"/>
+				</type>
+			  </material>
+		-> material subclasses
+			-> environment holds cube-map and params for shaders. it knows how often update cube-map per second
+	-> planar
+		-> render mirror-plane as usual with stencil enabled
+		-> render world mirrored by this plane as usual
+			-> stencil will remove all pixels not affected by this plane
+			-> use according blending-function to create mirror-effect
+			
+Debugging
+	-> Debugging-Context
+	-> ARB_debug_output
+	-> 4.3 debugging-features
+	
+	Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
+	-> create most important render-targets (g-buffer) & depth-buffers (G-buffer, shadow-maps,...) first
+	-> DO IN-DEPTH PERFORMANCE-MEASUREMENTS (premature optimiziation is the root of all evil!)
+		-> use nvidia nsight
+	-> use EXT_direct_state_access
+		-> no more need to bind textures, ...
+		-> http://www.g-truc.net/post-0363.html#menu
+		-> http://www.opengl.org/registry/specs/EXT/direct_state_access.txt
+	-> explore Vertex Array Objects for specifying vertex-formats
+		-> http://www.arcsynthesis.org/gltut/Positioning/Tutorial%2005.html
+	-> EXT_swap_control_tear ?
+	-> ARB_sampler_objects
+	-> Do Culling
+		-> View-Frustum
+		-> Occlusion Culling using queries (like CHC++) 
+		-> Culling library (Umbra 3) ?
+	-> pre multiply matrices in CPU instead of doing in shaders
+	-> reduce branching in shaders (need different shader-architecture, see below)
+	-> check if all glClear-commands are necessary
+		-> g-buffer color-targets will be overwritten anyway
+		-> use invalidate on FBO, check if this will improve performance
+	-> Experiment with different render-target formats for performance
+	-> really all calls necessary e.g. always bindBuffer, ... ? are some states stored in buffers?
+	-> render SKYBOX AFTER other geometry and utilize stencil-buffer to mask fragments occluding the sky-box
+	-> opengl 4.3 allows for READ & WRITE of textures (images) at the same time
+		-> use for rendering transparent-glass
+	-> do depth-sorting for ALL objects in scene
+		-> calculate model-view once and then reuse in geometry-rendering
+	-> no need to do depth copy during transparent-glass rendering: WARNING DO IN-DEPTH PROFILING!
+		-> render transparent object without write do depth
+			-> can bind g-buffer depth as texture
+		-> then when object was not last one, render it again but only depth
+	-> non-overlapping transparent objects can be drawn in same batch => reduce copy and combine-overhead
+		-> transform bbMin, bbMax and center of all transp. instances to view-coordinates by multiplying with MV-Matrix of viewer
+		-> calculate AABB: aabbMinX = min( bbMin.x, bbMax.x ), aabbMaxX = max( bbMin.x, bbMax.x ), aabbMinY = max( bbMin.y, bbMax.y ), aabbMaxY = max( bbMin.y, bbMax.y )
+		-> calculate overlapping for all transp. instances using the AABB
+			-> for each instance create a list which contains the overlapping instances
+		-> all instances with empty list go direct to batch-level 0 because they don't overlap with any other instance
+		-> all instances with non-empty list need further investigation
+	-> Calculate position in Fragment-Shader
+		-> http://www.opengl.org/wiki/Compute_eye_space_from_window_space
+		-> use screen-coordinates & depth instead of spending a whole buffer on it
+		-> compare Performance!!
+		From Object-Coordinates to Viewport-Coordinates
+		1. Input of object coordinates  aka object-space
+				modeling transform
+		2. world-coordinates aka world-space
+				viewing transform
+		3. view-coordinates ( aka eye-coordinates or eye-space)
+				projection transform
+		4. clip-coordinates ( aka clip-space ): all in range of -/+ clip-volume
+				perspective division
+		5. normaliced device coordinates ( NDC ): all in range from -1 to +1 (center is 0/0/0 )
+				view-port transform
+		6. viewport coordinates: all in range from 0/0 to resolutionX/resolutionY of viewport
+		7. fragment-shader operates on viewport coordinates
+		From Viewport- to View-Space Coordinates
+		1. Input of Viewport-Coordinates AND depth in NDC-space for each fragment
+				transform x & y to NDC: 
+					- divide by resolutionX/resolutionY => range from 0 to 1
+					- transform x by: x * 2 - 1 => in range from -1 to 1
+					- transform y by: ( 1 - y ) * 2 - 1 => in range from -1 to 1: need to take care of the origin! it makes a difference wheter its in the left UPPER or left LOWER corner
+		2. NDC
+				add depth to x & y-vector because now all in same space
+		3. clip-coordinates
+				apply inverse projection transformation to position
+				divide by w to transform back to homogenous coordinates
+				( in perspective projection the perspective division by w is done => the inverse would be multiplication 
+					but we apply the inverse projection transform => need again to divide )
+		4. view-coordinates
+		
+Switch all to OpenGL 4.3 with new System (NVidia!)
+	-> extension ARB_program_interface_query
+	
+Water-Rendering
+	-> waves
+		-> tesselation
+		-> geometry-shader
+	-> fresnel
+	-> refraction
+	-> reflections
+
+Post-Processing in Screen-Space
+	-> HDR
+	-> Bloom
+	-> Tone-Mapping
+	-> Depth Of Field
