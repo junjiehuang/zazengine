@@ -19,12 +19,14 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -47,8 +49,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(BOOST_PATH)/lib/;libs/lib/;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libboost_filesystem-vc100-mt-gd-1_51.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;opengl32.lib;glu32.lib;assimp.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BOOST_PATH)/stage/lib/;libs/lib/;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libboost_filesystem-vc110-mt-gd-1_54.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;opengl32.lib;glu32.lib;assimp.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy $(ProjectDir)libs\lib\*.dll $(SolutionDir)$(Configuration)</Command>

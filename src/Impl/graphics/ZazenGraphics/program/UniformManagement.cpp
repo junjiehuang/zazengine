@@ -109,29 +109,37 @@ UniformManagement::initUniforms( Program* program )
 				return false;
 			}
 
-			// search for all affected uniforms within this block
-			for ( int j = 0; j < uniformsCount; j++ )
-			{
-				GLint uniformBlockIndex = -1;
-				GLuint uniformIndex = j;
+			UniformManagement::m_uniformBlocks[ uniformBlockName ] = uniformBlock;
+		}
+
+		// we got a valid uniformblock, could exist already, maybe there are additional fields in this program which are removed by compiler in earlier program
+		// search for all affected uniforms within this block
+		for ( int j = 0; j < uniformsCount; j++ )
+		{
+			GLint uniformBlockIndex = -1;
+			GLuint uniformIndex = j;
 			
-				glGetActiveUniformsiv( program->getId(), 1, &uniformIndex, GL_UNIFORM_BLOCK_INDEX, &uniformBlockIndex );
+			glGetActiveUniformsiv( program->getId(), 1, &uniformIndex, GL_UNIFORM_BLOCK_INDEX, &uniformBlockIndex );
+			// TODO check for opengl-errors
+
+			// found one
+			if ( uniformBlockIndex == i )
+			{
+				GLint uniformSize = 0;
+				GLenum uniformType = 0;
+
+				GLint uniformBlockOffset = -1;
+				glGetActiveUniform( program->getId(), j, nameBuffer.size() - 1, &nameLength, &uniformSize, &uniformType, &nameBuffer[ 0 ] );
+				glGetActiveUniformsiv( program->getId(), 1, &uniformIndex, GL_UNIFORM_OFFSET, &uniformBlockOffset );
 				// TODO check for opengl-errors
 
-				// found one
-				if ( uniformBlockIndex == i )
+				string uniformFieldName( &nameBuffer[ 0 ] );
+
+				UniformBlock::UniformField* uniformField = uniformBlock->getUniformField( uniformFieldName );
+				// not yet existent in this programs version of this uniform block, add this field
+				if ( NULL == uniformField )
 				{
-					GLint uniformSize = 0;
-					GLenum uniformType = 0;
-
-					GLint uniformBlockOffset = -1;
-					glGetActiveUniform( program->getId(), j, nameBuffer.size() - 1, &nameLength, &uniformSize, &uniformType, &nameBuffer[ 0 ] );
-					glGetActiveUniformsiv( program->getId(), 1, &uniformIndex, GL_UNIFORM_OFFSET, &uniformBlockOffset );
-					// TODO check for opengl-errors
-
-					string uniformFieldName( &nameBuffer[ 0 ] );
-
-					UniformBlock::UniformField* uniformField = new UniformBlock::UniformField();
+					uniformField = new UniformBlock::UniformField();
 					uniformField->m_index = uniformIndex;
 					uniformField->m_name = uniformFieldName;
 					uniformField->m_offset = uniformBlockOffset;
@@ -140,9 +148,7 @@ UniformManagement::initUniforms( Program* program )
 
 					uniformBlock->m_fields[ uniformFieldName ] = uniformField;
 				}
-			}
-
-			UniformManagement::m_uniformBlocks[ uniformBlockName ] = uniformBlock;
+			}	
 		}
 
 		program->bindUniformBlock( uniformBlock );

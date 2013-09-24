@@ -1,5 +1,5 @@
 // -*- C++ -*-
-//  Copyright (C) 2009-2010, Vaclav Haisman. All rights reserved.
+//  Copyright (C) 2009-2013, Vaclav Haisman. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modifica-
 //  tion, are permitted provided that the following conditions are met:
@@ -65,8 +65,9 @@
 namespace log4cplus { namespace thread { namespace impl {
 
 
-LOG4CPLUS_EXPORT void syncprims_throw_exception (char const * const msg,
-    char const * const file, int line) LOG4CPLUS_ATTRIBUTE_NORETURN;
+LOG4CPLUS_EXPORT void LOG4CPLUS_ATTRIBUTE_NORETURN
+    syncprims_throw_exception (char const * const msg,
+    char const * const file, int line);
 
 
 #define LOG4CPLUS_THROW_RTE(msg) \

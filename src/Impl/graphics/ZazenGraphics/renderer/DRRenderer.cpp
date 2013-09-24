@@ -621,17 +621,17 @@ DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>&
 	}
 
 	// upload world-orientation of camera ( its model-matrix )
-	if ( false == this->m_cameraBlock->updateField( "Camera.modelMatrix", this->m_camera->getModelMatrix() ) )
+	if ( false == this->m_cameraBlock->updateField( "CameraUniforms.modelMatrix", this->m_camera->getModelMatrix() ) )
 	{
 		return false;
 	}
 	// upload view-matrix of camera (need to transform e.g. light-world position in EyeCoords/Viewspace)
-	if ( false == this->m_cameraBlock->updateField( "Camera.viewMatrix", this->m_camera->getViewMatrix() ) )
+	if ( false == this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", this->m_camera->getViewMatrix() ) )
 	{
 		return false;
 	}
 	// upload camera-rectangle
-	if ( false == this->m_cameraBlock->updateField( "Camera.rectangle", cameraRectangle ) )
+	if ( false == this->m_cameraBlock->updateField( "CameraUniforms.rectangle", cameraRectangle ) )
 	{
 		return false;
 	}
@@ -756,12 +756,12 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	}
 
 	// upload light-config
-	if ( false == this->m_lightBlock->updateField( "Light.config", lightConfig ) )
+	if ( false == this->m_lightBlock->updateField( "LightUniforms.config", lightConfig ) )
 	{
 		return false;
 	}
 	// upload light-model matrix = orientation of the light in the world
-	if ( false == this->m_lightBlock->updateField( "Light.modelMatrix", light->getModelMatrix() ) )
+	if ( false == this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() ) )
 	{
 		return false;
 	}
@@ -781,7 +781,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		// multiplication with unit-cube is first because has to be carried out the last
 		lightSpaceUnit = this->m_unitCubeMatrix * light->getVPMatrix();
 
-		if ( false == this->m_lightBlock->updateField( "Light.spaceUniformMatrix", lightSpaceUnit ) )
+		if ( false == this->m_lightBlock->updateField( "LightUniforms.spaceUniformMatrix", lightSpaceUnit ) )
 		{
 			return false;
 		}
@@ -792,7 +792,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	this->m_transformsBlock->bindBuffer();
 	// OPTIMIZE: store in light once, and only update when change
 	glm::mat4 orthoMat = this->m_camera->createOrthoProj( true, true );
-	if ( false == this->m_transformsBlock->updateField( "Transforms.projectionMatrix", orthoMat ) )
+	if ( false == this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat ) )
 	{
 		return false;
 	}
@@ -961,7 +961,7 @@ DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgrou
 	this->m_transformsBlock->bindBuffer();
 	// OPTIMIZE: store in light once, and only update when change
 	glm::mat4 orthoMat = this->m_camera->createOrthoProj( true, true );
-	if ( false == this->m_transformsBlock->updateField( "Transforms.projectionMatrix", orthoMat ) )
+	if ( false == this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat ) )
 	{
 		return false;
 	}
@@ -995,7 +995,7 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 	}
 
 	// update projection because each viewer can have different projection-transform
-	if ( false == this->m_transformsBlock->updateField( "Transforms.projectionMatrix", viewer->getProjMatrix() ) )
+	if ( false == this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", viewer->getProjMatrix() ) )
 	{
 		return false;
 	}
@@ -1051,7 +1051,7 @@ DRRenderer::renderInstance( Viewer* viewer, Instance* instance, Program* current
 	}
 
 	// update projection because each viewer can have different projection-transform
-	if ( false == this->m_transformsBlock->updateField( "Transforms.projectionMatrix", viewer->getProjMatrix() ) )
+	if ( false == this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", viewer->getProjMatrix() ) )
 	{
 		return false;
 	}
@@ -1112,12 +1112,12 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 			glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( modelViewMatrix ) );
 
 			// update model-view matrix
-			if ( false == this->m_transformsBlock->updateField( "Transforms.modelViewMatrix", modelViewMatrix) )
+			if ( false == this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMatrix) )
 			{
 				return false;
 			}
 			// update model-view matrix for normals
-			if ( false == this->m_transformsBlock->updateField( "Transforms.normalsModelViewMatrix", normalModelViewMatrix ) )
+			if ( false == this->m_transformsBlock->updateField( "TransformUniforms.normalsModelViewMatrix", normalModelViewMatrix ) )
 			{
 				return false;
 			}

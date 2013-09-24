@@ -9,10 +9,10 @@ out vec4 final_color;
 
 layout( shared ) uniform CameraUniforms
 {
+	vec4 rectangle;
+
 	mat4 modelMatrix;
 	mat4 viewMatrix;
-	
-	vec4 rectangle;
 } Camera;
 
 layout( shared ) uniform LightUniforms

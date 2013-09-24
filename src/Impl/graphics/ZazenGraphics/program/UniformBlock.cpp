@@ -149,6 +149,7 @@ UniformBlock::updateField( const std::string& fieldName, const glm::mat4& data )
 	UniformField* field = this->getUniformField( fieldName );
 	if ( NULL == field )
 	{
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update unknown field \"" << fieldName << "\"";
 		return false;
 	}
 
@@ -161,6 +162,7 @@ UniformBlock::updateField( const std::string& fieldName, const glm::vec4& data )
 	UniformField* field = this->getUniformField( fieldName );
 	if ( NULL == field )
 	{
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update unknown field \"" << fieldName << "\"";
 		return false;
 	}
 

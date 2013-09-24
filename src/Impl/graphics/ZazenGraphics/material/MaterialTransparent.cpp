@@ -32,7 +32,7 @@ MaterialTransparent::activate( Program* currentProgramm )
 
 	this->m_materialConfig->bindBuffer();
 
-	if ( false == this->m_materialConfig->updateField( "TransparentMaterial.config", materialCfg ) )
+	if ( false == this->m_materialConfig->updateField( "TransparentMaterialUniforms.config", materialCfg ) )
 	{
 		return false;
 	}

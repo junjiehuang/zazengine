@@ -5,7 +5,7 @@
 // Author:  Vaclav Haisman
 //
 //
-//  Copyright (C) 2009-2010, Vaclav Haisman. All rights reserved.
+//  Copyright (C) 2009-2013, Vaclav Haisman. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modifica-
 //  tion, are permitted provided that the following conditions are met:
@@ -150,17 +150,9 @@ set_ptd (per_thread_data * p)
 }
 
 
-//! The default value of the \param alloc is false for Win32 DLL builds
-//! since per thread data are already initialized by DllMain().
 inline
 per_thread_data *
-get_ptd (bool alloc
-#if defined (_WIN32) && defined (LOG4CPLUS_BUILD_DLL)
-         = false
-#else
-         = true
-#endif
-         )
+get_ptd (bool alloc = true)
 {
     if (LOG4CPLUS_UNLIKELY (! ptd && alloc))
         return alloc_ptd ();

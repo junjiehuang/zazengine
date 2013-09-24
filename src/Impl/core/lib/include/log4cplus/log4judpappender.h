@@ -5,7 +5,7 @@
 // Author:  Siva Chandran P
 //
 //
-// Copyright 2012 Siva Chandran P
+// Copyright 2012-2013 Siva Chandran P
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,13 +36,10 @@ namespace log4cplus {
      * The Log4jUdpAppender has the following properties:
      *
      * <ul>
-     *
      *   <li>Remote logging is non-intrusive as far as the log event
      *   is concerned. In other words, the event will be logged with
      *   the same time stamp, NDC, location info as if it were logged
      *   locally by the client.</li>
-     *
-     *   <li>Log4jUdpAppender do not use a layout.</li>
      *
      *   <li>Remote logging uses the UDP protocol.</li>
      * </ul>

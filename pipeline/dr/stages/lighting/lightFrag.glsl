@@ -13,10 +13,10 @@ const float shadow_bias = 0.0001;
 
 layout( shared ) uniform CameraUniforms
 {
+	vec4 rectangle;
+
 	mat4 modelMatrix;
 	mat4 viewMatrix;
-	
-	vec4 rectangle;
 } Camera;
 
 layout( shared ) uniform LightUniforms
@@ -133,7 +133,7 @@ void main()
 				// projection has 1 at w so there won't be a foreshortening of values
 				// IMPORTANT: because we installed a compare-function on this shadow-sampler
 				// we don't need to compare it anymore to the z-value of the shadow-coord
-				shadow = texture( ShadowMap, shadowCoord );
+				shadow = texture( ShadowMap, shadowCoord.xyz );
 			}
 		}
 

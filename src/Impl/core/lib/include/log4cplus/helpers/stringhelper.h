@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2003-2010 Tad E. Smith
+// Copyright 2003-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@ namespace log4cplus {
                     intType const mod = -(a + value);
                     value = -r;
 
-                    *(it - 1) = LOG4CPLUS_TEXT('0') + static_cast<tchar>(mod);
+                    *(it - 1) = static_cast<tchar>(LOG4CPLUS_TEXT('0') + mod);
                     --it;
                 }
                 else
@@ -180,7 +180,7 @@ namespace log4cplus {
             {
                 intType mod = value % 10;
                 value = value / 10;
-                *(it - 1) = LOG4CPLUS_TEXT('0') + static_cast<tchar>(mod);
+                *(it - 1) = static_cast<tchar>(LOG4CPLUS_TEXT('0') + mod);
             }
 
             if (negative)

@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2003-2010 Tad E. Smith
+// Copyright 2003-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,13 +49,29 @@ tostring (char const * str)
     return std::string (str);
 }
 
-
 inline
 std::string
 tostring (std::string const & str)
 {
     return str;
 }
+
+inline
+std::string const &
+tostring (std::string & str)
+{
+    return str;
+}
+
+#ifdef LOG4CPLUS_HAVE_RVALUE_REFS
+inline
+std::string
+tostring (std::string && str)
+{
+    return std::move (str);
+}
+
+#endif
 
 
 
@@ -72,6 +88,23 @@ towstring (std::wstring const & str)
 {
     return str;
 }
+
+inline
+std::wstring const & 
+towstring (std::wstring & str)
+{
+    return str;
+}
+
+#ifdef LOG4CPLUS_HAVE_RVALUE_REFS
+inline
+std::wstring 
+towstring (std::wstring && str)
+{
+    return std::move (str);
+}
+
+#endif
 
 LOG4CPLUS_EXPORT std::string tostring(const std::wstring&);
 LOG4CPLUS_EXPORT std::string tostring(wchar_t const *);
