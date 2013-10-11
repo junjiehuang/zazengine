@@ -37,13 +37,14 @@ class TextureFactory
 		static boost::filesystem::path textureDataPath;
 		static std::map<std::string, Texture*> allTextures;
 
-		static bool createImages( const std::vector<std::string>&, ILuint** );
+		static GLuint createTexture( const std::string& fullFileName );
+		static GLuint createCubeTexture( const std::vector<std::string>& fileNames );
+
+		static bool createImages( const std::vector<std::string>&, ILuint* );
 		static bool createImage( const std::string&, ILuint* );
 
 		static bool loadImage( const std::string&, ILuint );
 
-		static GLuint createTexture( ILuint );
-		static GLuint createCubeTexture( ILuint* );
 };
 
 #endif

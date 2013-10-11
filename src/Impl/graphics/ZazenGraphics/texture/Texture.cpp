@@ -35,14 +35,7 @@ Texture::bind( int textureUnit )
 	if ( Texture::m_currentTextureUnit != textureUnit )
 	{
 		glActiveTexture( GL_TEXTURE0 + textureUnit );
-
-#ifdef CHECK_GL_ERRORS
-		if ( false == GLUtils::peekErrors() )
-		{
-			ZazenGraphics::getInstance().getLogger().logError() << "Zexture::bind: failed glActiveTexture";
-			return false;
-		}
-#endif
+		GL_PEEK_ERRORS_AT_DEBUG
 
 		Texture::m_currentTextureUnit = textureUnit;
 	}
@@ -50,27 +43,13 @@ Texture::bind( int textureUnit )
 	if ( Texture::TEXTURE_2D == this->m_textureType ) 
 	{
 		glBindTexture( GL_TEXTURE_2D, this->m_id );
-
-#ifdef CHECK_GL_ERRORS
-		if ( false == GLUtils::peekErrors() )
-		{
-			ZazenGraphics::getInstance().getLogger().logError() << "Texture::bind: failed glBindTexture";
-			return false;
-		}
-#endif
+		GL_PEEK_ERRORS_AT_DEBUG
 
 	}
 	else if ( Texture::TEXTURE_CUBE == this->m_textureType ) 
 	{
 		glBindTexture( GL_TEXTURE_CUBE_MAP, this->m_id );
-
-#ifdef CHECK_GL_ERRORS
-		if ( false == GLUtils::peekErrors() )
-		{
-			ZazenGraphics::getInstance().getLogger().logError() << "Texture::bind: failed glBindTexture";
-			return false;
-		}
-#endif
+		GL_PEEK_ERRORS_AT_DEBUG
 	}
 
 	return true;

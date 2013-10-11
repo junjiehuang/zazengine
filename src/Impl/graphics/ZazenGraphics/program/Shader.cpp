@@ -33,7 +33,7 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 		shaderObject = glCreateShader( GL_VERTEX_SHADER );
 		if ( 0 == shaderObject )
 		{
-			GLUtils::peekErrors();
+			GL_PEEK_ERRORS_AT
 			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_VERTEX_SHADER \"" << file << "\" failed";
 			return 0;
 		}
@@ -43,7 +43,7 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 		shaderObject = glCreateShader( GL_FRAGMENT_SHADER );
 		if ( 0 == shaderObject )
 		{
-			GLUtils::peekErrors();
+			GL_PEEK_ERRORS_AT
 			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_FRAGMENT_SHADER \"" << file << "\" failed";
 			return 0;
 		}
@@ -51,7 +51,7 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 
 	sourcePtr = source.c_str();
 	glShaderSource( shaderObject, 1, ( const GLchar** ) &sourcePtr, NULL);
-	if ( false == GLUtils::peekErrors() )
+	if ( GL_PEEK_ERRORS )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glShaderSource for \"" << file << "\" failed";
 		return 0;

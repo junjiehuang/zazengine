@@ -10,6 +10,7 @@
 #include "TextureFactory.h"
 
 #include "../ZazenGraphics.h"
+#include "../util/GLUtils.h"
 
 #include <iostream>
 
@@ -51,13 +52,7 @@ TextureFactory::get( const std::string& file )
 		return NULL;
 	}
 
-	ILuint imageId;
-	if ( false == TextureFactory::createImage( fullFileName.generic_string(), &imageId ) )
-	{
-		return NULL;
-	}
-
-	GLuint textureID = TextureFactory::createTexture( imageId );
+	GLuint textureID = TextureFactory::createTexture( fullFileName.generic_string() );
 	if ( 0 == textureID )
 	{
 		return NULL;
@@ -95,8 +90,6 @@ TextureFactory::getCube( const boost::filesystem::path& cubeMapPath, const std::
 		return NULL;
 	}
 
-	ILuint* imageIds = NULL;
-
 	vector<string> fileNames;
 	fileNames.push_back( fullFileName.generic_string() + "/xpos" + "." + fileType );
 	fileNames.push_back( fullFileName.generic_string() + "/xneg" + "." + fileType );
@@ -105,12 +98,7 @@ TextureFactory::getCube( const boost::filesystem::path& cubeMapPath, const std::
 	fileNames.push_back( fullFileName.generic_string() + "/zpos" + "." + fileType );
 	fileNames.push_back( fullFileName.generic_string() + "/zneg" + "." + fileType );
 
-	if ( false == TextureFactory::createImages( fileNames, &imageIds ) )
-	{
-		return NULL;
-	}
-
-	GLuint textureID = TextureFactory::createCubeTexture( imageIds );
+	GLuint textureID = TextureFactory::createCubeTexture( fileNames );
 	if ( 0 == textureID )
 	{
 		return NULL;
@@ -139,6 +127,181 @@ TextureFactory::freeAll()
 	TextureFactory::allTextures.clear();
 }
 
+GLuint
+TextureFactory::createTexture( const std::string& fullFileName )
+{
+	ILuint imageId = 0;
+	GLuint textureId = 0;
+	bool error = false;
+
+	if ( false == TextureFactory::createImage( fullFileName, &imageId ) )
+	{
+		return 0;
+	}
+
+	ilBindImage( imageId );
+	
+	glGenTextures( 1, &textureId );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+
+	glBindTexture( GL_TEXTURE_2D, textureId );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+	GL_PEEK_ERRORS_AT
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+	GL_PEEK_ERRORS_AT
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	GL_PEEK_ERRORS_AT
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	GL_PEEK_ERRORS_AT
+
+	glTexImage2D( GL_TEXTURE_2D,
+					0,
+					GL_RGBA,
+					ilGetInteger( IL_IMAGE_WIDTH ),
+					ilGetInteger( IL_IMAGE_HEIGHT ),
+					0,
+					GL_RGBA,
+					GL_UNSIGNED_BYTE,
+					ilGetData() );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+
+cleanupExit:
+	if ( error )
+	{
+		if ( textureId )
+		{
+			glDeleteTextures( 1, &textureId );
+		}
+	}
+
+	// Because we have already copied image data into texture data we can release memory used by image.
+ 	ilDeleteImages( 1, &imageId ); 
+
+	return textureId;
+}
+
+GLuint
+TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
+{
+	GLuint textureId = 0;
+	ILuint imageIds[ 6 ];
+	bool error = false;
+
+	memset( imageIds, 0, sizeof( imageIds ) );
+
+	if ( false == TextureFactory::createImages( fileNames, imageIds ) )
+	{
+		return 0;
+	}
+
+	glGenTextures( 1, &textureId );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+	glBindTexture( GL_TEXTURE_CUBE_MAP, textureId );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	GL_PEEK_ERRORS_AT
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); 
+	GL_PEEK_ERRORS_AT
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	GL_PEEK_ERRORS_AT
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	GL_PEEK_ERRORS_AT
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+
+	ilBindImage( imageIds[ 0 ] );
+	glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
+		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+
+	ilBindImage( imageIds[ 1 ] );
+	glTexImage2D( GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
+		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+
+	ilBindImage( imageIds[ 2 ] );
+	glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
+		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+
+	ilBindImage( imageIds[ 3 ] );
+	glTexImage2D( GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
+		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+
+	ilBindImage( imageIds[ 4 ] );
+	glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
+		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+
+	ilBindImage( imageIds[ 5 ] );
+	glTexImage2D( GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
+		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+
+cleanupExit:
+	if ( error )
+	{
+		if ( textureId )
+		{
+			glDeleteTextures( 1, &textureId );
+		}
+	}
+
+	// Because we have already copied image data into texture data we can release memory used by image.
+	ilDeleteImages( fileNames.size(), imageIds ); 
+
+	return textureId;
+}
+
+
 bool
 TextureFactory::createImage( const std::string& fileName, ILuint* imageId )
 {
@@ -147,6 +310,7 @@ TextureFactory::createImage( const std::string& fileName, ILuint* imageId )
 	if ( false == TextureFactory::loadImage( fileName, *imageId ) )
 	{
 		ilDeleteImages( 1, imageId );
+		*imageId = 0;
 		return false;
 	}
 
@@ -154,27 +318,25 @@ TextureFactory::createImage( const std::string& fileName, ILuint* imageId )
 }
 
 bool
-TextureFactory::createImages( const std::vector<std::string>& fileNames, ILuint** imageIds )
+TextureFactory::createImages( const std::vector<std::string>& fileNames, ILuint* imageIds )
 {
 	bool errorFlag = false;
-	*imageIds = ( ILuint* ) malloc( fileNames.size() * sizeof( ILuint ) );
-	memset( *imageIds, 0, fileNames.size() * sizeof( ILuint ) );
 
-	ilGenImages( fileNames.size(), *imageIds );
+	ilGenImages( fileNames.size(), imageIds );
 
 	for ( unsigned int i = 0; i < fileNames.size(); i++ )
 	{
-		if ( false == TextureFactory::loadImage( fileNames[ i ], (*imageIds)[ i ] ) )
+		if ( false == TextureFactory::loadImage( fileNames[ i ], imageIds[ i ] ) )
 		{
 			errorFlag = true;
+			imageIds[ i ] = 0;
 			break;
 		}
 	}
 
 	if ( errorFlag )
 	{
-		ilDeleteImages( fileNames.size(), *imageIds );
-		free( *imageIds );
+		ilDeleteImages( fileNames.size(), imageIds );
 		return false;
 	}
 
@@ -189,100 +351,18 @@ TextureFactory::loadImage( const std::string& fileName, ILuint imageId )
 	ILboolean success = ilLoadImage( fileName.c_str() );
 	if ( success )
 	{
-		// ... then attempt to conver it.
-		// NOTE: If your image contains alpha channel you can replace IL_RGB with IL_RGBA
-		success = ilConvertImage( IL_RGB, IL_UNSIGNED_BYTE );
-		// Quit out if we failed the conversion
+		success = ilConvertImage( IL_RGBA, IL_UNSIGNED_BYTE );
 		if ( !success )
 		{
 			ZazenGraphics::getInstance().getLogger().logError() << "Texture::loadImage: Image load failed - IL reports error: " << ilGetError();
 			return false;
 		}
  	}
-  	else // If we failed to open the image file in the first place...
+  	else
   	{
 		ZazenGraphics::getInstance().getLogger().logError() << "Texture::loadImage: Image load failed - IL reports error: " << ilGetError();
 		return false;
   	}
 
 	return true;
-}
-
-// TODO: error handling glGetError!
-GLuint
-TextureFactory::createTexture( ILuint imageId )
-{
-	GLuint textureId;			// Create a texture ID as a GLuint
-
-	ilBindImage( imageId ); 			// Bind the image
-
-	// Generate a new texture
-	glGenTextures( 1, &textureId );
-
-	// Bind the texture to a name
-	glBindTexture( GL_TEXTURE_2D, textureId );
-
-	// Set texture clamping method
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-
-	// Set texture interpolation method to use linear interpolation (no MIPMAPS)
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		
-	// Specify the texture specification
-	glTexImage2D(GL_TEXTURE_2D, 				// Type of texture
-					0,				// Pyramid level (for mip-mapping) - 0 is the top level
-					ilGetInteger( IL_IMAGE_BPP ),	// Image colour depth
-					ilGetInteger( IL_IMAGE_WIDTH ),	// Image width
-					ilGetInteger( IL_IMAGE_HEIGHT ),	// Image height
-					0,				// Border width in pixels (can either be 1 or 0)
-					ilGetInteger( IL_IMAGE_FORMAT ),	// Image format (i.e. RGB, RGBA, BGR etc.) GL_RGB
-					GL_UNSIGNED_BYTE,		// Image data type
-					ilGetData() );			// The actual image data itself
-
- 	ilDeleteImages( 1, &imageId ); // Because we have already copied image data into texture data we can release memory used by image.
-
-	return textureId; // Return the GLuint to the texture so you can use it!
-}
-
-// TODO: error handling glGetError!
-GLuint
-TextureFactory::createCubeTexture( ILuint* imageIds )
-{
-	GLuint textureId;
-
-	glGenTextures( 1, &textureId );
-	glBindTexture( GL_TEXTURE_CUBE_MAP, textureId );
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); 
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
-
-	ilBindImage( imageIds[ 0 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGB, GL_UNSIGNED_BYTE, ilGetData() );
-
-	ilBindImage( imageIds[ 1 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGB, GL_UNSIGNED_BYTE, ilGetData() );
-
-	ilBindImage( imageIds[ 2 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGB, GL_UNSIGNED_BYTE, ilGetData() );
-
-	ilBindImage( imageIds[ 3 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGB, GL_UNSIGNED_BYTE, ilGetData() );
-
-	ilBindImage( imageIds[ 4 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGB, GL_UNSIGNED_BYTE, ilGetData() );
-
-	ilBindImage( imageIds[ 5 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGB, GL_UNSIGNED_BYTE, ilGetData() );
-
-	return textureId;
 }

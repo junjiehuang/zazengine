@@ -26,14 +26,14 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 	}
 
 	glGenTextures( 1, &id );
-	if ( false == GLUtils::peekErrors() )
+	if ( GL_PEEK_ERRORS )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glGenTextures failed - exit";
 		return NULL;
 	}
 
 	glBindTexture( GL_TEXTURE_2D, id );
-	if ( false == GLUtils::peekErrors() )
+	if ( GL_PEEK_ERRORS )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glBindTexture failed - exit";
 		return NULL;
@@ -44,17 +44,23 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 	if ( RenderTarget::RT_DEPTH == targetType )
 	{
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		GL_PEEK_ERRORS_AT
 
 		// Remove artifact on the edges of the shadowmap
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
 
-		glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY );
+		// seems not to work on GL 4.3
+		//glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY );
+		//GL_PEEK_ERRORS_AT
 
 		// for now we create shadowmaps in same width and height as their viewing frustum
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
-		if ( false == GLUtils::peekErrors() )
+		if ( GL_PEEK_ERRORS )
 		{
 			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for depth failed - exit";
 			return NULL;
@@ -65,20 +71,28 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 	else if ( RenderTarget::RT_SHADOW == targetType )
 	{
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		GL_PEEK_ERRORS_AT
 
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
 
 		// need to enable comparison-mode for depth-texture to use it as a shadow2DSampler in shader		
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL );
+		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE );
+		GL_PEEK_ERRORS_AT
 
-		glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY );
+		// seems not to work on GL 4.3
+		//glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY );
+		// GL_PEEK_ERRORS_AT
 
 		// for now we create shadowmaps in same width and height as their viewing frustum
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
-		if ( false == GLUtils::peekErrors() )
+		if ( GL_PEEK_ERRORS )
 		{
 			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for shadow failed - exit";
 			return NULL;
@@ -90,13 +104,17 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 	else if ( RenderTarget::RT_COLOR == targetType )
 	{
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		GL_PEEK_ERRORS_AT
 
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
 
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL );
-		if ( false == GLUtils::peekErrors() )
+		if ( GL_PEEK_ERRORS )
 		{
 			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for color failed - exit";
 			return NULL;

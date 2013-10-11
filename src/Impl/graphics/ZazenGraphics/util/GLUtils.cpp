@@ -6,28 +6,51 @@
 
 #include <Windows.h>
 
-#include <string>
 #include <sstream>
 
 using namespace std;
 
 bool
-GLUtils::peekErrors()
+GLUtils::peekErrorsSilent()
 {
 	GLenum status;
-	ostringstream errors;
+	bool hasErrors = false;
 
 	while ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		errors << ( const char* ) gluErrorString( status ); 
-		errors << endl;
+		hasErrors = true;
 	}
 
-	if ( errors.rdbuf()->in_avail() )
+	return hasErrors;
+}
+
+bool
+GLUtils::peekErrors( const std::string& locationInfo )
+{
+	GLenum status;
+	ostringstream errors;
+	unsigned int errorCount = 0;
+
+	errors << endl;
+
+	while ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "GLUtils::peekErrors detected OpenGL-Errors: " << errors.str();
-		return false;
+		errors << "    " << errorCount + 1;
+		errors << ": \'";
+		errors << ( const char* ) gluErrorString( status );
+		errors << "\'";
+		errors << endl;
+
+		errorCount++;
 	}
 
-	return true;
+	if ( errorCount )
+	{
+		errors << "    @ " << locationInfo.c_str() << endl;
+		ZazenGraphics::getInstance().getLogger().logError() << "Detected " << errorCount << " OpenGL-Error(s) "  << errors.str();
+
+		return true;
+	}
+
+	return false;
 }

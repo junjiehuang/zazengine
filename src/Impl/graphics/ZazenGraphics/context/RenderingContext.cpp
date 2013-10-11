@@ -6,6 +6,7 @@
 #include <GLFW/glfw3native.h>
 
 #include "../ZazenGraphics.h"
+#include "../util/GLUtils.h"
 
 using namespace std;
 
@@ -43,6 +44,12 @@ RenderingContext::initGLFW()
         return false;
 	}
 
+	/*
+	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
+	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
+	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_DEBUG_CONTEXT );
+	*/
+
     /* Create a windowed mode window and its OpenGL context */
 	RenderingContext::instance->m_window = glfwCreateWindow( RenderingContext::instance->m_windowWidth, RenderingContext::instance->m_windowHeight, 
 		RenderingContext::instance->m_windowTitle.c_str(), NULL, NULL );
@@ -68,13 +75,18 @@ RenderingContext::initGLFW()
 bool
 RenderingContext::initGlew()
 {
-	glewExperimental = TRUE;
-	GLenum err = glewInit();
+	GLenum err = 0;
+
+	glewExperimental = GL_TRUE;
+	err = glewInit();
 	if ( GLEW_OK != err )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "RenderingContext::initGlew: GLEW failed with " << glewGetErrorString( err );
 		return false;
 	}
+
+	// need to peek GL-Errors because a bug in glew will cause INVALID_ENUM when a profile > 3.2 is requested
+	GL_PEEK_ERRORS_SILENT
 
 	return true;
 }

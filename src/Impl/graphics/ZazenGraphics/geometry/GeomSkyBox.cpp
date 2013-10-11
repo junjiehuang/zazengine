@@ -49,8 +49,11 @@ GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std:
 		};
 
 		glGenBuffers( 1, &GeomSkyBox::instance->m_dataVBO );
+		GL_PEEK_ERRORS_AT
 		glBindBuffer( GL_ARRAY_BUFFER, GeomSkyBox::instance->m_dataVBO );
+		GL_PEEK_ERRORS_AT
 		glBufferData( GL_ARRAY_BUFFER, sizeof( cube_vertices ), cube_vertices, GL_STATIC_DRAW );
+		GL_PEEK_ERRORS_AT
 
 		// cube indices for index buffer object
 		GLint cube_indices[] = {
@@ -63,15 +66,11 @@ GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std:
 		};
 
 		glGenBuffers( 1, &GeomSkyBox::instance->m_indexVBO );
+		GL_PEEK_ERRORS_AT
 		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, GeomSkyBox::instance->m_indexVBO );
+		GL_PEEK_ERRORS_AT
 		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( cube_indices ), cube_indices, GL_STATIC_DRAW );
-
-		if ( false == GLUtils::peekErrors() )
-		{
-			ZazenGraphics::getInstance().getLogger().logError( "GeomSkyBox::initialize: failed initializing geometry" );
-			GeomSkyBox::shutdown();
-			return false;
-		}
+		GL_PEEK_ERRORS_AT
 	}
 
 	return true;
@@ -130,7 +129,10 @@ GeomSkyBox::render()
 	modelViewMat[ 3 ][ 1 ] = 0.0f;
 	modelViewMat[ 3 ][ 2 ] = 0.0f;
 
-	this->m_transformsBlock->bindBuffer();
+	if ( false == this->m_transformsBlock->bindBuffer() )
+	{
+		return false;
+	}
 
 	if ( false == this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMat ) )
 	{
@@ -157,13 +159,7 @@ GeomSkyBox::render()
 	glEnable( GL_DEPTH_TEST );
 	glEnable( GL_CULL_FACE );
 
-#ifdef CHECK_GL_ERRORS
-	if ( false == GLUtils::peekErrors() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "GeomSkyBox::render: errors in rendering" );
-		return false;
-	}
-#endif
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }

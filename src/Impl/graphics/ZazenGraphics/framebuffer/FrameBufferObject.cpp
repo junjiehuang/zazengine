@@ -16,7 +16,7 @@ FrameBufferObject::create()
 
 	// generate the id of our frame-buffer-object
 	glGenFramebuffers( 1, &id );
-	if ( false == GLUtils::peekErrors() )
+	if ( GL_PEEK_ERRORS )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::create: glGenFramebuffers failed - exit";
 		return false;
@@ -102,14 +102,7 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 	{
 		// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
 		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, renderTarget->getId(), 0 );
-
-#ifdef CHECK_GL_ERRORS
-		if ( false == GLUtils::peekErrors() )
-		{
-			ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::attachTargetTemp DEPTH: glFramebufferTexture failed ";
-			return false;
-		}
-#endif
+		GL_PEEK_ERRORS_AT_DEBUG
 	}
 	else if ( RenderTarget::RT_COLOR == renderTarget->getType() )
 	{
@@ -117,13 +110,7 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 		GLenum colorAttachment = GL_COLOR_ATTACHMENT0 + this->m_colorBufferTargets.size();
 
 		glFramebufferTexture2D( GL_FRAMEBUFFER, colorAttachment, GL_TEXTURE_2D, id, 0 );
-#ifdef CHECK_GL_ERRORS
-		if ( false == GLUtils::peekErrors() )
-		{
-			ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::attachTargetTemp COLOR: glFramebufferTexture failed";
-			return false;
-		}
-#endif
+		GL_PEEK_ERRORS_AT_DEBUG
 	}
 
 	return true;
@@ -134,14 +121,7 @@ FrameBufferObject::bind()
 {
 	// bind the framebuffer of the geometry-stage
 	glBindFramebuffer( GL_FRAMEBUFFER, this->m_id );
-
-#ifdef CHECK_GL_ERRORS
-	if ( false == GLUtils::peekErrors() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::bind: glBindFramebuffer failed";
-		return false;
-	}
-#endif
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
@@ -161,14 +141,7 @@ FrameBufferObject::unbind()
 {
 	// bind the framebuffer of the geometry-stage
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-
-#ifdef CHECK_GL_ERRORS
-	if ( false == GLUtils::peekErrors() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::unbind: glBindFramebuffer( 0 ) failed";
-		return false;
-	}
-#endif
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
@@ -219,14 +192,7 @@ FrameBufferObject::drawAllBuffers()
 {
 	// activate multiple drawing to our color targets targets
 	glDrawBuffers( this->m_colorBufferTargets.size(), &this->m_colorBufferTargets[ 0 ] );
-
-#ifdef CHECK_GL_ERRORS
-	if ( false == GLUtils::peekErrors() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::drawAllBuffers: glDrawBuffers failed";
-		return false;
-	}
-#endif
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
@@ -243,14 +209,7 @@ FrameBufferObject::drawBuffers( std::vector<unsigned int> indices )
 
 	// activate multiple drawing to our color targets targets
 	glDrawBuffers( colorBufferTargets.size(), &colorBufferTargets[ 0 ] );
-
-#ifdef CHECK_GL_ERRORS
-	if ( false == GLUtils::peekErrors() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::drawAllBuffers: glDrawBuffers failed";
-		return false;
-	}
-#endif
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
@@ -260,14 +219,7 @@ FrameBufferObject::drawBuffer( unsigned int index )
 {
 	// activate multiple drawing to our color targets targets
 	glDrawBuffer( this->m_colorBufferTargets[ index ] );
-
-#ifdef CHECK_GL_ERRORS
-	if ( false == GLUtils::peekErrors() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "FrameBufferObject::drawBuffer: glDrawBuffer failed";
-		return false;
-	}
-#endif
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }

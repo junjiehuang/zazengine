@@ -46,6 +46,8 @@
       <AdditionalIncludeDirectories>libs/include/;../../../IFaces/;$(BOOST_PATH)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251;4275;</DisableSpecificWarnings>
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

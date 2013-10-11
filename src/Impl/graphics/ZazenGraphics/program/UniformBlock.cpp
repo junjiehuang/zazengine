@@ -29,7 +29,7 @@ UniformBlock::createBlock( const std::string& name )
 	GLuint id;
 
 	glGenBuffers( 1, &id );
-	if ( false == GLUtils::peekErrors() )
+	if ( GL_PEEK_ERRORS )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::createBlock: glGenBuffers failed for name \"" << name << "\"";
 		return 0;
@@ -66,14 +66,7 @@ bool
 UniformBlock::bindBase()
 {
 	glBindBufferBase( GL_UNIFORM_BUFFER, this->m_binding, this->m_id );
-	
-#ifdef CHECK_GL_ERRORS
-	if ( false == GLUtils::peekErrors() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::bindBase: glBindBufferBase failed for name \"" << this->m_name << "\"";
-		return false;
-	}
-#endif
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
@@ -84,14 +77,7 @@ UniformBlock::bindBuffer()
 	if ( UniformBlock::m_currentBoundId != this->m_id )
 	{
 		glBindBuffer( GL_UNIFORM_BUFFER, this->m_id );
-
-#ifdef CHECK_GL_ERRORS
-		if ( false == GLUtils::peekErrors() )
-		{
-			ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::bindBuffer: glBindBuffer failed for name \"" << this->m_name << "\"";
-			return false;
-		}
-#endif
+		GL_PEEK_ERRORS_AT_DEBUG
 
 		UniformBlock::m_currentBoundId = this->m_id;
 	}
@@ -103,14 +89,7 @@ bool
 UniformBlock::updateData( const void* data, int offset, int size )
 {
 	glBufferSubData( GL_UNIFORM_BUFFER, offset, size, data );
-
-#ifdef CHECK_GL_ERRORS
-	if ( false == GLUtils::peekErrors() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\"";
-		return false;
-	}
-#endif
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
@@ -119,14 +98,7 @@ bool
 UniformBlock::updateData( const void* data, int size )
 {
 	glBufferData( GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW );
-
-#ifdef CHECK_GL_ERRORS
-	if ( false == GLUtils::peekErrors() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateData: glBufferData failed for name \"" << this->m_name << "\"";
-		return false;
-	}
-#endif
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
