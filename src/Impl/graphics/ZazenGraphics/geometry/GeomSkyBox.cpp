@@ -119,7 +119,9 @@ GeomSkyBox::render()
 
 	// disable depth-writing, sky-box is ALWAYS behind everything else
 	glDisable( GL_DEPTH_TEST );
+	GL_PEEK_ERRORS_AT_DEBUG
 	glDisable( GL_CULL_FACE );
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	// force projective-projection in sky-box (camera could have ortho)
 	glm::mat4 projMat = ZazenGraphics::getInstance().getCamera().createPerspProj();
@@ -147,18 +149,24 @@ GeomSkyBox::render()
 	this->m_cubeMap->bind( 0 );
 
 	glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
 	glEnableVertexAttribArray( 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->m_indexVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
 	glDrawElements( GL_QUADS, 24, GL_UNSIGNED_INT, 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	glDisableVertexAttribArray( 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	// activate z-buffering and face culling
 	glEnable( GL_DEPTH_TEST );
+	GL_PEEK_ERRORS_AT_DEBUG
 	glEnable( GL_CULL_FACE );
-
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;

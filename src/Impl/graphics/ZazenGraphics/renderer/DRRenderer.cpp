@@ -466,13 +466,12 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 	
-#ifndef CHECK_GL_ERRORS
-	// if checking of gl-errors is deactivated check once per frame for ALL errors
+	// check once per frame for ALL errors regardless if we are in _DEBUG or not
 	if ( GL_PEEK_ERRORS )
 	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderFrame: pending OpenGL-Errors - run the DEBUG-build to narrow and determine the call responsible for the error - exit" );
 		return false;
 	}
-#endif
 
 	this->frame++;
 

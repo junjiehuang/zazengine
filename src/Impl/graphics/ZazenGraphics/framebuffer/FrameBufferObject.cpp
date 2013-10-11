@@ -39,6 +39,8 @@ FrameBufferObject::destroy( FrameBufferObject* frameBufferObject )
 	}
 
 	glDeleteFramebuffers( 1, &frameBufferObject->m_id );
+	GL_PEEK_ERRORS_AT_DEBUG
+
 	delete frameBufferObject;
 
 	return true;
@@ -130,8 +132,9 @@ bool
 FrameBufferObject::copyDepthToTarget( RenderTarget* target )
 {
 	glReadBuffer( GL_NONE );
-
+	GL_PEEK_ERRORS_AT_DEBUG
 	glCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 0, 0, target->getWidth(), target->getHeight() );
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
@@ -228,7 +231,9 @@ bool
 FrameBufferObject::drawNone()
 {
 	glDrawBuffer( GL_NONE );
+	GL_PEEK_ERRORS_AT_DEBUG
 	glReadBuffer( GL_NONE );
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
@@ -244,6 +249,7 @@ FrameBufferObject::clearAll()
 	// turn on color drawing ( was turned off in shadowmaping )
 	// clear the colorbuffers AND our depth-buffer ( m_geometryDepth );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
@@ -251,7 +257,6 @@ FrameBufferObject::clearAll()
 bool
 FrameBufferObject::checkStatus()
 {
-#ifdef CHECK_GL_ERRORS
 	GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
 
 	if ( GL_FRAMEBUFFER_COMPLETE == status )
@@ -292,7 +297,4 @@ FrameBufferObject::checkStatus()
 	}
 	
 	return false;
-#else
-	return true;
-#endif
 }

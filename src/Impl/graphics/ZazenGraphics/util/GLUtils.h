@@ -16,7 +16,7 @@
 #define GL_PEEK_ERRORS GLUtils::peekErrors( AT )
 #define GL_PEEK_ERRORS_SILENT GLUtils::peekErrorsSilent();
 
-#ifdef CHECK_GL_ERRORS
+#ifdef _DEBUG
 	#define GL_PEEK_ERRORS_AT_DEBUG GLUtils::peekErrors( AT );
 #else
 	#define GL_PEEK_ERRORS_AT_DEBUG
