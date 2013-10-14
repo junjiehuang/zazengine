@@ -21,7 +21,8 @@ using namespace std;
 // an arbitrary number of uniformblocks can be active
 GLuint UniformBlock::m_nextBinding = 0;
 
-int UniformBlock::m_currentBoundId = -1;
+// no more needed, see bindBuffer for info
+//int UniformBlock::m_currentBoundId = -1;
 
 UniformBlock*
 UniformBlock::createBlock( const std::string& name )
@@ -74,13 +75,16 @@ UniformBlock::bindBase()
 bool
 UniformBlock::bindBuffer()
 {
-	if ( UniformBlock::m_currentBoundId != this->m_id )
-	{
+	// WARNING: should not do this because it seems that this won't work internally
+	// because there are multiple buffer-types so we need to set it always although it
+	// seems this UNIFORM_BUFFER with the same id is already bound
+	//if ( UniformBlock::m_currentBoundId != this->m_id )
+	//{
 		glBindBuffer( GL_UNIFORM_BUFFER, this->m_id );
 		GL_PEEK_ERRORS_AT_DEBUG
 
-		UniformBlock::m_currentBoundId = this->m_id;
-	}
+		//UniformBlock::m_currentBoundId = this->m_id;
+	//}
 
 	return true;
 }

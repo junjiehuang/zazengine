@@ -53,7 +53,7 @@ class UniformBlock
 
 		static GLuint m_nextBinding;
 
-		static int m_currentBoundId;
+		//static int m_currentBoundId;
 
 		GLuint m_id;
 		GLuint m_binding;

@@ -25,8 +25,10 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 	std::string source;
 	const char* sourcePtr = NULL;
 
-	if (Shader::readShaderSource( file, source ) == false)
-		return 0;
+	if ( false == Shader::readShaderSource( file, source ) )
+	{
+		return NULL;
+	}
 
 	if ( Shader::VERTEX_SHADER == type )
 	{
@@ -35,7 +37,7 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 		{
 			GL_PEEK_ERRORS_AT
 			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_VERTEX_SHADER \"" << file << "\" failed";
-			return 0;
+			return NULL;
 		}
 	}
 	else if ( Shader::FRAGMENT_SHADER == type )
@@ -45,7 +47,7 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 		{
 			GL_PEEK_ERRORS_AT
 			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_FRAGMENT_SHADER \"" << file << "\" failed";
-			return 0;
+			return NULL;
 		}
 	}
 
@@ -54,9 +56,8 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 	if ( GL_PEEK_ERRORS )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glShaderSource for \"" << file << "\" failed";
-		return 0;
+		return NULL;
 	}
-
 
 	return new Shader( shaderObject, file );
 }
@@ -77,13 +78,12 @@ Shader::printInfoLog()
 {
 	GLint infoLogLen = 0;
 
-	glGetShaderiv( this->m_shaderObject  , GL_INFO_LOG_LENGTH, &infoLogLen );
+	glGetShaderiv( this->m_shaderObject , GL_INFO_LOG_LENGTH, &infoLogLen );
 	if ( 0 < infoLogLen )
 	{
 		GLint charsWritten  = 0;
 		vector<GLchar> buffer( infoLogLen + 1 );
 		glGetShaderInfoLog( this->m_shaderObject, infoLogLen, &charsWritten, &buffer[ 0 ] );
-
 	    if ( charsWritten )
 		{
 			ZazenGraphics::getInstance().getLogger().logError( string( &buffer[ 0 ] ) );
@@ -97,6 +97,8 @@ Shader::compile()
 	GLint status;
 
 	glCompileShader( this->m_shaderObject );
+	GL_PEEK_ERRORS_AT
+
 	glGetShaderiv( this->m_shaderObject, GL_COMPILE_STATUS, &status );
 	if ( GL_TRUE != status )
 	{

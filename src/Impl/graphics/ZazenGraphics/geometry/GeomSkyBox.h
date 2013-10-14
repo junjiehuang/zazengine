@@ -25,7 +25,7 @@ class GeomSkyBox : public GeomType
 		static bool shutdown();
 		static bool isPresent() { return GeomSkyBox::instance != NULL; };
 
-		static GeomSkyBox& getRef() { return *GeomSkyBox::instance;};
+		static GeomSkyBox& getRef() { return *GeomSkyBox::instance; };
 
 		virtual ~GeomSkyBox();
 	

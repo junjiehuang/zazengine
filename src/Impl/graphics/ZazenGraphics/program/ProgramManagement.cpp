@@ -10,6 +10,7 @@
 #include "UniformManagement.h"
 
 #include "../ZazenGraphics.h"
+#include "../util/GLUtils.h"
 
 #include <GL/glew.h>
 
@@ -91,6 +92,8 @@ ProgramManagement::init( const boost::filesystem::path& path )
 				delete program;
 				return false;
 			}
+
+			GL_PEEK_ERRORS_AT
 
 			if ( false == program->link() )
 			{

@@ -10,6 +10,7 @@
 #include "Program.h"
 
 #include "../ZazenGraphics.h"
+#include "../util/GLUtils.h"
 
 #include <iostream>
 
