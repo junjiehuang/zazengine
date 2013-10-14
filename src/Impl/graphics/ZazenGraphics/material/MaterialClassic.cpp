@@ -32,15 +32,8 @@ MaterialClassic::activate( Program* currentProgramm )
 
 	this->m_materialConfig->bindBuffer();
 
-	if ( false == this->m_materialConfig->updateField( "MaterialUniforms.config", materialCfg ) )
-	{
-		return false;
-	}
-
-	if ( false == this->m_materialConfig->updateField( "MaterialUniforms.color", this->m_color ) )
-	{
-		return false;
-	}
+	this->m_materialConfig->updateField( "MaterialUniforms.config", materialCfg );
+	this->m_materialConfig->updateField( "MaterialUniforms.color", this->m_color );
 
 	return true;
 }

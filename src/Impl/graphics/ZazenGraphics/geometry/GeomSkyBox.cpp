@@ -136,15 +136,8 @@ GeomSkyBox::render()
 		return false;
 	}
 
-	if ( false == this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMat ) )
-	{
-		return false;
-	}
-
-	if ( false == this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", projMat ) )
-	{
-		return false;
-	}
+	this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMat );
+	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", projMat );
 
 	this->m_cubeMap->bind( 0 );
 

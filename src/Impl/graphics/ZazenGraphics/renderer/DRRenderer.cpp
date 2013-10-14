@@ -620,20 +620,11 @@ DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>&
 	}
 
 	// upload world-orientation of camera ( its model-matrix )
-	if ( false == this->m_cameraBlock->updateField( "CameraUniforms.modelMatrix", this->m_camera->getModelMatrix() ) )
-	{
-		return false;
-	}
+	this->m_cameraBlock->updateField( "CameraUniforms.modelMatrix", this->m_camera->getModelMatrix() );
 	// upload view-matrix of camera (need to transform e.g. light-world position in EyeCoords/Viewspace)
-	if ( false == this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", this->m_camera->getViewMatrix() ) )
-	{
-		return false;
-	}
+	this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", this->m_camera->getViewMatrix() );
 	// upload camera-rectangle
-	if ( false == this->m_cameraBlock->updateField( "CameraUniforms.rectangle", cameraRectangle ) )
-	{
-		return false;
-	}
+	this->m_cameraBlock->updateField( "CameraUniforms.rectangle", cameraRectangle );
 
 	// no transparent objects in scene, render lighting to default framebuffer
 	if ( 0 == this->m_transparentInstances.size() )
@@ -755,15 +746,9 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	}
 
 	// upload light-config
-	if ( false == this->m_lightBlock->updateField( "LightUniforms.config", lightConfig ) )
-	{
-		return false;
-	}
+	this->m_lightBlock->updateField( "LightUniforms.config", lightConfig );
 	// upload light-model matrix = orientation of the light in the world
-	if ( false == this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() ) )
-	{
-		return false;
-	}
+	this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() );
 
 	// bind shadow-map when light is shadow-caster
 	if ( light->isShadowCaster() )
@@ -780,10 +765,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		// multiplication with unit-cube is first because has to be carried out the last
 		lightSpaceUnit = this->m_unitCubeMatrix * light->getVPMatrix();
 
-		if ( false == this->m_lightBlock->updateField( "LightUniforms.spaceUniformMatrix", lightSpaceUnit ) )
-		{
-			return false;
-		}
+		this->m_lightBlock->updateField( "LightUniforms.spaceUniformMatrix", lightSpaceUnit );
 	}
 
 	// QUESTION: due to a but only bind was called instead of bindBuffer but it worked!! why?
@@ -791,10 +773,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	this->m_transformsBlock->bindBuffer();
 	// OPTIMIZE: store in light once, and only update when change
 	glm::mat4 orthoMat = this->m_camera->createOrthoProj( true, true );
-	if ( false == this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat ) )
-	{
-		return false;
-	}
+	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat );
 
 	// TODO: need to set opengl to additiveley blend light-passes
 	// alpha? color modulate?...
@@ -960,10 +939,7 @@ DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgrou
 	this->m_transformsBlock->bindBuffer();
 	// OPTIMIZE: store in light once, and only update when change
 	glm::mat4 orthoMat = this->m_camera->createOrthoProj( true, true );
-	if ( false == this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat ) )
-	{
-		return false;
-	}
+	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat );
 
 	// disable writing to depth when not last instance because would destroy our depth-buffer
 	// when last instance it doesnt matter because we render to screen-buffer
@@ -994,10 +970,7 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 	}
 
 	// update projection because each viewer can have different projection-transform
-	if ( false == this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", viewer->getProjMatrix() ) )
-	{
-		return false;
-	}
+	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", viewer->getProjMatrix() );
 
 	list<Instance*>::iterator iter = instances.begin();
 	while ( iter != instances.end() )
@@ -1050,10 +1023,7 @@ DRRenderer::renderInstance( Viewer* viewer, Instance* instance, Program* current
 	}
 
 	// update projection because each viewer can have different projection-transform
-	if ( false == this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", viewer->getProjMatrix() ) )
-	{
-		return false;
-	}
+	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", viewer->getProjMatrix() );
 
 	// activate material
 	if ( false == instance->material->activate( currentProgramm ) )
@@ -1111,15 +1081,9 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 			glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( modelViewMatrix ) );
 
 			// update model-view matrix
-			if ( false == this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMatrix) )
-			{
-				return false;
-			}
+			this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMatrix );
 			// update model-view matrix for normals
-			if ( false == this->m_transformsBlock->updateField( "TransformUniforms.normalsModelViewMatrix", normalModelViewMatrix ) )
-			{
-				return false;
-			}
+			this->m_transformsBlock->updateField( "TransformUniforms.normalsModelViewMatrix", normalModelViewMatrix );
 
 			// render geometry
 			return geom->render();
