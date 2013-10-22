@@ -8,6 +8,7 @@
 #include "MaterialFactory.h"
 
 #include "MaterialClassic.h"
+#include "MaterialDoom3.h"
 #include "MaterialTransparent.h"
 
 #include "../ZazenGraphics.h"
@@ -98,21 +99,9 @@ MaterialFactory::init( const filesystem::path& path )
 			{
 				material = MaterialFactory::createClassicMaterial( name, Material::MATERIAL_PHONG, materialTypeNode );
 			}
-			else if ( "ORENNAYAR" == typeID )
+			else if ( "DOOM3" == typeID )
 			{
-				material = MaterialFactory::createClassicMaterial( name, Material::MATERIAL_ORENNAYAR, materialTypeNode );
-			}
-			else if ( "SSS" == typeID )
-			{
-				materialType = Material::MATERIAL_SSS;
-			}
-			else if ( "WARDS" == typeID )
-			{
-				materialType = Material::MATERIAL_WARDS;
-			}
-			else if ( "TORRANCESPARROW" == typeID )
-			{
-				materialType = Material::MATERIAL_TORRANCESPARROW;
+				material = MaterialFactory::createDoom3Material( name, materialTypeNode );
 			}
 			else if ( "TRANSPARENT" == typeID )
 			{
@@ -182,21 +171,6 @@ MaterialFactory::createClassicMaterial( const std::string& name, Material::Mater
 				}
 			}
 		}
-		else if ( 0 == strcmp( str, "normalMap" ) )
-		{
-			if ( 0 == material->m_normalTexture )
-			{
-				str = materialCfgNode->Attribute( "file" );
-				if ( 0 != str )
-				{
-					Texture* texture = TextureFactory::get( str );
-					if ( texture )
-					{
-						material->m_normalTexture = texture;
-					}
-				}
-			}
-		}
 		else if ( 0 == strcmp( str, "color" ) )
 		{
 			glm::vec4 color;
@@ -220,6 +194,84 @@ MaterialFactory::createClassicMaterial( const std::string& name, Material::Mater
 			}
 
 			material->m_color = color;
+		}
+	}
+
+	return material;
+}
+
+Material*
+MaterialFactory::createDoom3Material( const std::string& name, TiXmlElement* materialTypeNode )
+{
+	MaterialDoom3* material = new MaterialDoom3( name );
+
+	for (TiXmlElement* materialCfgNode = materialTypeNode->FirstChildElement(); materialCfgNode != 0; materialCfgNode = materialCfgNode->NextSiblingElement() )
+	{
+		const char* str = materialCfgNode->Value();
+		if ( NULL == str )
+		{
+			continue;
+		}
+
+		if ( 0 == strcmp( str, "diffuseTexture" ) )
+		{
+			if ( 0 == material->m_diffuseTexture )
+			{
+				str = materialCfgNode->Attribute( "file" );
+				if ( 0 != str )
+				{
+					Texture* texture = TextureFactory::get( str );
+					if ( texture )
+					{
+						material->m_diffuseTexture = texture;
+					}
+				}
+			}
+		}
+		else if ( 0 == strcmp( str, "specularTexture" ) )
+		{
+			if ( 0 == material->m_specularTexture )
+			{
+				str = materialCfgNode->Attribute( "file" );
+				if ( 0 != str )
+				{
+					Texture* texture = TextureFactory::get( str );
+					if ( texture )
+					{
+						material->m_specularTexture = texture;
+					}
+				}
+			}
+		}
+		else if ( 0 == strcmp( str, "heightMap" ) )
+		{
+			if ( 0 == material->m_heightMap )
+			{
+				str = materialCfgNode->Attribute( "file" );
+				if ( 0 != str )
+				{
+					Texture* texture = TextureFactory::get( str );
+					if ( texture )
+					{
+						material->m_heightMap = texture;
+					}
+				}
+			}
+		}
+		else if ( 0 == strcmp( str, "normalMap" ) )
+		{
+			if ( 0 == material->m_normalMap )
+			{
+				str = materialCfgNode->Attribute( "file" );
+				if ( 0 != str )
+				{
+					Texture* texture = TextureFactory::get( str );
+					if ( texture )
+					{
+						material->m_normalMap = texture;
+					}
+				}
+			}
 		}
 	}
 

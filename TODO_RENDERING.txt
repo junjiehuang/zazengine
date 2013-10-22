@@ -1,3 +1,11 @@
+Animation-System
+	-> all on GPU, not on CPU
+	-> load & animate doom3 models
+	-> other animations?
+
+Text-rendering
+	-> use OGLFT
+
 Transparency-Rendering (see GPU Gems 2 Page 295)
 	-> Differentiate between normal transparency and refractive transparency
 		-> normal transparency can be rendered at the very last using normal opengl blending
@@ -12,14 +20,11 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 			-> optimization: only do additional lookup when alpha-channel is 1.0
 		-> for better quality: do multisampling texture lookups
 		
-
 GLFW Context
 	-> Allow Toggle fullscreen
 		-> reinit window & render-context!
 			=> need to reinig glew, programs, textures,... (?)
 			=> lot of work to do, because everything needs to be re-init-able
-		
-Fix errors with uniformbuffers
 
 No more bindbufferbase of uniformblocks in renderer
 	-> do it after programs are linked in uniformmanagement
@@ -64,9 +69,6 @@ Msaa
 	-> do sampling in geometry fragment-shader (centroid)
 	-> dual source blending?
 	
-Text-rendering
-	-> use OGLFT
-	
 Need generic effect/material functionality
 	-> no need to set input or output indices in shaders, can be done with layout ( location = ... )
 		-> remove glGetFragDataLocation, glBindFragDataLocation, glGetAttribLocation, glBindAttribLocation
@@ -107,11 +109,6 @@ Particle System
 			-> no shadow-casting
 	-> no poing-lights
 		-> don't illuminate scene
-	
-Animation-System
-	-> all on GPU, not on CPU
-	-> load & animate doom3 models
-	-> other animations?
 	
 	Reflections
 	-> environment (cube-mapping)

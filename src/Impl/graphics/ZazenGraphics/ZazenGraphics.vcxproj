@@ -94,6 +94,7 @@
     <ClCompile Include="lighting\Light.cpp" />
     <ClCompile Include="material\Material.cpp" />
     <ClCompile Include="material\MaterialClassic.cpp" />
+    <ClCompile Include="material\MaterialDoom3.cpp" />
     <ClCompile Include="material\MaterialFactory.cpp" />
     <ClCompile Include="material\MaterialTransparent.cpp" />
     <ClCompile Include="orientation\Orientation.cpp" />
@@ -129,6 +130,7 @@
     <ClInclude Include="lighting\Light.h" />
     <ClInclude Include="material\Material.h" />
     <ClInclude Include="material\MaterialClassic.h" />
+    <ClInclude Include="material\MaterialDoom3.h" />
     <ClInclude Include="material\MaterialFactory.h" />
     <ClInclude Include="material\MaterialTransparent.h" />
     <ClInclude Include="orientation\Orientation.h" />

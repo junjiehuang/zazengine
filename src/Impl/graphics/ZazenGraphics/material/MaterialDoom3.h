@@ -1,34 +1,35 @@
 /*
- * MaterialClassic.h
+ * MaterialDoom3.h
  *
- *  Created on: May 09, 2013
+ *  Created on: Oct 22, 2013
  *      Author: jonathan
  */
 
-#ifndef MATERIALCLASSIC_H_
-#define MATERIALCLASSIC_H_
+#ifndef MATERIALDOOM3_H
+#define MATERIALDOOM3_H
 
 #include "Material.h"
 
 #include "../Program/UniformBlock.h"
 #include "../Texture/Texture.h"
 
-class MaterialClassic : public Material
+class MaterialDoom3 : public Material
 {
 	public:
 		friend class MaterialFactory;
 
-		MaterialClassic( const std::string&, MaterialType );
-		virtual ~MaterialClassic();
+		MaterialDoom3( const std::string& );
+		virtual ~MaterialDoom3();
 
 		bool activate( Program* );
 
 	private:
 		UniformBlock* m_materialConfig;
 
-		glm::vec4 m_color;
-
 		Texture* m_diffuseTexture;
+		Texture* m_specularTexture;
+		Texture* m_heightMap;
+		Texture* m_normalMap;
 };
 
 #endif /* MATERIAL_H_ */

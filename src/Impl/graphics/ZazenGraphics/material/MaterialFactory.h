@@ -29,6 +29,7 @@ class MaterialFactory
 		static std::map<std::string, Material*> allMaterials;
 
 		static Material* createClassicMaterial( const std::string&, Material::MaterialType, TiXmlElement* );
+		static Material* createDoom3Material( const std::string&, TiXmlElement* );
 		static Material* createTransparentMaterial( const std::string&, TiXmlElement* );
 };
 

@@ -20,12 +20,6 @@ MaterialClassic::activate( Program* currentProgramm )
 		currentProgramm->setUniformInt( "DiffuseTexture", 0 );
 	}
 
-	if ( this->m_normalTexture )
-	{
-		this->m_normalTexture->bind( 1 );
-		currentProgramm->setUniformInt( "NormalTexture", 1 );
-	}
-
 	glm::vec4 materialCfg;
 	materialCfg[ 0 ] = ( float ) this->getType();
 	materialCfg[ 1 ] = this->m_diffuseTexture == 0 ? 0.0f : 1.0f;
@@ -42,7 +36,6 @@ MaterialClassic::MaterialClassic( const std::string& name, MaterialType type )
 	: Material( name, type )
 {
 	this->m_diffuseTexture = NULL;
-	this->m_normalTexture = NULL;
 
 	this->m_materialConfig = UniformManagement::getBlock( "MaterialUniforms" );
 }

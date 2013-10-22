@@ -207,6 +207,9 @@
     <ClCompile Include="material\MaterialClassic.cpp">
       <Filter>Quelldateien\material</Filter>
     </ClCompile>
+    <ClCompile Include="material\MaterialDoom3.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ZazenGraphics.h">
@@ -306,6 +309,9 @@
       <Filter>Headerdateien\material</Filter>
     </ClInclude>
     <ClInclude Include="material\MaterialClassic.h">
+      <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="material\MaterialDoom3.h">
       <Filter>Headerdateien\material</Filter>
     </ClInclude>
   </ItemGroup>
