@@ -197,7 +197,7 @@ DRRenderer::initGBuffer()
 	// and attached to the according fbo (e.g. after each attach) otherwise
 	// it will be incomplete at some point and will fail.
 	// check status of FBO AFTER all buffers are set-up and attached
-	if ( false == this->m_gBufferFbo->checkStatus() )
+	if ( false == FrameBufferObject::checkStatus() )
 	{
 		return false;
 	}
@@ -548,10 +548,7 @@ DRRenderer::doGeometryStage( std::list<Instance*>& instances, std::list<Light*>&
 	}
 
 	// check status of FBO, IMPORANT: not before, would have failed
-	if ( false == this->m_gBufferFbo->checkStatus() )
-	{
-		return false;
-	}
+	CHECK_FRAMEBUFFER_DEBUG
 
 	// draw all geometry from cameras viewpoint AND apply materials but ignore transparent material
 	if ( false == this->renderInstances( this->m_camera, instances, this->m_progGeomStage, true, false ) )
@@ -586,10 +583,7 @@ DRRenderer::renderSkyBox()
 	}
 
 	// check FBO-status
-	if ( false == this->m_gBufferFbo->checkStatus() )
-	{
-		return false;
-	}
+	CHECK_FRAMEBUFFER_DEBUG
 
 	// sky-box rendering uses its own program
 	if ( false == this->m_progSkyBox->use() )
@@ -693,10 +687,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 		}
 
 		// check status of FBO, IMPORANT: not before, would have failed
-		if ( false == this->m_gBufferFbo->checkStatus() )
-		{
-			return false;
-		}
+		CHECK_FRAMEBUFFER_DEBUG
 	}
 
 	// IMPORTANT: need to re-set the viewport for each FBO
@@ -808,10 +799,7 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 
 	// check status now
 	// IMPORANT: don't check too early
-	if ( false == this->m_intermediateDepthFB->checkStatus() )
-	{
-		return false;
-	}
+	CHECK_FRAMEBUFFER_DEBUG
 
 	// clear bound buffer
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );

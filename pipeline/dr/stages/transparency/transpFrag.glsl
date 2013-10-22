@@ -20,10 +20,10 @@ layout( shared ) uniform TransparentMaterialUniforms
 
 layout( shared ) uniform CameraUniforms
 {
+	vec4 rectangle;
+
 	mat4 modelMatrix;
 	mat4 viewMatrix;
-	
-	vec4 rectangle;
 } Camera;
 
 const float blendingFactor = 0.5; // TransparentMaterial.config.x

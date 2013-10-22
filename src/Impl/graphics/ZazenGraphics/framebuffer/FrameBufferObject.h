@@ -14,11 +14,19 @@
 
 #include <vector>
 
+#ifdef _DEBUG
+	#define CHECK_FRAMEBUFFER_DEBUG FrameBufferObject::checkStatus();
+#else
+	#define CHECK_FRAMEBUFFER_DEBUG
+#endif
+
 class FrameBufferObject
 {
 	public:
 		static FrameBufferObject* create();
 		static bool destroy( FrameBufferObject* );
+
+		static bool checkStatus();
 
 		bool attachTarget( RenderTarget* );
 		bool attachTargetTemp( RenderTarget* );
@@ -38,8 +46,6 @@ class FrameBufferObject
 		bool bindTarget( unsigned int );
 
 		bool clearAll();
-
-		bool checkStatus();
 
 		const std::vector<RenderTarget*>& getAttachedTargets() { return this->m_attachedTargets; };
 		RenderTarget* getAttachedDepthTarget() { return this->m_depthTarget; };
