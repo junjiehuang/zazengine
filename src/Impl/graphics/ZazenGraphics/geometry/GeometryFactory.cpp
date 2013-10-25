@@ -333,16 +333,31 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 	meshBBmax[ 1 ] = numeric_limits<float>::min();
 	meshBBmax[ 2 ] = numeric_limits<float>::min();
 
-	for ( unsigned int j = 0; j < mesh->mNumFaces; ++j ) {
-		const struct aiFace* face = &mesh->mFaces[ j ];
+	if ( mesh->HasBones() )
+	{
+		for ( unsigned int i = 0; i < mesh->mNumBones; i++ )
+		{
+			aiBone* bone = mesh->mBones[ i ];
+			
+			for( unsigned int j = 0; j < bone->mNumWeights; j++ )
+			{
+				aiVertexWeight weight = bone->mWeights[ j ];
+			}
+		}
+	}
 
-		for( unsigned int k = 0; k < face->mNumIndices; k++ ) {
-			int index = face->mIndices[ k ];
+	for ( unsigned int i = 0; i < mesh->mNumFaces; ++i )
+	{
+		const struct aiFace* face = &mesh->mFaces[ i ];
 
-			indexBuffer[ j * 3 + k ] = index;
+		for( unsigned int j = 0; j < face->mNumIndices; j++ )
+		{
+			int index = face->mIndices[ j ];
 
+			indexBuffer[ i * 3 + j ] = index;
 			memcpy( vertexData[ index ].position, &mesh->mVertices[ index ].x, sizeof( GeomMesh::Vertex ) );
 			memcpy( vertexData[ index ].normal, &mesh->mNormals[ index ].x, sizeof( GeomMesh::Normal ) );
+			memcpy( vertexData[ index ].tangent, &mesh->mTangents[ index ].x, sizeof( GeomMesh::Tangent ) );
 
 			if ( mesh->HasTextureCoords( 0 ) )
 			{

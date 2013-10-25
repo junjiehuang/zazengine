@@ -11,12 +11,14 @@
       <fragDataLocation colorNumber="0" name="out_diffuse"/>
       <fragDataLocation colorNumber="1" name="out_normal"/>
       <fragDataLocation colorNumber="2" name="out_position"/>
+      <fragDataLocation colorNumber="3" name="out_tangent"/>
     </fragDataLocations>
 
     <attribLocations>
       <attribLocation index="0" name="in_vertPos"/>
       <attribLocation index="1" name="in_vertNorm"/>
       <attribLocation index="2" name="in_texCoord"/>
+      <attribLocation index="3" name="in_tangent"/>
     </attribLocations>
 	</program>
 

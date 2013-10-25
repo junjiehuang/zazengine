@@ -75,13 +75,20 @@ GeomMesh::render()
 	glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );
 	GL_PEEK_ERRORS_AT_DEBUG
 
+	// coordinates
 	glEnableVertexAttribArray( 0 );
 	GL_PEEK_ERRORS_AT_DEBUG
 
+	// normals
 	glEnableVertexAttribArray( 1 );
 	GL_PEEK_ERRORS_AT_DEBUG
 
+	// texture-coords
 	glEnableVertexAttribArray( 2 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// tangent
+	glEnableVertexAttribArray( 3 );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( VertexData ), BUFFER_OFFSET( 0 ) );
@@ -91,6 +98,9 @@ GeomMesh::render()
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, sizeof( VertexData ), BUFFER_OFFSET( 24 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glVertexAttribPointer( 3, 3, GL_FLOAT, GL_FALSE, sizeof( VertexData ), BUFFER_OFFSET( 32 ) );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->m_indexVBO );
@@ -106,6 +116,9 @@ GeomMesh::render()
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	glDisableVertexAttribArray( 2 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glDisableVertexAttribArray( 3 );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;

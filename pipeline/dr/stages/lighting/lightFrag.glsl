@@ -4,6 +4,7 @@ uniform sampler2D DiffuseMap;
 uniform sampler2D NormalMap;
 uniform sampler2D PositionMap;
 uniform sampler2D DepthMap;
+uniform sampler2D TangentMap;
 
 uniform sampler2DShadow ShadowMap;
 
@@ -30,6 +31,9 @@ layout( shared ) uniform LightUniforms
 vec4
 calculateLambertian( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
+	// IMPORTANT: need to normalize normals due to possible uniform-scaling applied to models
+	normal = normalize( normal );
+
 	// need to transpose light-model matrix to view-space for eye-coordinates 
 	// OPTIMIZE: premultiply on CPU
 	mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
@@ -47,6 +51,9 @@ calculateLambertian( in vec4 diffuse, in vec4 normal, in vec4 position )
 vec4
 calculatePhong( in vec4 diffuse, in vec4 normal, in vec4 position )
 {
+	// IMPORTANT: need to normalize normals due to possible uniform-scaling applied to models
+	normal = normalize( normal );
+
 	// need to transpose light-model matrix to view-space for eye-coordinates 
 	// OPTIMIZE: premultiply on CPU
 	mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
@@ -65,6 +72,15 @@ calculatePhong( in vec4 diffuse, in vec4 normal, in vec4 position )
 	return attenuationFactor * diffuse + specularFactor;    
 }
 
+vec4
+calculateDoom3Lighting( in vec4 diffuse, in vec4 normal, in vec4 tangent, in vec4 position )
+{
+	// need to scale light into range -1.0 to +1.0 because was stored in normal-map
+	normal = 2.0 * normal - 1.0;
+
+	return calculatePhong( diffuse, normal, position );
+}
+
 void main()
 {
 	// fetch the coordinate of this fragment in normalized screen-space ( 0 – 1 ) 
@@ -73,13 +89,14 @@ void main()
 	// fetch diffuse color for this fragment
 	vec4 diffuse = texture( DiffuseMap, screenCoord );
 
-	// IMPORTANT: need to normalize normals due to possible uniform-scaling applied to models
 	// OPTIMIZE: apply SCALE-Matrix only to modelView and not to normalsModelView
-	vec4 normal = normalize( texture( NormalMap, screenCoord ) );
+	vec4 normal = texture( NormalMap, screenCoord );
 
 	// position of fragment is stored in model-view coordinates = EyeCoordinates (EC) 
 	// EC is what we need for lighting-calculations
 	vec4 ecPosition = texture( PositionMap, screenCoord );
+
+	vec4 tangent = texture( TangentMap, screenCoord );
 
 	// shadow true/false
 	float shadow = 0.0;
@@ -140,7 +157,7 @@ void main()
 		// not in shadow
 		if ( shadow != 0.0 )
 		{
-			float matId = diffuse.a * 255;
+			float matId = diffuse.a;
 
 			if ( 1.0 == matId )
 			{
@@ -150,6 +167,10 @@ void main()
 			{
 				final_color = calculatePhong( diffuse, normal, ecPosition );
 			}
+			else if ( 3.0 == matId )
+			{
+				final_color = calculateDoom3Lighting( diffuse, normal, tangent, ecPosition );
+			}
 			else
 			{
 				final_color = diffuse;
@@ -157,6 +178,7 @@ void main()
 		}
 		else
 		{
+			// TODO: handle doom3 material
 			final_color = calculateLambertian( diffuse, normal, ecPosition ) * 0.5;
 			final_color.a = 1.0;
 		}
