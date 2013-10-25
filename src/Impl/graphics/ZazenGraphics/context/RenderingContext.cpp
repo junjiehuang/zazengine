@@ -7,17 +7,19 @@
 
 #include "../ZazenGraphics.h"
 #include "../util/GLUtils.h"
+#include "../texture/TextureFactory.h"
 
 using namespace std;
+using namespace boost::filesystem;
 
 #define WINDOW_BITS_PER_PIXEL 32
 
 RenderingContext* RenderingContext::instance = NULL;
 
 bool
-RenderingContext::initialize( const std::string& title, int width, int height, bool fullScreenFlag )
+RenderingContext::initialize( const std::string& title, int width, int height, bool fullScreenFlag, path screenShotPath )
 {
-	new RenderingContext( title, width, height, fullScreenFlag );
+	new RenderingContext( title, width, height, fullScreenFlag, screenShotPath );
 
 	if ( false == RenderingContext::initGLFW() )
 	{
@@ -111,7 +113,7 @@ RenderingContext::shutdown()
 	return true;
 }
 
-RenderingContext::RenderingContext( const std::string& title, int width, int height, bool fullScreenFlag )
+RenderingContext::RenderingContext( const std::string& title, int width, int height, bool fullScreenFlag, path screenShotPath )
 {
 	this->m_windowTitle = title;
 	this->m_windowWidth = width;
@@ -122,6 +124,9 @@ RenderingContext::RenderingContext( const std::string& title, int width, int hei
 	this->m_hWnd = NULL;
 
 	this->m_activeFlag = true;
+
+	this->m_screnShotFlag = false;
+	this->m_screenShotPath = screenShotPath;
 
 	RenderingContext::instance = this;
 }
@@ -160,6 +165,39 @@ bool
 RenderingContext::swapBuffers()
 {
 	glfwSwapBuffers( RenderingContext::instance->m_window );
+
+	// take screenshot after buffer swapped
+	if ( this->m_screnShotFlag )
+	{
+		unsigned int index = 0;
+		stringstream fileName;
+		
+		fileName << this->m_screenShotPath.generic_string() << "screenshot_";
+
+		for ( directory_iterator iter( this->m_screenShotPath ); iter != directory_iterator(); ++iter )
+		{
+		  if ( is_regular_file( iter->status() ) )
+		  {
+			  index++;
+		  }
+		}
+
+		fileName << index;
+		fileName << ".tiff";
+
+		TextureFactory::captureScreen( fileName.str().c_str() );
+
+		this->m_screnShotFlag = false;
+	}
+
+	return true;
+}
+
+bool
+RenderingContext::takeScreenShot()
+{
+	// post-pone screenshot after swapping of buffers
+	this->m_screnShotFlag = true;
 
 	return true;
 }

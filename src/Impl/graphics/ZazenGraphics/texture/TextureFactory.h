@@ -29,8 +29,8 @@ class TextureFactory
 		static Texture* get( const std::string& );
 		static Texture* getCube( const boost::filesystem::path&, const std::string& );
 
-		bool bind( int textureUnit );
-	
+		static bool captureScreen( const std::string& );
+
 	private:
 		static GLint m_currentTextureUnit;
 

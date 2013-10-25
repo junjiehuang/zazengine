@@ -113,6 +113,19 @@ TextureFactory::getCube( const boost::filesystem::path& cubeMapPath, const std::
 	return newTexture;
 }
 
+bool
+TextureFactory::captureScreen( const std::string& fileName )
+{
+	ILuint imageID = ilGenImage();
+    ilBindImage( imageID );
+    ilutGLScreen();
+    ilEnable( IL_FILE_OVERWRITE );
+	ilSaveImage( fileName.c_str() );
+    ilDeleteImage( imageID );
+
+	return true;
+}
+
 void
 TextureFactory::freeAll()
 {

@@ -80,6 +80,8 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 		return false;
 	}
 
+	this->initScreenShotPath( configNode );
+
 	// important: need to initialize window first because only then we have a valid opengl-context
 	if ( false == this->createWindow( configNode ) )
 	{
@@ -155,6 +157,8 @@ ZazenGraphics::start()
 		return false;
 	}
 
+	this->m_core->getEventManager().registerForEvent( "KEY_PRESSED", this );
+
 	return true;
 }
 
@@ -213,6 +217,16 @@ ZazenGraphics::finalizeProcess()
 bool
 ZazenGraphics::sendEvent( Event& e )
 {
+	if ( e == "KEY_PRESSED" )
+	{
+		int keyCode = any_cast<int>( e.getValue( "key" ) );
+		// F12 triggers screen-shot
+		if ( 88 == keyCode )
+		{
+			RenderingContext::getRef().takeScreenShot();
+		}
+	}
+
 	return true;
 }
 
@@ -586,7 +600,7 @@ ZazenGraphics::createWindow( TiXmlElement* configNode )
 		}
 	}
 
-	if ( false == RenderingContext::initialize( windowTitle, windowWidth, windowHeight, fullScreen ) )
+	if ( false == RenderingContext::initialize( windowTitle, windowWidth, windowHeight, fullScreen, this->m_screenShotPath ) )
 	{
 		this->m_logger->logError( "in ZazenGraphics::createWindow: failed creating window" );
 		return false;
@@ -758,6 +772,35 @@ ZazenGraphics::initSkyBoxFolderPath( TiXmlElement* configElem )
 	}
 
 	return true;
+}
+
+void
+ZazenGraphics::initScreenShotPath( TiXmlElement* configElem )
+{
+	TiXmlElement* screenShotsNode = configElem->FirstChildElement( "screenShots" );
+	if ( 0 == screenShotsNode )
+	{
+		return;
+	}
+
+	const char* str = screenShotsNode->Attribute( "path" );
+	if ( 0 == str )
+	{
+		return;
+	}
+
+	this->m_screenShotPath = filesystem::path( str );
+	if ( ! filesystem::exists( this->m_screenShotPath ) )
+	{
+		this->m_logger->logWarning() << "screenShots-path " << this->m_screenShotPath << " does not exist - setting default";
+		return;
+	}
+
+	if ( false == filesystem::is_directory( this->m_screenShotPath ) )
+	{
+		this->m_logger->logWarning() << "screenShots-path " << this->m_screenShotPath << " is not a directory - setting default";
+		return;
+	}
 }
 
 extern "C"

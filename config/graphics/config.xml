@@ -8,4 +8,5 @@
   <modelData path="../media/models/"/>
   <textureData path="../media/textures/"/>
   <materialData path="../media/materials/"/>
+  <screenShots path="../screenshots/"/>
 </subSystem>
