@@ -11,6 +11,7 @@ out vec4 ex_position;
 out vec4 ex_normal;
 out vec2 ex_texCoord;
 out vec4 ex_tangent;
+out vec4 ex_biTangent;
 
 layout( shared ) uniform TransformUniforms
 {
@@ -30,7 +31,8 @@ void main()
 	ex_texCoord = in_texCoord;
 
 	ex_tangent = Transforms.normalsModelViewMatrix * vec4( in_tangent, 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
-
+	ex_biTangent = vec4( cross( ex_normal.xyz, ex_tangent.xyz ), 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
+	 
 	// OPTIMIZE: premultiply projection & modelView on CPU 
 	// calculate position of vertex using MVP-matrix. 
 	// will then be in clip-space after this transformation is applied

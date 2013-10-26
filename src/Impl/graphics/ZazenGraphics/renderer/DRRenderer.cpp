@@ -181,19 +181,25 @@ DRRenderer::initGBuffer()
 		return false;
 	}
 
-	// render-target at index 3: tangents and intermediate lighting-result
+	// render-target at index 3: tangents
 	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
 	{
 		return false;
 	}
 
-	// render-target at index 4: intermediate lighting-result
+	// render-target at index 4: bi-tangents
 	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
 	{
 		return false;
 	}
 
-	// render-target at index 5: depth-buffer
+	// render-target at index 5: intermediate lighting-result
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
+	{
+		return false;
+	}
+
+	// render-target at index 6: depth-buffer
 	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH, this->m_gBufferFbo ) )		
 	{
 		return false;
@@ -547,6 +553,7 @@ DRRenderer::doGeometryStage( std::list<Instance*>& instances, std::list<Light*>&
 	indices.push_back( 1 );	// normal
 	indices.push_back( 2 );	// position
 	indices.push_back( 3 );	// tangents
+	indices.push_back( 4 );	// bi-tangents
 
 	// enable rendering to all render-targets in geometry-stage
 	if ( false == this->m_gBufferFbo->drawBuffers( indices ) )
@@ -678,7 +685,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	}
 
 	// if there are some transparent objects in scene, render lighting result to intermediate 
-	// 3rd g-buffer target because needed as background for transparency blending
+	// 5th g-buffer target because needed as background for transparency blending
 	if ( 0 < this->m_transparentInstances.size() )
 	{
 		// render to g-buffer
@@ -687,8 +694,8 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 			return false;
 		}
 
-		// enable rendering to 4th target
-		if ( false == this->m_gBufferFbo->drawBuffer( 4 ) )
+		// enable rendering to 5th target
+		if ( false == this->m_gBufferFbo->drawBuffer( 5 ) )
 		{
 			return false;
 		}
@@ -713,7 +720,8 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	indices.push_back( 1 );	// normals
 	indices.push_back( 2 );	// positions
 	indices.push_back( 3 );	// tangents
-	indices.push_back( 5 );	// depth
+	indices.push_back( 4 );	// bi-tangents
+	indices.push_back( 6 );	// depth
 
 	// OPTIMIZE: no need to do for every light!
 	// lighting stage program need all buffers of g-buffer bound as textures
@@ -730,8 +738,10 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	activeLightingProgram->setUniformInt( "PositionMap", 2 );
 	// tell lighting program that tangents-map of scene is bound to texture-unit 3 
 	activeLightingProgram->setUniformInt( "TangentMap", 3 );
-	// tell lighting program that depth-map of scene is bound to texture-unit 4 
-	activeLightingProgram->setUniformInt( "DepthMap", 4 );
+	// tell lighting program that bi-tangents-map of scene is bound to texture-unit 4 
+	activeLightingProgram->setUniformInt( "BiTangentMap", 4 );
+	// tell lighting program that depth-map of scene is bound to texture-unit 5 
+	activeLightingProgram->setUniformInt( "DepthMap", 5 );
 	
 	glm::vec4 lightConfig;
 	glm::mat4 lightSpaceUnit;
@@ -754,10 +764,10 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	// bind shadow-map when light is shadow-caster
 	if ( light->isShadowCaster() )
 	{
-		// tell program that the shadowmap of spot/directional-light will be available at texture unit 5
-		activeLightingProgram->setUniformInt( "ShadowMap", 5 );
+		// tell program that the shadowmap of spot/directional-light will be available at texture unit 6
+		activeLightingProgram->setUniformInt( "ShadowMap", 6 );
 
-		if ( false == light->getShadowMap()->bind( 5 ) )
+		if ( false == light->getShadowMap()->bind( 6 ) )
 		{
 			return false;
 		}
@@ -849,7 +859,7 @@ bool
 DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Light*>& lights )
 {
 	unsigned int combinationTarget = 1;
-	unsigned int backgroundIndex = 4;
+	unsigned int backgroundIndex = 5;
 
 	for ( unsigned int i = 0; i < this->m_transparentInstances.size(); i++ )
 	{

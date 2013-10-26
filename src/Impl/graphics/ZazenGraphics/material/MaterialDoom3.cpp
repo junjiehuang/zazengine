@@ -26,16 +26,10 @@ MaterialDoom3::activate( Program* currentProgramm )
 		currentProgramm->setUniformInt( "SpecularTexture", 1 );
 	}
 
-	if ( this->m_heightMap )
-	{
-		this->m_heightMap->bind( 2 );
-		currentProgramm->setUniformInt( "HeightMap", 2 );
-	}
-
 	if ( this->m_normalMap )
 	{
-		this->m_normalMap->bind( 3 );
-		currentProgramm->setUniformInt( "NormalMap", 3 );
+		this->m_normalMap->bind( 2 );
+		currentProgramm->setUniformInt( "NormalMap", 2 );
 	}
 
 	glm::vec4 materialCfg;
@@ -53,7 +47,6 @@ MaterialDoom3::MaterialDoom3( const std::string& name )
 {
 	this->m_diffuseTexture = NULL;
 	this->m_specularTexture = NULL;
-	this->m_heightMap = NULL;
 	this->m_normalMap = NULL;
 
 	this->m_materialConfig = UniformManagement::getBlock( "MaterialUniforms" );

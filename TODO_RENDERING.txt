@@ -52,13 +52,6 @@ Mip-Map Creation in TextureFactory
 Anisotropic filtering
 	-> GL_EXT_texture_filter_anisotropic
 	
-Normal-mapping
-	-> need to transform view-space normal of the object instead of transforming the viewing-direction and the light-direction to tangent-space
-		-> why? because we have no more access to each tangent&bitangent in the lighting-pass and storing them in additional render-targets would be by far too much of overhead
-		=> do it in geometry-stage fragment-shader
-	-> specular maps in materials
-	-> use texture-arrays to combine multi-textures for one material in one texture to only need one bind
-	
 Shadow-mapping
 	-> shadow-mapping of point-light
 	-> do some sampling on shadow-edges

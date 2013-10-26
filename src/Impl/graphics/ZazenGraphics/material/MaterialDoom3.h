@@ -28,7 +28,6 @@ class MaterialDoom3 : public Material
 
 		Texture* m_diffuseTexture;
 		Texture* m_specularTexture;
-		Texture* m_heightMap;
 		Texture* m_normalMap;
 };
 

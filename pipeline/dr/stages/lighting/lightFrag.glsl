@@ -5,6 +5,7 @@ uniform sampler2D NormalMap;
 uniform sampler2D PositionMap;
 uniform sampler2D DepthMap;
 uniform sampler2D TangentMap;
+uniform sampler2D BiTangentMap;
 
 uniform sampler2DShadow ShadowMap;
 
@@ -73,17 +74,70 @@ calculatePhong( in vec4 diffuse, in vec4 normal, in vec4 position )
 }
 
 vec4
-calculateDoom3Lighting( in vec4 diffuse, in vec4 normal, in vec4 tangent, in vec4 position )
+calculateDoom3Lighting( in vec4 diffuseIn, in vec4 normalIn, in vec4 tangentIn, in vec4 biTangentIn, in vec4 positionIn )
 {
-	// need to scale light into range -1.0 to +1.0 because was stored in normal-map
-	normal = 2.0 * normal - 1.0;
+	vec3 fragmentPosition = positionIn.xyz;
+	vec4 specularMaterial = vec4( normalIn.a, tangentIn.a, biTangentIn.a, 1.0 );
 
-	return calculatePhong( diffuse, normal, position );
+	// need to scale light into range -1.0 to +1.0 because was stored in normal-map and does not come from geometry
+	// NOTE: this is the normal in local-space, normal-mapping is done in local-space/tangent-space
+	vec3 nLocal = 2.0 * normalIn.xyz - 1.0;
+	nLocal = normalize( nLocal );
+
+	// calculate our normal in tangent-space
+	vec3 t = normalize( tangentIn.xyz );
+	vec3 b = normalize( biTangentIn.xyz );
+	vec3 nTangent = cross( t, b );
+	nTangent = normalize( nTangent );
+
+	// need to transpose light-model matrix to view-space for eye-coordinates 
+	// OPTIMIZE: premultiply on CPU
+	mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
+
+	vec3 lightPos = lightMV_Matrix[ 3 ].xyz;
+	vec3 lightDir = normalize( lightPos - fragmentPosition );
+
+	vec3 eyeDir = normalize( Camera.modelMatrix[ 3 ].xyz - fragmentPosition );
+	vec3 halfVec = normalize( lightDir + eyeDir );
+
+	// transform into tangent-space
+	vec3 eyeVec;
+	eyeVec.x = dot( eyeDir, t );
+	eyeVec.y = dot( eyeDir, b );
+	eyeVec.z = dot( eyeDir, nTangent );
+	eyeVec = normalize( eyeVec );
+
+	vec3 lightVec;
+	lightVec.x = dot( lightDir, t );
+	lightVec.y = dot( lightDir, b );
+	lightVec.z = dot( lightDir, nTangent );
+	lightVec = normalize( lightVec );
+
+	vec3 halfVecLocal;
+	halfVecLocal.x = dot( halfVec, t );
+	halfVecLocal.y = dot( halfVec, b );
+	halfVecLocal.z = dot( halfVec, nTangent );
+	halfVecLocal = normalize( halfVecLocal );
+
+	vec4 finalColor = vec4( 0.0 );
+
+	// calculate attenuation-factor
+	float lambertFactor = max( dot( nLocal, lightVec ), 0.0 );
+
+	if ( lambertFactor > 0.0 )
+	{
+		float shininess =  pow( max( dot( nLocal, halfVecLocal ), 0.0 ), 90.0 );
+
+		finalColor = vec4( diffuseIn.rgb * lambertFactor, 1.0 );
+		finalColor += specularMaterial * shininess;
+	}
+
+	return finalColor;
 }
 
 void main()
 {
-	// fetch the coordinate of this fragment in normalized screen-space ( 0 – 1 ) 
+	// fetch the coordinate of this fragment in normalized screen-space ( 0 â€“ 1 ) 
 	vec2 screenCoord = vec2( gl_FragCoord.x / Camera.rectangle.x, gl_FragCoord.y / Camera.rectangle.y );
 
 	// fetch diffuse color for this fragment
@@ -97,6 +151,7 @@ void main()
 	vec4 ecPosition = texture( PositionMap, screenCoord );
 
 	vec4 tangent = texture( TangentMap, screenCoord );
+	vec4 biTangent = texture( BiTangentMap, screenCoord );
 
 	// shadow true/false
 	float shadow = 0.0;
@@ -169,7 +224,7 @@ void main()
 			}
 			else if ( 3.0 == matId )
 			{
-				final_color = calculateDoom3Lighting( diffuse, normal, tangent, ecPosition );
+				final_color = calculateDoom3Lighting( diffuse, normal, tangent, biTangent, ecPosition );
 			}
 			else
 			{

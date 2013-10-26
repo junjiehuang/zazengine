@@ -243,21 +243,6 @@ MaterialFactory::createDoom3Material( const std::string& name, TiXmlElement* mat
 				}
 			}
 		}
-		else if ( 0 == strcmp( str, "heightMap" ) )
-		{
-			if ( 0 == material->m_heightMap )
-			{
-				str = materialCfgNode->Attribute( "file" );
-				if ( 0 != str )
-				{
-					Texture* texture = TextureFactory::get( str );
-					if ( texture )
-					{
-						material->m_heightMap = texture;
-					}
-				}
-			}
-		}
 		else if ( 0 == strcmp( str, "normalMap" ) )
 		{
 			if ( 0 == material->m_normalMap )

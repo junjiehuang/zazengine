@@ -12,6 +12,7 @@
       <fragDataLocation colorNumber="1" name="out_normal"/>
       <fragDataLocation colorNumber="2" name="out_position"/>
       <fragDataLocation colorNumber="3" name="out_tangent"/>
+      <fragDataLocation colorNumber="4" name="out_biTangent"/>
     </fragDataLocations>
 
     <attribLocations>
