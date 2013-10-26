@@ -101,6 +101,10 @@ calculateDoom3Lighting( in vec4 diffuseIn, in vec4 normalIn, in vec4 tangentIn, 
 	vec3 halfVec = normalize( lightDir + eyeDir );
 
 	// transform into tangent-space
+	// TODO answer and research questions
+	// 1: why do we need to perform lighting in tangent-space? Could we not transform the local normal-vector in the geometry-stage to view-space?
+	// 2. what are we actually doing here with those dot-products?
+	// 3. what is the math behind normal-mapping?
 	vec3 eyeVec;
 	eyeVec.x = dot( eyeDir, t );
 	eyeVec.y = dot( eyeDir, b );
