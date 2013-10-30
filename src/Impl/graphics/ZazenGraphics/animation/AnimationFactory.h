@@ -25,6 +25,7 @@ class AnimationFactory
 		static void freeAll();
 		static void free( Animation* );
 
+		static std::vector<Animation*> loadDir( const std::string& directory, const std::string& extension );
 		static Animation* get( const std::string& fileName );
 
 	private:

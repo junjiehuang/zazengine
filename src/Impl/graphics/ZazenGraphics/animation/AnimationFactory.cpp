@@ -24,7 +24,7 @@ AnimationFactory::setDataPath( const boost::filesystem::path& animationDataPath 
 Animation*
 AnimationFactory::get( const std::string& fileName )
 {
-	map<std::string, Animation*>::iterator findIter = AnimationFactory::allAnimations.find( fileName );
+	map<std::string, Animation*>::iterator findIter = AnimationFactory::allAnimations.find( filePath.generic_string().c_str() );
 	if ( findIter != AnimationFactory::allAnimations.end() )
 	{
 		return findIter->second;
@@ -53,6 +53,48 @@ AnimationFactory::get( const std::string& fileName )
 	return animation;
 }
 
+vector<Animation*>
+AnimationFactory::loadDir( const std::string& directory, const std::string& extension )
+{
+	vector<Animation*> rootAnimations;
+
+	filesystem::path folderPath( AnimationFactory::animationDataPath.generic_string() + directory );
+	if ( ! filesystem::exists( folderPath ) )
+	{
+		ZazenGraphics::getInstance().getLogger().logError() << "AnimationFactory::loadDir: directory \"" << directory << "\" does not exist";
+		return rootAnimations;	
+	}
+
+	filesystem::directory_iterator iter( folderPath );
+	filesystem::directory_iterator endIter;
+
+	// iterate through directory
+	while ( iter != endIter )
+	{
+		filesystem::directory_entry entry = *iter++;
+		
+		if ( filesystem::is_directory( entry.path() ) )
+		{
+			vector<Animation*> subDirAnimations = AnimationFactory::loadDir( entry.path().generic_string().c_str(), extension );
+			rootAnimations.insert( rootAnimations.begin(), subDirAnimations.begin(), subDirAnimations.end() ); 
+		}
+		else
+		{
+			string pathExtension = filesystem::extension( entry.path() );
+			if ( pathExtension == extension )
+			{
+				Animation* animation = AnimationFactory::loadFile( entry.path().generic_string().c_str() );
+				if ( 0 != animation )
+				{
+					rootAnimations.push_back( animation );
+				}
+			}
+		}
+	}
+
+	return rootAnimations;
+}
+
 void
 AnimationFactory::freeAll()
 {
@@ -73,6 +115,12 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 {
 	ZazenGraphics::getInstance().getLogger().logInfo() << "LOADING ... " << filePath;
 
+	map<std::string, Animation*>::iterator findIter = AnimationFactory::allAnimations.find( filePath.generic_string().c_str() );
+	if ( findIter != AnimationFactory::allAnimations.end() )
+	{
+		return findIter->second;
+	}
+
 	const std::string& fileName = filePath.generic_string();
 
 	const struct aiScene* scene = aiImportFile( fileName.c_str(), 0 );
@@ -86,11 +134,16 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 	
 	if ( scene->HasAnimations() )
 	{
+		animation = new Animation();
+
+		// TODO: how-to handle multiple animations in one file??
 		for ( unsigned int i = 0; i < scene->mNumAnimations; i++ )
 		{
 			aiAnimation* anim = scene->mAnimations[ i ];
 		}
 		
+		AnimationFactory::allAnimations[ filePath.generic_string().c_str() ] = animation; 
+
 		ZazenGraphics::getInstance().getLogger().logInfo() << "LOADED ... " << filePath;
 	}
 	else 

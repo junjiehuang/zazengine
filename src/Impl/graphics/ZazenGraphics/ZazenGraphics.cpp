@@ -510,10 +510,26 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 	TiXmlElement* animationNode = objectNode->FirstChildElement( "animation" );
 	if ( animationNode )
 	{
-		const char* str = animationNode->Attribute( "file" );
+		const char* str = animationNode->Attribute( "directory" );
 		if ( 0 != str )
 		{
-			entity->m_animation = AnimationFactory::get( str );
+			string directory = str;
+			
+			str = animationNode->Attribute( "extension" );
+			if ( 0 != str )
+			{
+				string extension = str;
+
+				entity->m_allAnimations = AnimationFactory::loadDir( directory, extension );
+
+				str = animationNode->Attribute( "active" );
+				if ( 0 != str )
+				{
+					string fileName = directory + "/" + str + extension;
+
+					entity->m_activeAnimation = AnimationFactory::get( fileName );
+				}
+			}
 		}
 		else
 		{

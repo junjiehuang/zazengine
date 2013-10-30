@@ -13,6 +13,8 @@
 
 #include "animation/Animation.h"
 
+#include <vector>
+
 class ZazenGraphicsEntity : public IGraphicsEntity
 {
 	public:
@@ -42,7 +44,8 @@ class ZazenGraphicsEntity : public IGraphicsEntity
 
 		Orientation* m_orientation;
 
-		Animation* m_animation;
+		std::vector<Animation*> m_allAnimations;
+		Animation* m_activeAnimation;
 
 		void postPositionChangedEvent();
 };
