@@ -13,6 +13,7 @@
 #include "Geometry/GeometryFactory.h"
 #include "Geometry/GeomSkyBox.h"
 
+#include "Animation/AnimationFactory.h"
 #include "Material/MaterialFactory.h"
 #include "Texture/TextureFactory.h"
 
@@ -70,6 +71,11 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 		return false;
 	}
 
+	if ( false == this->initAnimationDataPath( configNode ) )
+	{
+		return false;
+	}
+
 	if ( false == this->initTextureDataPath( configNode ) )
 	{
 		return false;
@@ -92,6 +98,7 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 	TextureFactory::init( this->m_textureDataPath );
 
 	GeometryFactory::setDataPath( this->m_modelDataPath );
+	AnimationFactory::setDataPath( this->m_animationDataPath );
 
 	if ( false == MaterialFactory::init( this->m_materialDataPath ) )
 	{
@@ -503,39 +510,47 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 	TiXmlElement* animationNode = objectNode->FirstChildElement( "animation" );
 	if ( animationNode )
 	{
-		glm::vec3 animRot;
-
-		const char* str = animationNode->Attribute( "heading" );
-		if ( 0 == str )
+		const char* str = animationNode->Attribute( "file" );
+		if ( 0 != str )
 		{
-			this->m_logger->logWarning( "heading attribute missing in animation - use default: 0.0" );
+			entity->m_animation = AnimationFactory::get( str );
 		}
 		else
 		{
-			animRot[ 0 ] = ( float ) atof( str );
-		}
+			glm::vec3 animRot;
 
-		str = animationNode->Attribute( "roll" );
-		if ( 0 == str )
-		{
-			this->m_logger->logWarning( "roll attribute missing in animation - use default: 0.0" );
-		}
-		else
-		{
-			animRot[ 1 ] = ( float ) atof( str );
-		}
+			const char* str = animationNode->Attribute( "heading" );
+			if ( 0 == str )
+			{
+				this->m_logger->logWarning( "heading attribute missing in animation - use default: 0.0" );
+			}
+			else
+			{
+				animRot[ 0 ] = ( float ) atof( str );
+			}
 
-		str = animationNode->Attribute( "pitch" );
-		if ( 0 == str )
-		{
-			this->m_logger->logWarning( "pitch attribute missing in animation - use default: 0.0" );
-		}
-		else
-		{
-			animRot[ 2 ] = ( float ) atof( str );
-		}
+			str = animationNode->Attribute( "roll" );
+			if ( 0 == str )
+			{
+				this->m_logger->logWarning( "roll attribute missing in animation - use default: 0.0" );
+			}
+			else
+			{
+				animRot[ 1 ] = ( float ) atof( str );
+			}
 
-		entity->setAnimation( animRot[ 0 ], animRot[ 1 ], animRot[ 2 ] ); 
+			str = animationNode->Attribute( "pitch" );
+			if ( 0 == str )
+			{
+				this->m_logger->logWarning( "pitch attribute missing in animation - use default: 0.0" );
+			}
+			else
+			{
+				animRot[ 2 ] = ( float ) atof( str );
+			}
+
+			entity->setAnimation( animRot[ 0 ], animRot[ 1 ], animRot[ 2 ] ); 
+		}
 	}
 
 	this->m_entities.push_back( entity );
@@ -669,6 +684,39 @@ ZazenGraphics::initModelDataPath( TiXmlElement* configElem )
 	if ( false == filesystem::is_directory( this->m_modelDataPath ) )
 	{
 		this->m_logger->logError() << "modelData-path " << this->m_modelDataPath << " is not a directory";
+		return false;
+	}
+
+	return true;
+}
+
+bool
+ZazenGraphics::initAnimationDataPath( TiXmlElement* configElem )
+{
+	TiXmlElement* animationDataNode = configElem->FirstChildElement( "animationData" );
+	if ( 0 == animationDataNode )
+	{
+		this->m_logger->logError( "missing animationData-config in graphics-config" );
+		return false;
+	}
+
+	const char* str = animationDataNode->Attribute( "path" );
+	if ( 0 == str )
+	{
+		this->m_logger->logError( "missing animationData-path in graphics-config" );
+		return false;
+	}
+
+	this->m_animationDataPath = filesystem::path( str );
+	if ( ! filesystem::exists( this->m_animationDataPath ) )
+	{
+		this->m_logger->logError() << "animationData-path " << this->m_animationDataPath << " does not exist";
+		return false;
+	}
+
+	if ( false == filesystem::is_directory( this->m_animationDataPath ) )
+	{
+		this->m_logger->logError() << "animationData-path " << this->m_animationDataPath << " is not a directory";
 		return false;
 	}
 

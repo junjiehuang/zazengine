@@ -11,6 +11,8 @@
 #include <graphics/IGraphicsEntity.h>
 #include "Orientation/Orientation.h"
 
+#include "animation/Animation.h"
+
 class ZazenGraphicsEntity : public IGraphicsEntity
 {
 	public:
@@ -39,6 +41,8 @@ class ZazenGraphicsEntity : public IGraphicsEntity
 		float m_heading;
 
 		Orientation* m_orientation;
+
+		Animation* m_animation;
 
 		void postPositionChangedEvent();
 };

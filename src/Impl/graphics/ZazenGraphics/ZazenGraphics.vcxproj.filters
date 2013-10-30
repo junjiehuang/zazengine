@@ -112,6 +112,12 @@
     <Filter Include="Quelldateien\util">
       <UniqueIdentifier>{e6d1380d-4af3-4242-9e55-ec2ce3cd5c24}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headerdateien\animation">
+      <UniqueIdentifier>{7fff8d7e-c4b9-473c-979a-ed1f1781697d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\animation">
+      <UniqueIdentifier>{6600c75e-beb8-4244-af8d-5fe823ee3d6d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -209,6 +215,12 @@
     </ClCompile>
     <ClCompile Include="material\MaterialDoom3.cpp">
       <Filter>Quelldateien\material</Filter>
+    </ClCompile>
+    <ClCompile Include="animation\AnimationFactory.cpp">
+      <Filter>Quelldateien\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="animation\Animation.cpp">
+      <Filter>Quelldateien\animation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -313,6 +325,12 @@
     </ClInclude>
     <ClInclude Include="material\MaterialDoom3.h">
       <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="animation\AnimationFactory.h">
+      <Filter>Headerdateien\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="animation\Animation.h">
+      <Filter>Headerdateien\animation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

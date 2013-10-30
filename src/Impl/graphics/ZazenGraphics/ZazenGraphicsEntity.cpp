@@ -22,6 +22,7 @@ ZazenGraphicsEntity::ZazenGraphicsEntity( IGameObject* p )
 	m_type( "graphics" )
 {
 	this->m_orientation = 0;
+	this->m_animation = 0;
 
 	this->m_isAnimated = false;
 	this->m_animRoll = 0;

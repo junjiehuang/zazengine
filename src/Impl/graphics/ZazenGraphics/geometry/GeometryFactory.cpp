@@ -342,6 +342,7 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 			for( unsigned int j = 0; j < bone->mNumWeights; j++ )
 			{
 				aiVertexWeight weight = bone->mWeights[ j ];
+				
 			}
 		}
 	}

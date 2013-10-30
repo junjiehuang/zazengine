@@ -1,9 +1,8 @@
 /*
- *  model.h
- *  ZENgine
+ *  GeometryFactory.cpp
+ *  zaZengine
  *
- *  Created by Jonathan Thaler on 01.05.08.
- *  Copyright 2008 __MyCompanyName__. All rights reserved.
+ *  Created by Jonathan Thaler on 07.03.13.
  *
  */
 
@@ -21,27 +20,27 @@
 
 class GeometryFactory
 {
-public:
-	static void setDataPath( const boost::filesystem::path& );
-	static void freeAll();
-	static void free( GeomType* );
+	public:
+		static void setDataPath( const boost::filesystem::path& );
+		static void freeAll();
+		static void free( GeomType* );
 
-	static GeomType* get( const std::string& fileName );
-	
-	static GeomType* createQuad( float width, float height );
+		static GeomType* get( const std::string& fileName );
 
-private:
-	static boost::filesystem::path modelDataPath;
-	static std::map<std::string, GeomType*> allMeshes;
+		static GeomType* createQuad( float width, float height );
 
-	static GeomType* loadFolder( const boost::filesystem::path& );
-	static GeomType* loadFile( const boost::filesystem::path& );
+	private:
+		static boost::filesystem::path modelDataPath;
+		static std::map<std::string, GeomType*> allMeshes;
 
-	static void processNodeChildren( GeomType* geomParent, const struct aiNode*, const struct aiScene* );
-	static GeomType* processNode( const struct aiNode*, const struct aiScene* );		 
-	static GeomType* processMesh( const struct aiMesh* );
+		static GeomType* loadFolder( const boost::filesystem::path& );
+		static GeomType* loadFile( const boost::filesystem::path& );
 
-	static void updateBB( const aiVector3D& vertex, glm::vec3&, glm::vec3& );
+		static void processNodeChildren( GeomType* geomParent, const struct aiNode*, const struct aiScene* );
+		static GeomType* processNode( const struct aiNode*, const struct aiScene* );		 
+		static GeomType* processMesh( const struct aiMesh* );
+
+		static void updateBB( const aiVector3D& vertex, glm::vec3&, glm::vec3& );
 
 };
 

@@ -66,6 +66,7 @@ class ZazenGraphics : public IGraphics
 
 		boost::filesystem::path m_pipelinePath;
 		boost::filesystem::path m_modelDataPath;
+		boost::filesystem::path m_animationDataPath;
 		boost::filesystem::path m_textureDataPath;
 		boost::filesystem::path m_materialDataPath;
 		boost::filesystem::path m_screenShotPath;
@@ -83,6 +84,7 @@ class ZazenGraphics : public IGraphics
 
 		bool initPipelinePath( TiXmlElement* );
 		bool initModelDataPath( TiXmlElement* );
+		bool initAnimationDataPath( TiXmlElement* );
 		bool initTextureDataPath( TiXmlElement* );
 		bool initMaterialDataPath( TiXmlElement* );
 		bool initSkyBoxFolderPath( TiXmlElement* );

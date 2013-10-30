@@ -6,6 +6,7 @@
   <pipeline path="../pipeline/"/>
   
   <modelData path="../media/models/"/>
+  <animationData path="../media/animations/"/>
   <textureData path="../media/textures/"/>
   <materialData path="../media/materials/"/>
   <screenShots path="../screenshots/"/>

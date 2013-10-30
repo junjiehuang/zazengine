@@ -84,6 +84,8 @@
     <ClCompile Include="..\..\..\IFaces\core\XML\tinyxml.cpp" />
     <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlerror.cpp" />
     <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlparser.cpp" />
+    <ClCompile Include="animation\Animation.cpp" />
+    <ClCompile Include="animation\AnimationFactory.cpp" />
     <ClCompile Include="context\RenderingContext.cpp" />
     <ClCompile Include="framebuffer\FrameBufferObject.cpp" />
     <ClCompile Include="framebuffer\RenderTarget.cpp" />
@@ -120,6 +122,8 @@
     <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml_utils.hpp" />
     <ClInclude Include="..\..\..\IFaces\core\XML\tinystr.h" />
     <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h" />
+    <ClInclude Include="animation\Animation.h" />
+    <ClInclude Include="animation\AnimationFactory.h" />
     <ClInclude Include="context\RenderingContext.h" />
     <ClInclude Include="framebuffer\FrameBufferObject.h" />
     <ClInclude Include="framebuffer\RenderTarget.h" />
