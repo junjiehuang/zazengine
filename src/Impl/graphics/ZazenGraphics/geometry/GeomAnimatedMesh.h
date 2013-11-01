@@ -8,14 +8,12 @@
 class GeomAnimatedMesh : public GeomType
 {
 	public:
-		const static int MAX_BONES_PER_VERTEX = 16;
-
 		typedef float Vertex [ 3 ];
 		typedef float Normal [ 3 ];
 		typedef float TexCoord [ 2 ];
 		typedef float Tangent [ 3 ];
-		typedef unsigned int BoneIndex[ GeomAnimatedMesh::MAX_BONES_PER_VERTEX ];
-		typedef float BoneWeight[ GeomAnimatedMesh::MAX_BONES_PER_VERTEX ];
+		typedef unsigned int BoneIndex[ 4 ];
+		typedef float BoneWeight[ 4 ];
 
 		struct VertexData
 		{

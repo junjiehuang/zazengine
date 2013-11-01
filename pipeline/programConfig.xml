@@ -22,8 +22,8 @@
       <attribLocation index="3" name="in_tangent"/>
     </attribLocations>
   </program>
-  
-	<program name="GeometryAnimStageProgramm">
+
+  <program name="GeometryAnimStageProgramm">
     <shaders>
       <shader type="VERTEX" file="dr/stages/geom/animated/geomAnimVert.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/geom/geomFrag.glsl"/>
@@ -42,10 +42,11 @@
       <attribLocation index="1" name="in_vertNorm"/>
       <attribLocation index="2" name="in_texCoord"/>
       <attribLocation index="3" name="in_tangent"/>
-      <attribLocation index="4" name="in_bone_indices"/>
-      <attribLocation index="5" name="in_bone_weights"/>
+      <attribLocation index="4" name="in_bone_count"/>
+      <attribLocation index="5" name="in_bone_indices"/>
+      <attribLocation index="6" name="in_bone_weights"/>
     </attribLocations>
-	</program>
+  </program>
 
   <program name="TransparencyProgram">
     <shaders>
@@ -79,64 +80,64 @@
       <fragDataLocation colorNumber="0" name="out_color"/>
     </fragDataLocations>
   </program>
-  
+
   <program name="SkyBoxProgram">
     <shaders>
-		  <shader type="VERTEX" file="dr/stages/geom/skyBoxVert.glsl"/>
-		  <shader type="FRAGMENT" file="dr/stages/geom/skyBoxFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/geom/skyBoxVert.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/geom/skyBoxFrag.glsl"/>
     </shaders>
 
     <fragDataLocations>
-		  <fragDataLocation colorNumber="0" name="out_diffuse"/>
+      <fragDataLocation colorNumber="0" name="out_diffuse"/>
     </fragDataLocations>
 
     <attribLocations>
-		  <attribLocation index="0" name="in_vertPos"/>
+      <attribLocation index="0" name="in_vertPos"/>
     </attribLocations>
-	</program>
-	
-	<program name="LightingStageProgramm">
+  </program>
+
+  <program name="LightingStageProgramm">
     <shaders>
-		  <shader type="VERTEX" file="dr/stages/lighting/lightVert.glsl"/>
-		  <shader type="FRAGMENT" file="dr/stages/lighting/lightFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/lighting/lightVert.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/lighting/lightFrag.glsl"/>
     </shaders>
 
     <attribLocations>
-		  <attribLocation index="0" name="in_vertPos"/>
+      <attribLocation index="0" name="in_vertPos"/>
     </attribLocations>
 
     <fragDataLocations>
       <fragDataLocation colorNumber="0" name="final_color"/>
     </fragDataLocations>
-	</program>
-	
-	<program name="LightingNoShadowStageProgramm">
+  </program>
+
+  <program name="LightingNoShadowStageProgramm">
     <shaders>
-		  <shader type="VERTEX" file="dr/stages/lighting/lightVert.glsl"/>
-		  <shader type="FRAGMENT" file="dr/stages/lighting/lightNoShadowFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/lighting/lightVert.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/lighting/lightNoShadowFrag.glsl"/>
     </shaders>
 
     <attribLocations>
-		  <attribLocation index="0" name="in_vertPos"/>
+      <attribLocation index="0" name="in_vertPos"/>
     </attribLocations>
 
     <fragDataLocations>
       <fragDataLocation colorNumber="0" name="final_color"/>
     </fragDataLocations>
-	</program>
-	
-	<program name="ShadowingStageProgramm">
+  </program>
+
+  <program name="ShadowingStageProgramm">
     <shaders>
-		  <shader type="VERTEX" file="dr/stages/shadowing/shadowVert.glsl"/>
-		  <shader type="FRAGMENT" file="dr/stages/shadowing/shadowFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/shadowing/shadowVert.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/shadowing/shadowFrag.glsl"/>
     </shaders>
 
     <fragDataLocations>
-		  <fragDataLocation colorNumber="0" name="fragDepth"/>
+      <fragDataLocation colorNumber="0" name="fragDepth"/>
     </fragDataLocations>
 
     <attribLocations>
-		  <attribLocation index="0" name="in_vertPos"/>
+      <attribLocation index="0" name="in_vertPos"/>
     </attribLocations>
-	</program>
+  </program>
 </programs>

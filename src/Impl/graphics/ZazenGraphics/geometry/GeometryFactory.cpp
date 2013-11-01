@@ -315,12 +315,41 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 		return NULL;
 	}
 
-	// indexbuffer for faces
-	GLuint* indexBuffer = new GLuint[ mesh->mNumFaces * 3 ];
-	memset( indexBuffer, 0, mesh->mNumFaces * 3 * sizeof( GLuint ) );
+	GeomType* geomMesh = NULL;
 
+	// this mesh has bones => its supposed to be an animated mesh
+	if ( mesh->HasBones() )
+	{
+		geomMesh = GeometryFactory::processAnimatedMesh( mesh );
+	}
+	else
+	{
+		geomMesh = GeometryFactory::processStaticMesh( mesh );
+	}
+
+	geomMesh->setName( mesh->mName.C_Str() );
+
+	return geomMesh;
+}
+
+GeomType*
+GeometryFactory::processAnimatedMesh( const struct aiMesh* mesh )
+{
 	glm::vec3 meshBBmin;
 	glm::vec3 meshBBmax;
+
+	bool ignoredBones = false;
+
+	GLuint* indexBuffer = NULL;
+	GeomAnimatedMesh::VertexData* vertexData = NULL;
+
+	// allocate vertexdata
+	vertexData = new GeomAnimatedMesh::VertexData[ mesh->mNumVertices ];
+	memset( vertexData, 0, mesh->mNumVertices * sizeof( GeomAnimatedMesh::VertexData ) );
+
+	// indexbuffer for faces
+	indexBuffer = new GLuint[ mesh->mNumFaces * 3 ];
+	memset( indexBuffer, 0, mesh->mNumFaces * 3 * sizeof( GLuint ) );
 
 	meshBBmin[ 0 ] = numeric_limits<float>::max();
 	meshBBmin[ 1 ] = numeric_limits<float>::max();
@@ -330,93 +359,137 @@ GeometryFactory::processMesh( const struct aiMesh* mesh )
 	meshBBmax[ 1 ] = numeric_limits<float>::min();
 	meshBBmax[ 2 ] = numeric_limits<float>::min();
 
-	GeomType* geomMesh = NULL;
-
-	// this mesh has bones => its supposed to be an animated mesh
-	if ( mesh->HasBones() )
+	for ( unsigned int i = 0; i < mesh->mNumBones; i++ )
 	{
-		// allocate vertexdata
-		GeomAnimatedMesh::VertexData* vertexData = new GeomAnimatedMesh::VertexData[ mesh->mNumVertices ];
-		memset( vertexData, 0, mesh->mNumVertices * sizeof( GeomAnimatedMesh::VertexData ) );
+		aiBone* bone = mesh->mBones[ i ];
 
-		for ( unsigned int i = 0; i < mesh->mNumBones; i++ )
+		for( unsigned int j = 0; j < bone->mNumWeights; j++ )
 		{
-			aiBone* bone = mesh->mBones[ i ];
+			aiVertexWeight newWeight = bone->mWeights[ j ];
+			GeomAnimatedMesh::VertexData& vertex = vertexData[ newWeight.mVertexId ];
 
-			for( unsigned int j = 0; j < bone->mNumWeights; j++ )
+			// only up to 4 bones per vertex are used
+			if ( 4 > vertex.boneCount )
 			{
-				aiVertexWeight weight = bone->mWeights[ j ];
-				GeomAnimatedMesh::VertexData& vertextData = vertexData[ weight.mVertexId ];
-				if ( GeomAnimatedMesh::MAX_BONES_PER_VERTEX > vertextData.boneCount )
-				{
-					vertextData.boneIndices[ vertextData.boneCount ] = i;
-					vertextData.boneWeights[ vertextData.boneCount ] = weight.mWeight;
-					vertextData.boneCount++;
-				}
+				vertex.boneIndices[ vertex.boneCount ] = i;
+				vertex.boneWeights[ vertex.boneCount ] = newWeight.mWeight;
+				vertex.boneCount++;
 			}
-		}
-
-		for ( unsigned int i = 0; i < mesh->mNumFaces; ++i )
-		{
-			const struct aiFace* face = &mesh->mFaces[ i ];
-
-			for( unsigned int j = 0; j < face->mNumIndices; j++ )
+			// already 4 bones have influence on this vertex...
+			else
 			{
-				int index = face->mIndices[ j ];
-
-				indexBuffer[ i * 3 + j ] = index;
-				memcpy( vertexData[ index ].position, &mesh->mVertices[ index ].x, sizeof( GeomAnimatedMesh::Vertex ) );
-				memcpy( vertexData[ index ].normal, &mesh->mNormals[ index ].x, sizeof( GeomAnimatedMesh::Normal ) );
-				memcpy( vertexData[ index ].tangent, &mesh->mTangents[ index ].x, sizeof( GeomAnimatedMesh::Tangent ) );
-
-				if ( mesh->HasTextureCoords( 0 ) )
+				// search for smallest weight and replace it if the new weight is bigger
+				unsigned int minWeightIndex = 0;
+				float minWeight = vertex.boneWeights[ 0 ];
+	
+				for ( unsigned int k = 1; k < vertex.boneCount; k++ )
 				{
-					vertexData[ index ].texCoord[ 0 ] = mesh->mTextureCoords[ 0 ][ index ].x;
-					vertexData[ index ].texCoord[ 1 ] = mesh->mTextureCoords[ 0 ][ index ].y;
+					if ( vertex.boneWeights[ k ] < minWeight )
+					{
+						minWeight = vertex.boneWeights[ k ];
+						minWeightIndex = k;
+					}
 				}
 
-				GeometryFactory::updateBB( mesh->mVertices[ index ], meshBBmin, meshBBmax );
-			}
-		}
-
-		geomMesh = new GeomAnimatedMesh( mesh->mNumFaces, mesh->mNumVertices, vertexData, indexBuffer );
-	}
-	else
-	{
-		// allocate vertexdata
-		GeomStaticMesh::VertexData* vertexData = new GeomStaticMesh::VertexData[ mesh->mNumVertices ];
-		memset( vertexData, 0, mesh->mNumVertices * sizeof( GeomStaticMesh::VertexData ) );
-
-		for ( unsigned int i = 0; i < mesh->mNumFaces; ++i )
-		{
-			const struct aiFace* face = &mesh->mFaces[ i ];
-
-			for( unsigned int j = 0; j < face->mNumIndices; j++ )
-			{
-				int index = face->mIndices[ j ];
-
-				indexBuffer[ i * 3 + j ] = index;
-				memcpy( vertexData[ index ].position, &mesh->mVertices[ index ].x, sizeof( GeomStaticMesh::Vertex ) );
-				memcpy( vertexData[ index ].normal, &mesh->mNormals[ index ].x, sizeof( GeomStaticMesh::Normal ) );
-				memcpy( vertexData[ index ].tangent, &mesh->mTangents[ index ].x, sizeof( GeomStaticMesh::Tangent ) );
-
-				if ( mesh->HasTextureCoords( 0 ) )
+				// the new bone has more influence on this vertex then an existing one, replace the existing one
+				if ( newWeight.mWeight > minWeight )
 				{
-					vertexData[ index ].texCoord[ 0 ] = mesh->mTextureCoords[ 0 ][ index ].x;
-					vertexData[ index ].texCoord[ 1 ] = mesh->mTextureCoords[ 0 ][ index ].y;
+					vertex.boneIndices[ minWeightIndex ] = i;
+					vertex.boneWeights[ minWeightIndex ] = newWeight.mWeight;
 				}
 
-				GeometryFactory::updateBB( mesh->mVertices[ index ], meshBBmin, meshBBmax );
+				// for debug-output
+				ignoredBones = true;
 			}
 		}
-
-		geomMesh = new GeomStaticMesh( mesh->mNumFaces, mesh->mNumVertices, vertexData, indexBuffer );
 	}
 
-	geomMesh->setBB( meshBBmin, meshBBmax );
-	geomMesh->setName( mesh->mName.C_Str() );
+	for ( unsigned int i = 0; i < mesh->mNumFaces; ++i )
+	{
+		const struct aiFace* face = &mesh->mFaces[ i ];
 
-	return geomMesh;
+		for( unsigned int j = 0; j < face->mNumIndices; j++ )
+		{
+			int index = face->mIndices[ j ];
+
+			indexBuffer[ i * 3 + j ] = index;
+			memcpy( vertexData[ index ].position, &mesh->mVertices[ index ].x, sizeof( GeomAnimatedMesh::Vertex ) );
+			memcpy( vertexData[ index ].normal, &mesh->mNormals[ index ].x, sizeof( GeomAnimatedMesh::Normal ) );
+			memcpy( vertexData[ index ].tangent, &mesh->mTangents[ index ].x, sizeof( GeomAnimatedMesh::Tangent ) );
+
+			if ( mesh->HasTextureCoords( 0 ) )
+			{
+				vertexData[ index ].texCoord[ 0 ] = mesh->mTextureCoords[ 0 ][ index ].x;
+				vertexData[ index ].texCoord[ 1 ] = mesh->mTextureCoords[ 0 ][ index ].y;
+			}
+
+			GeometryFactory::updateBB( mesh->mVertices[ index ], meshBBmin, meshBBmax );
+		}
+	}
+
+	if ( ignoredBones )
+	{
+		ZazenGraphics::getInstance().getLogger().logWarning() << "ignoring bone for vertex because exeedes max bone-per-vertex of 4";
+	}
+
+	GeomAnimatedMesh* animatedMesh = new GeomAnimatedMesh( mesh->mNumFaces, mesh->mNumVertices, vertexData, indexBuffer );
+	animatedMesh->setBB( meshBBmin, meshBBmax );
+
+	return animatedMesh;
+}
+
+GeomType*
+GeometryFactory::processStaticMesh( const struct aiMesh* mesh )
+{
+	glm::vec3 meshBBmin;
+	glm::vec3 meshBBmax;
+
+	GLuint* indexBuffer = NULL;
+	GeomStaticMesh::VertexData* vertexData = NULL;
+
+	meshBBmin[ 0 ] = numeric_limits<float>::max();
+	meshBBmin[ 1 ] = numeric_limits<float>::max();
+	meshBBmin[ 2 ] = numeric_limits<float>::max();
+
+	meshBBmax[ 0 ] = numeric_limits<float>::min();
+	meshBBmax[ 1 ] = numeric_limits<float>::min();
+	meshBBmax[ 2 ] = numeric_limits<float>::min();
+
+	// allocate vertexdata
+	vertexData = new GeomStaticMesh::VertexData[ mesh->mNumVertices ];
+	memset( vertexData, 0, mesh->mNumVertices * sizeof( GeomStaticMesh::VertexData ) );
+
+	// indexbuffer for faces
+	indexBuffer = new GLuint[ mesh->mNumFaces * 3 ];
+	memset( indexBuffer, 0, mesh->mNumFaces * 3 * sizeof( GLuint ) );
+
+	for ( unsigned int i = 0; i < mesh->mNumFaces; ++i )
+	{
+		const struct aiFace* face = &mesh->mFaces[ i ];
+
+		for( unsigned int j = 0; j < face->mNumIndices; j++ )
+		{
+			int index = face->mIndices[ j ];
+
+			indexBuffer[ i * 3 + j ] = index;
+			memcpy( vertexData[ index ].position, &mesh->mVertices[ index ].x, sizeof( GeomStaticMesh::Vertex ) );
+			memcpy( vertexData[ index ].normal, &mesh->mNormals[ index ].x, sizeof( GeomStaticMesh::Normal ) );
+			memcpy( vertexData[ index ].tangent, &mesh->mTangents[ index ].x, sizeof( GeomStaticMesh::Tangent ) );
+
+			if ( mesh->HasTextureCoords( 0 ) )
+			{
+				vertexData[ index ].texCoord[ 0 ] = mesh->mTextureCoords[ 0 ][ index ].x;
+				vertexData[ index ].texCoord[ 1 ] = mesh->mTextureCoords[ 0 ][ index ].y;
+			}
+
+			GeometryFactory::updateBB( mesh->mVertices[ index ], meshBBmin, meshBBmax );
+		}
+	}
+
+	GeomStaticMesh* staticMesh = new GeomStaticMesh( mesh->mNumFaces, mesh->mNumVertices, vertexData, indexBuffer );
+	staticMesh->setBB( meshBBmin, meshBBmax );
+
+	return staticMesh;
 }
 
 void

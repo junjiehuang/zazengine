@@ -1,6 +1,5 @@
 #version 330 core
 
-#define MAX_BONES_PER_VERTEX 16
 #define MAX_BONES_PER_MESH 256
 
 in vec3 in_vertPos;
@@ -8,8 +7,8 @@ in vec3 in_vertNorm;
 in vec2 in_texCoord;
 in vec3 in_tangent;
 in uint in_bone_count;
-in uint in_bone_indices[ MAX_BONES_PER_VERTEX ];
-in float in_bone_weights[ MAX_BONES_PER_VERTEX ];
+in uvec4 in_bone_indices;
+in vec4 in_bone_weights;
 
 // do we really need vec4 or does vec3 suffice?
 // IMPORTANT: out-variables are interepolated but no perspective division is applied
@@ -31,13 +30,15 @@ uniform mat3 u_bones[ MAX_BONES_PER_MESH ];
 
 void main()
 {
+	vec3 skinnedVertex;
+
 	for ( uint i = 0u; i < in_bone_count; i++ )
 	{
-		mat3 bone = u_bones[ in_bone_indices[ i ] ];
-		float weight = in_bone_weights[ i ];
+		uint boneIndex = in_bone_indices[ i ];
+		mat3 bone = u_bones[ boneIndex ];
+		float boneWeight = in_bone_weights[ i ];
 
-		// TODO: calculate position
-		// ex_position += Transforms.modelViewMatrix * bone * weight * vec4( in_vertPos, 1.0 );
+		skinnedVertex += ( bone * boneWeight ) * in_vertPos;
 	}
 
 	// store position in view-space (EyeCoordinates) 

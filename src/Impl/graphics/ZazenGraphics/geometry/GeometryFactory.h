@@ -40,6 +40,9 @@ class GeometryFactory
 		static GeomType* processNode( const struct aiNode*, const struct aiScene* );		 
 		static GeomType* processMesh( const struct aiMesh* );
 
+		static GeomType* processAnimatedMesh( const struct aiMesh* );
+		static GeomType* processStaticMesh( const struct aiMesh* );
+
 		static void updateBB( const aiVector3D& vertex, glm::vec3&, glm::vec3& );
 
 };

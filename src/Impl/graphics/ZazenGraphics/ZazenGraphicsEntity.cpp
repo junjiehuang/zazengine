@@ -61,17 +61,17 @@ ZazenGraphicsEntity::update()
 	{
 		if ( 0.0f != this->m_heading )
 		{
-			this->changeHeading( this->m_heading * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->m_camera->changeHeading( this->m_heading * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 
 		if ( 0.0f != this->m_animRoll )
 		{
-			this->changeRoll( this->m_animRoll * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->m_camera->changeRoll( this->m_animRoll * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 	
 		if ( 0.0f != this->m_animPitch )
 		{
-			this->changePitch( this->m_animPitch * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->m_camera->changePitch( this->m_animPitch * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 	}
 
@@ -83,37 +83,37 @@ ZazenGraphicsEntity::update()
 		// Q
 		if ( 16 == keyCode )
 		{
-			this->changeRoll( 50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->m_camera->changeRoll( 50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 			//this->postPositionChangedEvent();
 		}
 		// E
 		else if ( 18 == keyCode )
 		{
-			this->changeRoll( -50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->m_camera->changeRoll( -50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 			//this->postPositionChangedEvent();
 		}
 		// W
 		else if ( 17 == keyCode )
 		{
-			this->strafeForward( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->m_camera->strafeForward( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 			//this->postPositionChangedEvent();
 		}
 		// S
 		else if ( 31 == keyCode )
 		{
-			this->strafeForward( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->m_camera->strafeForward( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 			//this->postPositionChangedEvent();
 		}
 		// A
 		else if ( 30 == keyCode )
 		{
-			this->strafeRight( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->m_camera->strafeRight( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 			//this->postPositionChangedEvent();
 		}
 		// D
 		else if ( 32 == keyCode )
 		{
-			this->strafeRight( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->m_camera->strafeRight( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 			//this->postPositionChangedEvent();
 		}
 	}
@@ -149,8 +149,8 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 		int x = any_cast<int>( e.getValue( "x" ) );
 		int y = any_cast<int>( e.getValue( "y" ) );
 
-		this->changeHeading( -50.0f * x * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-		this->changePitch( 50.0f * y * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->m_camera->changeHeading( -50.0f * x * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->m_camera->changePitch( 50.0f * y * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 
 		//this->postPositionChangedEvent();
 	}
@@ -161,7 +161,7 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 void
 ZazenGraphicsEntity::setOrientation( const float* pos, const float* rot )
 {
-	this->setRaw( rot, pos );
+	this->m_camera->setRaw( rot, pos );
 }
 
 void
