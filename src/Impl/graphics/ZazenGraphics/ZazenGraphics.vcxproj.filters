@@ -22,9 +22,6 @@
     <Filter Include="Headerdateien\material">
       <UniqueIdentifier>{3b0e102f-fdff-4734-b5b5-3a25ccb40691}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Headerdateien\scene">
-      <UniqueIdentifier>{05c3688b-89ab-4cde-a905-af875d64cf82}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Quelldateien\geometry">
       <UniqueIdentifier>{f69d07aa-44f9-4ae2-be47-312129b42d15}</UniqueIdentifier>
     </Filter>
@@ -33,9 +30,6 @@
     </Filter>
     <Filter Include="Quelldateien\material">
       <UniqueIdentifier>{4a7cb01f-f308-4f9e-93e1-ebc786fd5bb8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Quelldateien\scene">
-      <UniqueIdentifier>{ba1bc969-5579-4e4c-8b5c-89f4b58f7776}</UniqueIdentifier>
     </Filter>
     <Filter Include="Quelldateien\renderer">
       <UniqueIdentifier>{1ccf7c53-7953-4e3e-a142-e5cb6502f02c}</UniqueIdentifier>
@@ -118,6 +112,18 @@
     <Filter Include="Quelldateien\animation">
       <UniqueIdentifier>{6600c75e-beb8-4244-af8d-5fe823ee3d6d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry\Animated">
+      <UniqueIdentifier>{73eee140-0ab2-4291-aaa3-16ea1b1addbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry\Static">
+      <UniqueIdentifier>{c912f8ea-cc99-4cbc-ae8c-b6a69de0341f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\viewer">
+      <UniqueIdentifier>{54e16f20-b98e-42fb-89be-c829d2ebe066}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\viewer">
+      <UniqueIdentifier>{2977bd6d-8829-48e4-a50c-75cd737e72f8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -130,9 +136,6 @@
       <Filter>Quelldateien\geometry</Filter>
     </ClCompile>
     <ClCompile Include="geometry\GeomType.cpp">
-      <Filter>Quelldateien\geometry</Filter>
-    </ClCompile>
-    <ClCompile Include="geometry\GeomMesh.cpp">
       <Filter>Quelldateien\geometry</Filter>
     </ClCompile>
     <ClCompile Include="geometry\GeomSkyBox.cpp">
@@ -149,15 +152,6 @@
     </ClCompile>
     <ClCompile Include="renderer\DRRenderer.cpp">
       <Filter>Quelldateien\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\Renderer.cpp">
-      <Filter>Quelldateien\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="scene\Instance.cpp">
-      <Filter>Quelldateien\scene</Filter>
-    </ClCompile>
-    <ClCompile Include="scene\Viewer.cpp">
-      <Filter>Quelldateien\scene</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\IFaces\core\XML\tinystr.cpp">
       <Filter>Quelldateien\XML</Filter>
@@ -222,6 +216,15 @@
     <ClCompile Include="animation\Animation.cpp">
       <Filter>Quelldateien\animation</Filter>
     </ClCompile>
+    <ClCompile Include="geometry\GeomStaticMesh.cpp">
+      <Filter>Quelldateien\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry\GeomAnimatedMesh.cpp">
+      <Filter>Quelldateien\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="viewer\Viewer.cpp">
+      <Filter>Quelldateien\viewer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ZazenGraphics.h">
@@ -234,9 +237,6 @@
       <Filter>Headerdateien\geometry</Filter>
     </ClInclude>
     <ClInclude Include="geometry\GeomType.h">
-      <Filter>Headerdateien\geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="geometry\GeomMesh.h">
       <Filter>Headerdateien\geometry</Filter>
     </ClInclude>
     <ClInclude Include="geometry\GeomSkyBox.h">
@@ -253,12 +253,6 @@
     </ClInclude>
     <ClInclude Include="renderer\DRRenderer.h">
       <Filter>Headerdateien\renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="scene\Instance.h">
-      <Filter>Headerdateien\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="scene\Viewer.h">
-      <Filter>Headerdateien\scene</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\IFaces\core\XML\rapidxml.hpp">
       <Filter>Headerdateien\XML</Filter>
@@ -286,9 +280,6 @@
     </ClInclude>
     <ClInclude Include="program\UniformBlock.h">
       <Filter>Headerdateien\program</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\Renderer.h">
-      <Filter>Headerdateien\renderer</Filter>
     </ClInclude>
     <ClInclude Include="framebuffer\FrameBufferObject.h">
       <Filter>Headerdateien\framebuffer</Filter>
@@ -332,12 +323,18 @@
     <ClInclude Include="animation\Animation.h">
       <Filter>Headerdateien\animation</Filter>
     </ClInclude>
+    <ClInclude Include="geometry\GeomStaticMesh.h">
+      <Filter>Headerdateien\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\GeomAnimatedMesh.h">
+      <Filter>Headerdateien\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="viewer\Viewer.h">
+      <Filter>Headerdateien\viewer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl">
@@ -378,6 +375,12 @@
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\blendTranspVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\geom\animated\geomAnimVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry\Animated</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\geom\static\geomStaticVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry\Static</Filter>
     </None>
   </ItemGroup>
 </Project>

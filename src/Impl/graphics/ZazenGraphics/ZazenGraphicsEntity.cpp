@@ -19,10 +19,20 @@ using namespace boost;
 
 ZazenGraphicsEntity::ZazenGraphicsEntity( IGameObject* p )
 	: IGraphicsEntity( p ),
-	m_type( "graphics" )
+	m_type( "graphics" ),
+	Orientation( m_modelMatrix )
 {
-	this->m_orientation = 0;
 	this->m_activeAnimation = 0;
+
+	this->m_visible = true;
+	this->m_distance = 0;
+	this->m_lastFrame = 0;
+	
+	this->m_mesh = 0;
+	this->m_material = 0;
+
+	this->m_light = 0;
+	this->m_camera = 0;
 
 	this->m_isAnimated = false;
 	this->m_animRoll = 0;
@@ -35,10 +45,10 @@ ZazenGraphicsEntity::~ZazenGraphicsEntity()
 }
 
 void
-ZazenGraphicsEntity::postPositionChangedEvent()
+ZazenGraphicsEntity::matrixChanged()
 {
 	Event e( "POSITION_CHANGED" );
-	e.addValue( "matrix", glm::value_ptr( this->m_orientation->getModelMatrix() ) );
+	e.addValue( "matrix", glm::value_ptr( this->getModelMatrix() ) );
 	e.setTarget( this->getParent() );
 
 	ZazenGraphics::getInstance().getCore().getEventManager().postEvent( e );
@@ -51,17 +61,17 @@ ZazenGraphicsEntity::update()
 	{
 		if ( 0.0f != this->m_heading )
 		{
-			this->m_orientation->changeHeading( this->m_heading * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->changeHeading( this->m_heading * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 
 		if ( 0.0f != this->m_animRoll )
 		{
-			this->m_orientation->changeRoll( this->m_animRoll * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->changeRoll( this->m_animRoll * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 	
 		if ( 0.0f != this->m_animPitch )
 		{
-			this->m_orientation->changePitch( this->m_animPitch * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->changePitch( this->m_animPitch * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 	}
 
@@ -73,38 +83,38 @@ ZazenGraphicsEntity::update()
 		// Q
 		if ( 16 == keyCode )
 		{
-			this->m_orientation->changeRoll( 50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			this->postPositionChangedEvent();
+			this->changeRoll( 50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			//this->postPositionChangedEvent();
 		}
 		// E
 		else if ( 18 == keyCode )
 		{
-			this->m_orientation->changeRoll( -50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			this->postPositionChangedEvent();
+			this->changeRoll( -50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			//this->postPositionChangedEvent();
 		}
 		// W
 		else if ( 17 == keyCode )
 		{
-			this->m_orientation->strafeForward( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			this->postPositionChangedEvent();
+			this->strafeForward( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			//this->postPositionChangedEvent();
 		}
 		// S
 		else if ( 31 == keyCode )
 		{
-			this->m_orientation->strafeForward( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			this->postPositionChangedEvent();
+			this->strafeForward( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			//this->postPositionChangedEvent();
 		}
 		// A
 		else if ( 30 == keyCode )
 		{
-			this->m_orientation->strafeRight( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			this->postPositionChangedEvent();
+			this->strafeRight( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			//this->postPositionChangedEvent();
 		}
 		// D
 		else if ( 32 == keyCode )
 		{
-			this->m_orientation->strafeRight( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			this->postPositionChangedEvent();
+			this->strafeRight( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			//this->postPositionChangedEvent();
 		}
 	}
 }
@@ -139,10 +149,10 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 		int x = any_cast<int>( e.getValue( "x" ) );
 		int y = any_cast<int>( e.getValue( "y" ) );
 
-		this->m_orientation->changeHeading( -50.0f * x * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-		this->m_orientation->changePitch( 50.0f * y * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->changeHeading( -50.0f * x * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->changePitch( 50.0f * y * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 
-		this->postPositionChangedEvent();
+		//this->postPositionChangedEvent();
 	}
 
 	return false;
@@ -151,7 +161,7 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 void
 ZazenGraphicsEntity::setOrientation( const float* pos, const float* rot )
 {
-	this->m_orientation->setRaw( rot, pos );
+	this->setRaw( rot, pos );
 }
 
 void
@@ -161,4 +171,16 @@ ZazenGraphicsEntity::setAnimation( float heading, float roll, float pitch )
 	this->m_heading = heading;
 	this->m_animRoll = roll;
 	this->m_animPitch = pitch;
+}
+
+void
+ZazenGraphicsEntity::recalculateDistance( const glm::mat4& viewMatrix )
+{
+	// calculate model-view for this instance
+	glm::mat4 modelView = viewMatrix * this->m_modelMatrix;
+	// calculate center of instance in view-space
+	glm::vec4 vsCenter = modelView * glm::vec4( this->m_mesh->getCenter(), 1.0 );
+
+	// distance from the viewer is the z-component of the center
+	this->m_distance = vsCenter.z;
 }

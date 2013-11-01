@@ -10,7 +10,7 @@
 
 #include "../Geometry/GeomType.h"
 
-#include "../Scene/Viewer.h"
+#include "../Viewer/Viewer.h"
 
 #include "../Framebuffer/RenderTarget.h"
 

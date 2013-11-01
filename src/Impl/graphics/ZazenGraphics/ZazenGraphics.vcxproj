@@ -89,9 +89,10 @@
     <ClCompile Include="context\RenderingContext.cpp" />
     <ClCompile Include="framebuffer\FrameBufferObject.cpp" />
     <ClCompile Include="framebuffer\RenderTarget.cpp" />
+    <ClCompile Include="geometry\GeomAnimatedMesh.cpp" />
     <ClCompile Include="geometry\GeometryFactory.cpp" />
-    <ClCompile Include="geometry\GeomMesh.cpp" />
     <ClCompile Include="geometry\GeomSkyBox.cpp" />
+    <ClCompile Include="geometry\GeomStaticMesh.cpp" />
     <ClCompile Include="geometry\GeomType.cpp" />
     <ClCompile Include="lighting\Light.cpp" />
     <ClCompile Include="material\Material.cpp" />
@@ -106,12 +107,10 @@
     <ClCompile Include="program\UniformBlock.cpp" />
     <ClCompile Include="program\UniformManagement.cpp" />
     <ClCompile Include="renderer\DRRenderer.cpp" />
-    <ClCompile Include="renderer\Renderer.cpp" />
-    <ClCompile Include="scene\Instance.cpp" />
-    <ClCompile Include="scene\Viewer.cpp" />
     <ClCompile Include="texture\Texture.cpp" />
     <ClCompile Include="texture\TextureFactory.cpp" />
     <ClCompile Include="util\GLUtils.cpp" />
+    <ClCompile Include="viewer\Viewer.cpp" />
     <ClCompile Include="ZazenGraphics.cpp" />
     <ClCompile Include="ZazenGraphicsEntity.cpp" />
   </ItemGroup>
@@ -127,9 +126,10 @@
     <ClInclude Include="context\RenderingContext.h" />
     <ClInclude Include="framebuffer\FrameBufferObject.h" />
     <ClInclude Include="framebuffer\RenderTarget.h" />
+    <ClInclude Include="geometry\GeomAnimatedMesh.h" />
     <ClInclude Include="geometry\GeometryFactory.h" />
-    <ClInclude Include="geometry\GeomMesh.h" />
     <ClInclude Include="geometry\GeomSkyBox.h" />
+    <ClInclude Include="geometry\GeomStaticMesh.h" />
     <ClInclude Include="geometry\GeomType.h" />
     <ClInclude Include="lighting\Light.h" />
     <ClInclude Include="material\Material.h" />
@@ -144,12 +144,10 @@
     <ClInclude Include="program\UniformBlock.h" />
     <ClInclude Include="program\UniformManagement.h" />
     <ClInclude Include="renderer\DRRenderer.h" />
-    <ClInclude Include="renderer\Renderer.h" />
-    <ClInclude Include="scene\Instance.h" />
-    <ClInclude Include="scene\Viewer.h" />
     <ClInclude Include="texture\Texture.h" />
     <ClInclude Include="texture\TextureFactory.h" />
     <ClInclude Include="util\GLUtils.h" />
+    <ClInclude Include="viewer\Viewer.h" />
     <ClInclude Include="ZazenGraphics.h" />
     <ClInclude Include="ZazenGraphicsEntity.h" />
   </ItemGroup>
@@ -157,10 +155,11 @@
     <None Include="..\..\..\..\config\graphics\config.xml">
       <SubType>Designer</SubType>
     </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\geom\animated\geomAnimVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxVert.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\geom\static\geomStaticVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightNoShadowFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl" />

@@ -44,7 +44,6 @@ ZazenGraphics::ZazenGraphics( const std::string& id, ICore* core )
 	  m_type ( "graphics" ),
 	  m_core( core )
 {
-	this->m_camera = NULL;
 	this->m_renderer = NULL;
 
 	ZazenGraphics::instance = this;
@@ -151,13 +150,6 @@ ZazenGraphics::shutdown()
 bool
 ZazenGraphics::start()
 {
-	if ( 0 == this->m_camera )
-	{
-		this->m_logger->logError( "missing camera in ZazenGraphics - exit" );
-		return false;
-	}
-
-	this->m_renderer->setCamera( this->m_camera );
 	if ( false == this->m_renderer->initialize() )
 	{
 		this->m_logger->logError( "initializing renderer failed - exit" );
@@ -205,9 +197,10 @@ ZazenGraphics::process( double iterationFactor )
 	else										// If There Are No Messages
 	{
 		// Draw The Scene.  Watch For ESC Key And Quit Messages From DrawGLScene()
-		if ( RenderingContext::getRef().isActive() )								// Program Active?
+		// do rendering only when we are in focus (process is set active by OS)
+		if ( RenderingContext::getRef().isActive() )								
 		{
-			flag = this->m_renderer->renderFrame( this->m_instances, this->m_lights );
+			flag = this->m_renderer->renderFrame( this->m_entities );
 			RenderingContext::getRef().swapBuffers();
 		}
 	}
@@ -242,36 +235,31 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 {
 	ZazenGraphicsEntity* entity = new ZazenGraphicsEntity( parent );
 
-	TiXmlElement* instanceNode = objectNode->FirstChildElement( "instance" );
-	if ( instanceNode )
+	TiXmlElement* meshNode = objectNode->FirstChildElement( "mesh" );
+	if ( meshNode )
 	{
-		Instance* instance = new Instance();
-
-		const char* str = instanceNode->Attribute( "mesh" );
+		const char* str = meshNode->Attribute( "file" );
 		if ( 0 != str )
 		{
-			instance->geom = GeometryFactory::get( str );
-			if ( NULL == instance->geom )
+			entity->m_mesh = GeometryFactory::get( str );
+			if ( NULL == entity->m_mesh )
 			{
 				this->m_logger->logWarning() << "couldn't get mesh " << str << " - will be ignored";
 			}
 		}
+	}
 
-		str = instanceNode->Attribute( "material" );
+	TiXmlElement* materialNode = objectNode->FirstChildElement( "material" );
+	if ( materialNode )
+	{
+		const char* str = materialNode->Attribute( "id" );
 		if ( 0 != str )
 		{
-			instance->material = MaterialFactory::get( str );
-			if ( NULL == instance->material )
+			entity->m_material = MaterialFactory::get( str );
+			if ( NULL == entity->m_material )
 			{
 				this->m_logger->logWarning() << "couldn't get material " << str << " - will be ignored";
 			}
-		}
-
-		if ( NULL != instance->geom && NULL != instance->material )
-		{
-			entity->m_orientation = instance;
-
-			this->m_instances.push_back( instance );
 		}
 	}
 
@@ -320,121 +308,105 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		}
 	}
 
-	if ( 0 == entity->m_orientation )
+	TiXmlElement* lightNode = objectNode->FirstChildElement( "light" );
+	if ( lightNode )
 	{
-		TiXmlElement* lightNode = objectNode->FirstChildElement( "light" );
-		if ( lightNode )
+		std::string lightType = "SPOT";
+
+		const char* str = lightNode->Attribute( "type" );
+		if ( 0 != str )
 		{
-			std::string lightType = "SPOT";
-
-			const char* str = lightNode->Attribute( "type" );
-			if ( 0 != str )
-			{
-				lightType = str;
-			}
-
-			Light* light = 0;
-
-			bool castShadow = false;
-			float fov = 90.0f;
-			int shadowMapResX = 512;
-			int shadowMapResY = 512;
-			GeomType* boundingGeom = NULL;
-
-			TiXmlElement* shadowingNode = objectNode->FirstChildElement( "shadowing" );
-			if ( shadowingNode )
-			{
-				castShadow = true;
-
-				str = shadowingNode->Attribute( "fov" );
-				if ( 0 != str )
-				{
-					fov = ( float ) atof( str );
-				}
-
-				str = shadowingNode->Attribute( "resMapX" );
-				if ( 0 != str )
-				{
-					shadowMapResX = atoi( str );
-				}
-
-				str = shadowingNode->Attribute( "resMapY" );
-				if ( 0 != str )
-				{
-					shadowMapResY = atoi( str );
-				}
-			}
-
-			if ( lightType == "DIRECTIONAL" )
-			{
-				light = Light::createDirectionalLight( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), castShadow );
-				boundingGeom = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
-			}
-			// default is spot
-			else
-			{
-				light = Light::createSpotLight( fov, shadowMapResX, shadowMapResY, castShadow );
-				// TODO load correct bounding-geometry
-				boundingGeom = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
-			}
-
-			light->setBoundingGeometry( boundingGeom );
-
-			entity->m_orientation = light;
-			this->m_lights.push_back( light );
+			lightType = str;
 		}
-	}
 
-	if ( 0 == entity->m_orientation )
-	{
-		TiXmlElement* cameraNode = objectNode->FirstChildElement( "camera" );
-		if ( cameraNode )
+		Light* light = 0;
+
+		bool castShadow = false;
+		float fov = 90.0f;
+		int shadowMapResX = 512;
+		int shadowMapResY = 512;
+		GeomType* boundingGeom = NULL;
+
+		TiXmlElement* shadowingNode = objectNode->FirstChildElement( "shadowing" );
+		if ( shadowingNode )
 		{
-			float fov = 90.0f;
-			std::string mode = "PROJ";
+			castShadow = true;
 
-			const char* str = cameraNode->Attribute( "fov" );
-			if ( 0 == str )
-			{
-				this->m_logger->logWarning() << "fov attribute missing in cameraNode - use default: " << fov;
-			}
-			else
+			str = shadowingNode->Attribute( "fov" );
+			if ( 0 != str )
 			{
 				fov = ( float ) atof( str );
 			}
 
-			str = cameraNode->Attribute( "view" );
-			if ( 0 == str )
+			str = shadowingNode->Attribute( "resMapX" );
+			if ( 0 != str )
 			{
-				this->m_logger->logWarning() << "view attribute missing in cameraNode - use default: " << str;
-			}
-			else
-			{
-				mode = str;
+				shadowMapResX = atoi( str );
 			}
 
-			Viewer* camera = new Viewer( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight() );
-			if ( mode == "PROJ" )
+			str = shadowingNode->Attribute( "resMapY" );
+			if ( 0 != str )
 			{
-				camera->setFov( fov );
-				camera->setupPerspective();
+				shadowMapResY = atoi( str );
 			}
-			else if ( mode == "ORTHO" )
-			{
-				camera->setupOrtho();
-			}
-
-			entity->m_orientation = camera;
-			this->m_camera = camera;
 		}
+
+		if ( lightType == "DIRECTIONAL" )
+		{
+			light = Light::createDirectionalLight( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), castShadow );
+			boundingGeom = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+		}
+		// default is spot
+		else
+		{
+			light = Light::createSpotLight( fov, shadowMapResX, shadowMapResY, castShadow );
+			// TODO load correct bounding-geometry
+			boundingGeom = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+		}
+
+		light->setBoundingGeometry( boundingGeom );
+
+		entity->m_light = light;
 	}
 
-	if ( 0 == entity->m_orientation )
+	TiXmlElement* cameraNode = objectNode->FirstChildElement( "camera" );
+	if ( cameraNode )
 	{
-		this->m_logger->logError() << "No valid entity defined in ZazenGraphics for Object \"" << parent->getName() << "\" - error ";
+		float fov = 90.0f;
+		std::string mode = "PROJ";
 
-		delete entity;
-		return NULL;
+		const char* str = cameraNode->Attribute( "fov" );
+		if ( 0 == str )
+		{
+			this->m_logger->logWarning() << "fov attribute missing in cameraNode - use default: " << fov;
+		}
+		else
+		{
+			fov = ( float ) atof( str );
+		}
+
+		str = cameraNode->Attribute( "view" );
+		if ( 0 == str )
+		{
+			this->m_logger->logWarning() << "view attribute missing in cameraNode - use default: " << str;
+		}
+		else
+		{
+			mode = str;
+		}
+
+		Viewer* camera = new Viewer( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight() );
+		if ( mode == "PROJ" )
+		{
+			camera->setFov( fov );
+			camera->setupPerspective();
+		}
+		else if ( mode == "ORTHO" )
+		{
+			camera->setupOrtho();
+		}
+
+		entity->m_camera = camera;
 	}
 
 	TiXmlElement* orientationNode = objectNode->FirstChildElement( "orientation" );
@@ -504,7 +476,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			scale = ( float ) atof( str );
 		}
 
-		entity->m_orientation->set( v, pitch, heading, roll, scale );
+		entity->set( v, pitch, heading, roll, scale );
 	}
 
 	TiXmlElement* animationNode = objectNode->FirstChildElement( "animation" );

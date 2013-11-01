@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <programs>
-	<program name="GeometryStageProgramm">
+  <program name="GeometryStaticStageProgramm">
     <shaders>
-      <shader type="VERTEX" file="dr/stages/geom/geomVert.glsl"/>
+      <shader type="VERTEX" file="dr/stages/geom/static/geomStaticVert.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/geom/geomFrag.glsl"/>
     </shaders>
 
@@ -20,6 +20,30 @@
       <attribLocation index="1" name="in_vertNorm"/>
       <attribLocation index="2" name="in_texCoord"/>
       <attribLocation index="3" name="in_tangent"/>
+    </attribLocations>
+  </program>
+  
+	<program name="GeometryAnimStageProgramm">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/geom/animated/geomAnimVert.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/geom/geomFrag.glsl"/>
+    </shaders>
+
+    <fragDataLocations>
+      <fragDataLocation colorNumber="0" name="out_diffuse"/>
+      <fragDataLocation colorNumber="1" name="out_normal"/>
+      <fragDataLocation colorNumber="2" name="out_position"/>
+      <fragDataLocation colorNumber="3" name="out_tangent"/>
+      <fragDataLocation colorNumber="4" name="out_biTangent"/>
+    </fragDataLocations>
+
+    <attribLocations>
+      <attribLocation index="0" name="in_vertPos"/>
+      <attribLocation index="1" name="in_vertNorm"/>
+      <attribLocation index="2" name="in_texCoord"/>
+      <attribLocation index="3" name="in_tangent"/>
+      <attribLocation index="4" name="in_bone_indices"/>
+      <attribLocation index="5" name="in_bone_weights"/>
     </attribLocations>
 	</program>
 

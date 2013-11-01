@@ -24,7 +24,7 @@ AnimationFactory::setDataPath( const boost::filesystem::path& animationDataPath 
 Animation*
 AnimationFactory::get( const std::string& fileName )
 {
-	map<std::string, Animation*>::iterator findIter = AnimationFactory::allAnimations.find( filePath.generic_string().c_str() );
+	map<std::string, Animation*>::iterator findIter = AnimationFactory::allAnimations.find( fileName );
 	if ( findIter != AnimationFactory::allAnimations.end() )
 	{
 		return findIter->second;
@@ -73,6 +73,7 @@ AnimationFactory::loadDir( const std::string& directory, const std::string& exte
 	{
 		filesystem::directory_entry entry = *iter++;
 		
+		// recursively go down into sub-directories
 		if ( filesystem::is_directory( entry.path() ) )
 		{
 			vector<Animation*> subDirAnimations = AnimationFactory::loadDir( entry.path().generic_string().c_str(), extension );
@@ -80,13 +81,25 @@ AnimationFactory::loadDir( const std::string& directory, const std::string& exte
 		}
 		else
 		{
+			// check if extension is the one we want
 			string pathExtension = filesystem::extension( entry.path() );
 			if ( pathExtension == extension )
 			{
-				Animation* animation = AnimationFactory::loadFile( entry.path().generic_string().c_str() );
-				if ( 0 != animation )
+				// check if this file is already loaded
+				map<std::string, Animation*>::iterator findIter = AnimationFactory::allAnimations.find( entry.path().generic_string().c_str() );
+				if ( findIter != AnimationFactory::allAnimations.end() )
 				{
-					rootAnimations.push_back( animation );
+					rootAnimations.push_back( findIter->second );
+				}
+				// not yet loaded
+				else
+				{
+					// load animation
+					Animation* animation = AnimationFactory::loadFile( entry.path().generic_string().c_str() );
+					if ( 0 != animation )
+					{
+						rootAnimations.push_back( animation );
+					}
 				}
 			}
 		}
@@ -115,12 +128,6 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 {
 	ZazenGraphics::getInstance().getLogger().logInfo() << "LOADING ... " << filePath;
 
-	map<std::string, Animation*>::iterator findIter = AnimationFactory::allAnimations.find( filePath.generic_string().c_str() );
-	if ( findIter != AnimationFactory::allAnimations.end() )
-	{
-		return findIter->second;
-	}
-
 	const std::string& fileName = filePath.generic_string();
 
 	const struct aiScene* scene = aiImportFile( fileName.c_str(), 0 );
@@ -140,6 +147,8 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 		for ( unsigned int i = 0; i < scene->mNumAnimations; i++ )
 		{
 			aiAnimation* anim = scene->mAnimations[ i ];
+
+			// TODO extract data
 		}
 		
 		AnimationFactory::allAnimations[ filePath.generic_string().c_str() ] = animation; 

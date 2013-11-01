@@ -16,8 +16,11 @@
 #include "../ZazenGraphics.h"
 #include "../Geometry/GeomSkyBox.h"
 #include "../Geometry/GeometryFactory.h"
+#include "../Geometry/GeomAnimatedMesh.h"
 #include "../Program/ProgramManagement.h"
 #include "../Program/UniformManagement.h"
+
+#include "../context/RenderingContext.h"
 
 #include <iostream>
 #include <algorithm>
@@ -25,14 +28,14 @@
 using namespace std;
 
 DRRenderer::DRRenderer()
-	: Renderer( )
 {
 	this->m_gBufferFbo = NULL;
 	this->m_intermediateDepthFB = NULL;
 
 	this->m_depthCopy = NULL;
 
-	this->m_progGeomStage = NULL;
+	this->m_progGeomStaticStage = NULL;
+	this->m_progGeomAnimStage = NULL;
 	this->m_progSkyBox = NULL;
 	this->m_progLightingStage = NULL;
 	this->m_progLightingNoShadowStage = NULL;
@@ -65,7 +68,7 @@ DRRenderer::initialize()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Renderer..." );
 
-	glEnable( GL_DEPTH_TEST );								// Enables Depth Testing
+	glEnable( GL_DEPTH_TEST );
 
 	// Cull triangles which normal is not towards the camera
 	glEnable( GL_CULL_FACE );
@@ -257,8 +260,7 @@ DRRenderer::initIntermediateDepthBuffer()
 bool
 DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType, FrameBufferObject* fbo )
 {
-	RenderTarget* renderTarget = RenderTarget::create( ( GLsizei ) this->m_camera->getWidth(), 
-		( GLsizei ) this->m_camera->getHeight(), targetType );
+	RenderTarget* renderTarget = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), targetType );
 	if ( NULL == renderTarget )
 	{
 		return false;
@@ -277,10 +279,17 @@ DRRenderer::initGeomStage()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Geometry-Stage..." );
 
-	this->m_progGeomStage = ProgramManagement::get( "GeometryStageProgramm" );
-	if ( 0 == this->m_progGeomStage )
+	this->m_progGeomStaticStage = ProgramManagement::get( "GeometryStaticStageProgramm" );
+	if ( 0 == this->m_progGeomStaticStage )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't get program - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't get static geometry program - exit" );
+		return false;
+	}
+
+	this->m_progGeomAnimStage = ProgramManagement::get( "GeometryAnimStageProgramm" );
+	if ( 0 == this->m_progGeomAnimStage )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't get animated geometry program - exit" );
 		return false;
 	}
 
@@ -356,13 +365,13 @@ DRRenderer::initTransparency()
 		return false;
 	}
 	
-	this->m_fullScreenQuad = GeometryFactory::createQuad( ( float ) this->m_camera->getWidth(), ( float ) this->m_camera->getHeight() );
+	this->m_fullScreenQuad = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
 	if ( NULL == this->m_fullScreenQuad )
 	{
 		return false;
 	}
 
-	this->m_depthCopy = RenderTarget::create( ( GLsizei ) this->m_camera->getWidth(), ( GLsizei ) this->m_camera->getHeight(), RenderTarget::RT_SHADOW );
+	this->m_depthCopy = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), RenderTarget::RT_SHADOW );
 	if ( NULL == this->m_depthCopy )
 	{
 		return false;
@@ -459,24 +468,39 @@ DRRenderer::initUniformBlocks()
 }
 
 bool
-DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights )
+DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 {
-	this->preprocessTransparency( instances );
-
-	if ( false == this->doGeometryStage( instances, lights ) )
+	// iterate over all cameras in scene
+	list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
+	while ( iter != entities.end() )
 	{
-		return false;
+		ZazenGraphicsEntity* entity = *iter++;
+
+		if ( entity->getCamera() )
+		{
+			this->m_mainCamera = entity->getCamera();
+			
+			// TODO: need to perform some culling by this camera
+
+			this->preProcessTransparency( entities );
+
+			if ( false == this->doGeometryStage( entities ) )
+			{
+				return false;
+			}
+
+			if ( false == this->doLightingStage( entities ) )
+			{
+				return false;
+			}
+
+			if ( false == this->doTransparencyStage( entities ) )
+			{
+				return false;
+			}
+		}
 	}
 
-	if ( false == this->doLightingStage( instances, lights ) )
-	{
-		return false;
-	}
-
-	if ( false == this->doTransparencyStage( instances, lights ) )
-	{
-		return false;
-	}
 	
 	// check once per frame for ALL errors regardless if we are in _DEBUG or not
 	if ( GL_PEEK_ERRORS )
@@ -485,40 +509,42 @@ DRRenderer::renderFrame( std::list<Instance*>& instances, std::list<Light*>& lig
 		return false;
 	}
 
-	this->frame++;
-
 	return true;
 }
 
 void
-DRRenderer::preprocessTransparency( std::list<Instance*>& instances )
+DRRenderer::preProcessTransparency( std::list<ZazenGraphicsEntity*>& entities )
 {
-	this->m_transparentInstances.clear();
+	this->m_transparentEntities.clear();
 
-	list<Instance*>::iterator iter = instances.begin();
-	while ( iter != instances.end() )
+	list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
+	while ( iter != entities.end() )
 	{
-		Instance* instance = *iter++;
+		ZazenGraphicsEntity* entity = *iter++;
 
-		if ( instance->material )
+		if ( entity->getMaterial() )
 		{
-			if ( Material::MATERIAL_TRANSPARENT == instance->material->getType() )
+			if ( Material::MATERIAL_TRANSPARENT == entity->getMaterial()->getType() )
 			{
 				// need to relcalculate distance from viewer for depth-sorting
-				instance->recalculateDistance( this->m_camera->getViewMatrix() );
+				entity->recalculateDistance( this->m_mainCamera->getViewMatrix() );
 
-				this->m_transparentInstances.push_back( instance );
+				this->m_transparentEntities.push_back( entity );
 			}
 		}
 	}
 
 	// do depth-sorting
-	std::sort( this->m_transparentInstances.begin(), this->m_transparentInstances.end(), DRRenderer::depthSortingFunc );
+	std::sort( this->m_transparentEntities.begin(), this->m_transparentEntities.end(), DRRenderer::depthSortingFunc );
+
 }
 
 bool
-DRRenderer::doGeometryStage( std::list<Instance*>& instances, std::list<Light*>& lights )
+DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 {
+	list<ZazenGraphicsEntity*> staticInstances;
+	list<ZazenGraphicsEntity*> animatedInstances;
+
 	// render to g-buffer FBO
 	if ( false == this->m_gBufferFbo->bind() )
 	{
@@ -527,7 +553,7 @@ DRRenderer::doGeometryStage( std::list<Instance*>& instances, std::list<Light*>&
 
 	// IMPORTANT: need to re-set the viewport for each FBO
 	// could have changed due to shadow-map or other rendering happend in the frame before
-	this->m_camera->restoreViewport();
+	this->m_mainCamera->restoreViewport();
 
 	// clear all targets for the new frame
 	if ( false == this->m_gBufferFbo->clearAll() )
@@ -541,31 +567,35 @@ DRRenderer::doGeometryStage( std::list<Instance*>& instances, std::list<Light*>&
 		return false;
 	}
 
-	// activate geometry-stage program
-	if ( false == this->m_progGeomStage->use() )
+	list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
+	while ( iter != entities.end() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderGeometryStage: using shadow mapping program failed - exit" );
+		ZazenGraphicsEntity* entity = *iter++;
+		Animation* animation = entity->getAnimation();
+
+		if ( 0 == entity->getMesh() )
+		{
+			continue;
+		}
+
+		if ( animation )
+		{
+			// TODO: perform key-frame interpolation for current animation
+			// TODO: need our hands on the current animation
+			animatedInstances.push_back( entity );
+		}
+		else
+		{
+			staticInstances.push_back( entity );
+		}
+	}
+
+	if ( false == this->renderGeometry( staticInstances, this->m_progGeomStaticStage ) )
+	{
 		return false;
 	}
 
-	vector<unsigned int> indices;
-	indices.push_back( 0 ); // diffuse
-	indices.push_back( 1 );	// normal
-	indices.push_back( 2 );	// position
-	indices.push_back( 3 );	// tangents
-	indices.push_back( 4 );	// bi-tangents
-
-	// enable rendering to all render-targets in geometry-stage
-	if ( false == this->m_gBufferFbo->drawBuffers( indices ) )
-	{
-		return false;
-	}
-
-	// check status of FBO, IMPORANT: not before, would have failed
-	CHECK_FRAMEBUFFER_DEBUG
-
-	// draw all geometry from cameras viewpoint AND apply materials but ignore transparent material
-	if ( false == this->renderInstances( this->m_camera, instances, this->m_progGeomStage, true, false ) )
+	if ( false == this->renderGeometry( animatedInstances, this->m_progGeomAnimStage ) )
 	{
 		return false;
 	}
@@ -609,17 +639,52 @@ DRRenderer::renderSkyBox()
 	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", 0 );
 
 	// render the geometry
-	GeomSkyBox::getRef().render();
+	GeomSkyBox::getRef().render( *this->m_mainCamera );
 
 	return true;
 }
 
 bool
-DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>& lights )
+DRRenderer::renderGeometry( std::list<ZazenGraphicsEntity*>& entities, Program* program )
+{
+	// activate geometry-stage program
+	if ( false == program->use() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderGeometry: using program failed - exit" );
+		return false;
+	}
+
+	vector<unsigned int> indices;
+	indices.push_back( 0 ); // diffuse
+	indices.push_back( 1 );	// normal
+	indices.push_back( 2 );	// position
+	indices.push_back( 3 );	// tangents
+	indices.push_back( 4 );	// bi-tangents
+
+	// enable rendering to all render-targets in geometry-stage
+	if ( false == this->m_gBufferFbo->drawBuffers( indices ) )
+	{
+		return false;
+	}
+
+	// check status of FBO, IMPORANT: not before, would have failed
+	CHECK_FRAMEBUFFER_DEBUG
+
+	// draw all geometry from cameras viewpoint AND apply materials but ignore transparent material
+	if ( false == this->renderEntities( this->m_mainCamera, entities, program, true, false ) )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool
+DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 {
 	glm::vec4 cameraRectangle;
-	cameraRectangle[ 0 ] = ( float ) this->m_camera->getWidth();
-	cameraRectangle[ 1 ] = ( float ) this->m_camera->getHeight();
+	cameraRectangle[ 0 ] = ( float ) this->m_mainCamera->getWidth();
+	cameraRectangle[ 1 ] = ( float ) this->m_mainCamera->getHeight();
 
 	// bind camera uniform-block to update data
 	if ( false == this->m_cameraBlock->bindBuffer() )
@@ -628,32 +693,35 @@ DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>&
 	}
 
 	// upload world-orientation of camera ( its model-matrix )
-	this->m_cameraBlock->updateField( "CameraUniforms.modelMatrix", this->m_camera->getModelMatrix() );
+	this->m_cameraBlock->updateField( "CameraUniforms.modelMatrix", this->m_mainCamera->getModelMatrix() );
 	// upload view-matrix of camera (need to transform e.g. light-world position in EyeCoords/Viewspace)
-	this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", this->m_camera->getViewMatrix() );
+	this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", this->m_mainCamera->getViewMatrix() );
 	// upload camera-rectangle
 	this->m_cameraBlock->updateField( "CameraUniforms.rectangle", cameraRectangle );
 
 	// no transparent objects in scene, render lighting to default framebuffer
-	if ( 0 == this->m_transparentInstances.size() )
+	if ( 0 == this->m_transparentEntities.size() )
 	{
 		// clear frame-buffer
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	}
 
-	// render the contribution of each light to the scene
-	std::list<Light*>::iterator iter = lights.begin();
-	while ( iter != lights.end() )
+	// render the contribution of each light-entiy to the scene
+	std::list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
+	while ( iter != entities.end() )
 	{
-		Light* light = *iter++;
-
-		if ( false == this->renderLight( instances, light ) )
+		ZazenGraphicsEntity* entiy = *iter++;
+		Light* light = entiy->getLight();
+		if ( light )
 		{
-			return false;
+			if ( false == this->renderLight( entities, light ) )
+			{
+				return false;
+			}
 		}
 	}
 
-	if ( 0 < this->m_transparentInstances.size() )
+	if ( 0 < this->m_transparentEntities.size() )
 	{
 		this->m_gBufferFbo->unbind();
 	}
@@ -662,7 +730,7 @@ DRRenderer::doLightingStage( std::list<Instance*>& instances, std::list<Light*>&
 }
 
 bool
-DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
+DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light )
 {
 	// different programs could be active according whether light is shadow-caster or not
 	// IMPORANT: unbinding textures will fail when shadowmap is not used within program due to no shadow-mapping
@@ -671,7 +739,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	// light is shadow-caster: render shadow map for this light
 	if ( light->isShadowCaster() )
 	{
-		if ( false == this->renderShadowMap( instances, light ) )
+		if ( false == this->renderShadowMap( entities, light ) )
 		{
 			return false;
 		}
@@ -686,7 +754,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 
 	// if there are some transparent objects in scene, render lighting result to intermediate 
 	// 5th g-buffer target because needed as background for transparency blending
-	if ( 0 < this->m_transparentInstances.size() )
+	if ( 0 < this->m_transparentEntities.size() )
 	{
 		// render to g-buffer
 		if ( false == this->m_gBufferFbo->bind() )
@@ -706,7 +774,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 
 	// IMPORTANT: need to re-set the viewport for each FBO
 	// could have changed due to shadow-map or other rendering happend in the frame before
-	this->m_camera->restoreViewport();
+	this->m_mainCamera->restoreViewport();
 
 	// activate lighting-stage shader
 	if ( false == activeLightingProgram->use() )
@@ -783,7 +851,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 	// update projection-matrix because need ortho-projection for full-screen quad
 	this->m_transformsBlock->bindBuffer();
 	// OPTIMIZE: store in light once, and only update when change
-	glm::mat4 orthoMat = this->m_camera->createOrthoProj( true, true );
+	glm::mat4 orthoMat = this->m_mainCamera->createOrthoProj( true, true );
 	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat );
 
 	// TODO: need to set opengl to additiveley blend light-passes
@@ -803,7 +871,7 @@ DRRenderer::renderLight( std::list<Instance*>& instances, Light* light )
 }
 
 bool
-DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
+DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* light )
 {
 	// use shadow-mapping fbo to render depth of light view-point to
 	if ( false == this->m_intermediateDepthFB->bind() )
@@ -835,13 +903,13 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 	light->restoreViewport();
 
 	// render scene from view of camera - don't apply material, we need only depth, render transparent materials
-	if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, true ) )
+	if ( false == this->renderEntities( light, entities, this->m_progShadowMapping, false, true ) )
 	{
 		return false;
 	}
 
 	// render scene from view of camera - don't apply material, we need only depth, render opaque materials
-	if ( false == this->renderInstances( light, instances, this->m_progShadowMapping, false, false ) )
+	if ( false == this->renderEntities( light, entities, this->m_progShadowMapping, false, false ) )
 	{
 		return false;
 	}
@@ -856,17 +924,17 @@ DRRenderer::renderShadowMap( std::list<Instance*>& instances, Light* light )
 }
 
 bool
-DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Light*>& lights )
+DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 {
 	unsigned int combinationTarget = 1;
 	unsigned int backgroundIndex = 5;
 
-	for ( unsigned int i = 0; i < this->m_transparentInstances.size(); i++ )
+	for ( unsigned int i = 0; i < this->m_transparentEntities.size(); i++ )
 	{
-		Instance* instance = this->m_transparentInstances[ i ];
+		ZazenGraphicsEntity* entity = this->m_transparentEntities[ i ];
 
-		if ( false == this->renderTransparentInstance( instance, backgroundIndex, combinationTarget,
-			i == this->m_transparentInstances.size() - 1 ) )
+		if ( false == this->renderTransparentInstance( entity, backgroundIndex, combinationTarget,
+			i == this->m_transparentEntities.size() - 1 ) )
 		{
 			return false;
 		}
@@ -878,7 +946,7 @@ DRRenderer::doTransparencyStage( std::list<Instance*>& instances, std::list<Ligh
 }
 
 bool
-DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgroundIndex, unsigned int combinationTarget, bool lastInstance )
+DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int backgroundIndex, unsigned int combinationTarget, bool lastInstance )
 {
 	if ( false == this->m_progTransparency->use() )
 	{
@@ -909,7 +977,7 @@ DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgrou
 	// clear buffer 
 	glClear( GL_COLOR_BUFFER_BIT );
 
-	if ( false == this->renderInstance( this->m_camera, instance, this->m_progTransparency ) )
+	if ( false == this->renderEntity( this->m_mainCamera, entity, this->m_progTransparency ) )
 	{
 		return false;
 	}
@@ -946,7 +1014,7 @@ DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgrou
 	// update projection-matrix because need ortho-projection for full-screen quad
 	this->m_transformsBlock->bindBuffer();
 	// OPTIMIZE: store in light once, and only update when change
-	glm::mat4 orthoMat = this->m_camera->createOrthoProj( true, true );
+	glm::mat4 orthoMat = this->m_mainCamera->createOrthoProj( true, true );
 	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat );
 
 	// disable writing to depth when not last instance because would destroy our depth-buffer
@@ -967,9 +1035,8 @@ DRRenderer::renderTransparentInstance( Instance* instance, unsigned int backgrou
 	return true;
 }
 
-
 bool
-DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program* currentProgramm, bool applyMaterial, bool renderTransparency )
+DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities, Program* currentProgramm, bool applyMaterial, bool renderTransparency )
 {
 	// bind transform uniform-block to update model-, view & projection transforms
 	if ( false == this->m_transformsBlock->bindBuffer() )
@@ -980,16 +1047,22 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 	// update projection because each viewer can have different projection-transform
 	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", viewer->getProjMatrix() );
 
-	list<Instance*>::iterator iter = instances.begin();
-	while ( iter != instances.end() )
+	list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
+	while ( iter != entities.end() )
 	{
-		Instance* instance = *iter++;
+		ZazenGraphicsEntity* entity = *iter++;
+		Material* material = entity->getMaterial();
 
-		if ( instance->material )
+		if ( 0 == entity->getMesh() )
+		{
+			continue;
+		}
+
+		if ( material )
 		{
 
-			if ( ( Material::MATERIAL_TRANSPARENT == instance->material->getType() && ! renderTransparency ) ||
-				( Material::MATERIAL_TRANSPARENT != instance->material->getType() && renderTransparency ) )
+			if ( ( Material::MATERIAL_TRANSPARENT == material->getType() && ! renderTransparency ) ||
+				( Material::MATERIAL_TRANSPARENT != material->getType() && renderTransparency ) )
 			{
 				continue;
 			}
@@ -998,7 +1071,7 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 			if ( applyMaterial )
 			{
 				// activate material
-				if ( false == instance->material->activate( currentProgramm ) )
+				if ( false == material->activate( currentProgramm ) )
 				{
 					return false;
 				}
@@ -1012,7 +1085,7 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 		}
 
 		// render geometry of this instance
-		if ( false == this->renderGeom( viewer, instance->geom, instance->getModelMatrix() ) )
+		if ( false == this->renderMesh( viewer, entity->getMesh(), entity->getModelMatrix() ) )
 		{
 			return false;
 		}
@@ -1022,7 +1095,7 @@ DRRenderer::renderInstances( Viewer* viewer, list<Instance*>& instances, Program
 }
 
 bool
-DRRenderer::renderInstance( Viewer* viewer, Instance* instance, Program* currentProgramm )
+DRRenderer::renderEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* currentProgramm )
 {
 	// bind transform uniform-block to update model-, view & projection transforms
 	if ( false == this->m_transformsBlock->bindBuffer() )
@@ -1034,7 +1107,7 @@ DRRenderer::renderInstance( Viewer* viewer, Instance* instance, Program* current
 	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", viewer->getProjMatrix() );
 
 	// activate material
-	if ( false == instance->material->activate( currentProgramm ) )
+	if ( false == entity->getMaterial()->activate( currentProgramm ) )
 	{
 		return false;
 	}
@@ -1046,7 +1119,7 @@ DRRenderer::renderInstance( Viewer* viewer, Instance* instance, Program* current
 	}
 		
 	// render geometry of this instance
-	if ( false == this->renderGeom( viewer, instance->geom, instance->getModelMatrix() ) )
+	if ( false == this->renderMesh( viewer, entity->getMesh(), entity->getModelMatrix() ) )
 	{
 		return false;
 	}
@@ -1055,12 +1128,12 @@ DRRenderer::renderInstance( Viewer* viewer, Instance* instance, Program* current
 }
 
 bool
-DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootModelMatrix )
+DRRenderer::renderMesh( Viewer* viewer, GeomType* mesh, const glm::mat4& rootModelMatrix )
 {
 	// IMPORANT: OpenGL applies last matrix in multiplication as first transformation to object
 	// apply model-transformations recursive
-	glm::mat4 modelMatrix = rootModelMatrix * geom->getModelMatrix();
-	const std::vector<GeomType*>& children = geom->getChildren();
+	glm::mat4 modelMatrix = rootModelMatrix * mesh->getModelMatrix();
+	const std::vector<GeomType*>& children = mesh->getChildren();
 
 	if ( children.size() )
 	{
@@ -1068,7 +1141,7 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 		{
 			GeomType* child = children[ i ];
 			// recursively process children
-			if ( false == this->renderGeom( viewer, children[ i ], modelMatrix ) )
+			if ( false == this->renderMesh( viewer, children[ i ], modelMatrix ) )
 			{
 				return false;
 			}
@@ -1077,7 +1150,7 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 	else
 	{
 		// cull objects using the viewers point of view
-		Viewer::CullResult cullResult = viewer->cullBB( geom->getBBMin(), geom->getBBMax() );
+		Viewer::CullResult cullResult = viewer->cullBB( mesh->getBBMin(), mesh->getBBMax() );
 		if ( Viewer::OUTSIDE != cullResult )
 		{
 			// calculate modelView-Matrix
@@ -1094,7 +1167,7 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 			this->m_transformsBlock->updateField( "TransformUniforms.normalsModelViewMatrix", normalModelViewMatrix );
 
 			// render geometry
-			return geom->render();
+			return mesh->render();
 		}
 	}
 
@@ -1102,9 +1175,9 @@ DRRenderer::renderGeom( Viewer* viewer, GeomType* geom, const glm::mat4& rootMod
 }
 
 bool
-DRRenderer::depthSortingFunc( Instance* a, Instance* b )
+DRRenderer::depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b )
 {
 	// depth sorting: distance holds the z-value of the center in view-space
 	// the larger the negative values the farther way
-	return a->distance < b->distance; 
+	return a->getDistance() < b->getDistance(); 
 }

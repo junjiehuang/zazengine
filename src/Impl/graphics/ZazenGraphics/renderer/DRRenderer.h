@@ -8,8 +8,6 @@
 #ifndef DRRENDERER_H_
 #define DRRENDERER_H_
 
-#include "Renderer.h"
-
 #include "../Framebuffer/FrameBufferObject.h"
 #include "../Framebuffer/RenderTarget.h"
 
@@ -17,17 +15,20 @@
 #include "../Program/Program.h"
 #include "../Program/Shader.h"
 
-class DRRenderer : public Renderer
+#include "../ZazenGraphicsEntity.h"
+
+#include <list>
+
+class DRRenderer
 {
 	public:
 		DRRenderer();
-		virtual ~DRRenderer();
+		~DRRenderer();
 
-		virtual bool initialize();
-		virtual bool shutdown();
+		bool initialize();
+		bool shutdown();
 
-		// renders this list of geominstances which must be in front-to-back order
-		bool renderFrame( std::list<Instance*>& instances, std::list<Light*>& lights );
+		bool renderFrame( std::list<ZazenGraphicsEntity*>& instances );
 
 	private:
 		// Multiple-Render-Targes & Framebuffer for Deferred Rendering
@@ -40,7 +41,8 @@ class DRRenderer : public Renderer
 		GeomType* m_fullScreenQuad;
 
 		// Program and shaders for geometry-stage
-		Program* m_progGeomStage;
+		Program* m_progGeomStaticStage;
+		Program* m_progGeomAnimStage;
 		Program* m_progSkyBox;
 		////////////////////////////////////////
 
@@ -70,7 +72,9 @@ class DRRenderer : public Renderer
 		// utils matrix
 		glm::mat4 m_unitCubeMatrix;
 
-		std::vector<Instance*> m_transparentInstances;
+		Viewer* m_mainCamera;
+		std::vector<ZazenGraphicsEntity*> m_transparentEntities;
+		std::vector<ZazenGraphicsEntity*> m_lightEntities;
 
 		bool initFBOs();
 		bool initGBuffer();
@@ -84,22 +88,25 @@ class DRRenderer : public Renderer
 
 		bool createMrtBuffer( RenderTarget::RenderTargetType, FrameBufferObject* );
 
-		void preprocessTransparency( std::list<Instance*>& instances );
-		bool doGeometryStage( std::list<Instance*>&, std::list<Light*>& );
-		bool doLightingStage( std::list<Instance*>&, std::list<Light*>& );
-		bool doTransparencyStage( std::list<Instance*>&, std::list<Light*>& );
+		bool separateEntities( std::list<ZazenGraphicsEntity*>& );
+		void preProcessTransparency( std::list<ZazenGraphicsEntity*>& );
+		bool doGeometryStage( std::list<ZazenGraphicsEntity*>& );
+		bool doLightingStage( std::list<ZazenGraphicsEntity*>& );
+		bool doTransparencyStage( std::list<ZazenGraphicsEntity*>& );
 
 		bool renderSkyBox();
-		bool renderLight( std::list<Instance*>&, Light* );
-		bool renderShadowMap( std::list<Instance*>&, Light* );
+		bool renderGeometry( std::list<ZazenGraphicsEntity*>&, Program* );
 
-		bool renderTransparentInstance( Instance*, unsigned int, unsigned int, bool );
+		bool renderLight( std::list<ZazenGraphicsEntity*>&, Light* );
+		bool renderShadowMap( std::list<ZazenGraphicsEntity*>&, Light* );
 
-		bool renderInstances( Viewer*, std::list<Instance*>&, Program*, bool, bool );
-		bool renderInstance( Viewer*, Instance*, Program* );
-		bool renderGeom( Viewer*, GeomType*, const glm::mat4& );
+		bool renderTransparentInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
 
-		static bool depthSortingFunc( Instance* a, Instance* b );
+		bool renderEntities( Viewer*, std::list<ZazenGraphicsEntity*>&, Program*, bool, bool );
+		bool renderEntity( Viewer*, ZazenGraphicsEntity*, Program* );
+		bool renderMesh( Viewer*, GeomType*, const glm::mat4& );
+
+		static bool depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b );
 
 };
 

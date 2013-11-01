@@ -15,10 +15,11 @@
 #include "../Texture/Texture.h"
 #include "../Program/Program.h"
 #include "../Program/UniformBlock.h"
+#include "../Viewer/Viewer.h"
 
 #include <boost/filesystem.hpp>
 
-class GeomSkyBox : public GeomType
+class GeomSkyBox
 {
 	public:
 		static bool initialize( const boost::filesystem::path&, const std::string& );
@@ -29,7 +30,7 @@ class GeomSkyBox : public GeomType
 
 		virtual ~GeomSkyBox();
 	
-		bool render();
+		bool render( Viewer& );
 	
 		void setTransformBlock( UniformBlock* block ) { this->m_transformsBlock = block; };
 

@@ -19,7 +19,7 @@ class GeomType
 		 const glm::vec3& getBBMax() { return this->m_bbMax; };
 	 
 		 void setBB( const glm::vec3&, const glm::vec3& );
-	 
+
 		 virtual int getFaceCount() { return 0; };
 	 
 		 virtual bool render() { return true; };
@@ -44,4 +44,4 @@ class GeomType
 
 };
 
-#endif /*GEOMNODE_H_*/
+#endif /*GEOMTYPE_H_*/

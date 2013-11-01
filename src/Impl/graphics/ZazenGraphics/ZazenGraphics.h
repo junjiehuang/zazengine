@@ -14,12 +14,11 @@
 
 #include "ZazenGraphicsEntity.h"
 
-#include "Scene/Viewer.h"
-#include "Scene/Instance.h"
+#include "Viewer/Viewer.h"
 
 #include "Lighting/Light.h"
 
-#include "Renderer/Renderer.h"
+#include "Renderer/DRRenderer.h"
 
 #include <boost/filesystem.hpp>
 
@@ -53,8 +52,6 @@ class ZazenGraphics : public IGraphics
 		ICore& getCore() { return *this->m_core; };
 		ILogger& getLogger() const { return *this->m_logger; };
 
-		Viewer& getCamera() { return *this->m_camera; };
-
 		void* getWindowHandle();
 		bool toggleFullscreen();
 
@@ -74,11 +71,7 @@ class ZazenGraphics : public IGraphics
 		ICore* m_core;
 		ILogger* m_logger;
 
-		Viewer* m_camera;
-		Renderer* m_renderer;
-
-		std::list<Light*> m_lights;
-		std::list<Instance*> m_instances;
+		DRRenderer* m_renderer;
 
 		std::list<ZazenGraphicsEntity*> m_entities;
 

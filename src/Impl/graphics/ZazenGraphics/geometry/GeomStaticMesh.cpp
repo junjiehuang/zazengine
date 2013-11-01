@@ -1,4 +1,4 @@
-#include "GeomMesh.h"
+#include "GeomStaticMesh.h"
 
 #include "../ZazenGraphics.h"
 #include "../Util/GLUtils.h"
@@ -9,7 +9,7 @@ using namespace std;
 
 #define BUFFER_OFFSET( i ) ( ( char* ) NULL + ( i ) )
 
-GeomMesh::GeomMesh( int faceCount, int vertexCount, VertexData* data, GLuint* indices )
+GeomStaticMesh::GeomStaticMesh( int faceCount, int vertexCount, VertexData* data, GLuint* indices )
 	: faceCount( faceCount ),
 	  vertexCount( vertexCount )
 {
@@ -20,7 +20,7 @@ GeomMesh::GeomMesh( int faceCount, int vertexCount, VertexData* data, GLuint* in
 	this->m_indexBuffer = indices;
 }
 
-GeomMesh::~GeomMesh()
+GeomStaticMesh::~GeomStaticMesh()
 {
 	if ( this->m_dataVBO )
 	{
@@ -46,7 +46,7 @@ GeomMesh::~GeomMesh()
 }
 
 bool
-GeomMesh::render()
+GeomStaticMesh::render()
 {
 	// lazy loading
 	if ( 0 == this->m_dataVBO )

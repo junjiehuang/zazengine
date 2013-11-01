@@ -9,13 +9,16 @@
 #define ZAZENGRAPHICSENTITY_H_
 
 #include <graphics/IGraphicsEntity.h>
-#include "Orientation/Orientation.h"
 
-#include "animation/Animation.h"
+#include "Orientation/Orientation.h"
+#include "Material/Material.h"
+#include "Geometry/GeomType.h"
+#include "Animation/Animation.h"
+#include "Lighting/Light.h"
 
 #include <vector>
 
-class ZazenGraphicsEntity : public IGraphicsEntity
+class ZazenGraphicsEntity : public IGraphicsEntity, public Orientation
 {
 	public:
 		friend class ZazenGraphics;
@@ -32,6 +35,16 @@ class ZazenGraphicsEntity : public IGraphicsEntity
 
 		virtual bool sendEvent( Event& e );
 
+		Material* getMaterial() const { return this->m_material; };
+		Animation* getAnimation() const { return this->m_activeAnimation; };
+		GeomType* getMesh() const { return this->m_mesh; };
+		Viewer* getCamera() const { return this->m_camera; };
+		Light* getLight() const { return this->m_light; };
+
+		float getDistance() const { return this->m_distance; };
+
+		void recalculateDistance( const glm::mat4& viewMatrix );
+
 	private:
 		std::string m_type;
 
@@ -42,12 +55,22 @@ class ZazenGraphicsEntity : public IGraphicsEntity
 		float m_animPitch;
 		float m_heading;
 
-		Orientation* m_orientation;
+		bool m_visible;
+		float m_distance;
+		long m_lastFrame;
 
 		std::vector<Animation*> m_allAnimations;
 		Animation* m_activeAnimation;
 
-		void postPositionChangedEvent();
+		Material* m_material;
+		GeomType* m_mesh;
+
+		Light* m_light;
+		Viewer* m_camera;
+
+		glm::mat4 m_modelMatrix;
+		
+		void matrixChanged();
 };
 
 #endif /* ZAZENGRAPHICSENTITY_H_ */
