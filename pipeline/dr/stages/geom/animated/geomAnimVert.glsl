@@ -26,19 +26,19 @@ layout( shared ) uniform TransformUniforms
 	mat4 normalsModelViewMatrix;
 } Transforms;
 
-uniform mat3 u_bones[ MAX_BONES_PER_MESH ];
+uniform mat4 u_bones[ MAX_BONES_PER_MESH ];
 
 void main()
 {
-	vec3 skinnedVertex;
+	vec4 skinnedVertex;
 
 	for ( uint i = 0u; i < in_bone_count; i++ )
 	{
 		uint boneIndex = in_bone_indices[ i ];
-		mat3 bone = u_bones[ boneIndex ];
+		mat4 bone = u_bones[ boneIndex ];
 		float boneWeight = in_bone_weights[ i ];
 
-		skinnedVertex += ( bone * boneWeight ) * in_vertPos;
+		skinnedVertex += ( bone * boneWeight ) * vec4( in_vertPos, 1.0 );
 	}
 
 	// store position in view-space (EyeCoordinates) 

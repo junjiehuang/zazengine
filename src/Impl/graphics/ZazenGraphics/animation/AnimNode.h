@@ -10,6 +10,7 @@
 #define _ANIMNODE_H_
 
 #include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 #include <string>
 #include <vector>
@@ -31,7 +32,7 @@ class AnimNode
 
 		struct AnimChannel {
 			std::vector<AnimKey<glm::vec3>> m_positionKeys;
-			std::vector<AnimKey<glm::mat3>> m_rotationKeys;
+			std::vector<AnimKey<glm::quat>> m_rotationKeys;
 			std::vector<AnimKey<glm::vec3>> m_scalingKeys;
 		};
 
@@ -39,8 +40,12 @@ class AnimNode
 		~AnimNode();
 
 		const std::string& getName() const { return this->m_name; };
+
 		const glm::mat4& getTransform() const { return this->m_transform; };
 		const std::vector<AnimNode*>& getChildren() const { return this->m_children; };
+
+		const Bone* const getBone() { return this->m_bone; };
+		const AnimChannel* const getChannel() { return this->m_animChannel; };
 
 	private:
 		std::string m_name;

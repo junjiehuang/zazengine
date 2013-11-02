@@ -117,6 +117,11 @@ ZazenGraphicsEntity::update()
 			//this->postPositionChangedEvent();
 		}
 	}
+
+	if ( this->m_activeAnimation )
+	{
+		this->m_activeAnimation->perform( ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+	}
 }
 
 bool

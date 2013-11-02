@@ -12,6 +12,7 @@
 #include "UniformBlock.h"
 
 #include <map>
+#include <vector>
 
 class Program
 {
@@ -28,6 +29,7 @@ class Program
 		bool detachShader( Shader* );
 
 		bool setUniformInt( const std::string& name, int );
+		bool setUniformMatrices( const std::string& name, const std::vector<glm::mat4>& );
 
 		bool bindUniformBlock( UniformBlock* );
 

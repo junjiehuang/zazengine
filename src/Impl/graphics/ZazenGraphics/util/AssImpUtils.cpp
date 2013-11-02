@@ -41,6 +41,15 @@ AssImpUtils::assimpMatToGlm( const aiMatrix3x3& assImpMat, glm::mat3& glmMat )
 }
 
 void
+AssImpUtils::assimpQuatToGlm( const aiQuaternion& assImpQuat, glm::quat& glmQuat )
+{
+	glmQuat.x = assImpQuat.x;
+	glmQuat.y = assImpQuat.y;
+	glmQuat.z = assImpQuat.z;
+	glmQuat.w = assImpQuat.w;
+}
+
+void
 AssImpUtils::assimpVecToGlm( const aiVector3D& assImpVec, glm::vec3& glmVec )
 {
 	glmVec.x = assImpVec.x;

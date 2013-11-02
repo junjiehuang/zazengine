@@ -10,6 +10,8 @@
 #include "../ZazenGraphics.h"
 #include "../Util/GLUtils.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -214,6 +216,21 @@ Program::setUniformInt( const std::string& name, int value )
 	}
 
 	glUniform1i( field->m_index, value );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	return true;
+}
+
+bool
+Program::setUniformMatrices( const std::string& name, const std::vector<glm::mat4>& matrices )
+{
+	UniformField* field = this->getUniformField( name );
+	if ( NULL == field )
+	{
+		return false;
+	}
+
+	glUniformMatrix4fv( field->m_index, matrices.size(), GL_FALSE, glm::value_ptr( matrices[ 0 ] ) );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;

@@ -139,92 +139,89 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 		return 0;
 	}
 
-	Animation* animation = 0;
-	aiNode* rootNode = scene->mRootNode;
-
-	if ( scene->HasAnimations() )
-	{
-		animation = new Animation();
-		map<string, AnimNode*> nodesByName;
-
-		// walk through all nodes in hierarchical manner (recursive) and store them in the animation-object and in the node-to-name map
-		animation->m_rootNode = AnimationFactory::collectNodes( animation, rootNode, nodesByName );
-
-		// walk through all bones in a hierarchical manner (recursive) and match them to their according AnimNode by matching names
-		AnimationFactory::extractBones( scene, rootNode, nodesByName );
-		
-		// NOTE: for now only first animation is considered, should be enough for doom3
-		aiAnimation* assImpAnim = scene->mAnimations[ 0 ];
-		animation->m_durationTicks = assImpAnim->mDuration;
-		animation->m_ticksPerSecond = assImpAnim->mTicksPerSecond;
-
-		// extract data from all channels
-		for ( unsigned int i = 0; i < assImpAnim->mNumChannels; i++ )
-		{
-			aiNodeAnim* assImpChannel = assImpAnim->mChannels[ i ];
-			
-			// each channel is assigned to exactly one node: find the node
-			map<string, AnimNode*>::iterator findIter = nodesByName.find( assImpChannel->mNodeName.C_Str() );
-			if ( nodesByName.end() == findIter )
-			{
-				ZazenGraphics::getInstance().getLogger().logWarning() << "couldn't find an animation node for node " << assImpChannel->mNodeName.C_Str();
-				continue;
-			}
-			
-			AnimNode::AnimChannel* animChannel = new AnimNode::AnimChannel();
-			findIter->second->m_animChannel = animChannel;
-
-			// extract all position-keys
-			for ( unsigned int j = 0; j < assImpChannel->mNumPositionKeys; j++ )
-			{
-				aiVectorKey assImpPosKey = assImpChannel->mPositionKeys[ j ];
-
-				AnimNode::AnimKey<glm::vec3> posKey;
-				posKey.m_time = assImpPosKey.mTime;
-	
-				AssImpUtils::assimpVecToGlm( assImpPosKey.mValue, posKey.m_value );
-
-				animChannel->m_positionKeys.push_back( posKey );
-			}
-
-			// extract all rotation-keys
-			for ( unsigned int j = 0; j < assImpChannel->mNumRotationKeys; j++ )
-			{
-				aiQuatKey assImpRotKey = assImpChannel->mRotationKeys[ j ];
-
-				AnimNode::AnimKey<glm::mat3> rotKey;
-				rotKey.m_time = assImpRotKey.mTime;
-	
-				// assimp provides the rotations by quaternions, get matrix from it
-				AssImpUtils::assimpMatToGlm( assImpRotKey.mValue.GetMatrix(), rotKey.m_value );
-
-				animChannel->m_rotationKeys.push_back( rotKey );
-			}
-
-			// extract all scaling-keys
-			for ( unsigned int j = 0; j < assImpChannel->mNumScalingKeys; j++ )
-			{
-				aiVectorKey assImpScaleKey = assImpChannel->mScalingKeys[ j ];
-
-				AnimNode::AnimKey<glm::vec3> scaleKey;
-				scaleKey.m_time = assImpScaleKey.mTime;
-	
-				AssImpUtils::assimpVecToGlm( assImpScaleKey.mValue, scaleKey.m_value );
-
-				animChannel->m_scalingKeys.push_back( scaleKey );
-			}
-		}
-		
-		AnimationFactory::allAnimations[ filePath.generic_string().c_str() ] = animation; 
-
-		ZazenGraphics::getInstance().getLogger().logInfo() << "LOADED ... " << filePath;
-	}
-	else 
+	if ( ! scene->HasAnimations() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "AnimationFactory::loadFile: tried to load animation-file without animations - ignoring this file.";
+		
+		aiReleaseImport( scene );
+		return 0;
 	}
 
-	aiReleaseImport( scene );
+	Animation* animation = NULL;
+	map<string, AnimNode*> nodesByName;
+	aiNode* rootNode = scene->mRootNode;
+
+	// NOTE: for now only first animation is considered, should be enough for doom3
+	aiAnimation* assImpAnim = scene->mAnimations[ 0 ];
+
+	animation = new Animation( assImpAnim->mDuration, assImpAnim->mTicksPerSecond );
+
+	// walk through all nodes in hierarchical manner (recursive) and store them in the animation-object and in the node-to-name map
+	animation->m_rootNode = AnimationFactory::collectNodes( animation, rootNode, nodesByName );
+
+	// walk through all bones in a hierarchical manner (recursive) and match them to their according AnimNode by matching names
+	AnimationFactory::extractBones( scene, rootNode, nodesByName );
+
+	// extract data from all channels
+	for ( unsigned int i = 0; i < assImpAnim->mNumChannels; i++ )
+	{
+		aiNodeAnim* assImpChannel = assImpAnim->mChannels[ i ];
+			
+		// each channel is assigned to exactly one node: find the node
+		map<string, AnimNode*>::iterator findIter = nodesByName.find( assImpChannel->mNodeName.C_Str() );
+		if ( nodesByName.end() == findIter )
+		{
+			ZazenGraphics::getInstance().getLogger().logWarning() << "couldn't find an animation node for node " << assImpChannel->mNodeName.C_Str();
+			continue;
+		}
+			
+		AnimNode::AnimChannel* animChannel = new AnimNode::AnimChannel();
+		findIter->second->m_animChannel = animChannel;
+
+		// extract all position-keys
+		for ( unsigned int j = 0; j < assImpChannel->mNumPositionKeys; j++ )
+		{
+			aiVectorKey assImpPosKey = assImpChannel->mPositionKeys[ j ];
+
+			AnimNode::AnimKey<glm::vec3> posKey;
+			posKey.m_time = assImpPosKey.mTime;
+	
+			AssImpUtils::assimpVecToGlm( assImpPosKey.mValue, posKey.m_value );
+
+			animChannel->m_positionKeys.push_back( posKey );
+		}
+
+		// extract all rotation-keys
+		for ( unsigned int j = 0; j < assImpChannel->mNumRotationKeys; j++ )
+		{
+			aiQuatKey assImpRotKey = assImpChannel->mRotationKeys[ j ];
+
+			AnimNode::AnimKey<glm::quat> rotKey;
+			rotKey.m_time = assImpRotKey.mTime;
+	
+			// assimp provides the rotations by quaternions, get matrix from it
+			AssImpUtils::assimpQuatToGlm( assImpRotKey.mValue, rotKey.m_value );
+
+			animChannel->m_rotationKeys.push_back( rotKey );
+		}
+
+		// extract all scaling-keys
+		for ( unsigned int j = 0; j < assImpChannel->mNumScalingKeys; j++ )
+		{
+			aiVectorKey assImpScaleKey = assImpChannel->mScalingKeys[ j ];
+
+			AnimNode::AnimKey<glm::vec3> scaleKey;
+			scaleKey.m_time = assImpScaleKey.mTime;
+	
+			AssImpUtils::assimpVecToGlm( assImpScaleKey.mValue, scaleKey.m_value );
+
+			animChannel->m_scalingKeys.push_back( scaleKey );
+		}
+	}
+		
+	AnimationFactory::allAnimations[ filePath.generic_string().c_str() ] = animation; 
+
+	ZazenGraphics::getInstance().getLogger().logInfo() << "LOADED ... " << filePath;
 
     return animation;
 }

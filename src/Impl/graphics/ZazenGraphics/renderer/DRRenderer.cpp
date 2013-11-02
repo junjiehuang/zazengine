@@ -580,8 +580,6 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 
 		if ( animation )
 		{
-			// TODO: perform key-frame interpolation for current animation
-			// TODO: need our hands on the current animation
 			animatedInstances.push_back( entity );
 		}
 		else
@@ -1052,10 +1050,16 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 	{
 		ZazenGraphicsEntity* entity = *iter++;
 		Material* material = entity->getMaterial();
+		Animation* animation = entity->getAnimation();
 
 		if ( 0 == entity->getMesh() )
 		{
 			continue;
+		}
+
+		if ( animation )
+		{
+			animation->updateToProgram( currentProgramm );
 		}
 
 		if ( material )
