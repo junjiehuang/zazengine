@@ -91,6 +91,8 @@ Animation::interpolatePosition( const vector<AnimNode::AnimKey<glm::vec3>>& posi
 		translationMatrix[ 3 ][ 0 ] = positionKeys[ 0 ].m_value.x;
 		translationMatrix[ 3 ][ 1 ] = positionKeys[ 0 ].m_value.y;
 		translationMatrix[ 3 ][ 2 ] = positionKeys[ 0 ].m_value.z;
+
+		return;
 	}
 
 	AnimNode::AnimKey<glm::vec3> firstPos;
@@ -119,6 +121,8 @@ Animation::interpolateRotation( const std::vector<AnimNode::AnimKey<glm::quat>>&
 	if ( rotationKeys.size() == 1 )
 	{
 		rotationMatrix = glm::mat4_cast( rotationKeys[ 0 ].m_value );
+
+		return;
 	}
 
 	AnimNode::AnimKey<glm::quat> firstRot;
@@ -144,6 +148,8 @@ Animation::interpolateScaling( const std::vector<AnimNode::AnimKey<glm::vec3>>& 
 		scalingMatrix[ 3 ][ 0 ] = scalingKeys[ 0 ].m_value.x;
 		scalingMatrix[ 3 ][ 1 ] = scalingKeys[ 0 ].m_value.y;
 		scalingMatrix[ 3 ][ 2 ] = scalingKeys[ 0 ].m_value.z;
+
+		return;
 	}
 
 	AnimNode::AnimKey<glm::vec3> firstScaling;
@@ -161,12 +167,14 @@ void
 Animation::findFirstAndNext( const vector<AnimNode::AnimKey<T>>& keys, AnimNode::AnimKey<T>& first, AnimNode::AnimKey<T>& next )
 {
 	// TODO: optimize: store last frame and start search from this?
+	// NOTE: if the time would be equally spaced by 1 unit then m_time would match the index and we could access it in O(1)
 	for ( unsigned int i = 0; i < keys.size(); i++ )
 	{
 		if ( keys[ i ].m_time >= this->m_currentFrame )
 		{
+			unsigned int nextIndex = ( i + 1 ) & ( keys.size() - 1 );
 			first = keys[ i ];
-			next = keys[ ( i + 1 ) & ( keys.size() - 1 ) ];
+			next = keys[ nextIndex ];
 			return;
 		}
 	}
