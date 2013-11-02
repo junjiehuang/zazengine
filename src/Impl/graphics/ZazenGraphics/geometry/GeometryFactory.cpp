@@ -13,6 +13,8 @@
 
 #include "../ZazenGraphics.h"
 
+#include "../Util/AssImpUtils.h"
+
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 
@@ -242,29 +244,10 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 GeomType*
 GeometryFactory::processNode( const struct aiNode* node, const struct aiScene* scene )
 {
+	glm::mat4 modelMatrix;
 	GeomType* geomNode = new GeomType();
 
-	glm::mat4 modelMatrix;
-	
-	modelMatrix[ 0 ][ 0 ] = node->mTransformation.a1;
-	modelMatrix[ 0 ][ 1 ] = node->mTransformation.a2;
-	modelMatrix[ 0 ][ 2 ] = node->mTransformation.a3;
-	modelMatrix[ 0 ][ 3 ] = node->mTransformation.a4;
-
-	modelMatrix[ 1 ][ 0 ] = node->mTransformation.b1;
-	modelMatrix[ 1 ][ 1 ] = node->mTransformation.b2;
-	modelMatrix[ 1 ][ 2 ] = node->mTransformation.b3;
-	modelMatrix[ 1 ][ 3 ] = node->mTransformation.b4;
-
-	modelMatrix[ 2 ][ 0 ] = node->mTransformation.c1;
-	modelMatrix[ 2 ][ 1 ] = node->mTransformation.c2;
-	modelMatrix[ 2 ][ 2 ] = node->mTransformation.c3;
-	modelMatrix[ 2 ][ 3 ] = node->mTransformation.c4;
-
-	modelMatrix[ 3 ][ 0 ] = node->mTransformation.d1;
-	modelMatrix[ 3 ][ 1 ] = node->mTransformation.d2;
-	modelMatrix[ 3 ][ 2 ] = node->mTransformation.d3;
-	modelMatrix[ 3 ][ 3 ] = node->mTransformation.d4;
+	AssImpUtils::assimpMatToGlm( node->mTransformation, modelMatrix );
 
 	geomNode->setModelMatrix( modelMatrix );
 

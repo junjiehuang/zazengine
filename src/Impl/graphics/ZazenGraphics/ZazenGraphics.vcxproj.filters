@@ -225,6 +225,12 @@
     <ClCompile Include="viewer\Viewer.cpp">
       <Filter>Quelldateien\viewer</Filter>
     </ClCompile>
+    <ClCompile Include="util\AssImpUtils.cpp">
+      <Filter>Quelldateien\util</Filter>
+    </ClCompile>
+    <ClCompile Include="animation\AnimNode.cpp">
+      <Filter>Quelldateien\animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ZazenGraphics.h">
@@ -331,6 +337,12 @@
     </ClInclude>
     <ClInclude Include="viewer\Viewer.h">
       <Filter>Headerdateien\viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="util\AssImpUtils.h">
+      <Filter>Headerdateien\util</Filter>
+    </ClInclude>
+    <ClInclude Include="animation\AnimNode.h">
+      <Filter>Headerdateien\animation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

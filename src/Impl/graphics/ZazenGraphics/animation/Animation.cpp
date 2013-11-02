@@ -1,3 +1,10 @@
 #include "Animation.h"
 
-// TODO implement
+Animation::Animation()
+{
+	this->m_rootNode = NULL;
+}
+
+Animation::~Animation()
+{
+}

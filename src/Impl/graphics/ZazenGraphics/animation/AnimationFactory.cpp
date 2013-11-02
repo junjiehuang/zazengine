@@ -2,6 +2,8 @@
 
 #include "../ZazenGraphics.h"
 
+#include "../Util/AssImpUtils.h"
+
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 
@@ -138,17 +140,79 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 	}
 
 	Animation* animation = 0;
-	
+	aiNode* rootNode = scene->mRootNode;
+
 	if ( scene->HasAnimations() )
 	{
 		animation = new Animation();
+		map<string, AnimNode*> nodesByName;
 
-		// TODO: how-to handle multiple animations in one file??
-		for ( unsigned int i = 0; i < scene->mNumAnimations; i++ )
+		// walk through all nodes in hierarchical manner (recursive) and store them in the animation-object and in the node-to-name map
+		animation->m_rootNode = AnimationFactory::collectNodes( animation, rootNode, nodesByName );
+
+		// walk through all bones in a hierarchical manner (recursive) and match them to their according AnimNode by matching names
+		AnimationFactory::extractBones( scene, rootNode, nodesByName );
+		
+		// NOTE: for now only first animation is considered, should be enough for doom3
+		aiAnimation* assImpAnim = scene->mAnimations[ 0 ];
+		animation->m_durationTicks = assImpAnim->mDuration;
+		animation->m_ticksPerSecond = assImpAnim->mTicksPerSecond;
+
+		// extract data from all channels
+		for ( unsigned int i = 0; i < assImpAnim->mNumChannels; i++ )
 		{
-			aiAnimation* anim = scene->mAnimations[ i ];
+			aiNodeAnim* assImpChannel = assImpAnim->mChannels[ i ];
+			
+			// each channel is assigned to exactly one node: find the node
+			map<string, AnimNode*>::iterator findIter = nodesByName.find( assImpChannel->mNodeName.C_Str() );
+			if ( nodesByName.end() == findIter )
+			{
+				ZazenGraphics::getInstance().getLogger().logWarning() << "couldn't find an animation node for node " << assImpChannel->mNodeName.C_Str();
+				continue;
+			}
+			
+			AnimNode::AnimChannel* animChannel = new AnimNode::AnimChannel();
+			findIter->second->m_animChannel = animChannel;
 
-			// TODO extract data
+			// extract all position-keys
+			for ( unsigned int j = 0; j < assImpChannel->mNumPositionKeys; j++ )
+			{
+				aiVectorKey assImpPosKey = assImpChannel->mPositionKeys[ j ];
+
+				AnimNode::AnimKey<glm::vec3> posKey;
+				posKey.m_time = assImpPosKey.mTime;
+	
+				AssImpUtils::assimpVecToGlm( assImpPosKey.mValue, posKey.m_value );
+
+				animChannel->m_positionKeys.push_back( posKey );
+			}
+
+			// extract all rotation-keys
+			for ( unsigned int j = 0; j < assImpChannel->mNumRotationKeys; j++ )
+			{
+				aiQuatKey assImpRotKey = assImpChannel->mRotationKeys[ j ];
+
+				AnimNode::AnimKey<glm::mat3> rotKey;
+				rotKey.m_time = assImpRotKey.mTime;
+	
+				// assimp provides the rotations by quaternions, get matrix from it
+				AssImpUtils::assimpMatToGlm( assImpRotKey.mValue.GetMatrix(), rotKey.m_value );
+
+				animChannel->m_rotationKeys.push_back( rotKey );
+			}
+
+			// extract all scaling-keys
+			for ( unsigned int j = 0; j < assImpChannel->mNumScalingKeys; j++ )
+			{
+				aiVectorKey assImpScaleKey = assImpChannel->mScalingKeys[ j ];
+
+				AnimNode::AnimKey<glm::vec3> scaleKey;
+				scaleKey.m_time = assImpScaleKey.mTime;
+	
+				AssImpUtils::assimpVecToGlm( assImpScaleKey.mValue, scaleKey.m_value );
+
+				animChannel->m_scalingKeys.push_back( scaleKey );
+			}
 		}
 		
 		AnimationFactory::allAnimations[ filePath.generic_string().c_str() ] = animation; 
@@ -163,4 +227,70 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 	aiReleaseImport( scene );
 
     return animation;
+}
+
+AnimNode*
+AnimationFactory::collectNodes( Animation* animation, const aiNode* assImpNode, std::map<std::string, AnimNode*>& nodesByName )
+{
+	AnimNode* parentNode = new AnimNode();
+
+	parentNode->m_name = assImpNode->mName.C_Str();
+	AssImpUtils::assimpMatToGlm( assImpNode->mTransformation, parentNode->m_transform );
+
+	nodesByName[ parentNode->m_name ] = parentNode;
+
+	for ( unsigned int i = 0; i < assImpNode->mNumChildren; i++ )
+	{
+		aiNode* assImpChild = assImpNode->mChildren[ i ];
+
+		AnimNode* childNode = AnimationFactory::collectNodes( animation, assImpChild, nodesByName );
+		parentNode->m_children.push_back( childNode );
+	}
+
+	return parentNode;
+}
+
+void
+AnimationFactory::extractBones( const aiScene* assImpScene, const aiNode* assImpNode, map<string, AnimNode*>& nodesByName )
+{
+	for ( unsigned int i = 0; i < assImpNode->mNumMeshes; i++ )
+	{
+		aiMesh* mesh = assImpScene->mMeshes[ i ];
+			
+		for ( unsigned int j = 0; j < mesh->mNumBones; j++ )
+		{
+			aiBone* assImpBone = mesh->mBones[ j ];
+			
+			// ignore bones with no name
+			if ( 0 == assImpBone->mName.length )
+			{
+				continue;
+			}
+
+			// search the node for this bone, when no node is found ignore
+			map<string, AnimNode*>::iterator findIter = nodesByName.find( assImpBone->mName.C_Str() );
+			if ( nodesByName.end() == findIter )
+			{
+				continue;
+			}
+
+			// TODO: do we need to check if there could be multiple bones?
+			if ( findIter->second->m_bone )
+			{
+				ZazenGraphics::getInstance().getLogger().logWarning() << "found node where bone was already present";
+			}
+
+			AnimNode::Bone* bone = new AnimNode::Bone();
+			AssImpUtils::assimpMatToGlm( assImpBone->mOffsetMatrix, bone->m_meshToBoneTransf );
+
+			findIter->second->m_bone = bone;
+		}
+	}
+
+	// recursively extract bones from children
+	for ( unsigned int i = 0; i < assImpNode->mNumChildren; i++ )
+	{
+		aiNode* child = assImpNode->mChildren[ i ];
+		AnimationFactory::extractBones( assImpScene, child, nodesByName );
+	}
 }

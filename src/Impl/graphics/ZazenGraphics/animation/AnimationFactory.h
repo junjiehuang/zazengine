@@ -34,6 +34,8 @@ class AnimationFactory
 
 		static Animation* loadFile( const boost::filesystem::path& );
 
+		static AnimNode* collectNodes( Animation*, const aiNode*, std::map<std::string, AnimNode*>& );
+		static void extractBones( const aiScene* scene, const aiNode*, std::map<std::string, AnimNode*>& );
 };
 
 #endif

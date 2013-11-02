@@ -86,6 +86,7 @@
     <ClCompile Include="..\..\..\IFaces\core\XML\tinyxmlparser.cpp" />
     <ClCompile Include="animation\Animation.cpp" />
     <ClCompile Include="animation\AnimationFactory.cpp" />
+    <ClCompile Include="animation\AnimNode.cpp" />
     <ClCompile Include="context\RenderingContext.cpp" />
     <ClCompile Include="framebuffer\FrameBufferObject.cpp" />
     <ClCompile Include="framebuffer\RenderTarget.cpp" />
@@ -109,6 +110,7 @@
     <ClCompile Include="renderer\DRRenderer.cpp" />
     <ClCompile Include="texture\Texture.cpp" />
     <ClCompile Include="texture\TextureFactory.cpp" />
+    <ClCompile Include="util\AssImpUtils.cpp" />
     <ClCompile Include="util\GLUtils.cpp" />
     <ClCompile Include="viewer\Viewer.cpp" />
     <ClCompile Include="ZazenGraphics.cpp" />
@@ -123,6 +125,7 @@
     <ClInclude Include="..\..\..\IFaces\core\XML\tinyxml.h" />
     <ClInclude Include="animation\Animation.h" />
     <ClInclude Include="animation\AnimationFactory.h" />
+    <ClInclude Include="animation\AnimNode.h" />
     <ClInclude Include="context\RenderingContext.h" />
     <ClInclude Include="framebuffer\FrameBufferObject.h" />
     <ClInclude Include="framebuffer\RenderTarget.h" />
@@ -146,6 +149,7 @@
     <ClInclude Include="renderer\DRRenderer.h" />
     <ClInclude Include="texture\Texture.h" />
     <ClInclude Include="texture\TextureFactory.h" />
+    <ClInclude Include="util\AssImpUtils.h" />
     <ClInclude Include="util\GLUtils.h" />
     <ClInclude Include="viewer\Viewer.h" />
     <ClInclude Include="ZazenGraphics.h" />
