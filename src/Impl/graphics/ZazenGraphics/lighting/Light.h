@@ -8,7 +8,7 @@
 #ifndef LIGHT_H_
 #define LIGHT_H_
 
-#include "../Geometry/GeomType.h"
+#include "../Geometry/MeshStatic.h"
 
 #include "../Viewer/Viewer.h"
 
@@ -39,8 +39,8 @@ class Light : public Viewer
 	void setColor( const glm::vec4& color ) { this->m_color = color; };
 	const glm::vec4& getColor() const { return this->m_color; };
 
-	void setBoundingGeometry( GeomType* boundingGeom ) { this->m_boundingGeom = boundingGeom; };
-	GeomType* getBoundingGeometry() { return this->m_boundingGeom; };
+	void setBoundingMesh( MeshStatic* boundingGeom ) { this->m_boundingMesh = boundingGeom; };
+	MeshStatic* getBoundingMesh() { return this->m_boundingMesh; };
 
 	RenderTarget* getShadowMap() { return this->m_shadowMap; };
 
@@ -53,7 +53,7 @@ class Light : public Viewer
 	LightType m_type;
 	glm::vec4 m_color;
 
-	GeomType* m_boundingGeom;
+	MeshStatic* m_boundingMesh;
 
 	RenderTarget* m_shadowMap;
 

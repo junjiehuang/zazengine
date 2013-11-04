@@ -12,7 +12,7 @@
 
 #include "Orientation/Orientation.h"
 #include "Material/Material.h"
-#include "Geometry/GeomType.h"
+#include "Geometry/Mesh.h"
 #include "Animation/Animation.h"
 #include "Lighting/Light.h"
 
@@ -37,7 +37,7 @@ class ZazenGraphicsEntity : public IGraphicsEntity, public Orientation
 
 		Material* getMaterial() const { return this->m_material; };
 		Animation* getAnimation() const { return this->m_activeAnimation; };
-		GeomType* getMesh() const { return this->m_mesh; };
+		Mesh* getMesh() const { return this->m_mesh; };
 		Viewer* getCamera() const { return this->m_camera; };
 		Light* getLight() const { return this->m_light; };
 
@@ -63,7 +63,7 @@ class ZazenGraphicsEntity : public IGraphicsEntity, public Orientation
 		Animation* m_activeAnimation;
 
 		Material* m_material;
-		GeomType* m_mesh;
+		Mesh* m_mesh;
 
 		Light* m_light;
 		Viewer* m_camera;

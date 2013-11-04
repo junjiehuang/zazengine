@@ -241,7 +241,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		const char* str = meshNode->Attribute( "file" );
 		if ( 0 != str )
 		{
-			entity->m_mesh = GeometryFactory::get( str );
+			entity->m_mesh = GeometryFactory::getMesh( str );
 			if ( NULL == entity->m_mesh )
 			{
 				this->m_logger->logWarning() << "couldn't get mesh " << str << " - will be ignored";
@@ -325,7 +325,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		float fov = 90.0f;
 		int shadowMapResX = 512;
 		int shadowMapResY = 512;
-		GeomType* boundingGeom = NULL;
+		MeshStatic* boundingMesh = NULL;
 
 		TiXmlElement* shadowingNode = objectNode->FirstChildElement( "shadowing" );
 		if ( shadowingNode )
@@ -354,17 +354,17 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		if ( lightType == "DIRECTIONAL" )
 		{
 			light = Light::createDirectionalLight( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), castShadow );
-			boundingGeom = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+			boundingMesh = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
 		}
 		// default is spot
 		else
 		{
 			light = Light::createSpotLight( fov, shadowMapResX, shadowMapResY, castShadow );
 			// TODO load correct bounding-geometry
-			boundingGeom = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+			boundingMesh = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
 		}
 
-		light->setBoundingGeometry( boundingGeom );
+		light->setBoundingMesh( boundingMesh );
 
 		entity->m_light = light;
 	}

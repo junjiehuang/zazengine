@@ -9,7 +9,8 @@
 #ifndef _GEOMETRY_FACTORY_H_
 #define _GEOMETRY_FACTORY_H_
 
-#include "GeomType.h"
+#include "MeshStatic.h"
+#include "MeshBoned.h"
 
 #include <assimp/scene.h>
 
@@ -23,24 +24,24 @@ class GeometryFactory
 	public:
 		static void setDataPath( const boost::filesystem::path& );
 		static void freeAll();
-		static void free( GeomType* );
+		static void free( Mesh* );
 
-		static GeomType* get( const std::string& fileName );
+		static Mesh* getMesh( const std::string& fileName );
 
-		static GeomType* createQuad( float width, float height );
+		static MeshStatic* createQuad( float width, float height );
 
 	private:
 		static boost::filesystem::path modelDataPath;
-		static std::map<std::string, GeomType*> allMeshes;
+		static std::map<std::string, Mesh*> allMeshes;
 
-		static GeomType* loadFolder( const boost::filesystem::path& );
-		static GeomType* loadFile( const boost::filesystem::path& );
+		static Mesh* loadFolder( const boost::filesystem::path& );
+		static Mesh* loadFile( const boost::filesystem::path& );
 
-		static GeomType* processNode( const struct aiNode*, const struct aiScene*, unsigned int& );		 
-		static GeomType* processMesh( const struct aiMesh*, unsigned int& );
+		static Mesh* processNode( const struct aiNode*, const struct aiScene*, unsigned int& );		 
+		static Mesh* processMesh( const struct aiMesh*, unsigned int& );
 
-		static GeomType* processAnimatedMesh( const struct aiMesh*, unsigned int& );
-		static GeomType* processStaticMesh( const struct aiMesh* );
+		static MeshBoned* processMeshBoned( const struct aiMesh*, unsigned int& );
+		static MeshStatic* processMeshStatic( const struct aiMesh* );
 
 		static void updateBB( const aiVector3D& vertex, glm::vec3&, glm::vec3& );
 

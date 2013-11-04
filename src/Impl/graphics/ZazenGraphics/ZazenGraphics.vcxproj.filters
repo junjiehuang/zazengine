@@ -135,9 +135,6 @@
     <ClCompile Include="geometry\GeometryFactory.cpp">
       <Filter>Quelldateien\geometry</Filter>
     </ClCompile>
-    <ClCompile Include="geometry\GeomType.cpp">
-      <Filter>Quelldateien\geometry</Filter>
-    </ClCompile>
     <ClCompile Include="lighting\Light.cpp">
       <Filter>Quelldateien\lighting</Filter>
     </ClCompile>
@@ -213,12 +210,6 @@
     <ClCompile Include="animation\Animation.cpp">
       <Filter>Quelldateien\animation</Filter>
     </ClCompile>
-    <ClCompile Include="geometry\GeomStaticMesh.cpp">
-      <Filter>Quelldateien\geometry</Filter>
-    </ClCompile>
-    <ClCompile Include="geometry\GeomAnimatedMesh.cpp">
-      <Filter>Quelldateien\geometry</Filter>
-    </ClCompile>
     <ClCompile Include="viewer\Viewer.cpp">
       <Filter>Quelldateien\viewer</Filter>
     </ClCompile>
@@ -231,6 +222,15 @@
     <ClCompile Include="renderer\SkyBox.cpp">
       <Filter>Quelldateien\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="geometry\Mesh.cpp">
+      <Filter>Quelldateien\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry\MeshBoned.cpp">
+      <Filter>Quelldateien\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry\MeshStatic.cpp">
+      <Filter>Quelldateien\geometry</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ZazenGraphics.h">
@@ -240,9 +240,6 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="geometry\GeometryFactory.h">
-      <Filter>Headerdateien\geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="geometry\GeomType.h">
       <Filter>Headerdateien\geometry</Filter>
     </ClInclude>
     <ClInclude Include="lighting\Light.h">
@@ -326,12 +323,6 @@
     <ClInclude Include="animation\Animation.h">
       <Filter>Headerdateien\animation</Filter>
     </ClInclude>
-    <ClInclude Include="geometry\GeomStaticMesh.h">
-      <Filter>Headerdateien\geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="geometry\GeomAnimatedMesh.h">
-      <Filter>Headerdateien\geometry</Filter>
-    </ClInclude>
     <ClInclude Include="viewer\Viewer.h">
       <Filter>Headerdateien\viewer</Filter>
     </ClInclude>
@@ -343,6 +334,15 @@
     </ClInclude>
     <ClInclude Include="renderer\SkyBox.h">
       <Filter>Headerdateien\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\Mesh.h">
+      <Filter>Headerdateien\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\MeshBoned.h">
+      <Filter>Headerdateien\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\MeshStatic.h">
+      <Filter>Headerdateien\geometry</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

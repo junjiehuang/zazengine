@@ -3,9 +3,6 @@ Animation-System
 	-> load & animate doom3 models
 	-> other animations?
 
-Refactoring
-	-> clean-up geomtype-hiearchy and unify it
-
 Text-rendering
 	-> use OGLFT
 

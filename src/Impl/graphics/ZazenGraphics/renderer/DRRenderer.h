@@ -38,7 +38,7 @@ class DRRenderer
 		RenderTarget* m_depthCopy;
 		////////////////////////////////////////
 
-		GeomType* m_fullScreenQuad;
+		MeshStatic* m_fullScreenQuad;
 
 		// Program and shaders for geometry-stage
 		Program* m_progGeomStaticStage;
@@ -104,7 +104,7 @@ class DRRenderer
 
 		bool renderEntities( Viewer*, std::list<ZazenGraphicsEntity*>&, Program*, bool, bool );
 		bool renderEntity( Viewer*, ZazenGraphicsEntity*, Program* );
-		bool renderMesh( Viewer*, GeomType*, const glm::mat4& );
+		bool renderMesh( Viewer*, Mesh*, const glm::mat4& );
 
 		static bool depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b );
 

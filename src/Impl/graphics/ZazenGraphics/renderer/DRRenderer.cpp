@@ -16,7 +16,6 @@
 #include "../Util/GLUtils.h"
 #include "../ZazenGraphics.h"
 #include "../Geometry/GeometryFactory.h"
-#include "../Geometry/GeomAnimatedMesh.h"
 #include "../Program/ProgramManagement.h"
 #include "../Program/UniformManagement.h"
 
@@ -857,7 +856,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	glDepthMask( GL_FALSE );
 
 	// render light boundary (for now only full screen-quad)
-	light->getBoundingGeometry()->render();
+	light->getBoundingMesh()->render();
 	
 	// enable depth-writing again
 	glDepthMask( GL_TRUE );
@@ -1129,18 +1128,18 @@ DRRenderer::renderEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* 
 }
 
 bool
-DRRenderer::renderMesh( Viewer* viewer, GeomType* mesh, const glm::mat4& rootModelMatrix )
+DRRenderer::renderMesh( Viewer* viewer, Mesh* mesh, const glm::mat4& rootModelMatrix )
 {
 	// IMPORANT: OpenGL applies last matrix in multiplication as first transformation to object
 	// apply model-transformations recursive
 	glm::mat4 modelMatrix = rootModelMatrix * mesh->getModelMatrix();
-	const std::vector<GeomType*>& children = mesh->getChildren();
+	const std::vector<Mesh*>& children = mesh->getChildren();
 
 	if ( children.size() )
 	{
 		for ( unsigned int i = 0; i < children.size(); i++ )
 		{
-			GeomType* child = children[ i ];
+			Mesh* child = children[ i ];
 			// recursively process children
 			if ( false == this->renderMesh( viewer, children[ i ], modelMatrix ) )
 			{

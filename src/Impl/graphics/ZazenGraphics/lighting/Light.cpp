@@ -50,7 +50,7 @@ Light::Light( int width, int height, LightType type, bool shadowCaster )
 {
 	this->m_falloff = 0.0f;
 
-	this->m_boundingGeom = NULL;
+	this->m_boundingMesh = NULL;
 	this->m_shadowMap = NULL;
 }
 

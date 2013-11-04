@@ -8,9 +8,6 @@
 
 #include "GeometryFactory.h"
 
-#include "GeomStaticMesh.h"
-#include "GeomAnimatedMesh.h"
-
 #include "../ZazenGraphics.h"
 
 #include "../Util/AssImpUtils.h"
@@ -23,7 +20,7 @@
 using namespace std;
 using namespace boost;
 
-map<string, GeomType*> GeometryFactory::allMeshes;
+map<string, Mesh*> GeometryFactory::allMeshes;
 boost::filesystem::path GeometryFactory::modelDataPath;
 
 void
@@ -32,10 +29,10 @@ GeometryFactory::setDataPath( const boost::filesystem::path& modelDataPath )
 	GeometryFactory::modelDataPath = modelDataPath;
 }
 
-GeomType*
-GeometryFactory::get( const std::string& fileName )
+Mesh*
+GeometryFactory::getMesh( const std::string& fileName )
 {
-	map<std::string, GeomType*>::iterator findIter = GeometryFactory::allMeshes.find( fileName );
+	map<std::string, Mesh*>::iterator findIter = GeometryFactory::allMeshes.find( fileName );
 	if ( findIter != GeometryFactory::allMeshes.end() )
 	{
 		return findIter->second;
@@ -48,26 +45,26 @@ GeometryFactory::get( const std::string& fileName )
 		return 0;	
 	}
 
-	GeomType* geomType = 0;
+	Mesh* mesh = 0;
 
 	if ( filesystem::is_directory( fullFileName ) )
 	{
-		geomType = GeometryFactory::loadFolder( fullFileName );
+		mesh = GeometryFactory::loadFolder( fullFileName );
 	}
 	else
 	{
-		geomType = GeometryFactory::loadFile( fullFileName );
+		mesh = GeometryFactory::loadFile( fullFileName );
 	}
 	
-	if ( NULL != geomType )
+	if ( NULL != mesh )
 	{
-		GeometryFactory::allMeshes[ fileName ] = geomType;
+		GeometryFactory::allMeshes[ fileName ] = mesh;
 	}
 
-	return geomType;
+	return mesh;
 }
 
-GeomType*
+MeshStatic*
 GeometryFactory::createQuad( float width, float height )
 {
 	float halfWidth = width / 2;
@@ -83,8 +80,8 @@ GeometryFactory::createQuad( float width, float height )
 	memset( indexBuffer, 0, numFaces * 3 * sizeof( GLuint ) );
 
 	// allocate vertexdata
-	GeomStaticMesh::VertexData* vertexData = new GeomStaticMesh::VertexData[ numVertices ];
-	memset( vertexData, 0, numVertices * sizeof( GeomStaticMesh::VertexData ) );
+	MeshStatic::StaticVertexData* vertexData = new MeshStatic::StaticVertexData[ numVertices ];
+	memset( vertexData, 0, numVertices * sizeof( MeshStatic::StaticVertexData ) );
 
 	// top left vertex
 	vertexData[ 0 ].position[ 0 ] = -halfWidth;
@@ -138,11 +135,11 @@ GeometryFactory::createQuad( float width, float height )
 	indexBuffer[ 4 ] = 2;
 	indexBuffer[ 5 ] = 3;
 
-	GeomType* quadMesh = new GeomStaticMesh( numFaces, numVertices, vertexData, indexBuffer );
-
 	// put into map => will be cleaned up
-	std::string quadMeshKey = "QUAD_MESH" + GeometryFactory::allMeshes.size();
-	GeometryFactory::allMeshes[ quadMeshKey ] = quadMesh;
+	std::string quadMeshName = "QUAD_MESH" + GeometryFactory::allMeshes.size();
+	MeshStatic* quadMesh = new MeshStatic( quadMeshName, numFaces, numVertices, vertexData, indexBuffer );
+
+	GeometryFactory::allMeshes[ quadMesh->getName() ] = quadMesh;
 
 	return quadMesh;
 }
@@ -150,11 +147,11 @@ GeometryFactory::createQuad( float width, float height )
 void
 GeometryFactory::freeAll()
 {
-	map<std::string, GeomType*>::iterator iter = GeometryFactory::allMeshes.begin();
+	map<std::string, Mesh*>::iterator iter = GeometryFactory::allMeshes.begin();
 	while ( iter != GeometryFactory::allMeshes.end() )
 	{
-		GeomType* geom = iter->second;
-		delete geom;
+		Mesh* mesh = iter->second;
+		delete mesh;
 
 		iter++;
 	}
@@ -162,10 +159,10 @@ GeometryFactory::freeAll()
 	GeometryFactory::allMeshes.clear();
 }
 
-GeomType*
+Mesh*
 GeometryFactory::loadFolder( const filesystem::path& folderPath )
 {
-	GeomType* folderGroup = new GeomType();
+	Mesh* folderGroup = new Mesh( folderPath.generic_string().c_str() );
 
 	filesystem::directory_iterator iter( folderPath );
 	filesystem::directory_iterator endIter;
@@ -175,31 +172,31 @@ GeometryFactory::loadFolder( const filesystem::path& folderPath )
 	{
 		filesystem::directory_entry entry = *iter++;
 		
-		GeomType* subFolderGeometryFactory = 0;
+		Mesh* subDirectory = 0;
 
 		if ( filesystem::is_directory( entry.path() ) )
 		{
-			subFolderGeometryFactory = GeometryFactory::loadFolder( entry.path() );
+			subDirectory = GeometryFactory::loadFolder( entry.path() );
 		}
 		else
 		{
-			subFolderGeometryFactory = GeometryFactory::loadFile( entry.path() );
+			subDirectory = GeometryFactory::loadFile( entry.path() );
 		}
 		
-		if ( subFolderGeometryFactory )
+		if ( subDirectory )
 		{
-			folderGroup->compareBB( subFolderGeometryFactory->getBBMin(), subFolderGeometryFactory->getBBMin() );
-			folderGroup->addChild( subFolderGeometryFactory );
+			folderGroup->compareAndSetBB( subDirectory->getBBMin(), subDirectory->getBBMin() );
+			folderGroup->addChild( subDirectory );
 		}
 	}
 
 	return folderGroup;
 }
 
-GeomType*
+Mesh*
 GeometryFactory::loadFile( const filesystem::path& filePath )
 {
-	GeomType* geomRoot = 0;
+	Mesh* geomRoot = 0;
 	glm::vec3 geomGroupBBmin;
 	glm::vec3 geomGroupBBmax;
 
@@ -228,12 +225,7 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 	unsigned int runningBoneIndex = 0;
 
 	geomRoot = GeometryFactory::processNode( scene->mRootNode, scene, runningBoneIndex );
-	// can return NULL when contains nothing
-	if ( NULL == geomRoot )
-	{
-		geomRoot->setName( fileName );
-	}
-
+	
 	aiReleaseImport( scene );
 
 	ZazenGraphics::getInstance().getLogger().logInfo() << "LOADED ... " << filePath;
@@ -241,76 +233,74 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
     return geomRoot;
 }
 
-GeomType*
-GeometryFactory::processNode( const struct aiNode* node, const struct aiScene* scene, unsigned int& runningBoneIndex )
+Mesh*
+GeometryFactory::processNode( const struct aiNode* assImpNode, const struct aiScene* assImpScene, unsigned int& runningBoneIndex )
 {
 	glm::mat4 modelMatrix;
-	GeomType* geomNode = new GeomType();
+	Mesh* mesh = new Mesh( assImpNode->mName.C_Str() );
 
-	AssImpUtils::assimpMatToGlm( node->mTransformation, modelMatrix );
+	AssImpUtils::assimpMatToGlm( assImpNode->mTransformation, modelMatrix );
 
-	geomNode->setModelMatrix( modelMatrix );
+	mesh->setModelMatrix( modelMatrix );
 
-	for ( unsigned int i = 0; i < node->mNumMeshes; ++i )
+	for ( unsigned int i = 0; i < assImpNode->mNumMeshes; ++i )
 	{
-		const struct aiMesh* mesh = scene->mMeshes[ node->mMeshes[ i ] ];
+		const struct aiMesh* assImpMesh = assImpScene->mMeshes[ assImpNode->mMeshes[ i ] ];
 
-		GeomType* geomMesh = GeometryFactory::processMesh( mesh, runningBoneIndex );
-		if ( NULL != geomMesh )
+		Mesh* subMesh = GeometryFactory::processMesh( assImpMesh, runningBoneIndex );
+		if ( NULL != subMesh )
 		{
-			geomNode->compareBB( geomMesh->getBBMin(), geomMesh->getBBMax() );
-			geomNode->addChild( geomMesh );
+			mesh->compareAndSetBB( subMesh->getBBMin(), subMesh->getBBMax() );
+			mesh->addChild( subMesh );
 		}
 	}
 
-	for ( unsigned int i = 0; i < node->mNumChildren; i++ )
+	for ( unsigned int i = 0; i < assImpNode->mNumChildren; i++ )
 	{
-		GeomType* geomChildNode = GeometryFactory::processNode( node->mChildren[ i ], scene, runningBoneIndex );
-		if ( NULL != geomChildNode )
+		Mesh* child = GeometryFactory::processNode( assImpNode->mChildren[ i ], assImpScene, runningBoneIndex );
+		if ( NULL != child )
 		{
-			geomNode->compareBB( geomChildNode->getBBMin(), geomChildNode->getBBMax() );
-			geomNode->addChild( geomChildNode );
+			mesh->compareAndSetBB( child->getBBMin(), child->getBBMax() );
+			mesh->addChild( child );
 		}
 	}
 
 	// ignore empty nodes
-	if ( 0 == geomNode->getChildren().size() )
+	if ( 0 == mesh->getChildren().size() )
 	{
-		delete geomNode;
-		geomNode = NULL;
+		delete mesh;
+		mesh = NULL;
 	}
 
-	return geomNode;
+	return mesh;
 }
 
-GeomType*
-GeometryFactory::processMesh( const struct aiMesh* mesh, unsigned int& runningBoneIndex )
+Mesh*
+GeometryFactory::processMesh( const struct aiMesh* assImpMesh, unsigned int& runningBoneIndex )
 {
 	// ignore non-triangle meshes
-	if ( 0 == ( mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE ) )
+	if ( 0 == ( assImpMesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE ) )
 	{
 		return NULL;
 	}
 
-	GeomType* geomMesh = NULL;
+	Mesh* mesh = NULL;
 
 	// this mesh has bones => its supposed to be an animated mesh
-	if ( mesh->HasBones() )
+	if ( assImpMesh->HasBones() )
 	{
-		geomMesh = GeometryFactory::processAnimatedMesh( mesh, runningBoneIndex );
+		mesh = GeometryFactory::processMeshBoned( assImpMesh, runningBoneIndex );
 	}
 	else
 	{
-		geomMesh = GeometryFactory::processStaticMesh( mesh );
+		mesh = GeometryFactory::processMeshStatic( assImpMesh );
 	}
 
-	geomMesh->setName( mesh->mName.C_Str() );
-
-	return geomMesh;
+	return mesh;
 }
 
-GeomType*
-GeometryFactory::processAnimatedMesh( const struct aiMesh* mesh, unsigned int& runningBoneIndex )
+MeshBoned*
+GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh, unsigned int& runningBoneIndex )
 {
 	glm::vec3 meshBBmin;
 	glm::vec3 meshBBmax;
@@ -318,15 +308,15 @@ GeometryFactory::processAnimatedMesh( const struct aiMesh* mesh, unsigned int& r
 	bool ignoredBones = false;
 
 	GLuint* indexBuffer = NULL;
-	GeomAnimatedMesh::VertexData* vertexData = NULL;
+	MeshBoned::BonedVertexData* vertexData = NULL;
 
 	// allocate vertexdata
-	vertexData = new GeomAnimatedMesh::VertexData[ mesh->mNumVertices ];
-	memset( vertexData, 0, mesh->mNumVertices * sizeof( GeomAnimatedMesh::VertexData ) );
+	vertexData = new MeshBoned::BonedVertexData[ assImpMesh->mNumVertices ];
+	memset( vertexData, 0, assImpMesh->mNumVertices * sizeof( MeshBoned::BonedVertexData ) );
 
 	// indexbuffer for faces
-	indexBuffer = new GLuint[ mesh->mNumFaces * 3 ];
-	memset( indexBuffer, 0, mesh->mNumFaces * 3 * sizeof( GLuint ) );
+	indexBuffer = new GLuint[ assImpMesh->mNumFaces * 3 ];
+	memset( indexBuffer, 0, assImpMesh->mNumFaces * 3 * sizeof( GLuint ) );
 
 	meshBBmin[ 0 ] = numeric_limits<float>::max();
 	meshBBmin[ 1 ] = numeric_limits<float>::max();
@@ -336,9 +326,9 @@ GeometryFactory::processAnimatedMesh( const struct aiMesh* mesh, unsigned int& r
 	meshBBmax[ 1 ] = numeric_limits<float>::min();
 	meshBBmax[ 2 ] = numeric_limits<float>::min();
 
-	for ( unsigned int i = 0; i < mesh->mNumBones; i++ )
+	for ( unsigned int i = 0; i < assImpMesh->mNumBones; i++ )
 	{
-		aiBone* bone = mesh->mBones[ i ];
+		aiBone* bone = assImpMesh->mBones[ i ];
 
 		// ignore unnamed bones
 		if ( 0 == bone->mName.length )
@@ -352,7 +342,7 @@ GeometryFactory::processAnimatedMesh( const struct aiMesh* mesh, unsigned int& r
 		for( unsigned int j = 0; j < bone->mNumWeights; j++ )
 		{
 			aiVertexWeight newWeight = bone->mWeights[ j ];
-			GeomAnimatedMesh::VertexData& vertex = vertexData[ newWeight.mVertexId ];
+			MeshBoned::BonedVertexData& vertex = vertexData[ newWeight.mVertexId ];
 
 			// only up to 4 bones per vertex are used
 			if ( 4 > vertex.boneCount )
@@ -392,28 +382,28 @@ GeometryFactory::processAnimatedMesh( const struct aiMesh* mesh, unsigned int& r
 
 	// bone-indices must match the bone-indices generated by Animation.cpp which is global for all meshes and not separate
 	// => we need for one model global bone-indices and not mesh-specific
-	runningBoneIndex += mesh->mNumBones;
+	runningBoneIndex += assImpMesh->mNumBones;
 
-	for ( unsigned int i = 0; i < mesh->mNumFaces; ++i )
+	for ( unsigned int i = 0; i < assImpMesh->mNumFaces; ++i )
 	{
-		const struct aiFace* face = &mesh->mFaces[ i ];
+		const struct aiFace* face = &assImpMesh->mFaces[ i ];
 
 		for( unsigned int j = 0; j < face->mNumIndices; j++ )
 		{
 			int index = face->mIndices[ j ];
 
 			indexBuffer[ i * 3 + j ] = index;
-			memcpy( vertexData[ index ].position, &mesh->mVertices[ index ].x, sizeof( GeomAnimatedMesh::Vertex ) );
-			memcpy( vertexData[ index ].normal, &mesh->mNormals[ index ].x, sizeof( GeomAnimatedMesh::Normal ) );
-			memcpy( vertexData[ index ].tangent, &mesh->mTangents[ index ].x, sizeof( GeomAnimatedMesh::Tangent ) );
+			memcpy( vertexData[ index ].position, &assImpMesh->mVertices[ index ].x, sizeof( MeshBoned::Vertex ) );
+			memcpy( vertexData[ index ].normal, &assImpMesh->mNormals[ index ].x, sizeof( MeshBoned::Normal ) );
+			memcpy( vertexData[ index ].tangent, &assImpMesh->mTangents[ index ].x, sizeof( MeshBoned::Tangent ) );
 
-			if ( mesh->HasTextureCoords( 0 ) )
+			if ( assImpMesh->HasTextureCoords( 0 ) )
 			{
-				vertexData[ index ].texCoord[ 0 ] = mesh->mTextureCoords[ 0 ][ index ].x;
-				vertexData[ index ].texCoord[ 1 ] = mesh->mTextureCoords[ 0 ][ index ].y;
+				vertexData[ index ].texCoord[ 0 ] = assImpMesh->mTextureCoords[ 0 ][ index ].x;
+				vertexData[ index ].texCoord[ 1 ] = assImpMesh->mTextureCoords[ 0 ][ index ].y;
 			}
 
-			GeometryFactory::updateBB( mesh->mVertices[ index ], meshBBmin, meshBBmax );
+			GeometryFactory::updateBB( assImpMesh->mVertices[ index ], meshBBmin, meshBBmax );
 		}
 	}
 
@@ -422,20 +412,20 @@ GeometryFactory::processAnimatedMesh( const struct aiMesh* mesh, unsigned int& r
 		ZazenGraphics::getInstance().getLogger().logWarning() << "ignoring bone-influence on vertex because max bone-per-vertex of 4 exceeded";
 	}
 
-	GeomAnimatedMesh* animatedMesh = new GeomAnimatedMesh( mesh->mNumFaces, mesh->mNumVertices, vertexData, indexBuffer );
-	animatedMesh->setBB( meshBBmin, meshBBmax );
+	MeshBoned* meshBoned = new MeshBoned( assImpMesh->mName.C_Str(), assImpMesh->mNumFaces, assImpMesh->mNumVertices, vertexData, indexBuffer );
+	meshBoned->setBB( meshBBmin, meshBBmax );
 
-	return animatedMesh;
+	return meshBoned;
 }
 
-GeomType*
-GeometryFactory::processStaticMesh( const struct aiMesh* mesh )
+MeshStatic*
+GeometryFactory::processMeshStatic( const struct aiMesh* assImpMesh )
 {
 	glm::vec3 meshBBmin;
 	glm::vec3 meshBBmax;
 
 	GLuint* indexBuffer = NULL;
-	GeomStaticMesh::VertexData* vertexData = NULL;
+	MeshStatic::StaticVertexData* vertexData = NULL;
 
 	meshBBmin[ 0 ] = numeric_limits<float>::max();
 	meshBBmin[ 1 ] = numeric_limits<float>::max();
@@ -446,40 +436,40 @@ GeometryFactory::processStaticMesh( const struct aiMesh* mesh )
 	meshBBmax[ 2 ] = numeric_limits<float>::min();
 
 	// allocate vertexdata
-	vertexData = new GeomStaticMesh::VertexData[ mesh->mNumVertices ];
-	memset( vertexData, 0, mesh->mNumVertices * sizeof( GeomStaticMesh::VertexData ) );
+	vertexData = new MeshStatic::StaticVertexData[ assImpMesh->mNumVertices ];
+	memset( vertexData, 0, assImpMesh->mNumVertices * sizeof( MeshStatic::StaticVertexData ) );
 
 	// indexbuffer for faces
-	indexBuffer = new GLuint[ mesh->mNumFaces * 3 ];
-	memset( indexBuffer, 0, mesh->mNumFaces * 3 * sizeof( GLuint ) );
+	indexBuffer = new GLuint[ assImpMesh->mNumFaces * 3 ];
+	memset( indexBuffer, 0, assImpMesh->mNumFaces * 3 * sizeof( GLuint ) );
 
-	for ( unsigned int i = 0; i < mesh->mNumFaces; ++i )
+	for ( unsigned int i = 0; i < assImpMesh->mNumFaces; ++i )
 	{
-		const struct aiFace* face = &mesh->mFaces[ i ];
+		const struct aiFace* face = &assImpMesh->mFaces[ i ];
 
 		for( unsigned int j = 0; j < face->mNumIndices; j++ )
 		{
 			int index = face->mIndices[ j ];
 
 			indexBuffer[ i * 3 + j ] = index;
-			memcpy( vertexData[ index ].position, &mesh->mVertices[ index ].x, sizeof( GeomStaticMesh::Vertex ) );
-			memcpy( vertexData[ index ].normal, &mesh->mNormals[ index ].x, sizeof( GeomStaticMesh::Normal ) );
-			memcpy( vertexData[ index ].tangent, &mesh->mTangents[ index ].x, sizeof( GeomStaticMesh::Tangent ) );
+			memcpy( vertexData[ index ].position, &assImpMesh->mVertices[ index ].x, sizeof( MeshStatic::Vertex ) );
+			memcpy( vertexData[ index ].normal, &assImpMesh->mNormals[ index ].x, sizeof( MeshStatic::Normal ) );
+			memcpy( vertexData[ index ].tangent, &assImpMesh->mTangents[ index ].x, sizeof( MeshStatic::Tangent ) );
 
-			if ( mesh->HasTextureCoords( 0 ) )
+			if ( assImpMesh->HasTextureCoords( 0 ) )
 			{
-				vertexData[ index ].texCoord[ 0 ] = mesh->mTextureCoords[ 0 ][ index ].x;
-				vertexData[ index ].texCoord[ 1 ] = mesh->mTextureCoords[ 0 ][ index ].y;
+				vertexData[ index ].texCoord[ 0 ] = assImpMesh->mTextureCoords[ 0 ][ index ].x;
+				vertexData[ index ].texCoord[ 1 ] = assImpMesh->mTextureCoords[ 0 ][ index ].y;
 			}
 
-			GeometryFactory::updateBB( mesh->mVertices[ index ], meshBBmin, meshBBmax );
+			GeometryFactory::updateBB( assImpMesh->mVertices[ index ], meshBBmin, meshBBmax );
 		}
 	}
 
-	GeomStaticMesh* staticMesh = new GeomStaticMesh( mesh->mNumFaces, mesh->mNumVertices, vertexData, indexBuffer );
-	staticMesh->setBB( meshBBmin, meshBBmax );
+	MeshStatic* meshStatic = new MeshStatic( assImpMesh->mName.C_Str(), assImpMesh->mNumFaces, assImpMesh->mNumVertices, vertexData, indexBuffer );
+	meshStatic->setBB( meshBBmin, meshBBmax );
 
-	return staticMesh;
+	return meshStatic;
 }
 
 void

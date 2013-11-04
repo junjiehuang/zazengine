@@ -90,10 +90,10 @@
     <ClCompile Include="context\RenderingContext.cpp" />
     <ClCompile Include="framebuffer\FrameBufferObject.cpp" />
     <ClCompile Include="framebuffer\RenderTarget.cpp" />
-    <ClCompile Include="geometry\GeomAnimatedMesh.cpp" />
     <ClCompile Include="geometry\GeometryFactory.cpp" />
-    <ClCompile Include="geometry\GeomStaticMesh.cpp" />
-    <ClCompile Include="geometry\GeomType.cpp" />
+    <ClCompile Include="geometry\Mesh.cpp" />
+    <ClCompile Include="geometry\MeshBoned.cpp" />
+    <ClCompile Include="geometry\MeshStatic.cpp" />
     <ClCompile Include="lighting\Light.cpp" />
     <ClCompile Include="material\Material.cpp" />
     <ClCompile Include="material\MaterialClassic.cpp" />
@@ -129,10 +129,10 @@
     <ClInclude Include="context\RenderingContext.h" />
     <ClInclude Include="framebuffer\FrameBufferObject.h" />
     <ClInclude Include="framebuffer\RenderTarget.h" />
-    <ClInclude Include="geometry\GeomAnimatedMesh.h" />
     <ClInclude Include="geometry\GeometryFactory.h" />
-    <ClInclude Include="geometry\GeomStaticMesh.h" />
-    <ClInclude Include="geometry\GeomType.h" />
+    <ClInclude Include="geometry\Mesh.h" />
+    <ClInclude Include="geometry\MeshBoned.h" />
+    <ClInclude Include="geometry\MeshStatic.h" />
     <ClInclude Include="lighting\Light.h" />
     <ClInclude Include="material\Material.h" />
     <ClInclude Include="material\MaterialClassic.h" />
