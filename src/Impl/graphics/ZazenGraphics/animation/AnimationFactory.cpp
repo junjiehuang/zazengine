@@ -227,8 +227,6 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 Animation::AnimationNode*
 AnimationFactory::collectNodes( Animation* animation, const aiNode* assImpNode )
 {
-	ZazenGraphics::getInstance().getLogger().logError() << "processing node in animationfactory " << assImpNode->mName.C_Str();
-	
 	Animation::AnimationNode* parentNode = new Animation::AnimationNode();
 
 	parentNode->m_name = assImpNode->mName.C_Str();

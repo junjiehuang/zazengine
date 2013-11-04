@@ -28,7 +28,7 @@ ZazenGraphicsEntity::ZazenGraphicsEntity( IGameObject* p )
 	this->m_distance = 0;
 	this->m_lastFrame = 0;
 	
-	this->m_mesh = 0;
+	this->m_rootMeshNode = 0;
 	this->m_material = 0;
 
 	this->m_light = 0;
@@ -120,7 +120,7 @@ ZazenGraphicsEntity::update()
 
 	if ( this->m_activeAnimation )
 	{
-		this->m_activeAnimation->animate( this->m_mesh );
+		this->m_activeAnimation->update();
 	}
 }
 
@@ -184,7 +184,7 @@ ZazenGraphicsEntity::recalculateDistance( const glm::mat4& viewMatrix )
 	// calculate model-view for this instance
 	glm::mat4 modelView = viewMatrix * this->m_modelMatrix;
 	// calculate center of instance in view-space
-	glm::vec4 vsCenter = modelView * glm::vec4( this->m_mesh->getCenter(), 1.0 );
+	glm::vec4 vsCenter = modelView * glm::vec4( this->m_rootMeshNode->getCenter(), 1.0 );
 
 	// distance from the viewer is the z-component of the center
 	this->m_distance = vsCenter.z;

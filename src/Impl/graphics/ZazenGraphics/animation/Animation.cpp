@@ -6,7 +6,7 @@ using namespace std;
 
 Animation::Animation( double durationTicks, double ticksPerSecond )
 {
-	this->m_skeleton = 0;
+	this->m_skeletonRoot = NULL;
 
 	this->m_currentTime = 0.0;
 	this->m_currentFrame = 0.0;
@@ -26,13 +26,14 @@ Animation::~Animation()
 }
 
 void
-Animation::animate( MeshNode* rootMeshNode )
+Animation::update()
 {
 	double timeAdvance = ZazenGraphics::getInstance().getCore().getProcessingFactor();
 
-	if ( NULL == this->m_skeleton )
+	// not initialized with a skeleton yet
+	if ( NULL == this->m_skeletonRoot )
 	{
-		this->buildAnimationSkeleton( rootMeshNode );
+		return;
 	}
 
 	this->m_transforms.clear();
@@ -40,31 +41,45 @@ Animation::animate( MeshNode* rootMeshNode )
 	this->m_currentTime = fmod( ( this->m_currentTime + timeAdvance ), this->m_durationInSec );
 	this->m_currentFrame = this->m_currentTime * this->m_ticksPerSecond;
 
-	this->animateSkeleton( this->m_skeleton, this->m_skeleton->m_transform );
+	this->animateSkeleton( this->m_skeletonRoot, this->m_skeletonRoot->m_transform );
 }
 
 void
+Animation::initSkeleton( MeshNode* rootMeshNode )
+{
+	if ( NULL == this->m_skeletonRoot && rootMeshNode )
+	{
+		this->m_skeletonRoot = this->buildAnimationSkeleton( rootMeshNode );
+	}
+}
+
+Animation::AnimationSkeleton*
 Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 {
+	AnimationSkeleton* skeleton = new AnimationSkeleton();
+	skeleton->m_transform = rootMeshNode->getModelMatrix();
+
 	std::map<std::string, AnimationNode*>::iterator findAnimationNodeIter = this->m_animationNodes.find( rootMeshNode->getName() );
 	std::map<std::string, AnimationBone*>::iterator findAnimationBoneIter = this->m_animationBones.find( rootMeshNode->getName() );
 
 	if ( this->m_animationNodes.end() != findAnimationNodeIter )
 	{
-		// TODO 
+		skeleton->m_animationNode = findAnimationNodeIter->second;
 	}
 
 	if ( this->m_animationBones.end() != findAnimationBoneIter )
 	{
-		// TODO 
+		skeleton->m_animationBone = findAnimationBoneIter->second;
 	}
 
 	const std::vector<MeshNode*>& children = rootMeshNode->getChildren();
-
 	for ( unsigned int i = 0; i < children.size(); i++ )
 	{
-		this->buildAnimationSkeleton( children[ i ] );
+		AnimationSkeleton* childSkeleton = this->buildAnimationSkeleton( children[ i ] );
+		skeleton->m_children.push_back( childSkeleton );
 	}
+
+	return skeleton;
 }
 
 void
@@ -73,7 +88,7 @@ Animation::animateSkeleton( AnimationSkeleton* skeleton, const glm::mat4& parent
 	glm::mat4 nodeTransform;
 
 	if ( skeleton->m_animationNode )
-	
+	{
 		AnimationNode* animationNode = skeleton->m_animationNode;
 		AnimationChannel& channel = animationNode->m_animationChannels;
 
@@ -81,15 +96,14 @@ Animation::animateSkeleton( AnimationSkeleton* skeleton, const glm::mat4& parent
 		glm::mat4 rotationMatrix;
 		glm::mat4 scalingMatrix;
 
-		this->interpolatePosition( channel->m_positionKeys, translationMatrix );
-		this->interpolateRotation( channel->m_rotationKeys, rotationMatrix );
-		this->interpolateScaling( channel->m_scalingKeys, translationMatrix );
+		this->interpolatePosition( channel.m_positionKeys, translationMatrix );
+		this->interpolateRotation( channel.m_rotationKeys, rotationMatrix );
+		this->interpolateScaling( channel.m_scalingKeys, translationMatrix );
 
 		// order is important: first scaling, then rotation and last translation (matrix-multiplication applies the operation first which one was multiplied with last)
 		nodeTransform = translationMatrix * rotationMatrix * scalingMatrix;
 	}
 
-	// apply hierarchical transformation
 	nodeTransform = parentTransform * nodeTransform;
 
 	if ( skeleton->m_animationBone )
@@ -97,7 +111,7 @@ Animation::animateSkeleton( AnimationSkeleton* skeleton, const glm::mat4& parent
 		const AnimationBone* bone = skeleton->m_animationBone;
 		nodeTransform = nodeTransform * bone->m_meshToBoneTransf;
 
-		//ZazenGraphics::getInstance().getLogger().logWarning() << "bone \"" << bone->m_name << "\" has index of " << this->m_transforms.size();
+		ZazenGraphics::getInstance().getLogger().logInfo() << "bone \"" << bone->m_name << "\" has index of " << this->m_transforms.size();
 
 		this->m_transforms.push_back( nodeTransform );
 	}
@@ -198,7 +212,7 @@ Animation::interpolateScaling( const std::vector<AnimationKey<glm::vec3>>& scali
 
 template <typename T>
 void
-Animation::findFirstAndNext( const vector<AnimNode::AnimKey<T>>& keys, AnimNode::AnimKey<T>& first, AnimNode::AnimKey<T>& next, unsigned int& lastChannelIndex )
+Animation::findFirstAndNext( const vector<AnimationKey<T>>& keys, AnimationKey<T>& first, AnimationKey<T>& next, unsigned int& lastChannelIndex )
 {
 	// NOTE: dirty-hack for doom3 models: we suppose that there are as many keys as maximum keys and all are equally spaced thus we can index right into the vector
 	unsigned int index = ( unsigned int ) this->m_currentFrame;

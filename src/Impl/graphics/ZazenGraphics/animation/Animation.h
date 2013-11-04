@@ -48,19 +48,26 @@ class Animation
 		Animation( double, double );
 		~Animation();
 
-		void animate( MeshNode* );
+		void update();
+		void initSkeleton( MeshNode* );
 
 		const std::vector<glm::mat4>& getTransforms() const { return this->m_transforms; };
 
 	private:
 		struct AnimationSkeleton {
+			AnimationSkeleton()
+			{
+				this->m_animationNode = NULL;
+				this->m_animationBone = NULL;
+			}
+
 			glm::mat4 m_transform;
 			AnimationNode* m_animationNode;
 			AnimationBone* m_animationBone;
 			std::vector<AnimationSkeleton*> m_children;
 		};
 
-		AnimationSkeleton* m_skeleton;
+		AnimationSkeleton* m_skeletonRoot;
 		std::map<std::string, AnimationNode*> m_animationNodes;
 		std::map<std::string, AnimationBone*> m_animationBones;
 
@@ -76,7 +83,7 @@ class Animation
 		double m_durationTicks;
 		double m_durationInSec;
 
-		void buildAnimationSkeleton( MeshNode* );
+		AnimationSkeleton* buildAnimationSkeleton( MeshNode* );
 
 		void animateSkeleton( AnimationSkeleton*, const glm::mat4& );
 

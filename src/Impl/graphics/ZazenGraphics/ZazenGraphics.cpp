@@ -241,8 +241,8 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		const char* str = meshNode->Attribute( "file" );
 		if ( 0 != str )
 		{
-			entity->m_mesh = GeometryFactory::getMesh( str );
-			if ( NULL == entity->m_mesh )
+			entity->m_rootMeshNode = GeometryFactory::getMesh( str );
+			if ( NULL == entity->m_rootMeshNode )
 			{
 				this->m_logger->logWarning() << "couldn't get mesh " << str << " - will be ignored";
 			}
@@ -500,6 +500,10 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 					string fileName = directory + "/" + str + extension;
 
 					entity->m_activeAnimation = AnimationFactory::get( fileName );
+					if ( entity->m_activeAnimation )
+					{
+						entity->m_activeAnimation->initSkeleton( entity->getMeshNode() );
+					}
 				}
 			}
 		}

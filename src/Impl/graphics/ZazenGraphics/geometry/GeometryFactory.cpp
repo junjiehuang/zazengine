@@ -328,7 +328,7 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh, unsigned int
 			continue;
 		}
 
-		//ZazenGraphics::getInstance().getLogger().logWarning() << "bone \"" << bone->mName.C_Str() << "\" has index of " << i + runningBoneIndex;
+		ZazenGraphics::getInstance().getLogger().logWarning() << "bone \"" << bone->mName.C_Str() << "\" has index of " << i + runningBoneIndex;
 
 		for( unsigned int j = 0; j < bone->mNumWeights; j++ )
 		{
