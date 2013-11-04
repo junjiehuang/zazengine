@@ -92,7 +92,6 @@
     <ClCompile Include="framebuffer\RenderTarget.cpp" />
     <ClCompile Include="geometry\GeomAnimatedMesh.cpp" />
     <ClCompile Include="geometry\GeometryFactory.cpp" />
-    <ClCompile Include="geometry\GeomSkyBox.cpp" />
     <ClCompile Include="geometry\GeomStaticMesh.cpp" />
     <ClCompile Include="geometry\GeomType.cpp" />
     <ClCompile Include="lighting\Light.cpp" />
@@ -108,6 +107,7 @@
     <ClCompile Include="program\UniformBlock.cpp" />
     <ClCompile Include="program\UniformManagement.cpp" />
     <ClCompile Include="renderer\DRRenderer.cpp" />
+    <ClCompile Include="renderer\SkyBox.cpp" />
     <ClCompile Include="texture\Texture.cpp" />
     <ClCompile Include="texture\TextureFactory.cpp" />
     <ClCompile Include="util\AssImpUtils.cpp" />
@@ -131,7 +131,6 @@
     <ClInclude Include="framebuffer\RenderTarget.h" />
     <ClInclude Include="geometry\GeomAnimatedMesh.h" />
     <ClInclude Include="geometry\GeometryFactory.h" />
-    <ClInclude Include="geometry\GeomSkyBox.h" />
     <ClInclude Include="geometry\GeomStaticMesh.h" />
     <ClInclude Include="geometry\GeomType.h" />
     <ClInclude Include="lighting\Light.h" />
@@ -147,6 +146,7 @@
     <ClInclude Include="program\UniformBlock.h" />
     <ClInclude Include="program\UniformManagement.h" />
     <ClInclude Include="renderer\DRRenderer.h" />
+    <ClInclude Include="renderer\SkyBox.h" />
     <ClInclude Include="texture\Texture.h" />
     <ClInclude Include="texture\TextureFactory.h" />
     <ClInclude Include="util\AssImpUtils.h" />

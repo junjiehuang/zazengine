@@ -11,10 +11,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "DRRenderer.h"
+#include "SkyBox.h"
 
 #include "../Util/GLUtils.h"
 #include "../ZazenGraphics.h"
-#include "../Geometry/GeomSkyBox.h"
 #include "../Geometry/GeometryFactory.h"
 #include "../Geometry/GeomAnimatedMesh.h"
 #include "../Program/ProgramManagement.h"
@@ -460,9 +460,6 @@ DRRenderer::initUniformBlocks()
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding transparent material uniform-block failed - exit" );
 		return false;
 	}
-	
-	// TODO clean-up: different approach in future
-	GeomSkyBox::getRef().setTransformBlock( this->m_transformsBlock );
 
 	return true;
 }
@@ -611,7 +608,7 @@ bool
 DRRenderer::renderSkyBox()
 {
 	// skip sky-box rendering if not present
-	if ( false == GeomSkyBox::isPresent() )
+	if ( false == SkyBox::isPresent() )
 	{
 		return true;
 	}
@@ -637,7 +634,7 @@ DRRenderer::renderSkyBox()
 	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", 0 );
 
 	// render the geometry
-	GeomSkyBox::getRef().render( *this->m_mainCamera );
+	SkyBox::getRef().render( *this->m_mainCamera, this->m_transformsBlock );
 
 	return true;
 }

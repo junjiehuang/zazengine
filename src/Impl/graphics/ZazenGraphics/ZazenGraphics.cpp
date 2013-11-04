@@ -11,13 +11,13 @@
 #include "Program/UniformManagement.h"
 
 #include "Geometry/GeometryFactory.h"
-#include "Geometry/GeomSkyBox.h"
 
 #include "Animation/AnimationFactory.h"
 #include "Material/MaterialFactory.h"
 #include "Texture/TextureFactory.h"
 
 #include "Renderer/DRRenderer.h"
+#include "Renderer/SkyBox.h"
 
 #include "Context/RenderingContext.h"
 
@@ -131,7 +131,7 @@ ZazenGraphics::shutdown()
 	MaterialFactory::freeAll();
 	TextureFactory::freeAll();
 	GeometryFactory::freeAll();
-	GeomSkyBox::shutdown();
+	SkyBox::shutdown();
 	UniformManagement::freeAllBlocks();
 	ProgramManagement::freeAll();
 
@@ -300,7 +300,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 			string skyBoxFormat = str;
 			filesystem::path skyBoxFolderPath = filesystem::path( skyFolderPathStr );
 
-			if ( false == GeomSkyBox::initialize( skyBoxFolderPath, skyBoxFormat ) )
+			if ( false == SkyBox::initialize( skyBoxFolderPath, skyBoxFormat ) )
 			{
 				this->m_logger->logError( "failed to initialize Sky-Box" );
 				return false;

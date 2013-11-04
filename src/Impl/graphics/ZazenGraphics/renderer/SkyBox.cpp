@@ -1,38 +1,36 @@
 /*
- *  spacebox.cpp
+ *  SkyBox.cpp
  *  ZENgine
  *
  *  Created by Jonathan Thaler on 02.05.08.
- *  Copyright 2008 __MyCompanyName__. All rights reserved.
  *
  */
 
-#include "GeomSkyBox.h"
+#include "SkyBox.h"
 
 #include "../Util/GLUtils.h"
 #include "../Texture/TextureFactory.h"
 
-#include "GeometryFactory.h"
-
 #include "../ZazenGraphics.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
 
-GeomSkyBox* GeomSkyBox::instance = NULL;
+SkyBox* SkyBox::instance = NULL;
 
 bool
-GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std::string& format )
+SkyBox::initialize( const boost::filesystem::path& textureFolder, const std::string& format )
 {
-	if ( NULL == GeomSkyBox::instance )
+	if ( NULL == SkyBox::instance )
 	{
-		new GeomSkyBox();
+		new SkyBox();
 
-		GeomSkyBox::instance->m_cubeMap = TextureFactory::getCube( textureFolder, format );
-		if ( NULL == GeomSkyBox::instance->m_cubeMap )
+		SkyBox::instance->m_cubeMap = TextureFactory::getCube( textureFolder, format );
+		if ( NULL == SkyBox::instance->m_cubeMap )
 		{
-			ZazenGraphics::getInstance().getLogger().logError( "GeomSkyBox::initialize: couldn't create cube-map" );
-			GeomSkyBox::shutdown();
+			ZazenGraphics::getInstance().getLogger().logError( "SkyBox::initialize: couldn't create cube-map" );
+			SkyBox::shutdown();
 			return false;
 		}
 
@@ -48,9 +46,9 @@ GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std:
 		   1.0,  1.0, -1.0,
 		};
 
-		glGenBuffers( 1, &GeomSkyBox::instance->m_dataVBO );
+		glGenBuffers( 1, &SkyBox::instance->m_dataVBO );
 		GL_PEEK_ERRORS_AT
-		glBindBuffer( GL_ARRAY_BUFFER, GeomSkyBox::instance->m_dataVBO );
+		glBindBuffer( GL_ARRAY_BUFFER, SkyBox::instance->m_dataVBO );
 		GL_PEEK_ERRORS_AT
 		glBufferData( GL_ARRAY_BUFFER, sizeof( cube_vertices ), cube_vertices, GL_STATIC_DRAW );
 		GL_PEEK_ERRORS_AT
@@ -65,9 +63,9 @@ GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std:
 		  1, 2, 6, 5,
 		};
 
-		glGenBuffers( 1, &GeomSkyBox::instance->m_indexVBO );
+		glGenBuffers( 1, &SkyBox::instance->m_indexVBO );
 		GL_PEEK_ERRORS_AT
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, GeomSkyBox::instance->m_indexVBO );
+		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, SkyBox::instance->m_indexVBO );
 		GL_PEEK_ERRORS_AT
 		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( cube_indices ), cube_indices, GL_STATIC_DRAW );
 		GL_PEEK_ERRORS_AT
@@ -77,27 +75,27 @@ GeomSkyBox::initialize( const boost::filesystem::path& textureFolder, const std:
 }
 
 bool
-GeomSkyBox::shutdown()
+SkyBox::shutdown()
 {
-	if ( GeomSkyBox::instance )
+	if ( SkyBox::instance )
 	{
-		delete GeomSkyBox::instance;
+		delete SkyBox::instance;
 	}
 
 	return true;
 }
 
-GeomSkyBox::GeomSkyBox()
+SkyBox::SkyBox()
 {
 	this->m_cubeMap = NULL;
 
 	this->m_dataVBO = 0;
 	this->m_indexVBO = 0;
 
-	GeomSkyBox::instance = this;
+	SkyBox::instance = this;
 }
 
-GeomSkyBox::~GeomSkyBox()
+SkyBox::~SkyBox()
 {
 	if ( this->m_dataVBO )
 	{
@@ -109,11 +107,11 @@ GeomSkyBox::~GeomSkyBox()
 		glDeleteBuffers( 1, &this->m_indexVBO );
 	}
 
-	GeomSkyBox::instance = NULL;
+	SkyBox::instance = NULL;
 }
 
 bool
-GeomSkyBox::render( Viewer& camera )
+SkyBox::render( const Viewer& camera, UniformBlock* transformsBlock )
 {
 	// disable depth-writing, sky-box is ALWAYS behind everything else
 	glDisable( GL_DEPTH_TEST );
@@ -129,13 +127,13 @@ GeomSkyBox::render( Viewer& camera )
 	modelViewMat[ 3 ][ 1 ] = 0.0f;
 	modelViewMat[ 3 ][ 2 ] = 0.0f;
 
-	if ( false == this->m_transformsBlock->bindBuffer() )
+	if ( false == transformsBlock->bindBuffer() )
 	{
 		return false;
 	}
 
-	this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMat );
-	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", projMat );
+	transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMat );
+	transformsBlock->updateField( "TransformUniforms.projectionMatrix", projMat );
 
 	this->m_cubeMap->bind( 0 );
 

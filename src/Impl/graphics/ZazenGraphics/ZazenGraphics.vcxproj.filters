@@ -138,9 +138,6 @@
     <ClCompile Include="geometry\GeomType.cpp">
       <Filter>Quelldateien\geometry</Filter>
     </ClCompile>
-    <ClCompile Include="geometry\GeomSkyBox.cpp">
-      <Filter>Quelldateien\geometry</Filter>
-    </ClCompile>
     <ClCompile Include="lighting\Light.cpp">
       <Filter>Quelldateien\lighting</Filter>
     </ClCompile>
@@ -231,6 +228,9 @@
     <ClCompile Include="animation\AnimNode.cpp">
       <Filter>Quelldateien\animation</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\SkyBox.cpp">
+      <Filter>Quelldateien\renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ZazenGraphics.h">
@@ -243,9 +243,6 @@
       <Filter>Headerdateien\geometry</Filter>
     </ClInclude>
     <ClInclude Include="geometry\GeomType.h">
-      <Filter>Headerdateien\geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="geometry\GeomSkyBox.h">
       <Filter>Headerdateien\geometry</Filter>
     </ClInclude>
     <ClInclude Include="lighting\Light.h">
@@ -343,6 +340,9 @@
     </ClInclude>
     <ClInclude Include="animation\AnimNode.h">
       <Filter>Headerdateien\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\SkyBox.h">
+      <Filter>Headerdateien\renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
