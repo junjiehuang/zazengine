@@ -36,11 +36,10 @@ class GeometryFactory
 		static GeomType* loadFolder( const boost::filesystem::path& );
 		static GeomType* loadFile( const boost::filesystem::path& );
 
-		static void processNodeChildren( GeomType* geomParent, const struct aiNode*, const struct aiScene* );
-		static GeomType* processNode( const struct aiNode*, const struct aiScene* );		 
-		static GeomType* processMesh( const struct aiMesh* );
+		static GeomType* processNode( const struct aiNode*, const struct aiScene*, unsigned int& );		 
+		static GeomType* processMesh( const struct aiMesh*, unsigned int& );
 
-		static GeomType* processAnimatedMesh( const struct aiMesh* );
+		static GeomType* processAnimatedMesh( const struct aiMesh*, unsigned int& );
 		static GeomType* processStaticMesh( const struct aiMesh* );
 
 		static void updateBB( const aiVector3D& vertex, glm::vec3&, glm::vec3& );

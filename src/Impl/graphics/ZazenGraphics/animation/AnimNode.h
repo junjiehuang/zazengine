@@ -22,6 +22,7 @@ class AnimNode
 
 		// TODO: refine when implementation finished: when only one field: collapse
 		struct Bone {
+			std::string m_name;
 			glm::mat4 m_meshToBoneTransf;
 		};
 

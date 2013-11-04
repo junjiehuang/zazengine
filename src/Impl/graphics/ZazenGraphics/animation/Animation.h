@@ -31,6 +31,9 @@ class Animation
 
 		double m_currentTime;
 		double m_currentFrame;
+		unsigned int m_lastPosChannelIndex;
+		unsigned int m_lastRotChannelIndex;
+		unsigned int m_lastScaleChannelIndex;
 
 		double m_ticksPerSecond;
 		double m_durationTicks;
@@ -42,7 +45,7 @@ class Animation
 		void interpolateRotation( const std::vector<AnimNode::AnimKey<glm::quat>>&, glm::mat4& );
 		void interpolateScaling( const std::vector<AnimNode::AnimKey<glm::vec3>>&, glm::mat4& );
 
-		template <typename T> void findFirstAndNext( const std::vector<AnimNode::AnimKey<T>>&, AnimNode::AnimKey<T>&, AnimNode::AnimKey<T>& );
+		template <typename T> void findFirstAndNext( const std::vector<AnimNode::AnimKey<T>>&, AnimNode::AnimKey<T>&, AnimNode::AnimKey<T>&, unsigned int& );
 };
 
 #endif

@@ -1,5 +1,7 @@
 #include "Animation.h"
 
+#include "../ZazenGraphics.h"
+
 using namespace std;
 
 Animation::Animation( double durationTicks, double ticksPerSecond )
@@ -8,6 +10,10 @@ Animation::Animation( double durationTicks, double ticksPerSecond )
 
 	this->m_currentTime = 0.0;
 	this->m_currentFrame = 0.0;
+	
+	this->m_lastPosChannelIndex = 0;
+	this->m_lastRotChannelIndex = 0;
+	this->m_lastScaleChannelIndex = 0;
 
 	this->m_ticksPerSecond = ticksPerSecond;
 	this->m_durationTicks = durationTicks;
@@ -65,6 +71,8 @@ Animation::performRecursive( AnimNode* node, const glm::mat4& parentTransform )
 		const AnimNode::Bone* bone = node->getBone();
 		nodeTransform = nodeTransform * bone->m_meshToBoneTransf;
 
+		//ZazenGraphics::getInstance().getLogger().logWarning() << "bone \"" << bone->m_name << "\" has index of " << this->m_transforms.size();
+
 		this->m_transforms.push_back( nodeTransform );
 	}
 
@@ -98,7 +106,7 @@ Animation::interpolatePosition( const vector<AnimNode::AnimKey<glm::vec3>>& posi
 	AnimNode::AnimKey<glm::vec3> firstPos;
 	AnimNode::AnimKey<glm::vec3> nextPos;
 
-	this->findFirstAndNext<glm::vec3>( positionKeys, firstPos, nextPos );
+	this->findFirstAndNext<glm::vec3>( positionKeys, firstPos, nextPos, this->m_lastPosChannelIndex );
 
 	float normalizedTime = ( float ) ( ( this->m_currentFrame - firstPos.m_time ) / ( nextPos.m_time - firstPos.m_time ) );
 
@@ -128,7 +136,7 @@ Animation::interpolateRotation( const std::vector<AnimNode::AnimKey<glm::quat>>&
 	AnimNode::AnimKey<glm::quat> firstRot;
 	AnimNode::AnimKey<glm::quat> nextRot;
 
-	this->findFirstAndNext<glm::quat>( rotationKeys, firstRot, nextRot );
+	this->findFirstAndNext<glm::quat>( rotationKeys, firstRot, nextRot, this->m_lastRotChannelIndex );
 
 	// TODO: do interpolation of scaling between first and next
 }
@@ -155,7 +163,7 @@ Animation::interpolateScaling( const std::vector<AnimNode::AnimKey<glm::vec3>>& 
 	AnimNode::AnimKey<glm::vec3> firstScaling;
 	AnimNode::AnimKey<glm::vec3> nextScaling;
 	
-	this->findFirstAndNext<glm::vec3>( scalingKeys, firstScaling, nextScaling );
+	this->findFirstAndNext<glm::vec3>( scalingKeys, firstScaling, nextScaling, this->m_lastScaleChannelIndex );
 
 	double deltaTime = nextScaling.m_time - firstScaling.m_time;
 
@@ -164,18 +172,53 @@ Animation::interpolateScaling( const std::vector<AnimNode::AnimKey<glm::vec3>>& 
 
 template <typename T>
 void
-Animation::findFirstAndNext( const vector<AnimNode::AnimKey<T>>& keys, AnimNode::AnimKey<T>& first, AnimNode::AnimKey<T>& next )
+Animation::findFirstAndNext( const vector<AnimNode::AnimKey<T>>& keys, AnimNode::AnimKey<T>& first, AnimNode::AnimKey<T>& next, unsigned int& lastChannelIndex )
 {
-	// TODO: optimize: store last frame and start search from this?
+	// NOTE: dirty-hack for doom3 models: we suppose that there are as many keys as maximum keys and all are equally spaced thus we can index right into the vector
+	unsigned int index = ( unsigned int ) this->m_currentFrame;
+	unsigned int nextIndex = ( index + 1 ) % keys.size();
+
+	first = keys[ index ];
+	next = keys[ nextIndex ];
+
+	/*
 	// NOTE: if the time would be equally spaced by 1 unit then m_time would match the index and we could access it in O(1)
-	for ( unsigned int i = 0; i < keys.size(); i++ )
+	for ( unsigned int i = lastChannelIndex; i < keys.size(); i++ )
 	{
-		if ( keys[ i ].m_time >= this->m_currentFrame )
+		// TODO: something wrong here
+		unsigned int nextIndex = ( i + 1 ) & ( keys.size() - 1 );
+		// normal advance in indices
+		if ( i < nextIndex )
 		{
-			unsigned int nextIndex = ( i + 1 ) & ( keys.size() - 1 );
-			first = keys[ i ];
-			next = keys[ nextIndex ];
-			return;
+			if ( keys[ i ].m_time <= this->m_currentFrame && keys[ nextIndex ].m_time > this->m_currentFrame )
+			{
+				first = keys[ i ];
+				next = keys[ nextIndex ];
+
+				lastChannelIndex = i;
+				return;
+			}
+		}
+		// wrap-around
+		else if ( i > nextIndex )
+		{
+			if ( keys[ i ].m_time <= this->m_currentFrame && keys[ nextIndex ].m_time < this->m_currentFrame )
+			{
+				first = keys[ i ];
+				next = keys[ nextIndex ];
+
+				lastChannelIndex = i;
+				return;
+			}
+			else
+			{
+				// nothing found due to optimization (currentframe had a jump BEVORE lastChannelIndex): reset i to 0 and start from beginning
+				if ( i == keys.size() - 1 )
+				{
+					i = 0;
+				}
+			}
 		}
 	}
+	*/
 }

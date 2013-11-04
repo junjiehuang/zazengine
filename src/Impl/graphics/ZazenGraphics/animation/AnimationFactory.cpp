@@ -278,6 +278,7 @@ AnimationFactory::extractBones( const aiScene* assImpScene, const aiNode* assImp
 			}
 
 			AnimNode::Bone* bone = new AnimNode::Bone();
+			bone->m_name = assImpBone->mName.C_Str();
 			AssImpUtils::assimpMatToGlm( assImpBone->mOffsetMatrix, bone->m_meshToBoneTransf );
 
 			findIter->second->m_bone = bone;
