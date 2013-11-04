@@ -476,7 +476,7 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 		{
 			this->m_mainCamera = entity->getCamera();
 			
-			// TODO: need to perform some culling by this camera
+			// culling is done outside renderer in special visibility-detection, renderer just issues commands to GPU
 
 			this->preProcessTransparency( entities );
 
@@ -569,7 +569,7 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 		ZazenGraphicsEntity* entity = *iter++;
 		Animation* animation = entity->getAnimation();
 
-		if ( 0 == entity->getMesh() )
+		if ( 0 == entity->getMeshNode() )
 		{
 			continue;
 		}
@@ -1048,14 +1048,14 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 		Material* material = entity->getMaterial();
 		Animation* animation = entity->getAnimation();
 
-		if ( 0 == entity->getMesh() )
+		if ( 0 == entity->getMeshNode() )
 		{
 			continue;
 		}
 
 		if ( animation )
 		{
-			animation->updateToProgram( currentProgramm );
+			currentProgramm->setUniformMatrices( "u_bones[0]", animation->getTransforms() );
 		}
 
 		if ( material )
@@ -1085,7 +1085,7 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 		}
 
 		// render geometry of this instance
-		if ( false == this->renderMesh( viewer, entity->getMesh(), entity->getModelMatrix() ) )
+		if ( false == this->renderMeshNode( viewer, entity->getMeshNode(), entity->getModelMatrix() ) )
 		{
 			return false;
 		}
@@ -1119,7 +1119,7 @@ DRRenderer::renderEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* 
 	}
 		
 	// render geometry of this instance
-	if ( false == this->renderMesh( viewer, entity->getMesh(), entity->getModelMatrix() ) )
+	if ( false == this->renderMeshNode( viewer, entity->getMeshNode(), entity->getModelMatrix() ) )
 	{
 		return false;
 	}
@@ -1128,50 +1128,56 @@ DRRenderer::renderEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* 
 }
 
 bool
-DRRenderer::renderMesh( Viewer* viewer, Mesh* mesh, const glm::mat4& rootModelMatrix )
+DRRenderer::renderMeshNode( Viewer* viewer, MeshNode* meshNode, const glm::mat4& rootModelMatrix )
 {
 	// IMPORANT: OpenGL applies last matrix in multiplication as first transformation to object
 	// apply model-transformations recursive
-	glm::mat4 modelMatrix = rootModelMatrix * mesh->getModelMatrix();
-	const std::vector<Mesh*>& children = mesh->getChildren();
+	glm::mat4 modelMatrix = rootModelMatrix * meshNode->getModelMatrix();
+	const std::vector<MeshNode*>& children = meshNode->getChildren();
+	const std::vector<Mesh*>& meshes = meshNode->getMeshes();
 
-	if ( children.size() )
+	for ( unsigned int i = 0; i < children.size(); i++ )
 	{
-		for ( unsigned int i = 0; i < children.size(); i++ )
+		MeshNode* child = children[ i ];
+		// recursively process children
+		if ( false == this->renderMeshNode( viewer, children[ i ], modelMatrix ) )
 		{
-			Mesh* child = children[ i ];
-			// recursively process children
-			if ( false == this->renderMesh( viewer, children[ i ], modelMatrix ) )
-			{
-				return false;
-			}
+			return false;
 		}
 	}
-	else
+
+	for ( unsigned int i = 0; i < meshes.size(); i++ )
 	{
-		// cull objects using the viewers point of view
-		Viewer::CullResult cullResult = viewer->cullBB( mesh->getBBMin(), mesh->getBBMax() );
-		if ( Viewer::OUTSIDE != cullResult )
+		Mesh* mesh = meshes[ i ];
+		// render meshes
+		if ( false == this->renderMesh( viewer, mesh, modelMatrix ) )
 		{
-			// calculate modelView-Matrix
-			glm::mat4 modelViewMatrix = viewer->getViewMatrix() * modelMatrix;
-			// IMPORTANT: normal-vectors are transformed different than vertices
-			// take the transpose of the inverse modelView or simply reset the translation vector in the modelview-matrix
-			// in other words: only the rotations are applied to normals and they are guaranteed to leave
-			// normalized normals at unit length. THIS METHOD ONLY WORKS WHEN NO NON UNIFORM SCALING IS APPLIED
-			glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( modelViewMatrix ) );
-
-			// update model-view matrix
-			this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMatrix );
-			// update model-view matrix for normals
-			this->m_transformsBlock->updateField( "TransformUniforms.normalsModelViewMatrix", normalModelViewMatrix );
-
-			// render geometry
-			return mesh->render();
+			return false;
 		}
 	}
+
 
 	return true;
+}
+
+bool
+DRRenderer::renderMesh( Viewer* viewer, Mesh* mesh, const glm::mat4& parentModelMatrix )
+{
+	// calculate modelView-Matrix
+	glm::mat4 modelViewMatrix = viewer->getViewMatrix() * parentModelMatrix;
+	// IMPORTANT: normal-vectors are transformed different than vertices
+	// take the transpose of the inverse modelView or simply reset the translation vector in the modelview-matrix
+	// in other words: only the rotations are applied to normals and they are guaranteed to leave
+	// normalized normals at unit length. THIS METHOD ONLY WORKS WHEN NO NON UNIFORM SCALING IS APPLIED
+	glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( modelViewMatrix ) );
+
+	// update model-view matrix
+	this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMatrix );
+	// update model-view matrix for normals
+	this->m_transformsBlock->updateField( "TransformUniforms.normalsModelViewMatrix", normalModelViewMatrix );
+
+	// render geometry
+	return mesh->render();
 }
 
 bool

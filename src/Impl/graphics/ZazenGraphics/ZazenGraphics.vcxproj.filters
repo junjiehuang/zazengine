@@ -216,9 +216,6 @@
     <ClCompile Include="util\AssImpUtils.cpp">
       <Filter>Quelldateien\util</Filter>
     </ClCompile>
-    <ClCompile Include="animation\AnimNode.cpp">
-      <Filter>Quelldateien\animation</Filter>
-    </ClCompile>
     <ClCompile Include="renderer\SkyBox.cpp">
       <Filter>Quelldateien\renderer</Filter>
     </ClCompile>
@@ -229,6 +226,9 @@
       <Filter>Quelldateien\geometry</Filter>
     </ClCompile>
     <ClCompile Include="geometry\MeshStatic.cpp">
+      <Filter>Quelldateien\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry\MeshNode.cpp">
       <Filter>Quelldateien\geometry</Filter>
     </ClCompile>
   </ItemGroup>
@@ -329,9 +329,6 @@
     <ClInclude Include="util\AssImpUtils.h">
       <Filter>Headerdateien\util</Filter>
     </ClInclude>
-    <ClInclude Include="animation\AnimNode.h">
-      <Filter>Headerdateien\animation</Filter>
-    </ClInclude>
     <ClInclude Include="renderer\SkyBox.h">
       <Filter>Headerdateien\renderer</Filter>
     </ClInclude>
@@ -342,6 +339,9 @@
       <Filter>Headerdateien\geometry</Filter>
     </ClInclude>
     <ClInclude Include="geometry\MeshStatic.h">
+      <Filter>Headerdateien\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry\MeshNode.h">
       <Filter>Headerdateien\geometry</Filter>
     </ClInclude>
   </ItemGroup>

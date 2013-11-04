@@ -120,7 +120,7 @@ ZazenGraphicsEntity::update()
 
 	if ( this->m_activeAnimation )
 	{
-		this->m_activeAnimation->perform( ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->m_activeAnimation->animate( this->m_mesh );
 	}
 }
 

@@ -14,7 +14,7 @@ class MeshStatic : public Mesh
 			Tangent tangent;
 		};
 
-		MeshStatic( const std::string& name, int faceCount, int vertexCount, StaticVertexData* vertexData, unsigned int* indices );
+		MeshStatic( int faceCount, int vertexCount, StaticVertexData* vertexData, unsigned int* indices );
 		virtual ~MeshStatic();
 
 	protected:

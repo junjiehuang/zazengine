@@ -4,8 +4,8 @@
 
 #include <GL/glew.h>
 
-MeshBoned::MeshBoned( const std::string& name, int faceCount, int vertexCount, BonedVertexData* vertexData, unsigned int* indices )
-	: Mesh( name, faceCount, vertexCount, vertexData, indices )
+MeshBoned::MeshBoned( int faceCount, int vertexCount, BonedVertexData* vertexData, unsigned int* indices )
+	: Mesh( faceCount, vertexCount, vertexData, indices )
 {
 }
 

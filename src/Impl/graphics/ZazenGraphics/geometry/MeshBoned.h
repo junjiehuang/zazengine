@@ -17,7 +17,7 @@ class MeshBoned : public Mesh
 			BoneWeight boneWeights;
 		};
 
-		MeshBoned( const std::string& name, int faceCount, int vertexCount, BonedVertexData* vertexData, unsigned int* indices );
+		MeshBoned( int faceCount, int vertexCount, BonedVertexData* vertexData, unsigned int* indices );
 		virtual ~MeshBoned();
 
 	protected:

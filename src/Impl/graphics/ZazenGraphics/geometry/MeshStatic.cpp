@@ -4,8 +4,8 @@
 
 #include <GL/glew.h>
 
-MeshStatic::MeshStatic( const std::string& name, int faceCount, int vertexCount, StaticVertexData* vertexData, unsigned int* indices )
-	: Mesh( name, faceCount, vertexCount, vertexData, indices )
+MeshStatic::MeshStatic( int faceCount, int vertexCount, StaticVertexData* vertexData, unsigned int* indices )
+	: Mesh( faceCount, vertexCount, vertexData, indices )
 {
 }
 

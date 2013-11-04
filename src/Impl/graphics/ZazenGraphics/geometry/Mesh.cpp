@@ -4,21 +4,8 @@
 
 #include <GL/glew.h>
 
-Mesh::Mesh( const std::string& name )
-{
-	this->m_faceCount = 0;
-	this->m_vertexCount = 0;
-
-	this->m_dataVBO = 0;
-	this->m_indexVBO = 0;
-
-	this->m_vertexData = 0;
-	this->m_indexBuffer = 0;
-}
-
-Mesh::Mesh( const std::string& name, int faceCount, int vertexCount, void* vertexData, unsigned int* indices )
-	: m_name( name ),
-	m_faceCount( faceCount ),
+Mesh::Mesh( int faceCount, int vertexCount, void* vertexData, unsigned int* indices )
+	: m_faceCount( faceCount ),
 	m_vertexCount( vertexCount )
 {
 	this->m_dataVBO = 0;
@@ -30,11 +17,6 @@ Mesh::Mesh( const std::string& name, int faceCount, int vertexCount, void* verte
 
 Mesh::~Mesh()
 {
-	for ( unsigned int i = 0; i < this->m_children.size(); i++ )
-	{
-		delete this->m_children[ i ];
-	}
-
 	if ( this->m_dataVBO )
 	{
 		glDeleteBuffers( 1, &this->m_dataVBO );

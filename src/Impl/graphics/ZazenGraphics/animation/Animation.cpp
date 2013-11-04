@@ -6,7 +6,7 @@ using namespace std;
 
 Animation::Animation( double durationTicks, double ticksPerSecond )
 {
-	this->m_rootNode = NULL;
+	this->m_skeleton = 0;
 
 	this->m_currentTime = 0.0;
 	this->m_currentFrame = 0.0;
@@ -26,30 +26,56 @@ Animation::~Animation()
 }
 
 void
-Animation::perform( double timeAdvance )
+Animation::animate( MeshNode* rootMeshNode )
 {
+	double timeAdvance = ZazenGraphics::getInstance().getCore().getProcessingFactor();
+
+	if ( NULL == this->m_skeleton )
+	{
+		this->buildAnimationSkeleton( rootMeshNode );
+	}
+
 	this->m_transforms.clear();
 
 	this->m_currentTime = fmod( ( this->m_currentTime + timeAdvance ), this->m_durationInSec );
 	this->m_currentFrame = this->m_currentTime * this->m_ticksPerSecond;
 
-	this->performRecursive( this->m_rootNode, this->m_rootNode->getTransform() );
+	this->animateSkeleton( this->m_skeleton, this->m_skeleton->m_transform );
 }
 
 void
-Animation::updateToProgram( Program* program )
+Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 {
-	program->setUniformMatrices( "u_bones[0]", this->m_transforms );
+	std::map<std::string, AnimationNode*>::iterator findAnimationNodeIter = this->m_animationNodes.find( rootMeshNode->getName() );
+	std::map<std::string, AnimationBone*>::iterator findAnimationBoneIter = this->m_animationBones.find( rootMeshNode->getName() );
+
+	if ( this->m_animationNodes.end() != findAnimationNodeIter )
+	{
+		// TODO 
+	}
+
+	if ( this->m_animationBones.end() != findAnimationBoneIter )
+	{
+		// TODO 
+	}
+
+	const std::vector<MeshNode*>& children = rootMeshNode->getChildren();
+
+	for ( unsigned int i = 0; i < children.size(); i++ )
+	{
+		this->buildAnimationSkeleton( children[ i ] );
+	}
 }
 
 void
-Animation::performRecursive( AnimNode* node, const glm::mat4& parentTransform )
+Animation::animateSkeleton( AnimationSkeleton* skeleton, const glm::mat4& parentTransform )
 {
 	glm::mat4 nodeTransform;
 
-	if ( node->getChannel() )
-	{
-		const AnimNode::AnimChannel* channel = node->getChannel();
+	if ( skeleton->m_animationNode )
+	
+		AnimationNode* animationNode = skeleton->m_animationNode;
+		AnimationChannel& channel = animationNode->m_animationChannels;
 
 		glm::mat4 translationMatrix;
 		glm::mat4 rotationMatrix;
@@ -66,9 +92,9 @@ Animation::performRecursive( AnimNode* node, const glm::mat4& parentTransform )
 	// apply hierarchical transformation
 	nodeTransform = parentTransform * nodeTransform;
 
-	if ( node->getBone() )
+	if ( skeleton->m_animationBone )
 	{
-		const AnimNode::Bone* bone = node->getBone();
+		const AnimationBone* bone = skeleton->m_animationBone;
 		nodeTransform = nodeTransform * bone->m_meshToBoneTransf;
 
 		//ZazenGraphics::getInstance().getLogger().logWarning() << "bone \"" << bone->m_name << "\" has index of " << this->m_transforms.size();
@@ -76,16 +102,16 @@ Animation::performRecursive( AnimNode* node, const glm::mat4& parentTransform )
 		this->m_transforms.push_back( nodeTransform );
 	}
 
-	const std::vector<AnimNode*>& nodeChildren = node->getChildren();
+	const std::vector<AnimationSkeleton*>& skeletonChildren = skeleton->m_children;
 
-	for ( unsigned int i = 0; i < nodeChildren.size(); i++ )
+	for ( unsigned int i = 0; i < skeletonChildren.size(); i++ )
 	{
-		this->performRecursive( nodeChildren[ i ], nodeTransform );
+		this->animateSkeleton( skeletonChildren[ i ], nodeTransform );
 	}
 }
 
 void
-Animation::interpolatePosition( const vector<AnimNode::AnimKey<glm::vec3>>& positionKeys, glm::mat4& translationMatrix )
+Animation::interpolatePosition( const vector<AnimationKey<glm::vec3>>& positionKeys, glm::mat4& translationMatrix )
 {
 	// no translations, leave untouched
 	if ( 0 == positionKeys.size() )
@@ -103,8 +129,8 @@ Animation::interpolatePosition( const vector<AnimNode::AnimKey<glm::vec3>>& posi
 		return;
 	}
 
-	AnimNode::AnimKey<glm::vec3> firstPos;
-	AnimNode::AnimKey<glm::vec3> nextPos;
+	AnimationKey<glm::vec3> firstPos;
+	AnimationKey<glm::vec3> nextPos;
 
 	this->findFirstAndNext<glm::vec3>( positionKeys, firstPos, nextPos, this->m_lastPosChannelIndex );
 
@@ -117,7 +143,7 @@ Animation::interpolatePosition( const vector<AnimNode::AnimKey<glm::vec3>>& posi
 }
 
 void
-Animation::interpolateRotation( const std::vector<AnimNode::AnimKey<glm::quat>>& rotationKeys, glm::mat4& rotationMatrix )
+Animation::interpolateRotation( const std::vector<AnimationKey<glm::quat>>& rotationKeys, glm::mat4& rotationMatrix )
 {
 	// no rotations, leave untouched
 	if ( 0 == rotationKeys.size() )
@@ -133,8 +159,8 @@ Animation::interpolateRotation( const std::vector<AnimNode::AnimKey<glm::quat>>&
 		return;
 	}
 
-	AnimNode::AnimKey<glm::quat> firstRot;
-	AnimNode::AnimKey<glm::quat> nextRot;
+	AnimationKey<glm::quat> firstRot;
+	AnimationKey<glm::quat> nextRot;
 
 	this->findFirstAndNext<glm::quat>( rotationKeys, firstRot, nextRot, this->m_lastRotChannelIndex );
 
@@ -142,7 +168,7 @@ Animation::interpolateRotation( const std::vector<AnimNode::AnimKey<glm::quat>>&
 }
 
 void
-Animation::interpolateScaling( const std::vector<AnimNode::AnimKey<glm::vec3>>& scalingKeys, glm::mat4& scalingMatrix )
+Animation::interpolateScaling( const std::vector<AnimationKey<glm::vec3>>& scalingKeys, glm::mat4& scalingMatrix )
 {
 	// no scalings, leave untouched
 	if ( 0 == scalingKeys.size() )
@@ -160,8 +186,8 @@ Animation::interpolateScaling( const std::vector<AnimNode::AnimKey<glm::vec3>>& 
 		return;
 	}
 
-	AnimNode::AnimKey<glm::vec3> firstScaling;
-	AnimNode::AnimKey<glm::vec3> nextScaling;
+	AnimationKey<glm::vec3> firstScaling;
+	AnimationKey<glm::vec3> nextScaling;
 	
 	this->findFirstAndNext<glm::vec3>( scalingKeys, firstScaling, nextScaling, this->m_lastScaleChannelIndex );
 

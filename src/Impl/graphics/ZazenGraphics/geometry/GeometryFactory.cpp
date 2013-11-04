@@ -20,7 +20,7 @@
 using namespace std;
 using namespace boost;
 
-map<string, Mesh*> GeometryFactory::allMeshes;
+map<string, MeshNode*> GeometryFactory::allMeshes;
 boost::filesystem::path GeometryFactory::modelDataPath;
 
 void
@@ -29,10 +29,10 @@ GeometryFactory::setDataPath( const boost::filesystem::path& modelDataPath )
 	GeometryFactory::modelDataPath = modelDataPath;
 }
 
-Mesh*
+MeshNode*
 GeometryFactory::getMesh( const std::string& fileName )
 {
-	map<std::string, Mesh*>::iterator findIter = GeometryFactory::allMeshes.find( fileName );
+	map<std::string, MeshNode*>::iterator findIter = GeometryFactory::allMeshes.find( fileName );
 	if ( findIter != GeometryFactory::allMeshes.end() )
 	{
 		return findIter->second;
@@ -45,23 +45,23 @@ GeometryFactory::getMesh( const std::string& fileName )
 		return 0;	
 	}
 
-	Mesh* mesh = 0;
+	MeshNode* meshNode = 0;
 
 	if ( filesystem::is_directory( fullFileName ) )
 	{
-		mesh = GeometryFactory::loadFolder( fullFileName );
+		meshNode = GeometryFactory::loadFolder( fullFileName );
 	}
 	else
 	{
-		mesh = GeometryFactory::loadFile( fullFileName );
+		meshNode = GeometryFactory::loadFile( fullFileName );
 	}
 	
-	if ( NULL != mesh )
+	if ( NULL != meshNode )
 	{
-		GeometryFactory::allMeshes[ fileName ] = mesh;
+		GeometryFactory::allMeshes[ fileName ] = meshNode;
 	}
 
-	return mesh;
+	return meshNode;
 }
 
 MeshStatic*
@@ -136,10 +136,12 @@ GeometryFactory::createQuad( float width, float height )
 	indexBuffer[ 5 ] = 3;
 
 	// put into map => will be cleaned up
-	std::string quadMeshName = "QUAD_MESH" + GeometryFactory::allMeshes.size();
-	MeshStatic* quadMesh = new MeshStatic( quadMeshName, numFaces, numVertices, vertexData, indexBuffer );
+	MeshNode* containerNode = new MeshNode( "QUAD_MESH" + GeometryFactory::allMeshes.size() );
+	containerNode->m_children.push_back( containerNode );
 
-	GeometryFactory::allMeshes[ quadMesh->getName() ] = quadMesh;
+	MeshStatic* quadMesh = new MeshStatic( numFaces, numVertices, vertexData, indexBuffer );
+
+	GeometryFactory::allMeshes[ containerNode->getName() ] = containerNode;
 
 	return quadMesh;
 }
@@ -147,11 +149,10 @@ GeometryFactory::createQuad( float width, float height )
 void
 GeometryFactory::freeAll()
 {
-	map<std::string, Mesh*>::iterator iter = GeometryFactory::allMeshes.begin();
+	map<std::string, MeshNode*>::iterator iter = GeometryFactory::allMeshes.begin();
 	while ( iter != GeometryFactory::allMeshes.end() )
 	{
-		Mesh* mesh = iter->second;
-		delete mesh;
+		delete iter->second;
 
 		iter++;
 	}
@@ -159,10 +160,10 @@ GeometryFactory::freeAll()
 	GeometryFactory::allMeshes.clear();
 }
 
-Mesh*
+MeshNode*
 GeometryFactory::loadFolder( const filesystem::path& folderPath )
 {
-	Mesh* folderGroup = new Mesh( folderPath.generic_string().c_str() );
+	MeshNode* folderGroup = new MeshNode( folderPath.generic_string().c_str() );
 
 	filesystem::directory_iterator iter( folderPath );
 	filesystem::directory_iterator endIter;
@@ -172,7 +173,7 @@ GeometryFactory::loadFolder( const filesystem::path& folderPath )
 	{
 		filesystem::directory_entry entry = *iter++;
 		
-		Mesh* subDirectory = 0;
+		MeshNode* subDirectory = 0;
 
 		if ( filesystem::is_directory( entry.path() ) )
 		{
@@ -186,17 +187,17 @@ GeometryFactory::loadFolder( const filesystem::path& folderPath )
 		if ( subDirectory )
 		{
 			folderGroup->compareAndSetBB( subDirectory->getBBMin(), subDirectory->getBBMin() );
-			folderGroup->addChild( subDirectory );
+			folderGroup->m_children.push_back( subDirectory );
 		}
 	}
 
 	return folderGroup;
 }
 
-Mesh*
+MeshNode*
 GeometryFactory::loadFile( const filesystem::path& filePath )
 {
-	Mesh* geomRoot = 0;
+	MeshNode* rootNode = NULL;
 	glm::vec3 geomGroupBBmin;
 	glm::vec3 geomGroupBBmax;
 
@@ -224,55 +225,44 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 
 	unsigned int runningBoneIndex = 0;
 
-	geomRoot = GeometryFactory::processNode( scene->mRootNode, scene, runningBoneIndex );
+	rootNode = GeometryFactory::processNode( scene->mRootNode, scene, runningBoneIndex );
 	
 	aiReleaseImport( scene );
 
 	ZazenGraphics::getInstance().getLogger().logInfo() << "LOADED ... " << filePath;
 
-    return geomRoot;
+    return rootNode;
 }
 
-Mesh*
+MeshNode*
 GeometryFactory::processNode( const struct aiNode* assImpNode, const struct aiScene* assImpScene, unsigned int& runningBoneIndex )
 {
-	glm::mat4 modelMatrix;
-	Mesh* mesh = new Mesh( assImpNode->mName.C_Str() );
-
-	AssImpUtils::assimpMatToGlm( assImpNode->mTransformation, modelMatrix );
-
-	mesh->setModelMatrix( modelMatrix );
+	MeshNode* node = new MeshNode( assImpNode->mName.C_Str() );
+	AssImpUtils::assimpMatToGlm( assImpNode->mTransformation, node->m_modelMatrix );
 
 	for ( unsigned int i = 0; i < assImpNode->mNumMeshes; ++i )
 	{
 		const struct aiMesh* assImpMesh = assImpScene->mMeshes[ assImpNode->mMeshes[ i ] ];
 
-		Mesh* subMesh = GeometryFactory::processMesh( assImpMesh, runningBoneIndex );
-		if ( NULL != subMesh )
+		Mesh* mesh = GeometryFactory::processMesh( assImpMesh, runningBoneIndex );
+		if ( NULL != mesh )
 		{
-			mesh->compareAndSetBB( subMesh->getBBMin(), subMesh->getBBMax() );
-			mesh->addChild( subMesh );
+			node->compareAndSetBB( mesh->getBBMin(), mesh->getBBMax() );
+			node->m_meshes.push_back( mesh );
 		}
 	}
 
 	for ( unsigned int i = 0; i < assImpNode->mNumChildren; i++ )
 	{
-		Mesh* child = GeometryFactory::processNode( assImpNode->mChildren[ i ], assImpScene, runningBoneIndex );
-		if ( NULL != child )
+		MeshNode* childNode = GeometryFactory::processNode( assImpNode->mChildren[ i ], assImpScene, runningBoneIndex );
+		if ( NULL != childNode )
 		{
-			mesh->compareAndSetBB( child->getBBMin(), child->getBBMax() );
-			mesh->addChild( child );
+			node->compareAndSetBB( childNode->getBBMin(), childNode->getBBMax() );
+			node->m_children.push_back( childNode );
 		}
 	}
 
-	// ignore empty nodes
-	if ( 0 == mesh->getChildren().size() )
-	{
-		delete mesh;
-		mesh = NULL;
-	}
-
-	return mesh;
+	return node;
 }
 
 Mesh*
@@ -281,6 +271,7 @@ GeometryFactory::processMesh( const struct aiMesh* assImpMesh, unsigned int& run
 	// ignore non-triangle meshes
 	if ( 0 == ( assImpMesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE ) )
 	{
+		ZazenGraphics::getInstance().getLogger().logError() << "ignoring non-triangle mesh " << assImpMesh->mName.C_Str();
 		return NULL;
 	}
 
@@ -337,7 +328,7 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh, unsigned int
 			continue;
 		}
 
-		ZazenGraphics::getInstance().getLogger().logWarning() << "bone \"" << bone->mName.C_Str() << "\" has index of " << i + runningBoneIndex;
+		//ZazenGraphics::getInstance().getLogger().logWarning() << "bone \"" << bone->mName.C_Str() << "\" has index of " << i + runningBoneIndex;
 
 		for( unsigned int j = 0; j < bone->mNumWeights; j++ )
 		{
@@ -412,7 +403,7 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh, unsigned int
 		ZazenGraphics::getInstance().getLogger().logWarning() << "ignoring bone-influence on vertex because max bone-per-vertex of 4 exceeded";
 	}
 
-	MeshBoned* meshBoned = new MeshBoned( assImpMesh->mName.C_Str(), assImpMesh->mNumFaces, assImpMesh->mNumVertices, vertexData, indexBuffer );
+	MeshBoned* meshBoned = new MeshBoned( assImpMesh->mNumFaces, assImpMesh->mNumVertices, vertexData, indexBuffer );
 	meshBoned->setBB( meshBBmin, meshBBmax );
 
 	return meshBoned;
@@ -466,7 +457,7 @@ GeometryFactory::processMeshStatic( const struct aiMesh* assImpMesh )
 		}
 	}
 
-	MeshStatic* meshStatic = new MeshStatic( assImpMesh->mName.C_Str(), assImpMesh->mNumFaces, assImpMesh->mNumVertices, vertexData, indexBuffer );
+	MeshStatic* meshStatic = new MeshStatic( assImpMesh->mNumFaces, assImpMesh->mNumVertices, vertexData, indexBuffer );
 	meshStatic->setBB( meshBBmin, meshBBmax );
 
 	return meshStatic;

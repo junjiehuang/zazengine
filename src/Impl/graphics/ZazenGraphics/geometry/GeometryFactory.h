@@ -9,6 +9,7 @@
 #ifndef _GEOMETRY_FACTORY_H_
 #define _GEOMETRY_FACTORY_H_
 
+#include "MeshNode.h"
 #include "MeshStatic.h"
 #include "MeshBoned.h"
 
@@ -26,18 +27,18 @@ class GeometryFactory
 		static void freeAll();
 		static void free( Mesh* );
 
-		static Mesh* getMesh( const std::string& fileName );
+		static MeshNode* getMesh( const std::string& fileName );
 
 		static MeshStatic* createQuad( float width, float height );
 
 	private:
 		static boost::filesystem::path modelDataPath;
-		static std::map<std::string, Mesh*> allMeshes;
+		static std::map<std::string, MeshNode*> allMeshes;
 
-		static Mesh* loadFolder( const boost::filesystem::path& );
-		static Mesh* loadFile( const boost::filesystem::path& );
+		static MeshNode* loadFolder( const boost::filesystem::path& );
+		static MeshNode* loadFile( const boost::filesystem::path& );
 
-		static Mesh* processNode( const struct aiNode*, const struct aiScene*, unsigned int& );		 
+		static MeshNode* processNode( const struct aiNode*, const struct aiScene*, unsigned int& );		 
 		static Mesh* processMesh( const struct aiMesh*, unsigned int& );
 
 		static MeshBoned* processMeshBoned( const struct aiMesh*, unsigned int& );
