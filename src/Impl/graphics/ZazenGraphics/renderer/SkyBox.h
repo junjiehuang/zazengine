@@ -10,7 +10,6 @@
 #define _SKYBOX_H_
 
 #include "../Texture/Texture.h"
-#include "../Program/Program.h"
 #include "../Program/UniformBlock.h"
 #include "../Viewer/Viewer.h"
 
@@ -25,8 +24,6 @@ class SkyBox
 
 		static SkyBox& getRef() { return *SkyBox::instance; };
 
-		~SkyBox();
-	
 		bool render( const Viewer&, UniformBlock* );
 
 	private:
@@ -37,6 +34,7 @@ class SkyBox
 		Texture* m_cubeMap;
 
 		SkyBox();
+		~SkyBox();
 };
 
 #endif

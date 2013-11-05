@@ -10,9 +10,9 @@
 
 #include "Material.h"
 
-#include <boost/filesystem.hpp>
+#include <core/ICore.h>
 
-#include <core/XML/tinyxml.h>
+#include <boost/filesystem.hpp>
 
 #include <string>
 #include <map>

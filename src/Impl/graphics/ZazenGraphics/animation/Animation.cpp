@@ -41,7 +41,7 @@ Animation::update()
 	this->m_currentTime = fmod( ( this->m_currentTime + timeAdvance ), this->m_durationInSec );
 	this->m_currentFrame = this->m_currentTime * this->m_ticksPerSecond;
 
-	this->animateSkeleton( this->m_skeletonRoot, this->m_skeletonRoot->m_transform );
+	this->animateSkeleton( this->m_skeletonRoot, glm::mat4( ) );
 }
 
 void
@@ -53,43 +53,46 @@ Animation::initSkeleton( MeshNode* rootMeshNode )
 	}
 }
 
-Animation::AnimationSkeleton*
+Animation::AnimationSkeletonPart*
 Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 {
-	AnimationSkeleton* skeleton = new AnimationSkeleton();
-	skeleton->m_transform = rootMeshNode->getModelMatrix();
+	AnimationSkeletonPart* skeletonPart = new AnimationSkeletonPart();
+	skeletonPart->m_transform = rootMeshNode->getModelMatrix();
+	skeletonPart->m_name = rootMeshNode->getName();
 
 	std::map<std::string, AnimationNode*>::iterator findAnimationNodeIter = this->m_animationNodes.find( rootMeshNode->getName() );
 	std::map<std::string, AnimationBone*>::iterator findAnimationBoneIter = this->m_animationBones.find( rootMeshNode->getName() );
 
 	if ( this->m_animationNodes.end() != findAnimationNodeIter )
 	{
-		skeleton->m_animationNode = findAnimationNodeIter->second;
+		skeletonPart->m_animationNode = findAnimationNodeIter->second;
 	}
 
 	if ( this->m_animationBones.end() != findAnimationBoneIter && rootMeshNode->getBone() )
 	{
-		skeleton->m_animationBone = findAnimationBoneIter->second;
+		skeletonPart->m_animationBone = findAnimationBoneIter->second;
+		skeletonPart->m_animationBone->m_meshToBoneTransf = rootMeshNode->getBone()->m_offset;
 	}
 
 	const std::vector<MeshNode*>& children = rootMeshNode->getChildren();
 	for ( unsigned int i = 0; i < children.size(); i++ )
 	{
-		AnimationSkeleton* childSkeleton = this->buildAnimationSkeleton( children[ i ] );
-		skeleton->m_children.push_back( childSkeleton );
+		AnimationSkeletonPart* childSkeletonPart = this->buildAnimationSkeleton( children[ i ] );
+		skeletonPart->m_children.push_back( childSkeletonPart );
 	}
 
-	return skeleton;
+	return skeletonPart;
 }
 
 void
-Animation::animateSkeleton( AnimationSkeleton* skeleton, const glm::mat4& parentTransform )
+Animation::animateSkeleton( AnimationSkeletonPart* skeletonPart, const glm::mat4& parentTransform )
 {
-	glm::mat4 nodeTransform;
+	glm::mat4 localNodeTransform;
 
-	if ( skeleton->m_animationNode )
+	// check if this node has animation-information stored
+	if ( skeletonPart->m_animationNode )
 	{
-		AnimationNode* animationNode = skeleton->m_animationNode;
+		AnimationNode* animationNode = skeletonPart->m_animationNode;
 		AnimationChannel& channel = animationNode->m_animationChannels;
 
 		glm::mat4 translationMatrix;
@@ -100,25 +103,36 @@ Animation::animateSkeleton( AnimationSkeleton* skeleton, const glm::mat4& parent
 		this->interpolateRotation( channel.m_rotationKeys, rotationMatrix );
 		this->interpolateScaling( channel.m_scalingKeys, translationMatrix );
 
+		// this animation-transformation replaces the local transformation
 		// order is important: first scaling, then rotation and last translation (matrix-multiplication applies the operation first which one was multiplied with last)
-		nodeTransform = translationMatrix * rotationMatrix * scalingMatrix;
+		localNodeTransform = translationMatrix * rotationMatrix * scalingMatrix;
 	}
-
-	nodeTransform = parentTransform * nodeTransform;
-
-	if ( skeleton->m_animationBone )
+	else
 	{
-		const AnimationBone* bone = skeleton->m_animationBone;
-		nodeTransform = nodeTransform * bone->m_meshToBoneTransf;
-
-		this->m_transforms.push_back( nodeTransform );
+		// no animation for this node: use local transformation 
+		localNodeTransform = skeletonPart->m_transform;
 	}
 
-	const std::vector<AnimationSkeleton*>& skeletonChildren = skeleton->m_children;
+	// do hierarchical transformation: apply parentTransformation to local Transformation
+	glm::mat4 globalTransform = parentTransform * localNodeTransform;
+
+	// check if this node has a bone assosiated with
+	if ( skeletonPart->m_animationBone )
+	{
+		const AnimationBone* bone = skeletonPart->m_animationBone;
+		glm::mat4 globalInverse = glm::inverse( this->m_skeletonRoot->m_transform );
+		
+		// calculate bone-transformation: we need to apply the mesh-to-bone transformation 
+		glm::mat4 globalBoneTransform = globalInverse * globalTransform * bone->m_meshToBoneTransf;
+
+		this->m_transforms.push_back( globalBoneTransform );
+	}
+
+	const std::vector<AnimationSkeletonPart*>& skeletonChildren = skeletonPart->m_children;
 
 	for ( unsigned int i = 0; i < skeletonChildren.size(); i++ )
 	{
-		this->animateSkeleton( skeletonChildren[ i ], nodeTransform );
+		this->animateSkeleton( skeletonChildren[ i ], globalTransform );
 	}
 }
 
@@ -176,6 +190,9 @@ Animation::interpolateRotation( const std::vector<AnimationKey<glm::quat>>& rota
 
 	this->findFirstAndNext<glm::quat>( rotationKeys, firstRot, nextRot, this->m_lastRotChannelIndex );
 
+	// for now: now interpolation, just take first found
+	rotationMatrix = glm::mat4_cast( firstRot.m_value );
+
 	// TODO: do interpolation of scaling between first and next
 }
 
@@ -203,7 +220,10 @@ Animation::interpolateScaling( const std::vector<AnimationKey<glm::vec3>>& scali
 	
 	this->findFirstAndNext<glm::vec3>( scalingKeys, firstScaling, nextScaling, this->m_lastScaleChannelIndex );
 
-	double deltaTime = nextScaling.m_time - firstScaling.m_time;
+	// for now: now interpolation, just take first found
+	scalingMatrix[ 3 ][ 0 ] = firstScaling.m_value.x;
+	scalingMatrix[ 3 ][ 1 ] = firstScaling.m_value.y;
+	scalingMatrix[ 3 ][ 2 ] = firstScaling.m_value.z;
 
 	// TODO: do interpolation of scaling between first and next
 }

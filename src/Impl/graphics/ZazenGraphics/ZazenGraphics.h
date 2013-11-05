@@ -8,18 +8,20 @@
 #ifndef ZAZENGRAPHICS_H_
 #define ZAZENGRAPHICS_H_
 
+// core API includes
 #include <core/ICore.h>
-#include <graphics/IGraphics.h>
 #include <core/ILogger.h>
 
+// subsystem-specific API
+#include <graphics/IGraphics.h>
+
+// local includes
 #include "ZazenGraphicsEntity.h"
 
-#include "Viewer/Viewer.h"
-
-#include "Lighting/Light.h"
-
+// local subdirectories includes
 #include "Renderer/DRRenderer.h"
 
+// libs/system includes
 #include <boost/filesystem.hpp>
 
 class ZazenGraphics : public IGraphics

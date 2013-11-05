@@ -10,7 +10,6 @@
 
 #include "Material.h"
 
-#include "../Program/UniformBlock.h"
 #include "../Texture/Texture.h"
 
 class MaterialDoom3 : public Material

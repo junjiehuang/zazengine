@@ -23,6 +23,15 @@ class Animation
 	public:
 		friend class AnimationFactory;
 
+		Animation( double, double );
+		~Animation();
+
+		void update();
+		void initSkeleton( MeshNode* );
+
+		const std::vector<glm::mat4>& getTransforms() const { return this->m_transforms; };
+
+	private:
 		struct AnimationBone {
 			std::string m_name;
 			glm::mat4 m_meshToBoneTransf;
@@ -45,29 +54,21 @@ class Animation
 			AnimationChannel m_animationChannels;
 		};
 
-		Animation( double, double );
-		~Animation();
-
-		void update();
-		void initSkeleton( MeshNode* );
-
-		const std::vector<glm::mat4>& getTransforms() const { return this->m_transforms; };
-
-	private:
-		struct AnimationSkeleton {
-			AnimationSkeleton()
+		struct AnimationSkeletonPart {
+			AnimationSkeletonPart()
 			{
 				this->m_animationNode = NULL;
 				this->m_animationBone = NULL;
 			}
 
+			std::string m_name;
 			glm::mat4 m_transform;
 			AnimationNode* m_animationNode;
 			AnimationBone* m_animationBone;
-			std::vector<AnimationSkeleton*> m_children;
+			std::vector<AnimationSkeletonPart*> m_children;
 		};
 
-		AnimationSkeleton* m_skeletonRoot;
+		AnimationSkeletonPart* m_skeletonRoot;
 		std::map<std::string, AnimationNode*> m_animationNodes;
 		std::map<std::string, AnimationBone*> m_animationBones;
 
@@ -83,9 +84,9 @@ class Animation
 		double m_durationTicks;
 		double m_durationInSec;
 
-		AnimationSkeleton* buildAnimationSkeleton( MeshNode* );
+		AnimationSkeletonPart* buildAnimationSkeleton( MeshNode* );
 
-		void animateSkeleton( AnimationSkeleton*, const glm::mat4& );
+		void animateSkeleton( AnimationSkeletonPart*, const glm::mat4& );
 
 		void interpolatePosition( const std::vector<AnimationKey<glm::vec3>>&, glm::mat4& );
 		void interpolateRotation( const std::vector<AnimationKey<glm::quat>>&, glm::mat4& );

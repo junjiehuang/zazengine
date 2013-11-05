@@ -10,8 +10,6 @@
 
 #include "UniformBlock.h"
 
-#include <boost/filesystem.hpp>
-
 #include <map>
 #include <string>
 
