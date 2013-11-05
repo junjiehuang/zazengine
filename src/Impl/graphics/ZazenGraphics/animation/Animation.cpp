@@ -208,9 +208,9 @@ Animation::interpolateScaling( const std::vector<AnimationKey<glm::vec3>>& scali
 	// exactly one translation, nothing to interpolate
 	if ( scalingKeys.size() == 1 )
 	{
-		scalingMatrix[ 3 ][ 0 ] = scalingKeys[ 0 ].m_value.x;
-		scalingMatrix[ 3 ][ 1 ] = scalingKeys[ 0 ].m_value.y;
-		scalingMatrix[ 3 ][ 2 ] = scalingKeys[ 0 ].m_value.z;
+		scalingMatrix[ 0 ][ 0 ] = scalingKeys[ 0 ].m_value.x;
+		scalingMatrix[ 1 ][ 1 ] = scalingKeys[ 0 ].m_value.y;
+		scalingMatrix[ 2 ][ 2 ] = scalingKeys[ 0 ].m_value.z;
 
 		return;
 	}
@@ -221,9 +221,9 @@ Animation::interpolateScaling( const std::vector<AnimationKey<glm::vec3>>& scali
 	this->findFirstAndNext<glm::vec3>( scalingKeys, firstScaling, nextScaling, this->m_lastScaleChannelIndex );
 
 	// for now: now interpolation, just take first found
-	scalingMatrix[ 3 ][ 0 ] = firstScaling.m_value.x;
-	scalingMatrix[ 3 ][ 1 ] = firstScaling.m_value.y;
-	scalingMatrix[ 3 ][ 2 ] = firstScaling.m_value.z;
+	scalingMatrix[ 0 ][ 0 ] = firstScaling.m_value.x;
+	scalingMatrix[ 1 ][ 1 ] = firstScaling.m_value.y;
+	scalingMatrix[ 2 ][ 2 ] = firstScaling.m_value.z;
 
 	// TODO: do interpolation of scaling between first and next
 }
