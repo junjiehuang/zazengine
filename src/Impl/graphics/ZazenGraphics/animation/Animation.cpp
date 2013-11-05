@@ -67,7 +67,7 @@ Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 		skeleton->m_animationNode = findAnimationNodeIter->second;
 	}
 
-	if ( this->m_animationBones.end() != findAnimationBoneIter )
+	if ( this->m_animationBones.end() != findAnimationBoneIter && rootMeshNode->getBone() )
 	{
 		skeleton->m_animationBone = findAnimationBoneIter->second;
 	}
@@ -110,8 +110,6 @@ Animation::animateSkeleton( AnimationSkeleton* skeleton, const glm::mat4& parent
 	{
 		const AnimationBone* bone = skeleton->m_animationBone;
 		nodeTransform = nodeTransform * bone->m_meshToBoneTransf;
-
-		ZazenGraphics::getInstance().getLogger().logInfo() << "bone \"" << bone->m_name << "\" has index of " << this->m_transforms.size();
 
 		this->m_transforms.push_back( nodeTransform );
 	}

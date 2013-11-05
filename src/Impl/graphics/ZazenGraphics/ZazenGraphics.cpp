@@ -95,8 +95,8 @@ ZazenGraphics::initialize( TiXmlElement* configNode )
 
 	ProgramManagement::init( this->m_pipelinePath );
 	TextureFactory::init( this->m_textureDataPath );
+	GeometryFactory::init( this->m_modelDataPath );
 
-	GeometryFactory::setDataPath( this->m_modelDataPath );
 	AnimationFactory::setDataPath( this->m_animationDataPath );
 
 	if ( false == MaterialFactory::init( this->m_materialDataPath ) )
@@ -241,7 +241,7 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		const char* str = meshNode->Attribute( "file" );
 		if ( 0 != str )
 		{
-			entity->m_rootMeshNode = GeometryFactory::getMesh( str );
+			entity->m_rootMeshNode = GeometryFactory::getRef().getMesh( str );
 			if ( NULL == entity->m_rootMeshNode )
 			{
 				this->m_logger->logWarning() << "couldn't get mesh " << str << " - will be ignored";
@@ -354,14 +354,14 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		if ( lightType == "DIRECTIONAL" )
 		{
 			light = Light::createDirectionalLight( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), castShadow );
-			boundingMesh = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+			boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
 		}
 		// default is spot
 		else
 		{
 			light = Light::createSpotLight( fov, shadowMapResX, shadowMapResY, castShadow );
 			// TODO load correct bounding-geometry
-			boundingMesh = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+			boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
 		}
 
 		light->setBoundingMesh( boundingMesh );

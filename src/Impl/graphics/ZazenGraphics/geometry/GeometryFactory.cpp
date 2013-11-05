@@ -20,25 +20,55 @@
 using namespace std;
 using namespace boost;
 
-map<string, MeshNode*> GeometryFactory::allMeshes;
-boost::filesystem::path GeometryFactory::modelDataPath;
+GeometryFactory* GeometryFactory::instance = NULL;
 
 void
-GeometryFactory::setDataPath( const boost::filesystem::path& modelDataPath )
+GeometryFactory::init( const boost::filesystem::path& modelDataPath )
 {
-	GeometryFactory::modelDataPath = modelDataPath;
+	if ( NULL == GeometryFactory::instance )
+	{
+		new GeometryFactory( modelDataPath );
+	}
+}
+
+void
+GeometryFactory::freeAll()
+{
+	if ( GeometryFactory::instance )
+	{
+		delete GeometryFactory::instance;
+	}
+}
+
+GeometryFactory::GeometryFactory( const boost::filesystem::path& modelDataPath )
+	: m_modelDataPath( modelDataPath )
+{
+	GeometryFactory::instance = this;
+}
+
+GeometryFactory::~GeometryFactory()
+{
+	map<std::string, MeshNode*>::iterator iter = this->m_allMeshes.begin();
+	while ( iter != this->m_allMeshes.end() )
+	{
+		delete iter->second;
+
+		iter++;
+	}
+
+	GeometryFactory::instance = NULL;
 }
 
 MeshNode*
 GeometryFactory::getMesh( const std::string& fileName )
 {
-	map<std::string, MeshNode*>::iterator findIter = GeometryFactory::allMeshes.find( fileName );
-	if ( findIter != GeometryFactory::allMeshes.end() )
+	map<std::string, MeshNode*>::iterator findIter = this->m_allMeshes.find( fileName );
+	if ( findIter != this->m_allMeshes.end() )
 	{
 		return findIter->second;
 	}
 
-	filesystem::path fullFileName( GeometryFactory::modelDataPath.generic_string() + fileName );
+	filesystem::path fullFileName( this->m_modelDataPath.generic_string() + fileName );
 	if ( ! filesystem::exists( fullFileName ) )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "GeometryFactory::get: file \"" << fullFileName << "\" does not exist";
@@ -58,7 +88,7 @@ GeometryFactory::getMesh( const std::string& fileName )
 	
 	if ( NULL != meshNode )
 	{
-		GeometryFactory::allMeshes[ fileName ] = meshNode;
+		this->m_allMeshes[ fileName ] = meshNode;
 	}
 
 	return meshNode;
@@ -136,28 +166,14 @@ GeometryFactory::createQuad( float width, float height )
 	indexBuffer[ 5 ] = 3;
 
 	// put into map => will be cleaned up
-	MeshNode* containerNode = new MeshNode( "QUAD_MESH" + GeometryFactory::allMeshes.size() );
-	containerNode->m_children.push_back( containerNode );
-
+	MeshNode* containerNode = new MeshNode( "QUAD_MESH" + this->m_allMeshes.size() );
 	MeshStatic* quadMesh = new MeshStatic( numFaces, numVertices, vertexData, indexBuffer );
 
-	GeometryFactory::allMeshes[ containerNode->getName() ] = containerNode;
+	containerNode->m_meshes.push_back( quadMesh );
+
+	this->m_allMeshes[ containerNode->getName() ] = containerNode;
 
 	return quadMesh;
-}
-
-void
-GeometryFactory::freeAll()
-{
-	map<std::string, MeshNode*>::iterator iter = GeometryFactory::allMeshes.begin();
-	while ( iter != GeometryFactory::allMeshes.end() )
-	{
-		delete iter->second;
-
-		iter++;
-	}
-
-	GeometryFactory::allMeshes.clear();
 }
 
 MeshNode*
@@ -205,7 +221,7 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 
 	const std::string& fileName = filePath.generic_string();
 
-	const struct aiScene* scene = aiImportFile( fileName.c_str(), aiProcess_CalcTangentSpace	
+	this->m_currentScene = aiImportFile( fileName.c_str(), aiProcess_CalcTangentSpace	
 		| aiProcess_JoinIdenticalVertices 
 		| aiProcess_Triangulate 
 		| aiProcess_RemoveComponent 
@@ -217,17 +233,23 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 		| aiProcess_GenUVCoords 
 		| aiProcess_OptimizeMeshes 
 		| aiProcess_OptimizeGraph );
-	if ( NULL == scene )
+	if ( NULL == this->m_currentScene )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "GeometryFactory::loadFile: AssetImporter failed loading the file with error: " << aiGetErrorString();
 		return 0;
 	}
-
-	unsigned int runningBoneIndex = 0;
-
-	rootNode = GeometryFactory::processNode( scene->mRootNode, scene, runningBoneIndex );
 	
-	aiReleaseImport( scene );
+	// need to collect all bones hierarchical to construct correct bone-indices
+	// animation will build then an animation-skeleton with the hierarchy information
+	// where the bone-indices will be constructed the same way => indices must mach
+	GeometryFactory::collectBonesHierarchical( this->m_currentScene->mRootNode );
+
+	// walk and create hieararchy recursive
+	rootNode = GeometryFactory::processNode( this->m_currentScene->mRootNode );
+
+	aiReleaseImport( this->m_currentScene );
+	this->m_currentScene = NULL;
+	this->m_currentBonesHierarchical.clear();
 
 	ZazenGraphics::getInstance().getLogger().logInfo() << "LOADED ... " << filePath;
 
@@ -235,16 +257,25 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 }
 
 MeshNode*
-GeometryFactory::processNode( const struct aiNode* assImpNode, const struct aiScene* assImpScene, unsigned int& runningBoneIndex )
+GeometryFactory::processNode( const struct aiNode* assImpNode )
 {
 	MeshNode* node = new MeshNode( assImpNode->mName.C_Str() );
 	AssImpUtils::assimpMatToGlm( assImpNode->mTransformation, node->m_modelMatrix );
 
+	// find matching bone to this hierarchy-node, is optional!
+	int boneIndex = this->getBoneIndex( node->m_name );
+	if ( -1 != boneIndex )
+	{
+		node->m_bone = new MeshNode::MeshBone();
+		*node->m_bone = this->m_currentBonesHierarchical[ boneIndex ];
+	}
+	
+	// collect all meshes of this node
 	for ( unsigned int i = 0; i < assImpNode->mNumMeshes; ++i )
 	{
-		const struct aiMesh* assImpMesh = assImpScene->mMeshes[ assImpNode->mMeshes[ i ] ];
+		const struct aiMesh* assImpMesh = this->m_currentScene->mMeshes[ assImpNode->mMeshes[ i ] ];
 
-		Mesh* mesh = GeometryFactory::processMesh( assImpMesh, runningBoneIndex );
+		Mesh* mesh = this->processMesh( assImpMesh );
 		if ( NULL != mesh )
 		{
 			node->compareAndSetBB( mesh->getBBMin(), mesh->getBBMax() );
@@ -252,26 +283,24 @@ GeometryFactory::processNode( const struct aiNode* assImpNode, const struct aiSc
 		}
 	}
 
+	// walk tree down recursive
 	for ( unsigned int i = 0; i < assImpNode->mNumChildren; i++ )
 	{
-		MeshNode* childNode = GeometryFactory::processNode( assImpNode->mChildren[ i ], assImpScene, runningBoneIndex );
-		if ( NULL != childNode )
-		{
-			node->compareAndSetBB( childNode->getBBMin(), childNode->getBBMax() );
-			node->m_children.push_back( childNode );
-		}
+		MeshNode* childNode = this->processNode( assImpNode->mChildren[ i ] );
+		node->compareAndSetBB( childNode->getBBMin(), childNode->getBBMax() );
+		node->m_children.push_back( childNode );
 	}
 
 	return node;
 }
 
 Mesh*
-GeometryFactory::processMesh( const struct aiMesh* assImpMesh, unsigned int& runningBoneIndex )
+GeometryFactory::processMesh( const struct aiMesh* assImpMesh )
 {
 	// ignore non-triangle meshes
 	if ( 0 == ( assImpMesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE ) )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "ignoring non-triangle mesh " << assImpMesh->mName.C_Str();
+		ZazenGraphics::getInstance().getLogger().logWarning() << "ignoring non-triangle mesh " << assImpMesh->mName.C_Str();
 		return NULL;
 	}
 
@@ -280,7 +309,7 @@ GeometryFactory::processMesh( const struct aiMesh* assImpMesh, unsigned int& run
 	// this mesh has bones => its supposed to be an animated mesh
 	if ( assImpMesh->HasBones() )
 	{
-		mesh = GeometryFactory::processMeshBoned( assImpMesh, runningBoneIndex );
+		mesh = GeometryFactory::processMeshBoned( assImpMesh );
 	}
 	else
 	{
@@ -291,12 +320,10 @@ GeometryFactory::processMesh( const struct aiMesh* assImpMesh, unsigned int& run
 }
 
 MeshBoned*
-GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh, unsigned int& runningBoneIndex )
+GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh )
 {
 	glm::vec3 meshBBmin;
 	glm::vec3 meshBBmax;
-
-	bool ignoredBones = false;
 
 	GLuint* indexBuffer = NULL;
 	MeshBoned::BonedVertexData* vertexData = NULL;
@@ -317,6 +344,7 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh, unsigned int
 	meshBBmax[ 1 ] = numeric_limits<float>::min();
 	meshBBmax[ 2 ] = numeric_limits<float>::min();
 
+	// iterate over all affecting bones to collect weights
 	for ( unsigned int i = 0; i < assImpMesh->mNumBones; i++ )
 	{
 		aiBone* bone = assImpMesh->mBones[ i ];
@@ -328,52 +356,18 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh, unsigned int
 			continue;
 		}
 
-		ZazenGraphics::getInstance().getLogger().logWarning() << "bone \"" << bone->mName.C_Str() << "\" has index of " << i + runningBoneIndex;
-
+		// get index of bone in hierarchy: should never be negative because for each bone there will be an according node
+		// (note: the other way round does not hold true: for each node there is NOT ALWAYS an according bone)
+		unsigned int boneIndex = this->getBoneIndex( bone->mName.C_Str() );
+		
 		for( unsigned int j = 0; j < bone->mNumWeights; j++ )
 		{
-			aiVertexWeight newWeight = bone->mWeights[ j ];
+			aiVertexWeight& newWeight = bone->mWeights[ j ];
 			MeshBoned::BonedVertexData& vertex = vertexData[ newWeight.mVertexId ];
 
-			// only up to 4 bones per vertex are used
-			if ( 4 > vertex.boneCount )
-			{
-				vertex.boneIndices[ vertex.boneCount ] = i + runningBoneIndex;
-				vertex.boneWeights[ vertex.boneCount ] = newWeight.mWeight;
-				vertex.boneCount++;
-			}
-			// already 4 bones have influence on this vertex...
-			else
-			{
-				// search for smallest weight and replace it if the new weight is bigger
-				unsigned int minWeightIndex = 0;
-				float minWeight = vertex.boneWeights[ 0 ];
-	
-				for ( unsigned int k = 1; k < vertex.boneCount; k++ )
-				{
-					if ( vertex.boneWeights[ k ] < minWeight )
-					{
-						minWeight = vertex.boneWeights[ k ];
-						minWeightIndex = k;
-					}
-				}
-
-				// the new bone has more influence on this vertex then an existing one, replace the existing one
-				if ( newWeight.mWeight > minWeight )
-				{
-					vertex.boneIndices[ minWeightIndex ] = i;
-					vertex.boneWeights[ minWeightIndex ] = newWeight.mWeight;
-				}
-
-				// for debug-output
-				ignoredBones = true;
-			}
+			GeometryFactory::processBoneWeight( vertex, newWeight, boneIndex );
 		}
 	}
-
-	// bone-indices must match the bone-indices generated by Animation.cpp which is global for all meshes and not separate
-	// => we need for one model global bone-indices and not mesh-specific
-	runningBoneIndex += assImpMesh->mNumBones;
 
 	for ( unsigned int i = 0; i < assImpMesh->mNumFaces; ++i )
 	{
@@ -398,15 +392,45 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh, unsigned int
 		}
 	}
 
-	if ( ignoredBones )
-	{
-		ZazenGraphics::getInstance().getLogger().logWarning() << "ignoring bone-influence on vertex because max bone-per-vertex of 4 exceeded";
-	}
-
 	MeshBoned* meshBoned = new MeshBoned( assImpMesh->mNumFaces, assImpMesh->mNumVertices, vertexData, indexBuffer );
 	meshBoned->setBB( meshBBmin, meshBBmax );
 
 	return meshBoned;
+}
+
+void
+GeometryFactory::processBoneWeight( MeshBoned::BonedVertexData& vertex, const aiVertexWeight& newWeight, unsigned int boneIndex )
+{
+	// only up to 4 bones per vertex are used
+	if ( 4 > vertex.boneCount )
+	{
+		vertex.boneIndices[ vertex.boneCount ] = boneIndex;
+		vertex.boneWeights[ vertex.boneCount ] = newWeight.mWeight;
+		vertex.boneCount++;
+	}
+	// already 4 bones have influence on this vertex...
+	else
+	{
+		// search for smallest weight and replace it if the new weight is bigger
+		unsigned int minWeightIndex = 0;
+		float minWeight = vertex.boneWeights[ 0 ];
+	
+		for ( unsigned int i = 1; i < vertex.boneCount; i++ )
+		{
+			if ( vertex.boneWeights[ i ] < minWeight )
+			{
+				minWeight = vertex.boneWeights[ i ];
+				minWeightIndex = i;
+			}
+		}
+
+		// the new bone has more influence on this vertex then an existing one, replace the existing one
+		if ( newWeight.mWeight > minWeight )
+		{
+			vertex.boneIndices[ minWeightIndex ] = boneIndex;
+			vertex.boneWeights[ minWeightIndex ] = newWeight.mWeight;
+		}
+	}
 }
 
 MeshStatic*
@@ -461,6 +485,49 @@ GeometryFactory::processMeshStatic( const struct aiMesh* assImpMesh )
 	meshStatic->setBB( meshBBmin, meshBBmax );
 
 	return meshStatic;
+}
+
+void
+GeometryFactory::collectBonesHierarchical( const struct aiNode* assImpNode )
+{
+	for ( unsigned int i = 0; i < this->m_currentScene->mNumMeshes; i++ )
+	{
+		aiMesh* assImpMesh = this->m_currentScene->mMeshes[ i ];
+
+		for ( unsigned int j = 0; j < assImpMesh->mNumBones; j++ )
+		{
+			aiBone* assImpBone = assImpMesh->mBones[ j ];
+			string assImpBoneName =  assImpBone->mName.C_Str();
+			if ( assImpBoneName == assImpNode->mName.C_Str() )
+			{
+				MeshNode::MeshBone bone;
+				bone.m_name = assImpBone->mName.C_Str();
+				AssImpUtils::assimpMatToGlm( assImpBone->mOffsetMatrix, bone.m_offset );
+
+				this->m_currentBonesHierarchical.push_back( bone );
+			}
+		}
+	}
+
+	// walk the tree recursive
+	for ( unsigned int i = 0; i < assImpNode->mNumChildren; i++ )
+	{
+		this->collectBonesHierarchical( assImpNode->mChildren[ i ] );
+	}
+}
+
+int
+GeometryFactory::getBoneIndex( const std::string& boneName )
+{
+	for ( unsigned int i = 0; i < this->m_currentBonesHierarchical.size(); i++ )
+	{
+		if ( boneName == this->m_currentBonesHierarchical[ i ].m_name )
+		{
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 void

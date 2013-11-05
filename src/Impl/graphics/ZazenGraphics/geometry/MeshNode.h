@@ -11,6 +11,11 @@ class MeshNode
 	public:
 		friend class GeometryFactory;
 
+		struct MeshBone {
+			std::string m_name;
+			glm::mat4 m_offset; // mesh to bone
+		};
+
 		MeshNode( const std::string& name ); // act as empty parent for composite
 		~MeshNode();
 
@@ -26,10 +31,12 @@ class MeshNode
 		const glm::mat4& getModelMatrix() const { return this->m_modelMatrix; };
 		const std::vector<MeshNode*>& getChildren() const { return this->m_children; };
 		const std::vector<Mesh*>& getMeshes() const { return this->m_meshes; };
+		const MeshBone* getBone() const { return this->m_bone; };
 
 	private:
 		std::vector<MeshNode*> m_children;
 		std::vector<Mesh*> m_meshes;
+		MeshBone* m_bone;
 
 		std::string m_name;
 		glm::mat4 m_modelMatrix;

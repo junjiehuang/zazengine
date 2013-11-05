@@ -23,29 +23,43 @@
 class GeometryFactory
 {
 	public:
-		static void setDataPath( const boost::filesystem::path& );
+		static void init( const boost::filesystem::path& );
 		static void freeAll();
-		static void free( Mesh* );
+		static GeometryFactory& getRef() { return *GeometryFactory::instance; };
 
-		static MeshNode* getMesh( const std::string& fileName );
+		MeshNode* getMesh( const std::string& fileName );
+		MeshStatic* createQuad( float width, float height );
 
-		static MeshStatic* createQuad( float width, float height );
+		void free( Mesh* );
 
 	private:
-		static boost::filesystem::path modelDataPath;
-		static std::map<std::string, MeshNode*> allMeshes;
+		static GeometryFactory* instance;
 
-		static MeshNode* loadFolder( const boost::filesystem::path& );
-		static MeshNode* loadFile( const boost::filesystem::path& );
+		boost::filesystem::path m_modelDataPath;
+		std::map<std::string, MeshNode*> m_allMeshes;
 
-		static MeshNode* processNode( const struct aiNode*, const struct aiScene*, unsigned int& );		 
-		static Mesh* processMesh( const struct aiMesh*, unsigned int& );
+		const struct aiScene* m_currentScene;
+		std::vector<MeshNode::MeshBone> m_currentBonesHierarchical;
 
-		static MeshBoned* processMeshBoned( const struct aiMesh*, unsigned int& );
-		static MeshStatic* processMeshStatic( const struct aiMesh* );
+		GeometryFactory( const boost::filesystem::path& );
+		~GeometryFactory();
 
+		MeshNode* loadFolder( const boost::filesystem::path& );
+		MeshNode* loadFile( const boost::filesystem::path& );
+
+		void collectBonesHierarchical( const struct aiNode* );
+
+		MeshNode* processNode( const struct aiNode* );		 
+		Mesh* processMesh( const struct aiMesh* );
+
+		MeshBoned* processMeshBoned( const struct aiMesh* );
+		MeshStatic* processMeshStatic( const struct aiMesh* );
+		
+		int getBoneIndex( const std::string& );
+
+		static void processBoneWeight( MeshBoned::BonedVertexData&, const aiVertexWeight&, unsigned int );
 		static void updateBB( const aiVector3D& vertex, glm::vec3&, glm::vec3& );
-
+		
 };
 
 #endif

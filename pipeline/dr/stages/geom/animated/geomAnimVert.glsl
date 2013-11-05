@@ -1,6 +1,6 @@
 #version 330 core
 
-#define MAX_BONES_PER_MESH 256
+#define MAX_BONES_PER_MESH 128
 
 in vec3 in_vertPos;
 in vec3 in_vertNorm;
@@ -30,7 +30,7 @@ uniform mat4 u_bones[ MAX_BONES_PER_MESH ];
 
 void main()
 {
-	vec4 skinnedVertex;
+	mat4 boneTransform;
 
 	for ( uint i = 0u; i < in_bone_count; i++ )
 	{
@@ -38,11 +38,13 @@ void main()
 		mat4 bone = u_bones[ boneIndex ];
 		float boneWeight = in_bone_weights[ i ];
 
-		skinnedVertex += ( bone * boneWeight ) * vec4( in_vertPos, 1.0 );
+		boneTransform += ( bone * boneWeight );
 	}
 
+	ex_position = boneTransform * vec4( in_vertPos, 1.0 );
+
 	// store position in view-space (EyeCoordinates) 
-	ex_position = Transforms.modelViewMatrix * vec4( in_vertPos, 1.0 );
+	ex_position = Transforms.modelViewMatrix * ex_position;
 	// store normals in view-space too (EC)
 	ex_normal = Transforms.normalsModelViewMatrix * vec4( in_vertNorm, 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
 	// no transform for texture-coords, just interpolated

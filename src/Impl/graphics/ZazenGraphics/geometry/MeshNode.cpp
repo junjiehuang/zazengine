@@ -3,18 +3,26 @@
 MeshNode::MeshNode( const std::string& name )
 	: m_name( name )
 {
+	this->m_bone = NULL;
 }
 
 MeshNode::~MeshNode()
 {
 	for ( unsigned int i = 0; i < this->m_children.size(); i++ )
 	{
-		delete this->m_children[ i ];
+		MeshNode* child = this->m_children[ i ];
+		delete child;
 	}
 
 	for ( unsigned int i = 0; i < this->m_meshes.size(); i++ )
 	{
-		delete this->m_meshes[ i ];
+		Mesh* mesh = this->m_meshes[ i ];
+		delete mesh;
+	}
+
+	if ( this->m_bone )
+	{
+		delete this->m_bone;
 	}
 }
 

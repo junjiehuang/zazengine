@@ -22,17 +22,17 @@ ZazenGraphicsEntity::ZazenGraphicsEntity( IGameObject* p )
 	m_type( "graphics" ),
 	Orientation( m_modelMatrix )
 {
-	this->m_activeAnimation = 0;
+	this->m_activeAnimation = NULL;
 
 	this->m_visible = true;
 	this->m_distance = 0;
 	this->m_lastFrame = 0;
 	
-	this->m_rootMeshNode = 0;
-	this->m_material = 0;
+	this->m_rootMeshNode = NULL;
+	this->m_material = NULL;
 
-	this->m_light = 0;
-	this->m_camera = 0;
+	this->m_light = NULL;
+	this->m_camera = NULL;
 
 	this->m_isAnimated = false;
 	this->m_animRoll = 0;

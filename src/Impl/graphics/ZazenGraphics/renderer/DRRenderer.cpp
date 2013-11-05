@@ -364,7 +364,7 @@ DRRenderer::initTransparency()
 		return false;
 	}
 	
-	this->m_fullScreenQuad = GeometryFactory::createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+	this->m_fullScreenQuad = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
 	if ( NULL == this->m_fullScreenQuad )
 	{
 		return false;
