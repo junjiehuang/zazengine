@@ -71,7 +71,7 @@ Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 	if ( this->m_animationBones.end() != findAnimationBoneIter && rootMeshNode->getBone() )
 	{
 		skeletonPart->m_animationBone = findAnimationBoneIter->second;
-		skeletonPart->m_animationBone->m_meshToBoneTransf = rootMeshNode->getBone()->m_offset;
+		//skeletonPart->m_animationBone->m_offset = rootMeshNode->getBone()->m_offset;
 	}
 
 	const std::vector<MeshNode*>& children = rootMeshNode->getChildren();
@@ -120,10 +120,9 @@ Animation::animateSkeleton( AnimationSkeletonPart* skeletonPart, const glm::mat4
 	if ( skeletonPart->m_animationBone )
 	{
 		const AnimationBone* bone = skeletonPart->m_animationBone;
-		glm::mat4 globalInverse = glm::inverse( this->m_skeletonRoot->m_transform );
 		
 		// calculate bone-transformation: we need to apply the mesh-to-bone transformation 
-		glm::mat4 globalBoneTransform = globalInverse * globalTransform * bone->m_meshToBoneTransf;
+		glm::mat4 globalBoneTransform = globalTransform * glm::inverse( bone->m_offset );
 
 		this->m_transforms.push_back( globalBoneTransform );
 	}

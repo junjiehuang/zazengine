@@ -376,6 +376,7 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh )
 		for( unsigned int j = 0; j < face->mNumIndices; j++ )
 		{
 			int index = face->mIndices[ j ];
+			float boneWeightSum = 0.0f;
 
 			indexBuffer[ i * 3 + j ] = index;
 			memcpy( vertexData[ index ].position, &assImpMesh->mVertices[ index ].x, sizeof( MeshBoned::Vertex ) );
@@ -387,6 +388,23 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh )
 				vertexData[ index ].texCoord[ 0 ] = assImpMesh->mTextureCoords[ 0 ][ index ].x;
 				vertexData[ index ].texCoord[ 1 ] = assImpMesh->mTextureCoords[ 0 ][ index ].y;
 			}
+
+			unsigned int minWeightIndex = 0;
+
+			// adjust bone-weights to 1.0 because if more than 4 bones influenced this vertex we only choose the largest 4 weights
+			for ( unsigned int k = 0; k < vertexData[ index ].boneCount; k++ )
+			{
+				boneWeightSum += vertexData[ index ].boneWeights[ k ];
+
+				if ( vertexData[ index ].boneWeights[ k ] < vertexData[ index ].boneWeights[ minWeightIndex ] )
+				{
+					minWeightIndex = k;
+				}
+			}
+
+			// we can safely add the difference to the smallest weight
+			float weightsDiff = 1.0f - boneWeightSum;
+			vertexData[ index ].boneWeights[ minWeightIndex ] += weightsDiff;
 
 			GeometryFactory::updateBB( assImpMesh->mVertices[ index ], meshBBmin, meshBBmax );
 		}
@@ -413,19 +431,17 @@ GeometryFactory::processBoneWeight( MeshBoned::BonedVertexData& vertex, const ai
 	{
 		// search for smallest weight and replace it if the new weight is bigger
 		unsigned int minWeightIndex = 0;
-		float minWeight = vertex.boneWeights[ 0 ];
-	
+
 		for ( unsigned int i = 1; i < vertex.boneCount; i++ )
 		{
-			if ( vertex.boneWeights[ i ] < minWeight )
+			if ( vertex.boneWeights[ i ] < vertex.boneWeights[ minWeightIndex ] )
 			{
-				minWeight = vertex.boneWeights[ i ];
 				minWeightIndex = i;
 			}
 		}
 
 		// the new bone has more influence on this vertex then an existing one, replace the existing one
-		if ( newWeight.mWeight > minWeight )
+		if ( newWeight.mWeight > vertex.boneWeights[ minWeightIndex ] )
 		{
 			vertex.boneIndices[ minWeightIndex ] = boneIndex;
 			vertex.boneWeights[ minWeightIndex ] = newWeight.mWeight;

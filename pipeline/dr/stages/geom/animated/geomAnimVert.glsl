@@ -30,7 +30,7 @@ uniform mat4 u_bones[ MAX_BONES_PER_MESH ];
 
 void main()
 {
-	mat4 boneTransform;
+	vec4 positionSkinned = vec4( 0.0 );
 
 	for ( uint i = 0u; i < in_bone_count; i++ )
 	{
@@ -38,13 +38,11 @@ void main()
 		mat4 bone = u_bones[ boneIndex ];
 		float boneWeight = in_bone_weights[ i ];
 
-		boneTransform += ( bone * boneWeight );
+		positionSkinned += boneWeight * ( bone * vec4( in_vertPos, 1.0 ) );
 	}
 
-	ex_position = boneTransform * vec4( in_vertPos, 1.0 );
-
 	// store position in view-space (EyeCoordinates) 
-	ex_position = Transforms.modelViewMatrix * ex_position;
+	ex_position = Transforms.modelViewMatrix * positionSkinned;
 	// store normals in view-space too (EC)
 	ex_normal = Transforms.normalsModelViewMatrix * vec4( in_vertNorm, 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
 	// no transform for texture-coords, just interpolated
@@ -61,5 +59,5 @@ void main()
 	// after this the coordinates will be between -1 to 1 which is NDC
 	// then view-port transform will happen
 	// then fragment-shader takes over
-	gl_Position = Transforms.projectionMatrix * Transforms.modelViewMatrix * vec4( in_vertPos, 1.0 );
+	gl_Position = Transforms.projectionMatrix * Transforms.modelViewMatrix * positionSkinned;
 }

@@ -34,7 +34,7 @@ class Animation
 	private:
 		struct AnimationBone {
 			std::string m_name;
-			glm::mat4 m_meshToBoneTransf;
+			glm::mat4 m_offset;
 		};
 
 		template <typename T> struct AnimationKey {
