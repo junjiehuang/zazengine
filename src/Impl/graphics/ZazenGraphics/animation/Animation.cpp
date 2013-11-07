@@ -122,9 +122,11 @@ Animation::animateSkeleton( AnimationSkeletonPart* skeletonPart, const glm::mat4
 		const AnimationBone* bone = skeletonPart->m_animationBone;
 		
 		// calculate bone-transformation: we need to apply the mesh-to-bone transformation 
-		glm::mat4 globalBoneTransform = globalTransform * glm::inverse( bone->m_offset );
+		glm::mat4 globalBoneTransform = globalTransform * bone->m_offset;
 
-		this->m_transforms.push_back( globalBoneTransform );
+		//ZazenGraphics::getInstance().getLogger().logDebug() << "bone " << bone->m_name << " has index " << this->m_transforms.size();
+
+		this->m_transforms.push_back( globalTransform );
 	}
 
 	const std::vector<AnimationSkeletonPart*>& skeletonChildren = skeletonPart->m_children;
@@ -231,51 +233,24 @@ template <typename T>
 void
 Animation::findFirstAndNext( const vector<AnimationKey<T>>& keys, AnimationKey<T>& first, AnimationKey<T>& next, unsigned int& lastChannelIndex )
 {
-	// NOTE: dirty-hack for doom3 models: we suppose that there are as many keys as maximum keys and all are equally spaced thus we can index right into the vector
-	unsigned int index = ( unsigned int ) this->m_currentFrame;
-	unsigned int nextIndex = ( index + 1 ) % keys.size();
+	// jump in time or frame turned around => reset last index to 0
+	if ( ( unsigned int ) this->m_currentFrame < lastChannelIndex - 1 )
+	{
+		lastChannelIndex = 0;
+	}
 
-	first = keys[ index ];
-	next = keys[ nextIndex ];
-
-	/*
 	// NOTE: if the time would be equally spaced by 1 unit then m_time would match the index and we could access it in O(1)
 	for ( unsigned int i = lastChannelIndex; i < keys.size(); i++ )
 	{
-		// TODO: something wrong here
-		unsigned int nextIndex = ( i + 1 ) & ( keys.size() - 1 );
-		// normal advance in indices
-		if ( i < nextIndex )
-		{
-			if ( keys[ i ].m_time <= this->m_currentFrame && keys[ nextIndex ].m_time > this->m_currentFrame )
-			{
-				first = keys[ i ];
-				next = keys[ nextIndex ];
+		unsigned int nextIndex = ( i + 1 ) % keys.size();
 
-				lastChannelIndex = i;
-				return;
-			}
-		}
-		// wrap-around
-		else if ( i > nextIndex )
+		if ( keys[ i ].m_time >= this->m_currentFrame )
 		{
-			if ( keys[ i ].m_time <= this->m_currentFrame && keys[ nextIndex ].m_time < this->m_currentFrame )
-			{
-				first = keys[ i ];
-				next = keys[ nextIndex ];
+			first = keys[ i ];
+			next = keys[ nextIndex ];
 
-				lastChannelIndex = i;
-				return;
-			}
-			else
-			{
-				// nothing found due to optimization (currentframe had a jump BEVORE lastChannelIndex): reset i to 0 and start from beginning
-				if ( i == keys.size() - 1 )
-				{
-					i = 0;
-				}
-			}
+			lastChannelIndex = i;
+			return;
 		}
 	}
-	*/
 }

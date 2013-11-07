@@ -244,6 +244,13 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 	// where the bone-indices will be constructed the same way => indices must mach
 	GeometryFactory::collectBonesHierarchical( this->m_currentScene->mRootNode );
 
+	/*
+	for ( unsigned int i = 0; i < this->m_currentBonesHierarchical.size(); i++ )
+	{
+		ZazenGraphics::getInstance().getLogger().logDebug() << "bone " << m_currentBonesHierarchical[ i ].m_name << " has index " << i;
+	}
+	*/
+
 	// walk and create hieararchy recursive
 	rootNode = GeometryFactory::processNode( this->m_currentScene->mRootNode );
 
@@ -381,7 +388,11 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh )
 			indexBuffer[ i * 3 + j ] = index;
 			memcpy( vertexData[ index ].position, &assImpMesh->mVertices[ index ].x, sizeof( MeshBoned::Vertex ) );
 			memcpy( vertexData[ index ].normal, &assImpMesh->mNormals[ index ].x, sizeof( MeshBoned::Normal ) );
-			memcpy( vertexData[ index ].tangent, &assImpMesh->mTangents[ index ].x, sizeof( MeshBoned::Tangent ) );
+
+			if ( assImpMesh->HasTangentsAndBitangents() )
+			{
+				memcpy( vertexData[ index ].tangent, &assImpMesh->mTangents[ index ].x, sizeof( MeshBoned::Tangent ) );
+			}
 
 			if ( assImpMesh->HasTextureCoords( 0 ) )
 			{
