@@ -49,16 +49,17 @@ Animation::initSkeleton( MeshNode* rootMeshNode )
 {
 	if ( NULL == this->m_skeletonRoot && rootMeshNode )
 	{
-		this->m_skeletonRoot = this->buildAnimationSkeleton( rootMeshNode );
+		this->m_skeletonRoot = this->buildAnimationSkeleton( rootMeshNode, glm::mat4() );
 	}
 }
 
 Animation::AnimationSkeletonPart*
-Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
+Animation::buildAnimationSkeleton( MeshNode* rootMeshNode, const glm::mat4& parentGlobalTransform )
 {
 	AnimationSkeletonPart* skeletonPart = new AnimationSkeletonPart();
-	skeletonPart->m_transform = rootMeshNode->getModelMatrix();
 	skeletonPart->m_name = rootMeshNode->getName();
+	skeletonPart->m_localTransform = rootMeshNode->getModelMatrix();
+	skeletonPart->m_globalTransform = parentGlobalTransform * skeletonPart->m_localTransform;
 
 	std::map<std::string, AnimationNode*>::iterator findAnimationNodeIter = this->m_animationNodes.find( rootMeshNode->getName() );
 	std::map<std::string, AnimationBone*>::iterator findAnimationBoneIter = this->m_animationBones.find( rootMeshNode->getName() );
@@ -66,18 +67,22 @@ Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 	if ( this->m_animationNodes.end() != findAnimationNodeIter )
 	{
 		skeletonPart->m_animationNode = findAnimationNodeIter->second;
+
+		skeletonPart->m_localTransform = skeletonPart->m_animationNode->m_transform;
+		skeletonPart->m_globalTransform = parentGlobalTransform * skeletonPart->m_localTransform;
 	}
 
 	if ( this->m_animationBones.end() != findAnimationBoneIter && rootMeshNode->getBone() )
 	{
 		skeletonPart->m_animationBone = findAnimationBoneIter->second;
+		// replace bone-offset with the one from rootMeshNode if present
 		//skeletonPart->m_animationBone->m_offset = rootMeshNode->getBone()->m_offset;
 	}
 
 	const std::vector<MeshNode*>& children = rootMeshNode->getChildren();
 	for ( unsigned int i = 0; i < children.size(); i++ )
 	{
-		AnimationSkeletonPart* childSkeletonPart = this->buildAnimationSkeleton( children[ i ] );
+		AnimationSkeletonPart* childSkeletonPart = this->buildAnimationSkeleton( children[ i ], skeletonPart->m_globalTransform );
 		skeletonPart->m_children.push_back( childSkeletonPart );
 	}
 
@@ -85,7 +90,7 @@ Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 }
 
 void
-Animation::animateSkeleton( AnimationSkeletonPart* skeletonPart, const glm::mat4& parentTransform )
+Animation::animateSkeleton( AnimationSkeletonPart* skeletonPart, const glm::mat4& parentGlobalTransform )
 {
 	glm::mat4 localNodeTransform;
 
@@ -110,21 +115,18 @@ Animation::animateSkeleton( AnimationSkeletonPart* skeletonPart, const glm::mat4
 	else
 	{
 		// no animation for this node: use local transformation 
-		localNodeTransform = skeletonPart->m_transform;
+		localNodeTransform = skeletonPart->m_localTransform;
 	}
 
 	// do hierarchical transformation: apply parentTransformation to local Transformation
-	glm::mat4 globalTransform = parentTransform * localNodeTransform;
+	glm::mat4 globalTransform = parentGlobalTransform * localNodeTransform;
 
 	// check if this node has a bone assosiated with
 	if ( skeletonPart->m_animationBone )
 	{
 		const AnimationBone* bone = skeletonPart->m_animationBone;
-		
 		// calculate bone-transformation: we need to apply the mesh-to-bone transformation 
-		glm::mat4 globalBoneTransform = globalTransform * bone->m_offset;
-
-		//ZazenGraphics::getInstance().getLogger().logDebug() << "bone " << bone->m_name << " has index " << this->m_transforms.size();
+		glm::mat4 globalBoneTransform = localNodeTransform * bone->m_offset;
 
 		this->m_transforms.push_back( globalTransform );
 	}
@@ -161,12 +163,18 @@ Animation::interpolatePosition( const vector<AnimationKey<glm::vec3>>& positionK
 
 	this->findFirstAndNext<glm::vec3>( positionKeys, firstPos, nextPos, this->m_lastPosChannelIndex );
 
+	translationMatrix[ 3 ][ 0 ] = firstPos.m_value.x;
+	translationMatrix[ 3 ][ 1 ] = firstPos.m_value.y;
+	translationMatrix[ 3 ][ 2 ] = firstPos.m_value.z;
+
+	/*
 	float normalizedTime = ( float ) ( ( this->m_currentFrame - firstPos.m_time ) / ( nextPos.m_time - firstPos.m_time ) );
 
 	glm::vec3 interpolatedPos = ( ( 1.0f - normalizedTime ) * firstPos.m_value ) + ( normalizedTime * nextPos.m_value );
 	translationMatrix[ 3 ][ 0 ] = interpolatedPos.x;
 	translationMatrix[ 3 ][ 1 ] = interpolatedPos.y;
 	translationMatrix[ 3 ][ 2 ] = interpolatedPos.z;
+	*/
 }
 
 void

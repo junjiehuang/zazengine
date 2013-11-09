@@ -62,7 +62,8 @@ class Animation
 			}
 
 			std::string m_name;
-			glm::mat4 m_transform;
+			glm::mat4 m_localTransform;
+			glm::mat4 m_globalTransform;
 			AnimationNode* m_animationNode;
 			AnimationBone* m_animationBone;
 			std::vector<AnimationSkeletonPart*> m_children;
@@ -84,7 +85,7 @@ class Animation
 		double m_durationTicks;
 		double m_durationInSec;
 
-		AnimationSkeletonPart* buildAnimationSkeleton( MeshNode* );
+		AnimationSkeletonPart* buildAnimationSkeleton( MeshNode*, const glm::mat4& );
 
 		void animateSkeleton( AnimationSkeletonPart*, const glm::mat4& );
 
