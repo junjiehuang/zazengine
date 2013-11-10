@@ -14,25 +14,26 @@
 using namespace std;
 using namespace boost;
 
-map<string, Animation*> AnimationFactory::allAnimations;
-boost::filesystem::path AnimationFactory::animationDataPath;
+map<string, Animation*> AnimationFactory::m_animationPrototypes;
+boost::filesystem::path AnimationFactory::m_animationDataPath;
 
 void
 AnimationFactory::setDataPath( const boost::filesystem::path& animationDataPath )
 {
-	AnimationFactory::animationDataPath = animationDataPath;
+	AnimationFactory::m_animationDataPath = animationDataPath;
 }
 
 Animation*
 AnimationFactory::get( const std::string& fileName )
 {
-	map<std::string, Animation*>::iterator findIter = AnimationFactory::allAnimations.find( fileName );
-	if ( findIter != AnimationFactory::allAnimations.end() )
+	map<std::string, Animation*>::iterator findIter = AnimationFactory::m_animationPrototypes.find( fileName );
+	if ( findIter != AnimationFactory::m_animationPrototypes.end() )
 	{
-		return findIter->second;
+		// create a clone of this found prototype because we hand out unique instances and not shared instances like meshes (animations are unique for each instance)
+		return AnimationFactory::cloneAnimation( findIter->second );
 	}
 
-	filesystem::path fullFileName( AnimationFactory::animationDataPath.generic_string() + fileName );
+	filesystem::path fullFileName( AnimationFactory::m_animationDataPath.generic_string() + fileName );
 	if ( ! filesystem::exists( fullFileName ) )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "AnimationFactory::get: file \"" << fullFileName << "\" does not exist";
@@ -45,14 +46,8 @@ AnimationFactory::get( const std::string& fileName )
 		return 0;
 	}
 	
-	Animation* animation = AnimationFactory::loadFile( fullFileName );
-
-	if ( NULL != animation )
-	{
-		AnimationFactory::allAnimations[ fileName ] = animation;
-	}
-
-	return animation;
+	// loadFile returns already a clone of the prototype
+	return AnimationFactory::loadFile( fullFileName );
 }
 
 vector<Animation*>
@@ -60,7 +55,7 @@ AnimationFactory::loadDir( const std::string& directory, const std::string& exte
 {
 	vector<Animation*> rootAnimations;
 
-	filesystem::path folderPath( AnimationFactory::animationDataPath.generic_string() + directory );
+	filesystem::path folderPath( AnimationFactory::m_animationDataPath.generic_string() + directory );
 	if ( ! filesystem::exists( folderPath ) )
 	{
 		ZazenGraphics::getInstance().getLogger().logError() << "AnimationFactory::loadDir: directory \"" << directory << "\" does not exist";
@@ -88,17 +83,18 @@ AnimationFactory::loadDir( const std::string& directory, const std::string& exte
 			if ( pathExtension == extension )
 			{
 				// check if this file is already loaded
-				map<std::string, Animation*>::iterator findIter = AnimationFactory::allAnimations.find( entry.path().generic_string().c_str() );
-				if ( findIter != AnimationFactory::allAnimations.end() )
+				map<std::string, Animation*>::iterator findIter = AnimationFactory::m_animationPrototypes.find( entry.path().generic_string().c_str() );
+				if ( findIter != AnimationFactory::m_animationPrototypes.end() )
 				{
-					rootAnimations.push_back( findIter->second );
+					// create a clone of this found prototype because we hand out unique instances and not shared instances like meshes (animations are unique for each instance)
+					rootAnimations.push_back( AnimationFactory::cloneAnimation( findIter->second ) );
 				}
-				// not yet loaded
+				// not yet loaded => load it fresh
 				else
 				{
-					// load animation
+					// load animation, will return a clone of the prototype
 					Animation* animation = AnimationFactory::loadFile( entry.path().generic_string().c_str() );
-					if ( 0 != animation )
+					if ( NULL != animation )
 					{
 						rootAnimations.push_back( animation );
 					}
@@ -113,16 +109,21 @@ AnimationFactory::loadDir( const std::string& directory, const std::string& exte
 void
 AnimationFactory::freeAll()
 {
-	map<std::string, Animation*>::iterator iter = AnimationFactory::allAnimations.begin();
-	while ( iter != AnimationFactory::allAnimations.end() )
+	// this will clean-up only the prototypes, AnimationFactory hands out clones of those
+	// the client is responsible for cleaning up the clones!
+	map<std::string, Animation*>::iterator iter = AnimationFactory::m_animationPrototypes.begin();
+	while ( iter != AnimationFactory::m_animationPrototypes.end() )
 	{
 		Animation* anim = iter->second;
+		// the animation-channels are owned only by AnimationFactory and thus need to be deleted separately
+		// clones will hold a pointer to the channels of their prototypes
+		delete anim->m_animationChannels;
 		delete anim;
 
 		iter++;
 	}
 
-	AnimationFactory::allAnimations.clear();
+	AnimationFactory::m_animationPrototypes.clear();
 }
 
 Animation*
@@ -154,6 +155,7 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 	aiAnimation* assImpAnim = scene->mAnimations[ 0 ];
 
 	animation = new Animation( assImpAnim->mDuration, assImpAnim->mTicksPerSecond );
+	animation->m_animationChannels = new map<std::string, Animation::AnimationChannel>();
 
 	// extract data from all channels
 	for ( unsigned int i = 0; i < assImpAnim->mNumChannels; i++ )
@@ -201,12 +203,23 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 			animChannel.m_scalingKeys.push_back( scaleKey );
 		}
 
-		animation->m_animationChannels[ assImpChannel->mNodeName.C_Str() ] = animChannel;
+		animation->m_animationChannels->insert( std::make_pair( assImpChannel->mNodeName.C_Str(), animChannel ) );
 	}
 		
-	AnimationFactory::allAnimations[ filePath.generic_string().c_str() ] = animation; 
+	// store this new prototype in our known prototypes
+	AnimationFactory::m_animationPrototypes[ filePath.generic_string().c_str() ] = animation; 
 
 	ZazenGraphics::getInstance().getLogger().logInfo() << "LOADED ... " << filePath;
 
-    return animation;
+	// return a clone of this new prototype
+    return AnimationFactory::cloneAnimation( animation );
+}
+
+Animation*
+AnimationFactory::cloneAnimation( Animation* prototype )
+{
+	Animation* clone = new Animation( prototype->m_durationTicks, prototype->m_ticksPerSecond );
+	clone->m_animationChannels = prototype->m_animationChannels;
+
+	return clone;
 }

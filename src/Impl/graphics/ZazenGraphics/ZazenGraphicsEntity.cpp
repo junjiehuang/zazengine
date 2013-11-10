@@ -42,6 +42,13 @@ ZazenGraphicsEntity::ZazenGraphicsEntity( IGameObject* p )
 
 ZazenGraphicsEntity::~ZazenGraphicsEntity()
 {
+	// m_allAnimations IS OWNED by this entity and NOT by AnimationFactory
+	// AnimationFactory hands out clones because animations are unique per instance
+	// unlike meshes which are "static" and can be shared for all instances (for now...)
+	for ( unsigned int i = 0; i < this->m_allAnimations.size(); i++ )
+	{
+		delete this->m_allAnimations[ i ];
+	}
 }
 
 void

@@ -59,8 +59,8 @@ class Animation
 
 		// the root of the animation-skeleton
 		AnimationSkeletonPart* m_skeletonRoot; 
-		// all animation-channels this animation has, maped by their node-names
-		std::map<std::string, AnimationChannel> m_animationChannels;
+		// this is the data same animation-instanes share, IT IS NOT OWNED BY ANIMATION but by AnimationFactory
+		std::map<std::string, AnimationChannel>* m_animationChannels;
 
 		// the master-list of the bone-transformations which will be re-calculated during each call to update
 		std::vector<glm::mat4> m_boneTransforms;

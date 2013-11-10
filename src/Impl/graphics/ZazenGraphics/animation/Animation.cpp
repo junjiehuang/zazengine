@@ -40,6 +40,7 @@ glm::quat glmSlerpCopy( const glm::quat& x, const glm::quat& y, float a )
 Animation::Animation( double durationTicks, double ticksPerSecond )
 {
 	this->m_skeletonRoot = NULL;
+	this->m_animationChannels = NULL;
 
 	this->m_currentTime = 0.0;
 	this->m_currentFrame = 0.0;
@@ -61,6 +62,8 @@ Animation::~Animation()
 		this->cleanUpSkeletonPart( this->m_skeletonRoot );
 		this->m_skeletonRoot = NULL;
 	}
+
+	// NOTE: don't delete m_animationChannels because IT IS OWNED BY AnimationFactory
 }
 
 void
@@ -128,10 +131,10 @@ Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 	skeletonPart->m_boneOffset = NULL;
 	skeletonPart->m_localTransform = rootMeshNode->getModelMatrix();
 
-	std::map<std::string, AnimationChannel>::iterator findAnimChannelsIter = this->m_animationChannels.find( rootMeshNode->getName() );
+	std::map<std::string, AnimationChannel>::iterator findAnimChannelsIter = this->m_animationChannels->find( rootMeshNode->getName() );
 
 	// animation-channel is found for this name thus this node is present in the animation and thus is animated => copy pointer to animation-channels
-	if ( this->m_animationChannels.end() != findAnimChannelsIter )
+	if ( this->m_animationChannels->end() != findAnimChannelsIter )
 	{
 		skeletonPart->m_animationChannel = &findAnimChannelsIter->second;
 
