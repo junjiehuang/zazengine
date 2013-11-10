@@ -1,11 +1,3 @@
-/*
- *  GeometryFactory.cpp
- *  zaZengine
- *
- *  Created by Jonathan Thaler on 07.03.13.
- *
- */
-
 #include "GeometryFactory.h"
 
 #include "../ZazenGraphics.h"

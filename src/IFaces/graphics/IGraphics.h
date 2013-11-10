@@ -1,12 +1,5 @@
-/*
- * IGraphics
- *
- *  Created on: 05.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef IGRAPHICS_H_
-#define IGRAPHICS_H_
+#ifndef _IGRAPHICS_H_
+#define _IGRAPHICS_H_
 
 #include "core/ISubSystem.h"
 
@@ -21,7 +14,6 @@ class IGraphics : public ISubSystem
 		virtual bool toggleFullscreen() = 0;
 
 		virtual IGraphicsEntity* createEntity( TiXmlElement*, IGameObject* parent ) = 0;
-
 };
 
-#endif /* IGRAPHICS_H_ */
+#endif /* _IGRAPHICS_H_ */

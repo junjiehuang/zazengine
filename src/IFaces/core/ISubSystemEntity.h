@@ -1,12 +1,5 @@
-/*
- * ISubSystemEntity.h
- *
- *  Created on: 07.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef ISUBSYSTEMENTITY_H_
-#define ISUBSYSTEMENTITY_H_
+#ifndef _ISUBSYSTEM_ENTITY_H_
+#define _ISUBSYSTEM_ENTITY_H_
 
 #include <list>
 
@@ -30,8 +23,6 @@ class ISubSystemEntity : public IEventListener
 
 	private:
 		IGameObject* parent;
-
-
 };
 
-#endif /* ISUBSYSTEMENTITY_H_ */
+#endif /* _ISUBSYSTEM_ENTITY_H_ */

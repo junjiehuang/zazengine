@@ -1,12 +1,5 @@
-/*
- * PlayGroundPhysicsEntity.h
- *
- *  Created on: 08.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef ODEPHYSICSENTITY_H_
-#define ODEPHYSICSENTITY_H_
+#ifndef _ODEPHYSICSENTITY_H_
+#define _ODEPHYSICSENTITY_H_
 
 #include <physics/IPhysicsEntity.h>
 
@@ -49,4 +42,4 @@ class ODEPhysicsEntity : public IPhysicsEntity
 		float m_vel[ 3 ];
 };
 
-#endif /* PLAYGROUNDPHYSICSENTITY_H_ */
+#endif /* _ODEPHYSICSENTITY_H_ */

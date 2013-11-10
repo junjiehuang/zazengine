@@ -1,10 +1,3 @@
-/*
- * Shader.cpp
- *
- *  Created on: Jan 23, 2011
- *      Author: jonathan
- */
-
 #include "Shader.h"
 
 #include "../ZazenGraphics.h"

@@ -1,12 +1,5 @@
-/*
- * ZazenOISEntity.h
- *
- *  Created on: 09.03.2013
- *      Author: Jonathan Thaler
- */
-
-#ifndef ZAZENOISENTITY_H_
-#define ZAZENOISENTITY_H_
+#ifndef _ZAZENOISENTITY_H_
+#define _ZAZENOISENTITY_H_
 
 #include <input/IInputEntity.h>
 
@@ -26,4 +19,4 @@ class ZazenOISEntity : public IInputEntity
 		std::string m_type;
 };
 
-#endif /* ZAZENOISENTITY_H_ */
+#endif /* _ZAZENOISENTITY_H_ */

@@ -1,12 +1,5 @@
-/*
- * ZazenGameObjectFactory.h
- *
- *  Created on: 12.03.2013
- *      Author: jonathan
- */
-
-#ifndef IGAMEOBJECTFACTORY_H_
-#define IGAMEOBJECTFACTORY_H_
+#ifndef _IGAMEOBJECT_FACTORY_H_
+#define _IGAMEOBJECT_FACTORY_H_
 
 #include "IGameObject.h"
 
@@ -18,4 +11,4 @@ class IGameObjectFactory
 		virtual IGameObject* createObject( const std::string& objectClass ) = 0;
 };
 
-#endif /* ZAZENGAMEOBJECTFACTORY_H_ */
+#endif /* _IGAMEOBJECT_FACTORY_H_ */

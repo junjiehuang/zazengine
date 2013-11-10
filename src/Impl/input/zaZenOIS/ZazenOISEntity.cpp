@@ -1,10 +1,3 @@
-/*
- * ZazenOISEntity.cpp
- *
- *  Created on: 09.03.2013
- *      Author: Jonathan Thaler
- */
-
 #include "ZazenOISEntity.h"
 
 #include <iostream>

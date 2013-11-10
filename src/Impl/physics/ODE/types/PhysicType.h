@@ -1,53 +1,52 @@
-#ifndef PHYSICTYPE_H_
-#define PHYSICTYPE_H_
+#ifndef _PHYSICTYPE_H_
+#define _PHYSICTYPE_H_
 
 #include <ode/ode.h>
 
 class PhysicType
 {
- public:
-	 PhysicType( bool staticFlag, float mass )
-	 { 
-		 this->m_staticFlag = staticFlag; 
-		 this->m_mass = mass; 
-	 };
+	public:
+		PhysicType( bool staticFlag, float mass )
+		{ 
+			this->m_staticFlag = staticFlag; 
+			this->m_mass = mass; 
+		};
 
-	 virtual ~PhysicType()
-	 { 
-		 if ( this->m_bodyID )
-		 {
+		virtual ~PhysicType()
+		{ 
+			if ( this->m_bodyID )
+			{
 			dBodyDestroy( this->m_bodyID );
-		 }
+			}
 
-		 dGeomDestroy( this->m_geomID );
-	 };
+			dGeomDestroy( this->m_geomID );
+		};
 	 
-	 bool isStatic() { return this->m_staticFlag; };
-	 float getMass() { return this->m_mass; };
+		bool isStatic() { return this->m_staticFlag; };
+		float getMass() { return this->m_mass; };
 
-	 void setPosition( float x, float y, float z )
-	 {
-		 if ( this->m_staticFlag )
-		 {
-			 dGeomSetPosition( this->m_geomID, x, y, z );
-		 }
-		 else
-		 {
-			 dBodySetPosition( this->m_bodyID, x, y, z );
-		 }
-	 };
+		void setPosition( float x, float y, float z )
+		{
+			if ( this->m_staticFlag )
+			{
+				dGeomSetPosition( this->m_geomID, x, y, z );
+			}
+			else
+			{
+				dBodySetPosition( this->m_bodyID, x, y, z );
+			}
+		};
 
-	 dBodyID getBodyID() { return this->m_bodyID; };
+		dBodyID getBodyID() { return this->m_bodyID; };
 
-	 virtual bool create( dWorldID, dSpaceID ) = 0;
+		virtual bool create( dWorldID, dSpaceID ) = 0;
 	 
- protected:
-	 bool m_staticFlag;
-	 float m_mass;
+	protected:
+		bool m_staticFlag;
+		float m_mass;
 	 
-	 dBodyID m_bodyID;
-	 dGeomID m_geomID;
-
+		dBodyID m_bodyID;
+		dGeomID m_geomID;
 };
 
-#endif /*PHYSICTYPE_H_*/
+#endif /* _PHYSICTYPE_H_ */

@@ -1,12 +1,3 @@
-/*
- *  texture.h
- *  ZENgine
- *
- *  Created by Jonathan Thaler on 30.04.08.
- *  Copyright 2008 __MyCompanyName__. All rights reserved.
- *
- */
-
 #ifndef _TEXTURE_H_
 #define _TEXTURE_H_
 
@@ -35,4 +26,4 @@ class Texture
 
 };
 
-#endif
+#endif /* _TEXTURE_H_ */

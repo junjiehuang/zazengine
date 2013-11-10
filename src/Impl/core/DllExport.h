@@ -1,5 +1,5 @@
-#ifndef DLL_EXPORT_H_
-#define DLL_EXPORT_H_
+#ifndef _DLL_EXPORT_H_
+#define _DLL_EXPORT_H_
 
 #ifdef DLL_EXPORTS
 #define DLL_API __declspec( dllexport )
@@ -7,4 +7,4 @@
 #define DLL_API __declspec( dllimport )
 #endif
 
-#endif /* DLL_EXPORT_H_ */ 
+#endif /* _DLL_EXPORT_H_ */ 

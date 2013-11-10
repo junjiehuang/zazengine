@@ -1,5 +1,5 @@
-#ifndef _STATIC_MESH_H_
-#define _STATIC_MESH_H_
+#ifndef _MESH_STATIC_H_
+#define _MESH_STATIC_H_
 
 #include "Mesh.h"
 
@@ -21,7 +21,6 @@ class MeshStatic : public Mesh
 		virtual unsigned int getVertexSize() { return sizeof( MeshStatic::StaticVertexData ); };
 		virtual void enableAttributes();
 		virtual void disableAttributes();
-
 };
 
-#endif /*GEOM_STATIC_MESH_H_*/
+#endif /* _MESH_STATIC_H_ */

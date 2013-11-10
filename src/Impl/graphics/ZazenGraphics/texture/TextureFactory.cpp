@@ -1,12 +1,3 @@
-/*
- *  texture.cpp
- *  ZENgine
- *
- *  Created by Jonathan Thaler on 30.04.08.
- *  Copyright 2008 __MyCompanyName__. All rights reserved.
- *
- */
-
 #include "TextureFactory.h"
 
 #include "../ZazenGraphics.h"

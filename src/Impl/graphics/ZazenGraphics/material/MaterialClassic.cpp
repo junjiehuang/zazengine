@@ -1,10 +1,3 @@
-/*
- * MaterialClassic.h
- *
- *  Created on: May 09, 2013
- *      Author: jonathan
- */
-
 #include "MaterialClassic.h"
 
 #include "../Program/UniformManagement.h"

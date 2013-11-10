@@ -1,12 +1,5 @@
-/*
- * RenderTarget.h
- *
- *  Created on: 17.03.2013
- *      Author: Jonathan Thaler
- */
-
-#ifndef RENDERTARGET_H_
-#define RENDERTARGET_H_
+#ifndef _RENDERTARGET_H_
+#define _RENDERTARGET_H_
 
 #include "../Texture/Texture.h"
 
@@ -47,4 +40,4 @@ class RenderTarget : public Texture
 		static RenderTarget* findShadowMapInPool( GLsizei, GLsizei );
 };
 
-#endif /* RENDERTARGET_H_ */
+#endif /* _RENDERTARGET_H_ */

@@ -1,12 +1,5 @@
-/*
- * FModAudioEntity.h
- *
- *  Created on: 08.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef FMODAUDIOENTITY_H_
-#define FMODAUDIOENTITY_H_
+#ifndef _FMODAUDIOENTITY_H_
+#define _FMODAUDIOENTITY_H_
 
 #include <audio/IAudioEntity.h>
 
@@ -43,4 +36,4 @@ class FModAudioEntity : public IAudioEntity
 		FMOD::Channel* m_channel;
 };
 
-#endif /* FMODAUDIOENTITY_H_ */
+#endif /* _FMODAUDIOENTITY_H_ */

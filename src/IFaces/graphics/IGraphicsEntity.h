@@ -1,12 +1,5 @@
-/*
- * IGraphicsEntity.h
- *
- *  Created on: 15.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef IGRAPHICSENTITY_H_
-#define IGRAPHICSENTITY_H_
+#ifndef _IGRAPHICSENTITY_H_
+#define _IGRAPHICSENTITY_H_
 
 #include <core/ISubSystemEntity.h>
 
@@ -21,4 +14,4 @@ class IGraphicsEntity : public ISubSystemEntity
 		virtual void setAnimation( float heading, float roll, float pitch ) = 0;
 };
 
-#endif /* IGRAPHICSENTITY_H_ */
+#endif /* _IGRAPHICSENTITY_H_ */

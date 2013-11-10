@@ -1,12 +1,5 @@
-/*
- * UniformBlock.h
- *
- *  Created on: Jan 31, 2011
- *      Author: jonathan
- */
-
-#ifndef UNIFORMBLOCK_H_
-#define UNIFORMBLOCK_H_
+#ifndef _UNIFORMBLOCK_H_
+#define _UNIFORMBLOCK_H_
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -66,4 +59,4 @@ class UniformBlock
 
 };
 
-#endif /* UNIFORMBLOCK_H_ */
+#endif /* _UNIFORMBLOCK_H_ */

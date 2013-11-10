@@ -1,12 +1,5 @@
-/*
- * Program.h
- *
- *  Created on: Jan 16, 2011
- *      Author: jonathan
- */
-
-#ifndef PROGRAM_H_
-#define PROGRAM_H_
+#ifndef _PROGRAM_H_
+#define _PROGRAM_H_
 
 #include "Shader.h"
 #include "UniformBlock.h"
@@ -65,4 +58,4 @@ class Program
 		static void printInfoLog( GLuint obj );
 };
 
-#endif /* PROGRAM_H_ */
+#endif /* _PROGRAM_H_ */

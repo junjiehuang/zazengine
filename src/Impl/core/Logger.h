@@ -1,12 +1,5 @@
-/*
- * ILogger.h
- *
- *  Created on: 11 April 2013
- *      Author: jonathan
- */
-
-#ifndef LOGGER_H_
-#define LOGGER_H_
+#ifndef _LOGGER_H_
+#define _LOGGER_H_
 
 #include <core/ILogger.h>
 
@@ -27,7 +20,6 @@ class Logger : public ILogger
 
 	private:
 		log4cplus::Logger m_logger;
-
 };
 
-#endif /* ILOGGER_H_ */
+#endif /* _LOGGER_H_ */

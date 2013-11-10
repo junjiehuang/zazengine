@@ -1,12 +1,5 @@
-/*
- * Shader.h
- *
- *  Created on: Jan 23, 2011
- *      Author: jonathan
- */
-
-#ifndef SHADER_H_
-#define SHADER_H_
+#ifndef _SHADER_H_
+#define _SHADER_H_
 
 #include <GL/glew.h>
 
@@ -42,4 +35,4 @@ class Shader
 		static bool readShaderSource( const std::string&, std::string& );
 };
 
-#endif /* SHADER_H_ */
+#endif /* _SHADER_H_ */

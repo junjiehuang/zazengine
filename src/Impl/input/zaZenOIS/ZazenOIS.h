@@ -1,13 +1,5 @@
-/*
- *  ZazenOIS.h
- *  Zazengine
- *
- *  Created by Jonathan Thaler on 09.03.13
- *
- */
-
-#ifndef ZAZENOIS_H_
-#define ZAZENOIS_H_
+#ifndef _ZAZENOIS_H_
+#define _ZAZENOIS_H_
 
 #include <input/IInput.h>
 
@@ -74,4 +66,4 @@ class ZazenOIS : public IInput, public OIS::KeyListener, public OIS::MouseListen
 		bool initOIS( TiXmlElement* );
 };
 
-#endif /* SDLINPUT_H_ */
+#endif /* _ZAZENOIS_H_ */

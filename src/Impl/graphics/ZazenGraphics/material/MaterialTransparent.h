@@ -1,13 +1,5 @@
-/*
- * MaterialTransparent.h
- *
- *  Created on: May 09, 2013
- *      Author: jonathan
- */
-
-
-#ifndef MATERIALTRANSPARENT_H_
-#define MATERIALTRANSPARENT_H_
+#ifndef _MATERIAL_TRANSPARENT_H_
+#define _MATERIAL_TRANSPARENT_H_
 
 #include "Material.h"
 
@@ -33,4 +25,4 @@ class MaterialTransparent : public Material
 		Texture* m_normalTexture;
 };
 
-#endif /* MATERIAL_H_ */
+#endif /* _MATERIAL_TRANSPARENT_H_ */

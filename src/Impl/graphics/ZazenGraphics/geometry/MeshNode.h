@@ -1,5 +1,5 @@
-#ifndef MESHNODE_H_
-#define MESHNODE_H_
+#ifndef _MESHNODE_H_
+#define _MESHNODE_H_
 
 #include "Mesh.h"
 
@@ -39,7 +39,6 @@ class MeshNode
 		glm::vec3 m_bbMin;
 		glm::vec3 m_bbMax;
 		glm::vec3 m_center;
-
 };
 
-#endif /*GEOMTYPE_H_*/
+#endif /* _MESHNODE_H_ */

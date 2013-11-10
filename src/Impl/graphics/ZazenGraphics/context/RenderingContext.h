@@ -1,11 +1,5 @@
-/*
- * RenderingContext.h
- *
- *  Created on: 13.03.2013
- *      Author: Jonathan Thaler
- */
-#ifndef RENDERING_CONTEXT_H_
-#define RENDERING_CONTEXT_H_
+#ifndef _RENDERING_CONTEXT_H_
+#define _RENDERING_CONTEXT_H_
 
 #include <boost/filesystem.hpp>
 
@@ -60,7 +54,6 @@ class RenderingContext
 
 		static bool initGLFW();
 		static bool initGlew();
-
 };
 
-#endif /* RENDERING_CONTEXT_H_ */
+#endif /* _RENDERING_CONTEXT_H_ */

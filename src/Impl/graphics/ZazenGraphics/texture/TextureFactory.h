@@ -1,12 +1,3 @@
-/*
- *  TextureFactory.h
- *  ZENgine
- *
- *  Created by Jonathan Thaler on 30.04.08.
- *  Copyright 2008 __MyCompanyName__. All rights reserved.
- *
- */
-
 #ifndef _TEXTUREFACTORY_H_
 #define _TEXTUREFACTORY_H_
 
@@ -44,7 +35,6 @@ class TextureFactory
 		static bool createImage( const std::string&, ILuint* );
 
 		static bool loadImage( const std::string&, ILuint );
-
 };
 
-#endif
+#endif /* _TEXTUREFACTORY_H_ */

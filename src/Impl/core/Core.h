@@ -1,12 +1,5 @@
-/*
- * Core.h
- *
- *  Created on: 27.06.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef CORE_H_
-#define CORE_H_
+#ifndef _CORE_H_
+#define _CORE_H_
 
 #include <core/ICore.h>
 #include <core/IGameObjectFactory.h>
@@ -83,4 +76,4 @@ class DLL_API Core : public ICore
 		bool checkSubSystemType( ISubSystem* ); 
 };
 
-#endif /* CORE_H_ */
+#endif /* _CORE_H_ */

@@ -1,12 +1,5 @@
-/*
- * FModAudio.h
- *
- *  Created on: 06.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef FMODAUDIO_H_
-#define FMODAUDIO_H_
+#ifndef _FMODAUDIO_H_
+#define _FMODAUDIO_H_
 
 #include <core/ILogger.h>
 #include <audio/IAudio.h>
@@ -44,6 +37,8 @@ class FModAudio : public IAudio
 
 		bool sendEvent( Event& e );
 
+		ILogger& getLogger() const { return *this->m_logger; };
+
 		FModAudioEntity* createEntity( TiXmlElement*, IGameObject* parent );
 
 		FMOD::System* getSystem() { return this->m_system; };
@@ -71,4 +66,4 @@ class FModAudio : public IAudio
 		bool loadBackgroundMusic( TiXmlElement* );
 };
 
-#endif /* PLAYGROUNDAUDIO_H_ */
+#endif /* _FMODAUDIO_H_ */

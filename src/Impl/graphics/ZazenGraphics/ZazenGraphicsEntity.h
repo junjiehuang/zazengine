@@ -1,12 +1,5 @@
-/*
- * ZazenGraphicsEntity.h
- *
- *  Created on: 08.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef ZAZENGRAPHICSENTITY_H_
-#define ZAZENGRAPHICSENTITY_H_
+#ifndef _ZAZEN_GRAPHICS_ENTITY_H_
+#define _ZAZEN_GRAPHICS_ENTITY_H_
 
 #include <graphics/IGraphicsEntity.h>
 
@@ -73,4 +66,4 @@ class ZazenGraphicsEntity : public IGraphicsEntity, public Orientation
 		void matrixChanged();
 };
 
-#endif /* ZAZENGRAPHICSENTITY_H_ */
+#endif /* _ZAZEN_GRAPHICS_ENTITY_H_ */

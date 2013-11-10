@@ -1,12 +1,5 @@
-/*
- * AssImpUtils.h
- *
- *  Created on: 02. Nov. 2013
- *      Author: jonathan
- */
-
-#ifndef ASSIMP_UTILS
-#define ASSIMP_UTILS
+#ifndef _ASSIMP_UTILS_H_
+#define _ASSIMP_UTILS_H_
 
 #include <assimp/scene.h>
 #include <glm/ext.hpp>
@@ -22,4 +15,4 @@ class AssImpUtils
 		static void assimpVecToGlm( const aiVector3D&, glm::vec3& );
 };
 
-#endif
+#endif /* _ASSIMP_UTILS_H_ */

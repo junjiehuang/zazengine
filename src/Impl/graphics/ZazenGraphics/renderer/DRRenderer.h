@@ -1,12 +1,5 @@
-/*
- * DRRenderer.h
- *
- *  Created on: Jan 16, 2011
- *      Author: jonathan
- */
-
-#ifndef DRRENDERER_H_
-#define DRRENDERER_H_
+#ifndef _DRRENDERER_H_
+#define _DRRENDERER_H_
 
 #include "../Framebuffer/FrameBufferObject.h"
 #include "../Framebuffer/RenderTarget.h"
@@ -111,4 +104,4 @@ class DRRenderer
 
 };
 
-#endif /* DRRENDERER_H_ */
+#endif /* _DRRENDERER_H_ */

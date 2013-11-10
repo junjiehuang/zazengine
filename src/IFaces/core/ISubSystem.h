@@ -1,12 +1,5 @@
-/*
- * ISubSystem.h
- *
- *  Created on: 07.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef ISUBSYSTEM_H_
-#define ISUBSYSTEM_H_
+#ifndef _ISUBSYSTEM_H_
+#define _ISUBSYSTEM_H_
 
 #include "ISubSystemEntity.h"
 #include "IEventListener.h"
@@ -60,4 +53,4 @@ class ISubSystem : public IEventListener
 
 		LibStruct* m_libStruct;
 };
-#endif /* ISUBSYSTEM_H_ */
+#endif /* _ISUBSYSTEM_H_ */

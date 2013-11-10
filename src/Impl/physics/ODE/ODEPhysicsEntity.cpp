@@ -1,10 +1,3 @@
-/*
- * ODEPhysicsEntity.cpp
- *
- *  Created on: Sep 30, 2010
- *      Author: jonathan
- */
-
 #include "ODEPhysicsEntity.h"
 
 #include <iostream>

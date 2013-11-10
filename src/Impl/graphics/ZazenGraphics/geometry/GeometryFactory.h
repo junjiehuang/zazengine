@@ -1,11 +1,3 @@
-/*
- *  GeometryFactory.cpp
- *  zaZengine
- *
- *  Created by Jonathan Thaler on 07.03.13.
- *
- */
-
 #ifndef _GEOMETRY_FACTORY_H_
 #define _GEOMETRY_FACTORY_H_
 
@@ -64,7 +56,6 @@ class GeometryFactory
 
 		static void processBoneWeight( MeshBoned::BonedVertexData&, const aiVertexWeight&, unsigned int );
 		static void updateBB( const aiVector3D& vertex, glm::vec3&, glm::vec3& );
-		
 };
 
-#endif
+#endif /* _GEOMETRY_FACTORY_H_ */

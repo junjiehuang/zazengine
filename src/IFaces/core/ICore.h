@@ -1,12 +1,5 @@
-/*
- * ICore.h
- *
- *  Created on: 7 Aug 2011
- *      Author: jonathan
- */
-
-#ifndef ICORE_H_
-#define ICORE_H_
+#ifndef _ICORE_H_
+#define _ICORE_H_
 
 #include "IGameObject.h"
 #include "ISubSystem.h"
@@ -46,4 +39,4 @@ class ICore
 
 };
 
-#endif /* ICORE_H_ */
+#endif /* _ICORE_H_ */

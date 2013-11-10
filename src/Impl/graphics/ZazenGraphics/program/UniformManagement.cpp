@@ -1,10 +1,3 @@
-/*
- * UniformManagement.cpp
- *
- *  Created on: 16. April 2013
- *      Author: jonathan
- */
-
 #include "UniformManagement.h"
 
 #include "Program.h"

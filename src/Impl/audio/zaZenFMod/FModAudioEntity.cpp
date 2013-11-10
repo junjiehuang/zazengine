@@ -1,10 +1,3 @@
-/*
- * FModAudioEntity.cpp
- *
- *  Created on: 09.07.2010
- *      Author: Jonathan Thaler
- */
-
 #include "FModAudioEntity.h"
 
 #include "FModAudio.h"
@@ -40,7 +33,7 @@ FModAudioEntity::~FModAudioEntity()
 		FMOD_RESULT result = this->m_sound->release();
 		if ( FMOD_OK != result )
 		{
-			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+			FModAudio::getInstance().getLogger().logError() << "FMOD error! " << result << " " << FMOD_ErrorString( result );
 		}
 
 		// IMPORTANT: DO NOT DELETE AFTER RELEASE, IT IS RELEASED BY FMOD SYSTEM!
@@ -83,7 +76,7 @@ FModAudioEntity::sendEvent( Event& e )
 		FMOD_RESULT result = FModAudio::getInstance().getSystem()->set3DListenerAttributes( 0, &pos, &vel, &forward, &up );
 		if ( FMOD_OK != result )
 		{
-			//printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+			FModAudio::getInstance().getLogger().logError() << "FMOD error! " << result << " " << FMOD_ErrorString( result );
 			return false;
 		}
 	}
@@ -123,21 +116,21 @@ FModAudioEntity::playSound()
 		FMOD_RESULT result = FModAudio::getInstance().getSystem()->playSound( FMOD_CHANNEL_FREE, this->m_sound, true, &this->m_channel );
 		if ( FMOD_OK != result )
 		{
-			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+			FModAudio::getInstance().getLogger().logError() << "FMOD error! " << result << " " << FMOD_ErrorString( result );
 			return false;
 		}
 
 		result = this->m_channel->set3DAttributes( &this->m_pos, &this->m_vel );
 		if ( FMOD_OK != result )
 		{
-			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+			FModAudio::getInstance().getLogger().logError() << "FMOD error! " << result << " " << FMOD_ErrorString( result );
 			return false;
 		}
 
 		result = this->m_channel->setPaused( false );
 		if ( FMOD_OK != result )
 		{
-			printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+			FModAudio::getInstance().getLogger().logError() << "FMOD error! " << result << " " << FMOD_ErrorString( result );
 			return false;
 		}
 	}
@@ -161,7 +154,7 @@ FModAudioEntity::updatePosVel( const float* pos, const float* vel )
 		FMOD_RESULT result = this->m_channel->set3DAttributes( &this->m_pos, &this->m_vel );
 		if ( FMOD_OK != result )
 		{
-			//printf( "FMOD error! (%d) %s\n", result, FMOD_ErrorString( result ) );
+			FModAudio::getInstance().getLogger().logError() << "FMOD error! " << result << " " << FMOD_ErrorString( result );
 		}
 	}
 }

@@ -1,10 +1,3 @@
-/*
- * Core.cpp
- *
- *  Created on: 27.06.2010
- *      Author: Jonathan Thaler
- */
-
 #include "Core.h"
 
 #include "Logger.h"

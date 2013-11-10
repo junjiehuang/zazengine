@@ -1,12 +1,5 @@
-/*
- * Orientation.h
- *
- *  Created on: Feb 6, 2011
- *      Author: jonathan
- */
-
-#ifndef ORIENTATION_H_
-#define ORIENTATION_H_
+#ifndef _ORIENTATION_H_
+#define _ORIENTATION_H_
 
 #include <glm/glm.hpp>
 
@@ -21,7 +14,6 @@
  * and projection last.
  */
 // this class is designed to be used for subclassing
-
 class Orientation
 {
 	public:
@@ -61,7 +53,6 @@ class Orientation
 
 	private:
 		glm::mat4& m_matrix;
-
 };
 
-#endif /* ORIENTATION_H_ */
+#endif /* _ORIENTATION_H_ */

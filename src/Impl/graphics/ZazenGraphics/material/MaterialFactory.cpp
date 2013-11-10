@@ -1,10 +1,3 @@
-/*
- * MaterialFactory.cpp
- *
- *  Created on: May 09, 2013
- *      Author: jonathan
- */
-
 #include "MaterialFactory.h"
 
 #include "MaterialClassic.h"

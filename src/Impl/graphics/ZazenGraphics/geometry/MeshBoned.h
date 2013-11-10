@@ -24,7 +24,6 @@ class MeshBoned : public Mesh
 		virtual unsigned int getVertexSize() { return sizeof( MeshBoned::BonedVertexData ); };
 		virtual void enableAttributes();
 		virtual void disableAttributes();
-
 };
 
-#endif /*GEOM_ANIMATED_MESH_H_*/
+#endif /* _MESH_BONED_H_ */

@@ -1,12 +1,5 @@
-/*
- * ZazenGraphics.h
- *
- *  Created on: 06.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef ZAZENGRAPHICS_H_
-#define ZAZENGRAPHICS_H_
+#ifndef _ZAZENGRAPHICS_H_
+#define _ZAZENGRAPHICS_H_
 
 // core API includes
 #include <core/ICore.h>
@@ -88,4 +81,4 @@ class ZazenGraphics : public IGraphics
 		bool createWindow( TiXmlElement* );
 };
 
-#endif /* ZAZENGRAPHICS_H_ */
+#endif /* _ZAZENGRAPHICS_H_ */

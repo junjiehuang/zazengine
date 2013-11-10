@@ -1,10 +1,3 @@
-/*
- * MaterialTransparent.h
- *
- *  Created on: May 09, 2013
- *      Author: jonathan
- */
-
 #include "MaterialTransparent.h"
 
 #include "../Program/UniformManagement.h"

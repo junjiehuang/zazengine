@@ -1,10 +1,3 @@
-/*
- * ScriptSystem.cpp
- *
- *  Created on: 24.07.2010
- *      Author: jonathan
- */
-
 #include "ScriptSystem.h"
 
 #include <iostream>

@@ -1,10 +1,3 @@
-/*
- * UniformBlock.cpp
- *
- *  Created on: Jan 31, 2011
- *      Author: jonathan
- */
-
 #include "UniformBlock.h"
 
 #include "../ZazenGraphics.h"

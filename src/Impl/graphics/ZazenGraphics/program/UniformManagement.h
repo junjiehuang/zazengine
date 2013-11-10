@@ -1,12 +1,5 @@
-/*
- * UniformManagement.h
- *
- *  Created on: 16. April 2013
- *      Author: jonathan
- */
-
-#ifndef UNIFORMMANAGEMENT_H_
-#define UNIFORMMANAGEMENT_H_
+#ifndef _UNIFORM_MANAGEMENT_H_
+#define _UNIFORM_MANAGEMENT_H_
 
 #include "UniformBlock.h"
 
@@ -29,4 +22,4 @@ class UniformManagement
 
 };
 
-#endif /* UNIFORMBLOCKMANAGEMENT_H_ */
+#endif /* _UNIFORM_MANAGEMENT_H_ */

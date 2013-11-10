@@ -1,5 +1,5 @@
-#ifndef MESH_H_
-#define MESH_H_
+#ifndef _MESH_H_
+#define _MESH_H_
 
 #include <glm/glm.hpp>
 
@@ -48,7 +48,6 @@ class Mesh
 		glm::vec3 m_bbMin;
 		glm::vec3 m_bbMax;
 		glm::vec3 m_center;
-
 };
 
-#endif /*GEOMTYPE_H_*/
+#endif /* _MESH_H_ */

@@ -1,12 +1,5 @@
-/*
- * FrameBufferObject.h
- *
- *  Created on: 17.03.2013
- *      Author: Jonathan Thaler
- */
-
-#ifndef FRAMEBUFFEROBJECT_H_
-#define FRAMEBUFFEROBJECT_H_
+#ifndef _FRAMEBUFFER_OBJECT_H_
+#define _FRAMEBUFFER_OBJECT_H_
 
 #include "RenderTarget.h"
 
@@ -66,4 +59,4 @@ class FrameBufferObject
 		std::vector<RenderTarget*> m_attachedTargets;
 };
 
-#endif /* FRAMEBUFFEROBJECT_H_ */
+#endif /* _FRAMEBUFFER_OBJECT_H_ */

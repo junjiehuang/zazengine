@@ -1,12 +1,5 @@
-/*
- * Material.h
- *
- *  Created on: Feb 25, 2011
- *      Author: jonathan
- */
-
-#ifndef MATERIAL_H_
-#define MATERIAL_H_
+#ifndef _MATERIAL_H_
+#define _MATERIAL_H_
 
 #include "../Program/Program.h"
 
@@ -39,4 +32,4 @@ class Material
 		const MaterialType m_type;
 };
 
-#endif /* MATERIAL_H_ */
+#endif /* _MATERIAL_H_ */

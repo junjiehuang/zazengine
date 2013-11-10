@@ -1,10 +1,3 @@
-/*
- * ZazenGraphics.cpp
- *
- *  Created on: 06.07.2010
- *      Author: Jonathan Thaler
- */
-
 #include "ZazenGraphics.h"
 
 #include "Program/ProgramManagement.h"

@@ -1,9 +1,3 @@
-/*
- * ODEPhysics.cpp
- *
- *  Created on: 06.07.2010
- *      Author: Jonathan Thaler
- */
 #include "ODEPhysics.h"
 
 #include <core/ICore.h>

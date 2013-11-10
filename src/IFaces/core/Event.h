@@ -1,12 +1,5 @@
-/*
- * Event.h
- *
- *  Created on: 27.06.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef EVENT_H_
-#define EVENT_H_
+#ifndef _EVENT_H_
+#define _EVENT_H_
 
 #include <boost/any.hpp>
 
@@ -74,4 +67,4 @@ class Event
 		std::map<std::string, boost::any> values;
 };
 
-#endif /* EVENT_H_ */
+#endif /* _EVENT_H_ */

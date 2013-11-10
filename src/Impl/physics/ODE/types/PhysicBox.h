@@ -1,20 +1,20 @@
-#ifndef PHYSICBOX_H_
-#define PHYSICBOX_H_
+#ifndef _PHYSICBOX_H_
+#define _PHYSICBOX_H_
 
 #include "PhysicType.h"
 
 class PhysicBox : public PhysicType
 {
-public:
-	PhysicBox( bool, float, float, float, float );
-	virtual ~PhysicBox();
+	public:
+		PhysicBox( bool, float, float, float, float );
+		virtual ~PhysicBox();
 	
-	virtual bool create( dWorldID, dSpaceID );
+		virtual bool create( dWorldID, dSpaceID );
 	
- private:
-	 float m_x;
-	 float m_y;
-	 float m_z;
+	private:
+		float m_x;
+		float m_y;
+		float m_z;
 };
 
-#endif /*PHYSICBOX_H_*/
+#endif /* _PHYSICBOX_H_ */

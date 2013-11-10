@@ -1,12 +1,5 @@
-/*
- * EventManager.h
- *
- *  Created on: 02.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef EVENTMANAGER_H_
-#define EVENTMANAGER_H_
+#ifndef _EVENTMANAGER_H_
+#define _EVENTMANAGER_H_
 
 #include <core/IEventListener.h>
 #include <core/IEventManager.h>
@@ -42,7 +35,6 @@ class EventManager : public IEventManager
 		std::map<EventID, std::list<IEventListener*>* > eventListeners;
 
 		void broadCast( Event& );
-
 };
 
-#endif /* EVENTMANAGER_H_ */
+#endif /* _EVENTMANAGER_H_ */

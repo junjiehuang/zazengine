@@ -1,12 +1,5 @@
-/*
- * MaterialDoom3.h
- *
- *  Created on: Oct 22, 2013
- *      Author: jonathan
- */
-
-#ifndef MATERIALDOOM3_H
-#define MATERIALDOOM3_H
+#ifndef _MATERIAL_DOOM3_H_
+#define _MATERIAL_DOOM3_H_
 
 #include "Material.h"
 
@@ -30,4 +23,4 @@ class MaterialDoom3 : public Material
 		Texture* m_normalMap;
 };
 
-#endif /* MATERIAL_H_ */
+#endif /* _MATERIAL_DOOM3_H_ */

@@ -1,12 +1,5 @@
-/*
- * ILogger.h
- *
- *  Created on: 15 April 2013
- *      Author: jonathan
- */
-
-#ifndef ILOGGERTARGET_H_
-#define ILOGGERTARGET_H_
+#ifndef _ILOGGER_TARGET_H_
+#define _ILOGGER_TARGET_H_
 
 #include "ILogReceiver.h"
 
@@ -77,4 +70,4 @@ class ILoggerTarget
 
 };
 
-#endif /* ILOGGER_H_ */
+#endif /* _ILOGGER_TARGET_H_ */

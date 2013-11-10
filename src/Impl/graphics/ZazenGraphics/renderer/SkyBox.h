@@ -1,11 +1,3 @@
-/*
- *  Skybox.h
- *  ZENgine
- *
- *  Created by Jonathan Thaler on 02.05.08.
- *
- */
-
 #ifndef _SKYBOX_H_
 #define _SKYBOX_H_
 
@@ -37,4 +29,4 @@ class SkyBox
 		~SkyBox();
 };
 
-#endif
+#endif /* _SKYBOX_H_ */

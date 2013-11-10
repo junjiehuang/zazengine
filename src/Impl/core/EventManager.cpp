@@ -1,10 +1,3 @@
-/*
- * EventManager.cpp
- *
- *  Created on: 02.07.2010
- *      Author: Jonathan Thaler
- */
-
 #include "EventManager.h"
 
 #include <errno.h>

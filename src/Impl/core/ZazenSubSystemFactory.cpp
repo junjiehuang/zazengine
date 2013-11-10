@@ -1,10 +1,3 @@
-/*
- * ZazenSubSystemFactory.cpp
- *
- *  Created on: 7 Aug 2011
- *      Author: jonathan
- */
-
 #include "ZazenSubSystemFactory.h"
 #include "Core.h"
 

@@ -1,12 +1,5 @@
-/*
- * IPhysics.h
- *
- *  Created on: 05.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef IPHYSICS_H_
-#define IPHYSICS_H_
+#ifndef _IPHYSICS_H_
+#define _IPHYSICS_H_
 
 #include "../core/ISubSystem.h"
 
@@ -18,7 +11,6 @@ class IPhysics : public ISubSystem
 		virtual ~IPhysics() {};
 
 		virtual IPhysicsEntity* createEntity( TiXmlElement*, IGameObject* parent ) = 0;
-
 };
 
-#endif /* IPHYSICS_H_ */
+#endif /* _IPHYSICS_H_ */

@@ -1,10 +1,3 @@
-/*
- * Orientation.cpp
- *
- *  Created on: Feb 6, 2011
- *      Author: jonathan
- */
-
 #include "Orientation.h"
 
 #include <string.h>

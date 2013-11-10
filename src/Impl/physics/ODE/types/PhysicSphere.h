@@ -1,18 +1,18 @@
-#ifndef PHYSICSPHERE_H_
-#define PHYSICSPHERE_H_
+#ifndef _PHYSICSPHERE_H_
+#define _PHYSICSPHERE_H_
 
 #include "PhysicType.h"
 
 class PhysicSphere : public PhysicType
 {
-public:
-	PhysicSphere( bool, float, float );
-	virtual ~PhysicSphere();
+	public:
+		PhysicSphere( bool, float, float );
+		virtual ~PhysicSphere();
 	
-	virtual bool create( dWorldID, dSpaceID );
+		virtual bool create( dWorldID, dSpaceID );
 	
- private:
-	 float radius;
+	 private:
+		 float radius;
 };
 
-#endif /*PHYSICSPHERE_H_*/
+#endif /* _PHYSICSPHERE_H_ */

@@ -1,12 +1,5 @@
-/*
- * IGameObject.h
- *
- *  Created on: 07.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef IGAMEOBJECT_H_
-#define IGAMEOBJECT_H_
+#ifndef _IGAMEOBJECT_H_
+#define _IGAMEOBJECT_H_
 
 #include "IEventListener.h"
 
@@ -32,4 +25,4 @@ class IGameObject : public IEventListener
 		virtual bool initialize( TiXmlElement* ) = 0;
 };
 
-#endif /* IGAMEOBJECT_H_ */
+#endif /* _IGAMEOBJECT_H_ */

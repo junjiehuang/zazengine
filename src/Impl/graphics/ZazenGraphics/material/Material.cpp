@@ -1,10 +1,3 @@
-/*
- * Material.cpp
- *
- *  Created on: Feb 25, 2011
- *      Author: jonathan
- */
-
 #include "Material.h"
 
 #include <iostream>

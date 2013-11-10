@@ -1,12 +1,5 @@
-/*
- * MaterialFactory.h
- *
- *  Created on: May 09, 2013
- *      Author: jonathan
- */
-
-#ifndef MATERIALFACTORY_H_
-#define MATERIALFACTORY_H_
+#ifndef _MATERIAL_FACTORY_H_
+#define _MATERIAL_FACTORY_H_
 
 #include "Material.h"
 
@@ -33,4 +26,4 @@ class MaterialFactory
 		static Material* createTransparentMaterial( const std::string&, TiXmlElement* );
 };
 
-#endif /* MATERIAL_H_ */
+#endif /* _MATERIAL_FACTORY_H_ */

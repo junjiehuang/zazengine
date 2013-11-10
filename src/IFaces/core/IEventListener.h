@@ -1,12 +1,5 @@
-/*
- * IEventListener.h
- *
- *  Created on: 02.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef IEVENTLISTENER_H_
-#define IEVENTLISTENER_H_
+#ifndef _IEVENTLISTENER_H_
+#define _IEVENTLISTENER_H_
 
 #include "Event.h"
 
@@ -18,4 +11,4 @@ class IEventListener
 		virtual bool sendEvent( Event& e ) = 0;
 };
 
-#endif /* IEVENTLISTENER_H_ */
+#endif /* _IEVENTLISTENER_H_ */

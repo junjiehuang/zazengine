@@ -1,12 +1,5 @@
-/*
- * ILogger.h
- *
- *  Created on: 11 April 2013
- *      Author: jonathan
- */
-
-#ifndef ILOGRECEIVER_H_
-#define ILOGRECEIVER_H_
+#ifndef _ILOGRECEIVER_H_
+#define _ILOGRECEIVER_H_
 
 #include <string>
 
@@ -24,4 +17,4 @@ class ILogReceiver
 
 };
 
-#endif /* ILOGRECEIVER_H_ */
+#endif /* _ILOGRECEIVER_H_ */

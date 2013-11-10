@@ -1,11 +1,3 @@
-/*
- *  AnimationFactory.cpp
- *  zaZengine
- *
- *  Created by Jonathan Thaler on 30.10.13.
- *
- */
-
 #ifndef _ANIMATION_FACTORY_H_
 #define _ANIMATION_FACTORY_H_
 
@@ -36,4 +28,4 @@ class AnimationFactory
 		static Animation* cloneAnimation( Animation* );
 };
 
-#endif
+#endif /* _ANIMATION_FACTORY_H_ */

@@ -1,15 +1,7 @@
-/*
- * ScriptSystem.h
- *
- *  Created on: 24.07.2010
- *      Author: jonathan
- */
-
-#ifndef SCRIPTSYSTEM_H_
-#define SCRIPTSYSTEM_H_
+#ifndef _SCRIPTSYSTEM_H_
+#define _SCRIPTSYSTEM_H_
 
 #include <lua/lua.hpp>
-//#include <luabind/luabind.hpp>
 
 #include <string>
 
@@ -34,4 +26,4 @@ class ScriptSystem
 		lua_State* luaState;
 };
 
-#endif /* SCRIPTSYSTEM_H_ */
+#endif /* _SCRIPTSYSTEM_H_ */

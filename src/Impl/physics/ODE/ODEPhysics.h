@@ -1,12 +1,5 @@
-/*
- * ODEPhysics.h
- *
- *  Created on: 06.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef ODEPHYSICS_H_
-#define ODEPHYSICS_H_
+#ifndef _ODEPHYSICS_H_
+#define _ODEPHYSICS_H_
 
 #include "ODEPhysicsEntity.h"
 
@@ -66,4 +59,4 @@ class ODEPhysics : public IPhysics
 		static void collisionCallback( void *data, dGeomID o1, dGeomID o2 );
 };
 
-#endif /* PLAYGROUNDPHYSICS_H_ */
+#endif /* _ODEPHYSICS_H_ */

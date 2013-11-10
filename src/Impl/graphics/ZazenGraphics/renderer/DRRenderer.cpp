@@ -1,16 +1,5 @@
-/*
- * DRRenderer.cpp
- *
- *  Created on: Jan 16, 2011
- *      Author: jonathan
- */
-
-#include <GL/glew.h>
-
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include "DRRenderer.h"
+
 #include "SkyBox.h"
 
 #include "../Util/GLUtils.h"
@@ -20,6 +9,11 @@
 #include "../Program/UniformManagement.h"
 
 #include "../context/RenderingContext.h"
+
+#include <GL/glew.h>
+
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
 #include <algorithm>

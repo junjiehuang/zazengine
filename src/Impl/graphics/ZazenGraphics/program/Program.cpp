@@ -1,10 +1,3 @@
-/*
- * Program.cpp
- *
- *  Created on: Jan 16, 2011
- *      Author: jonathan
- */
-
 #include "Program.h"
 
 #include "../ZazenGraphics.h"

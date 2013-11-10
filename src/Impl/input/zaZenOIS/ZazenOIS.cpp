@@ -1,11 +1,3 @@
-/*
- *  ZazenOIS.cpp
- *  Zazengine
- *
- *  Created by Jonathan Thaler on 09.03.13
- *
- */
-
 #include "ZazenOIS.h"
 
 #include <core/ICore.h>

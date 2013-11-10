@@ -1,12 +1,5 @@
-/*
- * Light.h
- *
- *  Created on: Feb 4, 2011
- *      Author: jonathan
- */
-
-#ifndef LIGHT_H_
-#define LIGHT_H_
+#ifndef _LIGHT_H_
+#define _LIGHT_H_
 
 #include "../Geometry/MeshStatic.h"
 
@@ -18,47 +11,46 @@
 
 class Light : public Viewer
 {
- public:
-	enum LightType {
-		SPOT = 0,
-		DIRECTIONAL,
-		POINT
-	};
+	public:
+		enum LightType {
+			SPOT = 0,
+			DIRECTIONAL,
+			POINT
+		};
 
-	static Light* createSpotLight( float, int, int, bool );
-	static Light* createDirectionalLight( int, int, bool );
+		static Light* createSpotLight( float, int, int, bool );
+		static Light* createDirectionalLight( int, int, bool );
 
-	virtual ~Light();
+		virtual ~Light();
 
-	LightType getType() const { return this->m_type; };
+		LightType getType() const { return this->m_type; };
 
-	float getFalloff() const { return this->m_falloff; };
+		float getFalloff() const { return this->m_falloff; };
 
-	bool isShadowCaster() const { return this->m_shadowCaster; };
+		bool isShadowCaster() const { return this->m_shadowCaster; };
 
-	void setColor( const glm::vec4& color ) { this->m_color = color; };
-	const glm::vec4& getColor() const { return this->m_color; };
+		void setColor( const glm::vec4& color ) { this->m_color = color; };
+		const glm::vec4& getColor() const { return this->m_color; };
 
-	void setBoundingMesh( MeshStatic* boundingGeom ) { this->m_boundingMesh = boundingGeom; };
-	MeshStatic* getBoundingMesh() { return this->m_boundingMesh; };
+		void setBoundingMesh( MeshStatic* boundingGeom ) { this->m_boundingMesh = boundingGeom; };
+		MeshStatic* getBoundingMesh() { return this->m_boundingMesh; };
 
-	RenderTarget* getShadowMap() { return this->m_shadowMap; };
+		RenderTarget* getShadowMap() { return this->m_shadowMap; };
 
- private:
-	Light( int, int, LightType, bool );
+	private:
+		Light( int, int, LightType, bool );
 
-	float m_falloff;
-	bool m_shadowCaster;
+		float m_falloff;
+		bool m_shadowCaster;
 
-	LightType m_type;
-	glm::vec4 m_color;
+		LightType m_type;
+		glm::vec4 m_color;
 
-	MeshStatic* m_boundingMesh;
+		MeshStatic* m_boundingMesh;
 
-	RenderTarget* m_shadowMap;
+		RenderTarget* m_shadowMap;
 
-	bool createShadowMap( int width, int height );
-
+		bool createShadowMap( int width, int height );
 };
 
-#endif /* LIGHT_H_ */
+#endif /* _LIGHT_H_ */

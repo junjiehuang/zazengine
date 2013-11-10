@@ -1,10 +1,3 @@
-/*
- * PlayGroundRendererEntity.cpp
- *
- *  Created on: 09.07.2010
- *      Author: Jonathan Thaler
- */
-
 #include "ZazenGraphicsEntity.h"
 #include "ZazenGraphics.h"
 

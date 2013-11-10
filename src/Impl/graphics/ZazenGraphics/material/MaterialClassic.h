@@ -1,12 +1,5 @@
-/*
- * MaterialClassic.h
- *
- *  Created on: May 09, 2013
- *      Author: jonathan
- */
-
-#ifndef MATERIALCLASSIC_H_
-#define MATERIALCLASSIC_H_
+#ifndef _MATERIAL_CLASSIC_H_
+#define _MATERIAL_CLASSIC_H_
 
 #include "Material.h"
 
@@ -30,4 +23,4 @@ class MaterialClassic : public Material
 		Texture* m_diffuseTexture;
 };
 
-#endif /* MATERIAL_H_ */
+#endif /* _MATERIAL_CLASSIC_H_ */

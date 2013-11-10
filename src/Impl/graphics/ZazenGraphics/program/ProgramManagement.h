@@ -1,12 +1,5 @@
-/*
- * UniformBlock.h
- *
- *  Created on: 16. April 2013
- *      Author: jonathan
- */
-
-#ifndef PROGRAMMANAGEMENT_H_
-#define PROGRAMMANAGEMENT_H_
+#ifndef _PROGRAM_MANAGEMENT_H_
+#define _PROGRAM_MANAGEMENT_H_
 
 #include "Program.h"
 #include "Shader.h"
@@ -39,4 +32,4 @@ class ProgramManagement
 
 };
 
-#endif /* UNIFORMBLOCKMANAGEMENT_H_ */
+#endif /* _PROGRAM_MANAGEMENT_H_ */

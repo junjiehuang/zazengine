@@ -1,12 +1,5 @@
-/*
- * IPhysicsEntity.h
- *
- *  Created on: 15.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef IPHYSICSENTITY_H_
-#define IPHYSICSENTITY_H_
+#ifndef _IPHYSICSENTITY_H_
+#define _IPHYSICSENTITY_H_
 
 #include "core/ISubSystemEntity.h"
 
@@ -23,4 +16,4 @@ class IPhysicsEntity : public ISubSystemEntity
 		virtual const float* getVel() const = 0;
 };
 
-#endif /* IPHYSICSENTITY_H_ */
+#endif /* _IPHYSICSENTITY_H_ */

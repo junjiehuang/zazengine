@@ -1,10 +1,3 @@
-/*
- * MaterialDoom3.h
- *
- *  Created on: Oct 22, 2013
- *      Author: jonathan
- */
-
 #include "MaterialDoom3.h"
 
 #include "../Program/UniformManagement.h"

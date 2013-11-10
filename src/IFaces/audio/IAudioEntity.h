@@ -1,12 +1,5 @@
-/*
- * IAudioEntity.h
- *
- *  Created on: 15.07.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef IAUDIOENTITY_H_
-#define IAUDIOENTITY_H_
+#ifndef _IAUDIOENTITY_H_
+#define _IAUDIOENTITY_H_
 
 #include "core/ISubSystemEntity.h"
 

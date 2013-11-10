@@ -1,12 +1,5 @@
-/*
- * IEventManager.h
- *
- *  Created on: 7 Aug 2011
- *      Author: jonathan
- */
-
-#ifndef IEVENTMANAGER_H_
-#define IEVENTMANAGER_H_
+#ifndef _IEVENTMANAGER_H_
+#define _IEVENTMANAGER_H_
 
 #include "Event.h"
 
@@ -22,4 +15,4 @@ class IEventManager
 };
 
 
-#endif /* IEVENTMANAGER_H_ */
+#endif /* _IEVENTMANAGER_H_ */

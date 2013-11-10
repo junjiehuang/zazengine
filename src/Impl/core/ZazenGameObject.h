@@ -1,12 +1,5 @@
-/*
- * ZazenGameObject.h
- *
- *  Created on: 27.06.2010
- *      Author: Jonathan Thaler
- */
-
-#ifndef ZAZENGAMEOBJECT_H_
-#define ZAZENGAMEOBJECT_H_
+#ifndef _ZAZENGAMEOBJECT_H_
+#define _ZAZENGAMEOBJECT_H_
 
 #include <core/IGameObject.h>
 
@@ -41,4 +34,4 @@ class DLL_API ZazenGameObject : public IGameObject
 		std::map<std::string, boost::any> m_properties;
 };
 
-#endif /* ZAZENGAMEOBJECT_H_ */
+#endif /* _ZAZENGAMEOBJECT_H_ */
