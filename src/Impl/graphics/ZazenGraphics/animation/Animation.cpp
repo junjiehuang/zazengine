@@ -82,40 +82,34 @@ Animation::initSkeleton( MeshNode* rootMeshNode )
 {
 	if ( NULL == this->m_skeletonRoot && rootMeshNode )
 	{
-		this->m_skeletonRoot = this->buildAnimationSkeleton( rootMeshNode, glm::mat4() );
+		this->m_skeletonRoot = this->buildAnimationSkeleton( rootMeshNode );
 	}
 }
 
 Animation::AnimationSkeletonPart*
-Animation::buildAnimationSkeleton( MeshNode* rootMeshNode, const glm::mat4& parentGlobalTransform )
+Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 {
 	AnimationSkeletonPart* skeletonPart = new AnimationSkeletonPart();
 	skeletonPart->m_name = rootMeshNode->getName();
-	skeletonPart->m_globalTransform = parentGlobalTransform * skeletonPart->m_localTransform;
-
+	
 	std::map<std::string, AnimationNode*>::iterator findAnimationNodeIter = this->m_animationNodes.find( rootMeshNode->getName() );
-	std::map<std::string, AnimationBone*>::iterator findAnimationBoneIter = this->m_animationBones.find( rootMeshNode->getName() );
+	std::map<std::string, glm::mat4>::iterator findAnimationBoneIter = this->m_animationBones.find( rootMeshNode->getName() );
 
 	if ( this->m_animationNodes.end() != findAnimationNodeIter )
 	{
 		skeletonPart->m_animationNode = findAnimationNodeIter->second;
-
 		skeletonPart->m_localTransform = skeletonPart->m_animationNode->m_transform;
-		skeletonPart->m_globalTransform = parentGlobalTransform * skeletonPart->m_localTransform;
 	}
 
-	if ( this->m_animationBones.end() != findAnimationBoneIter && rootMeshNode->getBone() )
+	if ( this->m_animationBones.end() != findAnimationBoneIter && rootMeshNode->getBoneOffset() )
 	{
-		skeletonPart->m_animationBone = findAnimationBoneIter->second;
-
-		// bone is stored in row-major order => transpose it
-		skeletonPart->m_animationBone->m_offset = glm::transpose( skeletonPart->m_animationBone->m_offset );
+		skeletonPart->m_boneOffset = rootMeshNode->getBoneOffset();
 	}
 
 	const std::vector<MeshNode*>& children = rootMeshNode->getChildren();
 	for ( unsigned int i = 0; i < children.size(); i++ )
 	{
-		AnimationSkeletonPart* childSkeletonPart = this->buildAnimationSkeleton( children[ i ], skeletonPart->m_globalTransform );
+		AnimationSkeletonPart* childSkeletonPart = this->buildAnimationSkeleton( children[ i ] );
 		skeletonPart->m_children.push_back( childSkeletonPart );
 	}
 
@@ -155,13 +149,13 @@ Animation::animateSkeleton( AnimationSkeletonPart* skeletonPart, const glm::mat4
 	glm::mat4 globalTransform = parentGlobalTransform * localNodeTransform;
 
 	// check if this node has a bone assosiated with
-	if ( skeletonPart->m_animationBone )
+	if ( skeletonPart->m_boneOffset )
 	{
 		// calculate bone-transformation: first apply m_offset matrix which transposes the vertex back into bone-relative
 		// space which can be thought of the bone at the center of the coordinate space and the vertex now relative to 
 		// the bone. then the hierarchical node transformation is applied which will move the vertex to its right position
 		// within the animation hierarchy
-		glm::mat4 globalBoneTransform = globalTransform * skeletonPart->m_animationBone->m_offset;
+		glm::mat4 globalBoneTransform = globalTransform * ( * (skeletonPart->m_boneOffset ) );
 
 		this->m_transforms.push_back( globalBoneTransform );
 	}

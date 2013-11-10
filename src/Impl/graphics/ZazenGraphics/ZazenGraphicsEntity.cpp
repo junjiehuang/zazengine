@@ -61,17 +61,17 @@ ZazenGraphicsEntity::update()
 	{
 		if ( 0.0f != this->m_heading )
 		{
-			this->m_camera->changeHeading( this->m_heading * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->changeHeading( this->m_heading * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 
 		if ( 0.0f != this->m_animRoll )
 		{
-			this->m_camera->changeRoll( this->m_animRoll * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->changeRoll( this->m_animRoll * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 	
 		if ( 0.0f != this->m_animPitch )
 		{
-			this->m_camera->changePitch( this->m_animPitch * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+			this->changePitch( this->m_animPitch * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 	}
 

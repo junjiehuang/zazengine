@@ -33,11 +33,6 @@ class Animation
 		const std::vector<glm::mat4>& getTransforms() const { return this->m_transforms; };
 
 	private:
-		struct AnimationBone {
-			std::string m_name;
-			glm::mat4 m_offset;
-		};
-
 		template <typename T> struct AnimationKey {
 			double m_time;
 			T m_value;
@@ -59,20 +54,19 @@ class Animation
 			AnimationSkeletonPart()
 			{
 				this->m_animationNode = NULL;
-				this->m_animationBone = NULL;
+				this->m_boneOffset = NULL;
 			}
 
 			std::string m_name;
 			glm::mat4 m_localTransform;
-			glm::mat4 m_globalTransform;
+			const glm::mat4* m_boneOffset;
 			AnimationNode* m_animationNode;
-			AnimationBone* m_animationBone;
 			std::vector<AnimationSkeletonPart*> m_children;
 		};
 
 		AnimationSkeletonPart* m_skeletonRoot;
 		std::map<std::string, AnimationNode*> m_animationNodes;
-		std::map<std::string, AnimationBone*> m_animationBones;
+		std::map<std::string, glm::mat4> m_animationBones;
 
 		std::vector<glm::mat4> m_transforms;
 
@@ -86,7 +80,7 @@ class Animation
 		double m_durationTicks;
 		double m_durationInSec;
 
-		AnimationSkeletonPart* buildAnimationSkeleton( MeshNode*, const glm::mat4& );
+		AnimationSkeletonPart* buildAnimationSkeleton( MeshNode* );
 
 		void animateSkeleton( AnimationSkeletonPart*, const glm::mat4& );
 

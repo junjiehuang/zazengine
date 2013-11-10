@@ -273,8 +273,7 @@ GeometryFactory::processNode( const struct aiNode* assImpNode )
 	int boneIndex = this->getBoneIndex( node->m_name );
 	if ( -1 != boneIndex )
 	{
-		node->m_bone = new MeshNode::MeshBone();
-		*node->m_bone = this->m_currentBonesHierarchical[ boneIndex ];
+		node->m_boneOffset = new glm::mat4( this->m_currentBonesHierarchical[ boneIndex ].m_offset );
 	}
 	
 	// collect all meshes of this node
@@ -527,9 +526,12 @@ GeometryFactory::collectBonesHierarchical( const struct aiNode* assImpNode )
 			string assImpBoneName =  assImpBone->mName.C_Str();
 			if ( assImpBoneName == assImpNode->mName.C_Str() )
 			{
-				MeshNode::MeshBone bone;
+				MeshBone bone;
 				bone.m_name = assImpBone->mName.C_Str();
 				AssImpUtils::assimpMatToGlm( assImpBone->mOffsetMatrix, bone.m_offset );
+				
+				// bones are stored in row-major order => transpose it
+				bone.m_offset = glm::transpose( bone.m_offset );
 
 				this->m_currentBonesHierarchical.push_back( bone );
 			}

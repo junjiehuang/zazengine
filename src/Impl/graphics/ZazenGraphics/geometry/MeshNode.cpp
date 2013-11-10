@@ -3,7 +3,7 @@
 MeshNode::MeshNode( const std::string& name )
 	: m_name( name )
 {
-	this->m_bone = NULL;
+	this->m_boneOffset = NULL;
 }
 
 MeshNode::~MeshNode()
@@ -20,9 +20,9 @@ MeshNode::~MeshNode()
 		delete mesh;
 	}
 
-	if ( this->m_bone )
+	if ( this->m_boneOffset )
 	{
-		delete this->m_bone;
+		delete this->m_boneOffset;
 	}
 }
 

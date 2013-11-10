@@ -33,13 +33,18 @@ class GeometryFactory
 		void free( Mesh* );
 
 	private:
+		struct MeshBone {
+			std::string m_name;
+			glm::mat4 m_offset; // mesh to bone
+		};
+
 		static GeometryFactory* instance;
 
 		boost::filesystem::path m_modelDataPath;
 		std::map<std::string, MeshNode*> m_allMeshes;
 
 		const struct aiScene* m_currentScene;
-		std::vector<MeshNode::MeshBone> m_currentBonesHierarchical;
+		std::vector<MeshBone> m_currentBonesHierarchical;
 
 		GeometryFactory( const boost::filesystem::path& );
 		~GeometryFactory();
