@@ -4,7 +4,7 @@
 
 using namespace std;
 
-// this is a copy of the slerp-method of GLM because glm 0.9.4.6 has a bug complaining about 2 overloaded defitions
+// this is a copy of the slerp-method of GLM because glm 0.9.4.6 has a bug complaining about 2 overloaded definitions
 glm::quat glmSlerpCopy( const glm::quat& x, const glm::quat& y, float a )
 {
 	glm::quat z = y;
@@ -48,64 +48,101 @@ Animation::Animation( double durationTicks, double ticksPerSecond )
 	this->m_lastRotChannelIndex = 0;
 	this->m_lastScaleChannelIndex = 0;
 
-	this->m_ticksPerSecond = ticksPerSecond;
+	// default to 25 ticks/second if 0
+	this->m_ticksPerSecond = ticksPerSecond == 0.0 ? 25.0 : ticksPerSecond;
 	this->m_durationTicks = durationTicks;
 	this->m_durationInSec = this->m_durationTicks / this->m_ticksPerSecond;
 }
 
 Animation::~Animation()
 {
-	// TODO: cleanup recursively
+	if ( this->m_skeletonRoot )
+	{
+		this->cleanUpSkeletonPart( this->m_skeletonRoot );
+		this->m_skeletonRoot = NULL;
+	}
 }
 
 void
 Animation::update()
 {
-	double timeAdvance = ZazenGraphics::getInstance().getCore().getProcessingFactor();
-
-	// not initialized with a skeleton yet
+	// not initialized with a skeleton yet => exit, nothing to animate
 	if ( NULL == this->m_skeletonRoot )
 	{
 		return;
 	}
 
-	this->m_transforms.clear();
+	double timeAdvance = ZazenGraphics::getInstance().getCore().getProcessingFactor();
 
+	// reset bone-transformations
+	this->m_boneTransforms.clear();
+
+	// calculate advancement of animation-time: do modul by total duration of animation (between 0.0 and m_durationInSec)
 	this->m_currentTime = fmod( ( this->m_currentTime + timeAdvance ), this->m_durationInSec );
+	// calculate new frame-time: is not a whole-number but can be in-between of key-frames => we will do interpolation of key-frames for smooth animation
+	// will be between 0.0 and m_durationTicks
 	this->m_currentFrame = this->m_currentTime * this->m_ticksPerSecond;
 
+	// do animation for this new frame-time
 	this->animateSkeleton( this->m_skeletonRoot, glm::mat4( ) );
+}
+
+void
+Animation::cleanUpSkeletonPart( AnimationSkeletonPart* skeletonPart )
+{
+	// all dynamic-memory stuff isn't owned by the AnimationSkeletonPart but just pointer-copy of MeshNode ( m_boneOffset ) and AnimationNode ( m_animationChannel )
+	// except children: delete them all
+	for ( unsigned int i = 0; i < skeletonPart->m_children.size(); i++ )
+	{
+		this->cleanUpSkeletonPart( skeletonPart->m_children[ i ] );
+	}
+
+	delete skeletonPart;
 }
 
 void
 Animation::initSkeleton( MeshNode* rootMeshNode )
 {
-	if ( NULL == this->m_skeletonRoot && rootMeshNode )
+	// already initialized with a preceeding skeleton, clean this up first
+	if ( this->m_skeletonRoot )
+	{
+		this->cleanUpSkeletonPart( this->m_skeletonRoot );
+		this->m_skeletonRoot = NULL;
+	}
+
+	// mesh-node hierarchy specified => build a new skeleton
+	if ( rootMeshNode )
 	{
 		this->m_skeletonRoot = this->buildAnimationSkeleton( rootMeshNode );
 	}
 }
 
+// builds the hierarchical structure (animation-skeleton) based upon the Mesh-Node hierarchy
+// this allows to separate mesh-loading and animation-loading and thus separation of meshes from animations
+// NOTE: for this to work it is expected that compatible animations have at least all the bones found in the mesh-node hierarchy
 Animation::AnimationSkeletonPart*
 Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 {
 	AnimationSkeletonPart* skeletonPart = new AnimationSkeletonPart();
-	skeletonPart->m_name = rootMeshNode->getName();
-	
-	std::map<std::string, AnimationNode*>::iterator findAnimationNodeIter = this->m_animationNodes.find( rootMeshNode->getName() );
-	std::map<std::string, glm::mat4>::iterator findAnimationBoneIter = this->m_animationBones.find( rootMeshNode->getName() );
+	skeletonPart->m_animationChannel = NULL;
+	skeletonPart->m_boneOffset = NULL;
+	skeletonPart->m_localTransform = rootMeshNode->getModelMatrix();
 
-	if ( this->m_animationNodes.end() != findAnimationNodeIter )
+	std::map<std::string, AnimationChannel>::iterator findAnimChannelsIter = this->m_animationChannels.find( rootMeshNode->getName() );
+
+	// animation-channel is found for this name thus this node is present in the animation and thus is animated => copy pointer to animation-channels
+	if ( this->m_animationChannels.end() != findAnimChannelsIter )
 	{
-		skeletonPart->m_animationNode = findAnimationNodeIter->second;
-		skeletonPart->m_localTransform = skeletonPart->m_animationNode->m_transform;
+		skeletonPart->m_animationChannel = &findAnimChannelsIter->second;
+
+		// this mesh-node has a bone => store offset (mesh-to-bone transform) in according skeleton-part
+		if (rootMeshNode->getBoneOffset() )
+		{
+			skeletonPart->m_boneOffset = rootMeshNode->getBoneOffset();
+		}
 	}
 
-	if ( this->m_animationBones.end() != findAnimationBoneIter && rootMeshNode->getBoneOffset() )
-	{
-		skeletonPart->m_boneOffset = rootMeshNode->getBoneOffset();
-	}
-
+	// walk down recursively
 	const std::vector<MeshNode*>& children = rootMeshNode->getChildren();
 	for ( unsigned int i = 0; i < children.size(); i++ )
 	{
@@ -116,24 +153,22 @@ Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 	return skeletonPart;
 }
 
+// performs hierarchical animation by walking the animation-skeleton hierarchical
 void
 Animation::animateSkeleton( AnimationSkeletonPart* skeletonPart, const glm::mat4& parentGlobalTransform )
 {
 	glm::mat4 localNodeTransform;
 
-	// check if this node has animation-information stored
-	if ( skeletonPart->m_animationNode )
+	// check if this node has animation-channels stored, if so => interpolate key-frames
+	if ( skeletonPart->m_animationChannel )
 	{
-		AnimationNode* animationNode = skeletonPart->m_animationNode;
-		AnimationChannel& channel = animationNode->m_animationChannels;
-
 		glm::mat4 translationMatrix;
 		glm::mat4 rotationMatrix;
 		glm::mat4 scalingMatrix;
 
-		this->interpolatePosition( channel.m_positionKeys, translationMatrix );
-		this->interpolateRotation( channel.m_rotationKeys, rotationMatrix );
-		this->interpolateScaling( channel.m_scalingKeys, translationMatrix );
+		this->interpolatePosition( skeletonPart->m_animationChannel->m_positionKeys, translationMatrix );
+		this->interpolateRotation( skeletonPart->m_animationChannel->m_rotationKeys, rotationMatrix );
+		this->interpolateScaling( skeletonPart->m_animationChannel->m_scalingKeys, translationMatrix );
 
 		// this animation-transformation replaces the local transformation
 		// order is important: first scaling, then rotation and last translation (matrix-multiplication applies the operation first which one was multiplied with last)
@@ -141,11 +176,11 @@ Animation::animateSkeleton( AnimationSkeletonPart* skeletonPart, const glm::mat4
 	}
 	else
 	{
-		// no animation for this node: use local transformation 
+		// no animation for this node: use local transformation already present
 		localNodeTransform = skeletonPart->m_localTransform;
 	}
 
-	// do hierarchical transformation: apply parentTransformation to local Transformation
+	// do hierarchical transformation: apply parent-transformations to local Transformation
 	glm::mat4 globalTransform = parentGlobalTransform * localNodeTransform;
 
 	// check if this node has a bone assosiated with
@@ -156,12 +191,15 @@ Animation::animateSkeleton( AnimationSkeletonPart* skeletonPart, const glm::mat4
 		// the bone. then the hierarchical node transformation is applied which will move the vertex to its right position
 		// within the animation hierarchy
 		glm::mat4 globalBoneTransform = globalTransform * ( * (skeletonPart->m_boneOffset ) );
-
-		this->m_transforms.push_back( globalBoneTransform );
+		
+		// add this bone to the master-list of the final bone transformations
+		// NOTE: the order of this bone-list must match EXACTLY the bone-list extracted in GeometryFactory
+		// otherwise we would wind up with wrong bone-indices which would lead to wrong renderings of the mesh
+		this->m_boneTransforms.push_back( globalBoneTransform );
 	}
 
+	// recursively walk down tree
 	const std::vector<AnimationSkeletonPart*>& skeletonChildren = skeletonPart->m_children;
-
 	for ( unsigned int i = 0; i < skeletonChildren.size(); i++ )
 	{
 		this->animateSkeleton( skeletonChildren[ i ], globalTransform );
@@ -188,10 +226,13 @@ Animation::interpolatePosition( const vector<AnimationKey<glm::vec3>>& positionK
 	AnimationKey<glm::vec3> firstPos;
 	AnimationKey<glm::vec3> nextPos;
 
+	// find key-frames for the current-frame
 	this->findFirstAndNext<glm::vec3>( positionKeys, firstPos, nextPos, this->m_lastPosChannelIndex );
 
+	// calculate interpolation-factor (between 0.0 and 1.0)
 	float interpolationFactor = ( float ) ( ( this->m_currentFrame - firstPos.m_time ) / ( nextPos.m_time - firstPos.m_time ) );
 
+	// do linear interpolation of vectors using glm::lerp
 	translationMatrix = glm::translate( glm::lerp( firstPos.m_value, nextPos.m_value, interpolationFactor ) );
 }
 
@@ -215,12 +256,13 @@ Animation::interpolateRotation( const std::vector<AnimationKey<glm::quat>>& rota
 	AnimationKey<glm::quat> firstRot;
 	AnimationKey<glm::quat> nextRot;
 
+	// find key-frames for the current-frame
 	this->findFirstAndNext<glm::quat>( rotationKeys, firstRot, nextRot, this->m_lastRotChannelIndex );
 
+	// calculate interpolation-factor (between 0.0 and 1.0)
 	float interpolationFactor = ( float ) ( ( this->m_currentFrame - firstRot.m_time ) / ( nextRot.m_time - firstRot.m_time ) );
 
-	//rotationMatrix = glm::mat4_cast( glm::slerp( firstRot.m_value, nextRot.m_value, interpolationFactor ) );
-
+	// do spherical interpolation of quaternions
 	rotationMatrix = glm::mat4_cast( glmSlerpCopy( firstRot.m_value, nextRot.m_value, interpolationFactor ) );
 }
 
@@ -246,6 +288,7 @@ Animation::interpolateScaling( const std::vector<AnimationKey<glm::vec3>>& scali
 	AnimationKey<glm::vec3> firstScaling;
 	AnimationKey<glm::vec3> nextScaling;
 	
+	// find key-frames for the current-frame
 	this->findFirstAndNext<glm::vec3>( scalingKeys, firstScaling, nextScaling, this->m_lastScaleChannelIndex );
 
 	// for now: now interpolation, just take first found
@@ -266,6 +309,7 @@ Animation::findFirstAndNext( const vector<AnimationKey<T>>& keys, AnimationKey<T
 		lastChannelIndex = 0;
 	}
 
+	// find the two key-frames for which the currentFrame lies in between those two
 	for ( unsigned int i = lastChannelIndex; i < keys.size() - 1; i++ )
 	{
 		first = keys[ i ];

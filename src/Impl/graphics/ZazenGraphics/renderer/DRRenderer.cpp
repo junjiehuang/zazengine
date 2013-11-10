@@ -1055,7 +1055,8 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 
 		if ( animation )
 		{
-			currentProgramm->setUniformMatrices( "u_bones[0]", animation->getTransforms() );
+			// TODO: need to do it only once for the root-mesh
+			currentProgramm->setUniformMatrices( "u_bones[0]", animation->getBoneTransforms() );
 		}
 
 		if ( material )

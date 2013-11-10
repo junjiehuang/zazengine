@@ -155,26 +155,11 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 
 	animation = new Animation( assImpAnim->mDuration, assImpAnim->mTicksPerSecond );
 
-	// walk through all nodes in hierarchical manner (recursive) and store them in the animation-object and in the node-to-name map
-	AnimationFactory::collectNodes( animation, rootNode );
-
-	// walk through all bones in a hierarchical manner (recursive) and match them to their according AnimNode by matching names
-	AnimationFactory::extractBones( animation, scene, rootNode );
-
 	// extract data from all channels
 	for ( unsigned int i = 0; i < assImpAnim->mNumChannels; i++ )
 	{
 		aiNodeAnim* assImpChannel = assImpAnim->mChannels[ i ];
-			
-		// each channel is assigned to exactly one node: find the node
-		map<string, Animation::AnimationNode*>::iterator findIter = animation->m_animationNodes.find( assImpChannel->mNodeName.C_Str() );
-		if ( animation->m_animationNodes.end() == findIter )
-		{
-			ZazenGraphics::getInstance().getLogger().logWarning() << "couldn't find an animation node for node " << assImpChannel->mNodeName.C_Str();
-			continue;
-		}
-			
-		Animation::AnimationChannel& animChannels = findIter->second->m_animationChannels;
+		Animation::AnimationChannel animChannel;
 
 		// extract all position-keys
 		for ( unsigned int j = 0; j < assImpChannel->mNumPositionKeys; j++ )
@@ -186,7 +171,7 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 	
 			AssImpUtils::assimpVecToGlm( assImpPosKey.mValue, posKey.m_value );
 
-			animChannels.m_positionKeys.push_back( posKey );
+			animChannel.m_positionKeys.push_back( posKey );
 		}
 
 		// extract all rotation-keys
@@ -200,7 +185,7 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 			// assimp provides the rotations by quaternions, get matrix from it
 			AssImpUtils::assimpQuatToGlm( assImpRotKey.mValue, rotKey.m_value );
 
-			animChannels.m_rotationKeys.push_back( rotKey );
+			animChannel.m_rotationKeys.push_back( rotKey );
 		}
 
 		// extract all scaling-keys
@@ -213,8 +198,10 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 	
 			AssImpUtils::assimpVecToGlm( assImpScaleKey.mValue, scaleKey.m_value );
 
-			animChannels.m_scalingKeys.push_back( scaleKey );
+			animChannel.m_scalingKeys.push_back( scaleKey );
 		}
+
+		animation->m_animationChannels[ assImpChannel->mNodeName.C_Str() ] = animChannel;
 	}
 		
 	AnimationFactory::allAnimations[ filePath.generic_string().c_str() ] = animation; 
@@ -222,56 +209,4 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 	ZazenGraphics::getInstance().getLogger().logInfo() << "LOADED ... " << filePath;
 
     return animation;
-}
-
-Animation::AnimationNode*
-AnimationFactory::collectNodes( Animation* animation, const aiNode* assImpNode )
-{
-	Animation::AnimationNode* parentNode = new Animation::AnimationNode();
-
-	parentNode->m_name = assImpNode->mName.C_Str();
-	AssImpUtils::assimpMatToGlm( assImpNode->mTransformation, parentNode->m_transform );
-
-	animation->m_animationNodes[ parentNode->m_name ] = parentNode;
-
-	for ( unsigned int i = 0; i < assImpNode->mNumChildren; i++ )
-	{
-		aiNode* assImpChild = assImpNode->mChildren[ i ];
-
-		Animation::AnimationNode* childNode = AnimationFactory::collectNodes( animation, assImpChild );
-	}
-
-	return parentNode;
-}
-
-void
-AnimationFactory::extractBones( Animation* animation, const aiScene* assImpScene, const aiNode* assImpNode )
-{
-	for ( unsigned int i = 0; i < assImpNode->mNumMeshes; i++ )
-	{
-		aiMesh* mesh = assImpScene->mMeshes[ i ];
-			
-		for ( unsigned int j = 0; j < mesh->mNumBones; j++ )
-		{
-			aiBone* assImpBone = mesh->mBones[ j ];
-			
-			// ignore bones with no name
-			if ( 0 == assImpBone->mName.length )
-			{
-				continue;
-			}
-
-			glm::mat4 boneOffset;
-			AssImpUtils::assimpMatToGlm( assImpBone->mOffsetMatrix, boneOffset );
-
-			animation->m_animationBones[ assImpBone->mName.C_Str() ] = boneOffset;
-		}
-	}
-
-	// recursively extract bones from children
-	for ( unsigned int i = 0; i < assImpNode->mNumChildren; i++ )
-	{
-		aiNode* child = assImpNode->mChildren[ i ];
-		AnimationFactory::extractBones( animation, assImpScene, child );
-	}
 }
