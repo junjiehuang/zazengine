@@ -12,6 +12,7 @@
 #include "../geometry/MeshNode.h"
 
 #include <glm/glm.hpp>
+//#include <glm/gtc/quaternion.hpp>
 #include <glm/ext.hpp>
 
 #include <string>

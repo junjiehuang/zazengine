@@ -4,6 +4,39 @@
 
 using namespace std;
 
+// this is a copy of the slerp-method of GLM because glm 0.9.4.6 has a bug complaining about 2 overloaded defitions
+glm::quat glmSlerpCopy( const glm::quat& x, const glm::quat& y, float a )
+{
+	glm::quat z = y;
+
+	float cosTheta = glm::dot(x, y);
+
+	// If cosTheta < 0, the interpolation will take the long way around the sphere. 
+	// To fix this, one quat must be negated.
+	if (cosTheta < 0.0f)
+	{
+		z        = -y;
+		cosTheta = -cosTheta;
+	}
+
+	// Perform a linear interpolation when cosTheta is close to 1 to avoid side effect of sin(angle) becoming a zero denominator
+	if(cosTheta > 1.0f - glm::epsilon<float>())
+	{
+		// Linear interpolation
+		return glm::quat(
+			glm::mix(x.w, z.w, a),
+			glm::mix(x.x, z.x, a),
+			glm::mix(x.y, z.y, a),
+			glm::mix(x.z, z.z, a));
+	}
+	else
+	{
+		// Essential Mathematics, page 467
+		float angle = acos(cosTheta);
+		return (sin((1.0f - a) * angle) * x + sin(a * angle) * z) / sin(angle);
+	}
+}
+
 Animation::Animation( double durationTicks, double ticksPerSecond )
 {
 	this->m_skeletonRoot = NULL;
@@ -58,7 +91,6 @@ Animation::buildAnimationSkeleton( MeshNode* rootMeshNode, const glm::mat4& pare
 {
 	AnimationSkeletonPart* skeletonPart = new AnimationSkeletonPart();
 	skeletonPart->m_name = rootMeshNode->getName();
-	skeletonPart->m_localTransform = rootMeshNode->getModelMatrix();
 	skeletonPart->m_globalTransform = parentGlobalTransform * skeletonPart->m_localTransform;
 
 	std::map<std::string, AnimationNode*>::iterator findAnimationNodeIter = this->m_animationNodes.find( rootMeshNode->getName() );
@@ -75,8 +107,9 @@ Animation::buildAnimationSkeleton( MeshNode* rootMeshNode, const glm::mat4& pare
 	if ( this->m_animationBones.end() != findAnimationBoneIter && rootMeshNode->getBone() )
 	{
 		skeletonPart->m_animationBone = findAnimationBoneIter->second;
-		// replace bone-offset with the one from rootMeshNode if present
-		//skeletonPart->m_animationBone->m_offset = rootMeshNode->getBone()->m_offset;
+
+		// bone is stored in row-major order => transpose it
+		skeletonPart->m_animationBone->m_offset = glm::transpose( skeletonPart->m_animationBone->m_offset );
 	}
 
 	const std::vector<MeshNode*>& children = rootMeshNode->getChildren();
@@ -124,11 +157,13 @@ Animation::animateSkeleton( AnimationSkeletonPart* skeletonPart, const glm::mat4
 	// check if this node has a bone assosiated with
 	if ( skeletonPart->m_animationBone )
 	{
-		const AnimationBone* bone = skeletonPart->m_animationBone;
-		// calculate bone-transformation: we need to apply the mesh-to-bone transformation 
-		glm::mat4 globalBoneTransform = localNodeTransform * bone->m_offset;
+		// calculate bone-transformation: first apply m_offset matrix which transposes the vertex back into bone-relative
+		// space which can be thought of the bone at the center of the coordinate space and the vertex now relative to 
+		// the bone. then the hierarchical node transformation is applied which will move the vertex to its right position
+		// within the animation hierarchy
+		glm::mat4 globalBoneTransform = globalTransform * skeletonPart->m_animationBone->m_offset;
 
-		this->m_transforms.push_back( globalTransform );
+		this->m_transforms.push_back( globalBoneTransform );
 	}
 
 	const std::vector<AnimationSkeletonPart*>& skeletonChildren = skeletonPart->m_children;
@@ -151,9 +186,7 @@ Animation::interpolatePosition( const vector<AnimationKey<glm::vec3>>& positionK
 	// exactly one translation, nothing to interpolate
 	if ( positionKeys.size() == 1 )
 	{
-		translationMatrix[ 3 ][ 0 ] = positionKeys[ 0 ].m_value.x;
-		translationMatrix[ 3 ][ 1 ] = positionKeys[ 0 ].m_value.y;
-		translationMatrix[ 3 ][ 2 ] = positionKeys[ 0 ].m_value.z;
+		translationMatrix = glm::translate( positionKeys[ 0 ].m_value );
 
 		return;
 	}
@@ -163,18 +196,9 @@ Animation::interpolatePosition( const vector<AnimationKey<glm::vec3>>& positionK
 
 	this->findFirstAndNext<glm::vec3>( positionKeys, firstPos, nextPos, this->m_lastPosChannelIndex );
 
-	translationMatrix[ 3 ][ 0 ] = firstPos.m_value.x;
-	translationMatrix[ 3 ][ 1 ] = firstPos.m_value.y;
-	translationMatrix[ 3 ][ 2 ] = firstPos.m_value.z;
+	float interpolationFactor = ( float ) ( ( this->m_currentFrame - firstPos.m_time ) / ( nextPos.m_time - firstPos.m_time ) );
 
-	/*
-	float normalizedTime = ( float ) ( ( this->m_currentFrame - firstPos.m_time ) / ( nextPos.m_time - firstPos.m_time ) );
-
-	glm::vec3 interpolatedPos = ( ( 1.0f - normalizedTime ) * firstPos.m_value ) + ( normalizedTime * nextPos.m_value );
-	translationMatrix[ 3 ][ 0 ] = interpolatedPos.x;
-	translationMatrix[ 3 ][ 1 ] = interpolatedPos.y;
-	translationMatrix[ 3 ][ 2 ] = interpolatedPos.z;
-	*/
+	translationMatrix = glm::translate( glm::lerp( firstPos.m_value, nextPos.m_value, interpolationFactor ) );
 }
 
 void
@@ -199,10 +223,11 @@ Animation::interpolateRotation( const std::vector<AnimationKey<glm::quat>>& rota
 
 	this->findFirstAndNext<glm::quat>( rotationKeys, firstRot, nextRot, this->m_lastRotChannelIndex );
 
-	// for now: now interpolation, just take first found
-	rotationMatrix = glm::mat4_cast( firstRot.m_value );
+	float interpolationFactor = ( float ) ( ( this->m_currentFrame - firstRot.m_time ) / ( nextRot.m_time - firstRot.m_time ) );
 
-	// TODO: do interpolation of scaling between first and next
+	//rotationMatrix = glm::mat4_cast( glm::slerp( firstRot.m_value, nextRot.m_value, interpolationFactor ) );
+
+	rotationMatrix = glm::mat4_cast( glmSlerpCopy( firstRot.m_value, nextRot.m_value, interpolationFactor ) );
 }
 
 void
@@ -217,9 +242,9 @@ Animation::interpolateScaling( const std::vector<AnimationKey<glm::vec3>>& scali
 	// exactly one translation, nothing to interpolate
 	if ( scalingKeys.size() == 1 )
 	{
-		scalingMatrix[ 0 ][ 0 ] = scalingKeys[ 0 ].m_value.x;
-		scalingMatrix[ 1 ][ 1 ] = scalingKeys[ 0 ].m_value.y;
-		scalingMatrix[ 2 ][ 2 ] = scalingKeys[ 0 ].m_value.z;
+		scalingMatrix[ 0 ].x = scalingKeys[ 0 ].m_value.x;
+		scalingMatrix[ 1 ].y = scalingKeys[ 0 ].m_value.y;
+		scalingMatrix[ 2 ].z = scalingKeys[ 0 ].m_value.z;
 
 		return;
 	}
@@ -230,9 +255,9 @@ Animation::interpolateScaling( const std::vector<AnimationKey<glm::vec3>>& scali
 	this->findFirstAndNext<glm::vec3>( scalingKeys, firstScaling, nextScaling, this->m_lastScaleChannelIndex );
 
 	// for now: now interpolation, just take first found
-	scalingMatrix[ 0 ][ 0 ] = firstScaling.m_value.x;
-	scalingMatrix[ 1 ][ 1 ] = firstScaling.m_value.y;
-	scalingMatrix[ 2 ][ 2 ] = firstScaling.m_value.z;
+	scalingMatrix[ 0 ].x = firstScaling.m_value.x;
+	scalingMatrix[ 1 ].y = firstScaling.m_value.y;
+	scalingMatrix[ 2 ].z = firstScaling.m_value.z;
 
 	// TODO: do interpolation of scaling between first and next
 }
@@ -247,16 +272,14 @@ Animation::findFirstAndNext( const vector<AnimationKey<T>>& keys, AnimationKey<T
 		lastChannelIndex = 0;
 	}
 
-	// NOTE: if the time would be equally spaced by 1 unit then m_time would match the index and we could access it in O(1)
-	for ( unsigned int i = lastChannelIndex; i < keys.size(); i++ )
+	for ( unsigned int i = lastChannelIndex; i < keys.size() - 1; i++ )
 	{
-		unsigned int nextIndex = ( i + 1 ) % keys.size();
-
-		if ( keys[ i ].m_time >= this->m_currentFrame )
+		first = keys[ i ];
+		next = keys[ i + 1 ];
+	
+		// does always hit or if not we reached end of loop
+		if ( first.m_time <= this->m_currentFrame && next.m_time > this->m_currentFrame )
 		{
-			first = keys[ i ];
-			next = keys[ nextIndex ];
-
 			lastChannelIndex = i;
 			return;
 		}
