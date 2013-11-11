@@ -46,7 +46,7 @@ class GeometryFactory
 
 		void collectBonesHierarchical( const struct aiNode* );
 
-		MeshNode* processNode( const struct aiNode* );		 
+		MeshNode* processNode( const struct aiNode*, const glm::mat4& );		 
 		Mesh* processMesh( const struct aiMesh* );
 
 		MeshBoned* processMeshBoned( const struct aiMesh* );

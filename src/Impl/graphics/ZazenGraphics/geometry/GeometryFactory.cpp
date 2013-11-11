@@ -236,15 +236,8 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 	// where the bone-indices will be constructed the same way => indices must mach
 	GeometryFactory::collectBonesHierarchical( this->m_currentScene->mRootNode );
 
-	/*
-	for ( unsigned int i = 0; i < this->m_currentBonesHierarchical.size(); i++ )
-	{
-		ZazenGraphics::getInstance().getLogger().logDebug() << "bone " << m_currentBonesHierarchical[ i ].m_name << " has index " << i;
-	}
-	*/
-
 	// walk and create hieararchy recursive
-	rootNode = GeometryFactory::processNode( this->m_currentScene->mRootNode );
+	rootNode = GeometryFactory::processNode( this->m_currentScene->mRootNode, glm::mat4() );
 
 	aiReleaseImport( this->m_currentScene );
 	this->m_currentScene = NULL;
@@ -256,10 +249,11 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 }
 
 MeshNode*
-GeometryFactory::processNode( const struct aiNode* assImpNode )
+GeometryFactory::processNode( const struct aiNode* assImpNode, const glm::mat4& parentGlobalTransform )
 {
 	MeshNode* node = new MeshNode( assImpNode->mName.C_Str() );
-	AssImpUtils::assimpMatToGlm( assImpNode->mTransformation, node->m_modelMatrix );
+	AssImpUtils::assimpMatToGlm( assImpNode->mTransformation, node->m_localTransform );
+	node->m_globalTransform = parentGlobalTransform * node->m_localTransform;
 
 	// find matching bone to this hierarchy-node, is optional!
 	int boneIndex = this->getBoneIndex( node->m_name );
@@ -281,12 +275,19 @@ GeometryFactory::processNode( const struct aiNode* assImpNode )
 		}
 	}
 
+	node->m_hasMeshesFlag = node->m_meshes.size() != 0;
+
 	// walk tree down recursive
 	for ( unsigned int i = 0; i < assImpNode->mNumChildren; i++ )
 	{
-		MeshNode* childNode = this->processNode( assImpNode->mChildren[ i ] );
+		MeshNode* childNode = this->processNode( assImpNode->mChildren[ i ], node->m_globalTransform );
 		node->compareAndSetBB( childNode->getBBMin(), childNode->getBBMax() );
 		node->m_children.push_back( childNode );
+
+		if ( childNode->m_hasMeshesFlag )
+		{
+			node->m_hasMeshesFlag = true;
+		}
 	}
 
 	return node;

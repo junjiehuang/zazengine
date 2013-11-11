@@ -1049,7 +1049,6 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 
 		if ( animation )
 		{
-			// TODO: need to do it only once for the root-mesh
 			currentProgramm->setUniformMatrices( "u_bones[0]", animation->getBoneTransforms() );
 		}
 
@@ -1079,8 +1078,11 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 			}
 		}
 
+		// calculate model-view matrix once for this entity, hierarchical node-transforms are applied during mesh-rendering
+		glm::mat4 modelView = viewer->getViewMatrix() * entity->getModelMatrix();
+
 		// render geometry of this instance
-		if ( false == this->renderMeshNode( viewer, entity->getMeshNode(), entity->getModelMatrix() ) )
+		if ( false == this->renderMeshNode( entity->getMeshNode(), modelView ) )
 		{
 			return false;
 		}
@@ -1113,8 +1115,11 @@ DRRenderer::renderEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* 
 		return false;
 	}
 		
+	// calculate model-view matrix once for this entity, hierarchical node-transforms are applied during mesh-rendering
+	glm::mat4 modelView = viewer->getViewMatrix() * entity->getModelMatrix();
+
 	// render geometry of this instance
-	if ( false == this->renderMeshNode( viewer, entity->getMeshNode(), entity->getModelMatrix() ) )
+	if ( false == this->renderMeshNode( entity->getMeshNode(), modelView ) )
 	{
 		return false;
 	}
@@ -1123,19 +1128,25 @@ DRRenderer::renderEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* 
 }
 
 bool
-DRRenderer::renderMeshNode( Viewer* viewer, MeshNode* meshNode, const glm::mat4& rootModelMatrix )
+DRRenderer::renderMeshNode( MeshNode* meshNode, const glm::mat4& entityModelViewMatrix )
 {
-	// IMPORANT: OpenGL applies last matrix in multiplication as first transformation to object
-	// apply model-transformations recursive
-	glm::mat4 modelMatrix = rootModelMatrix * meshNode->getModelMatrix();
-	const std::vector<MeshNode*>& children = meshNode->getChildren();
+	// no meshes in this node or any sub-children, nothing to render
+	// because we pre-calculate the global-transformation for each mesh-node during loading
+	// we can ommit non-meshed nodes and don't need to walk them just because of re-calculating
+	// the (always static) hierarchical global-transformations
+	if ( ! meshNode->hasMeshes() )
+	{
+		return true;
+	}
+
 	const std::vector<Mesh*>& meshes = meshNode->getMeshes();
+	const std::vector<MeshNode*>& children = meshNode->getChildren();
+	glm::mat4 localModelViewMatrix = entityModelViewMatrix * meshNode->getGlobalTransform();
 
 	for ( unsigned int i = 0; i < children.size(); i++ )
 	{
 		MeshNode* child = children[ i ];
-		// recursively process children
-		if ( false == this->renderMeshNode( viewer, children[ i ], modelMatrix ) )
+		if ( false == this->renderMeshNode( children[ i ], entityModelViewMatrix ) )
 		{
 			return false;
 		}
@@ -1144,26 +1155,23 @@ DRRenderer::renderMeshNode( Viewer* viewer, MeshNode* meshNode, const glm::mat4&
 	for ( unsigned int i = 0; i < meshes.size(); i++ )
 	{
 		Mesh* mesh = meshes[ i ];
-		// render meshes
-		if ( false == this->renderMesh( viewer, mesh, modelMatrix ) )
+		if ( false == this->renderMesh( mesh, localModelViewMatrix ) )
 		{
 			return false;
 		}
 	}
 
-
 	return true;
 }
 
 bool
-DRRenderer::renderMesh( Viewer* viewer, Mesh* mesh, const glm::mat4& parentModelMatrix )
+DRRenderer::renderMesh( Mesh* mesh, const glm::mat4& modelViewMatrix )
 {
-	// calculate modelView-Matrix
-	glm::mat4 modelViewMatrix = viewer->getViewMatrix() * parentModelMatrix;
 	// IMPORTANT: normal-vectors are transformed different than vertices
 	// take the transpose of the inverse modelView or simply reset the translation vector in the modelview-matrix
 	// in other words: only the rotations are applied to normals and they are guaranteed to leave
-	// normalized normals at unit length. THIS METHOD ONLY WORKS WHEN NO NON UNIFORM SCALING IS APPLIED
+	// normalized normals at unit length. THIS METHOD WORKS ALSO WHEN NO NON UNIFORM SCALING IS APPLIED
+	// TODO: scrap this transform because we forbid non-uniform-scaling in our engine for performance reasons
 	glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( modelViewMatrix ) );
 
 	// update model-view matrix

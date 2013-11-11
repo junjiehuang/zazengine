@@ -3,6 +3,7 @@
 MeshNode::MeshNode( const std::string& name )
 	: m_name( name )
 {
+	this->m_hasMeshesFlag = false;
 	this->m_boneOffset = NULL;
 }
 

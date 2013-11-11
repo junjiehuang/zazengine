@@ -97,8 +97,8 @@ class DRRenderer
 
 		bool renderEntities( Viewer*, std::list<ZazenGraphicsEntity*>&, Program*, bool, bool );
 		bool renderEntity( Viewer*, ZazenGraphicsEntity*, Program* );
-		bool renderMeshNode( Viewer*, MeshNode*, const glm::mat4& );
-		bool renderMesh( Viewer*, Mesh*, const glm::mat4& );
+		bool renderMeshNode( MeshNode*, const glm::mat4& );
+		bool renderMesh( Mesh*, const glm::mat4& );
 
 		static bool depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b );
 

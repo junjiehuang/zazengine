@@ -129,7 +129,7 @@ Animation::buildAnimationSkeleton( MeshNode* rootMeshNode )
 	AnimationSkeletonPart* skeletonPart = new AnimationSkeletonPart();
 	skeletonPart->m_animationChannel = NULL;
 	skeletonPart->m_boneOffset = NULL;
-	skeletonPart->m_localTransform = rootMeshNode->getModelMatrix();
+	skeletonPart->m_localTransform = rootMeshNode->getLocalTransform();
 
 	std::map<std::string, AnimationChannel>::iterator findAnimChannelsIter = this->m_animationChannels->find( rootMeshNode->getName() );
 
