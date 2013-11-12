@@ -124,6 +124,12 @@
     <Filter Include="Headerdateien\viewer">
       <UniqueIdentifier>{2977bd6d-8829-48e4-a50c-75cd737e72f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Animated">
+      <UniqueIdentifier>{e51e76c2-9a20-4abd-9f80-23a029279420}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Static">
+      <UniqueIdentifier>{278d255b-8f7b-4fd2-8204-85aebe79e30b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -393,6 +399,15 @@
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\static\geomStaticVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry\Static</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\animated\shadowAnimVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Animated</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\static\shadowStaticVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Static</Filter>
     </None>
   </ItemGroup>
 </Project>

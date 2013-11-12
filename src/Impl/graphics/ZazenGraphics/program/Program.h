@@ -21,6 +21,8 @@ class Program
 		bool attachShader( Shader* );
 		bool detachShader( Shader* );
 
+		bool activateSubroutine( const std::string&, Shader::ShaderType );
+
 		bool setUniformInt( const std::string& name, int );
 		bool setUniformMatrices( const std::string& name, const std::vector<glm::mat4>& );
 
@@ -45,12 +47,20 @@ class Program
 			std::string m_name;
 		};
 
+		struct Subroutine {
+			std::string m_name;
+			GLint m_index;
+			GLint m_uniformIndex;
+		};
+
 		Program( GLuint programObject, const std::string& programName );
 
 		std::string m_programName;
 		GLuint m_programObject;
 
-		std::map<std::string, UniformField*> m_uniforms;
+		std::map<std::string, UniformField> m_uniforms;
+		std::map<GLenum, std::vector<Subroutine>> m_subroutines;
+		std::map<GLenum, std::vector<Subroutine>> m_activeSubroutines;
 
 		GLuint getUniformBlockIndex( const std::string& name );
 		UniformField* getUniformField( const std::string& name );

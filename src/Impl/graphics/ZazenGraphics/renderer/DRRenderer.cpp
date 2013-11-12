@@ -27,8 +27,7 @@ DRRenderer::DRRenderer()
 
 	this->m_depthCopy = NULL;
 
-	this->m_progGeomStaticStage = NULL;
-	this->m_progGeomAnimStage = NULL;
+	this->m_progGeomStage = NULL;
 	this->m_progSkyBox = NULL;
 	this->m_progLightingStage = NULL;
 	this->m_progLightingNoShadowStage = NULL;
@@ -272,17 +271,10 @@ DRRenderer::initGeomStage()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Geometry-Stage..." );
 
-	this->m_progGeomStaticStage = ProgramManagement::get( "GeometryStaticStageProgramm" );
-	if ( 0 == this->m_progGeomStaticStage )
+	this->m_progGeomStage = ProgramManagement::get( "GeometryStageProgramm" );
+	if ( 0 == this->m_progGeomStage )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't get static geometry program - exit" );
-		return false;
-	}
-
-	this->m_progGeomAnimStage = ProgramManagement::get( "GeometryAnimStageProgramm" );
-	if ( 0 == this->m_progGeomAnimStage )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initGeomStage: coulnd't get animated geometry program - exit" );
 		return false;
 	}
 
@@ -526,7 +518,6 @@ DRRenderer::preProcessTransparency( std::list<ZazenGraphicsEntity*>& entities )
 
 	// do depth-sorting
 	std::sort( this->m_transparentEntities.begin(), this->m_transparentEntities.end(), DRRenderer::depthSortingFunc );
-
 }
 
 bool
@@ -578,12 +569,25 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 		}
 	}
 
-	if ( false == this->renderGeometry( staticInstances, this->m_progGeomStaticStage ) )
+	// activate geometry-stage program
+	if ( false == this->m_progGeomStage->use() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::doGeometryStage: using program failed - exit" );
+		return false;
+	}
+
+	// switch subroutine in vertex-shader of geometry-stage because won't do skinning for static instances
+	this->m_progGeomStage->activateSubroutine( "processInputsStatic", Shader::VERTEX_SHADER );
+
+	if ( false == this->renderGeometry( staticInstances, this->m_progGeomStage ) )
 	{
 		return false;
 	}
 
-	if ( false == this->renderGeometry( animatedInstances, this->m_progGeomAnimStage ) )
+	// switch subroutine in vertex-shader of geometry-stage because need skinning for animated instances
+	this->m_progGeomStage->activateSubroutine( "processInputsAnimated", Shader::VERTEX_SHADER );
+
+	if ( false == this->renderGeometry( animatedInstances, this->m_progGeomStage ) )
 	{
 		return false;
 	}
@@ -635,13 +639,6 @@ DRRenderer::renderSkyBox()
 bool
 DRRenderer::renderGeometry( std::list<ZazenGraphicsEntity*>& entities, Program* program )
 {
-	// activate geometry-stage program
-	if ( false == program->use() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderGeometry: using program failed - exit" );
-		return false;
-	}
-
 	vector<unsigned int> indices;
 	indices.push_back( 0 ); // diffuse
 	indices.push_back( 1 );	// normal

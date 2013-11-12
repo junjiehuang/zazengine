@@ -34,8 +34,7 @@ class DRRenderer
 		MeshStatic* m_fullScreenQuad;
 
 		// Program and shaders for geometry-stage
-		Program* m_progGeomStaticStage;
-		Program* m_progGeomAnimStage;
+		Program* m_progGeomStage;
 		Program* m_progSkyBox;
 		////////////////////////////////////////
 

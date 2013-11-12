@@ -44,13 +44,27 @@ UniformManagement::getBlock( const std::string& name )
 bool
 UniformManagement::initUniforms( Program* program )
 {
-	GLint uniformsCount = 0;
-	GLint uniformBlocksCount = 0;
+	GLint activeUniformsCount = 0;
+	
+	glGetProgramiv( program->getId(), GL_ACTIVE_UNIFORMS, &activeUniformsCount );
+	
+	UniformManagement::loadUniformsActive( program, activeUniformsCount );
+	
+	if ( ! UniformManagement::loadUniformBlocks( program, activeUniformsCount ) )
+	{
+		return false;
+	}
 
-	glGetProgramiv( program->getId(), GL_ACTIVE_UNIFORMS, &uniformsCount );
-	glGetProgramiv( program->getId(), GL_ACTIVE_UNIFORM_BLOCKS, &uniformBlocksCount );
+	UniformManagement::loadSubroutines( program, GL_VERTEX_SHADER );
+	UniformManagement::loadSubroutines( program, GL_FRAGMENT_SHADER );
 
-	for ( int i = 0; i < uniformsCount; i++ )
+	return true;
+}
+
+void
+UniformManagement::loadUniformsActive( Program* program, GLint activeUniformsCount )
+{
+	for ( int i = 0; i < activeUniformsCount; i++ )
 	{
 		GLint uniformBlockIndex = -1;
 		GLuint uniformIndex = i;
@@ -72,15 +86,23 @@ UniformManagement::initUniforms( Program* program )
 
 			string uniformFieldName( &nameBuffer[ 0 ] );
 
-			Program::UniformField* uniformField = new Program::UniformField();
-			uniformField->m_index = uniformIndex;
-			uniformField->m_name = uniformFieldName;
-			uniformField->m_size = uniformSize;
-			uniformField->m_type = uniformType;
+			Program::UniformField uniformField;
+			uniformField.m_index = uniformIndex;
+			uniformField.m_name = uniformFieldName;
+			uniformField.m_size = uniformSize;
+			uniformField.m_type = uniformType;
 
 			program->m_uniforms[ uniformFieldName ] = uniformField;
 		}
 	}
+}
+
+bool
+UniformManagement::loadUniformBlocks( Program* program, GLint activeUniformsCount )
+{
+	GLint uniformBlocksCount = 0;
+
+	glGetProgramiv( program->getId(), GL_ACTIVE_UNIFORM_BLOCKS, &uniformBlocksCount );
 
 	for ( int i = 0; i < uniformBlocksCount; i++ )
 	{
@@ -108,7 +130,7 @@ UniformManagement::initUniforms( Program* program )
 
 		// we got a valid uniformblock, could exist already, maybe there are additional fields in this program which are removed by compiler in earlier program
 		// search for all affected uniforms within this block
-		for ( int j = 0; j < uniformsCount; j++ )
+		for ( int j = 0; j < activeUniformsCount; j++ )
 		{
 			GLint uniformBlockIndex = -1;
 			GLuint uniformIndex = j;
@@ -146,6 +168,61 @@ UniformManagement::initUniforms( Program* program )
 		}
 
 		program->bindUniformBlock( uniformBlock );
+	}
+	
+	return true;
+}
+
+bool
+UniformManagement::loadSubroutines( Program* program, GLenum shaderType )
+{
+	GLsizei nameLength = 0;
+	vector<GLchar> nameBuffer( 1024 );
+
+	GLint activeSubroutineUniforms = 0;
+	GLint activeSubroutineUniformLocations = 0;
+
+	glGetProgramStageiv( program->getId(), shaderType, GL_ACTIVE_SUBROUTINE_UNIFORMS, &activeSubroutineUniforms );
+	glGetProgramStageiv( program->getId(), shaderType, GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS, &activeSubroutineUniformLocations );
+
+	// the uniforms selecting the subroutine to call
+	for ( int i = 0; i < activeSubroutineUniforms; i++ )
+	{
+		string uniformName;
+		GLint compatibleSubroutinesCount = 0;
+
+		glGetActiveSubroutineUniformName( program->getId(), shaderType, i, nameBuffer.size() - 1, &nameLength, &nameBuffer[ 0 ] );
+		glGetActiveSubroutineUniformiv( program->getId(), shaderType, i, GL_NUM_COMPATIBLE_SUBROUTINES, &compatibleSubroutinesCount );
+
+		vector<GLint> compatibleSubroutines( compatibleSubroutinesCount );
+
+		glGetActiveSubroutineUniformiv( program->getId(), shaderType, i, GL_COMPATIBLE_SUBROUTINES, &compatibleSubroutines[ 0 ] );
+
+		uniformName = &nameBuffer[ 0 ];
+
+		GLint location = glGetSubroutineUniformLocation( program->getId(), shaderType, uniformName.c_str() );
+
+		for ( int j = 0; j < compatibleSubroutinesCount; j++ )
+		{
+			glGetActiveSubroutineName( program->getId(), shaderType, compatibleSubroutines[ j ], nameBuffer.size() - 1, &nameLength, &nameBuffer[ 0 ] );
+
+			Program::Subroutine subroutine;
+			subroutine.m_name = &nameBuffer[ 0 ];
+			subroutine.m_uniformIndex = i;
+			subroutine.m_index = compatibleSubroutines[ j ];
+
+			program->m_subroutines[ shaderType ].push_back( subroutine );
+
+			if ( subroutine.m_uniformIndex == program->m_activeSubroutines[ shaderType ].size() )
+			{
+				program->m_activeSubroutines[ shaderType ].push_back( subroutine );
+			}
+		}
+	}
+	
+	if ( program->m_activeSubroutines[ shaderType ].size() != activeSubroutineUniformLocations )
+	{
+		return false;
 	}
 
 	return true;

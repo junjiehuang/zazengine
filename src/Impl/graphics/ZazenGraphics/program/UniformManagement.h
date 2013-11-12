@@ -20,6 +20,10 @@ class UniformManagement
 	private:
 		static std::map<std::string, UniformBlock*> m_uniformBlocks;
 
+		static void loadUniformsActive( Program*, GLint );
+		static bool loadUniformBlocks( Program*, GLint );
+		static bool loadSubroutines( Program*, GLenum );
+
 };
 
 #endif /* _UNIFORM_MANAGEMENT_H_ */
