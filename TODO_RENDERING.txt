@@ -1,39 +1,3 @@
-Calculate position in Fragment-Shader
-	-> http://www.opengl.org/wiki/Compute_eye_space_from_window_space
-	-> use screen-coordinates & depth instead of spending a whole buffer on it
-	-> compare Performance!!
-	From Object-Coordinates to Viewport-Coordinates
-	1. Input of object coordinates  aka object-space
-			modeling transform
-	2. world-coordinates aka world-space
-			viewing transform
-	3. view-coordinates ( aka eye-coordinates or eye-space)
-			projection transform
-	4. clip-coordinates ( aka clip-space ): all in range of -/+ clip-volume
-			perspective division
-	5. normaliced device coordinates ( NDC ): all in range from -1 to +1 (center is 0/0/0 )
-			view-port transform
-	6. viewport coordinates: all in range from 0/0 to resolutionX/resolutionY of viewport
-	7. fragment-shader operates on viewport coordinates
-	From Viewport- to View-Space Coordinates
-	1. Input of Viewport-Coordinates AND depth in NDC-space for each fragment
-			transform x & y to NDC: 
-				- divide by resolutionX/resolutionY => range from 0 to 1
-				- transform x by: x * 2 - 1 => in range from -1 to 1
-				- transform y by: ( 1 - y ) * 2 - 1 => in range from -1 to 1: need to take care of the origin! it makes a difference wheter its in the left UPPER or left LOWER corner
-	2. NDC
-			add depth to x & y-vector because now all in same space
-	3. clip-coordinates
-			apply inverse projection transformation to position
-			divide by w to transform back to homogenous coordinates
-			( in perspective projection the perspective division by w is done => the inverse would be multiplication 
-				but we apply the inverse projection transform => need again to divide )
-	4. view-coordinates
-
-Culling
-	-> View-space culling using camera
-	-> implement CHC++
-
 Multiple lights
 	-> blending 
 	-> use stencil buffer to reduce lighting to geometry only
@@ -206,6 +170,40 @@ Debugging
 	-> 4.3 debugging-features
 	
 Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
+	-> Calculate position in Fragment-Shader
+		-> http://www.opengl.org/wiki/Compute_eye_space_from_window_space
+		-> use screen-coordinates & depth instead of spending a whole buffer on it
+		-> compare Performance!!
+		From Object-Coordinates to Viewport-Coordinates
+		1. Input of object coordinates  aka object-space
+				modeling transform
+		2. world-coordinates aka world-space
+				viewing transform
+		3. view-coordinates ( aka eye-coordinates or eye-space)
+				projection transform
+		4. clip-coordinates ( aka clip-space ): all in range of -/+ clip-volume
+				perspective division
+		5. normaliced device coordinates ( NDC ): all in range from -1 to +1 (center is 0/0/0 )
+				view-port transform
+		6. viewport coordinates: all in range from 0/0 to resolutionX/resolutionY of viewport
+		7. fragment-shader operates on viewport coordinates
+		From Viewport- to View-Space Coordinates
+		1. Input of Viewport-Coordinates AND depth in NDC-space for each fragment
+				transform x & y to NDC: 
+					- divide by resolutionX/resolutionY => range from 0 to 1
+					- transform x by: x * 2 - 1 => in range from -1 to 1
+					- transform y by: ( 1 - y ) * 2 - 1 => in range from -1 to 1: need to take care of the origin! it makes a difference wheter its in the left UPPER or left LOWER corner
+		2. NDC
+				add depth to x & y-vector because now all in same space
+		3. clip-coordinates
+				apply inverse projection transformation to position
+				divide by w to transform back to homogenous coordinates
+				( in perspective projection the perspective division by w is done => the inverse would be multiplication 
+					but we apply the inverse projection transform => need again to divide )
+		4. view-coordinates
+	-> Culling
+		-> View-space culling using camera
+		-> implement CHC++
 	-> create most important render-targets (g-buffer) & depth-buffers (G-buffer, shadow-maps,...) first
 	-> DO IN-DEPTH PERFORMANCE-MEASUREMENTS (premature optimiziation is the root of all evil!)
 		-> use nvidia nsight

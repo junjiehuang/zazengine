@@ -43,6 +43,7 @@ class Orientation
 
 		void set( const glm::vec3& pos, float pitch, float heading, float roll, float scale );
 		void setRaw( const float* rotation, const float* position );
+		void setMatrix( const glm::mat4& mat );
 
 		const glm::mat4& getModelMatrix() const { return this->m_matrix; };
 

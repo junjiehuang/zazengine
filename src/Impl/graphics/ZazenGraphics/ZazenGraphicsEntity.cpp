@@ -52,6 +52,16 @@ ZazenGraphicsEntity::matrixChanged()
 	e.setTarget( this->getParent() );
 
 	ZazenGraphics::getInstance().getCore().getEventManager().postEvent( e );
+
+	if ( this->m_camera )
+	{
+		this->m_camera->setMatrix( this->getModelMatrix() );
+	}
+
+	if ( this->m_light )
+	{
+		this->m_light->setMatrix( this->getModelMatrix() );
+	}
 }
 
 void

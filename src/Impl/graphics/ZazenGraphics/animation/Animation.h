@@ -15,19 +15,6 @@ class Animation
 	public:
 		friend class AnimationFactory;
 
-		Animation( double, double );
-		~Animation();
-
-		// calculate bone-transformations for current frame-time
-		void update();
-
-		// initializes this animation with a sekeleton (separation of meshes and animations!)
-		void initSkeleton( MeshNode* );
-
-		// gets the master-list of the bones-transformations in the correct order (bone-indices are very imporant!)
-		const std::vector<glm::mat4>& getBoneTransforms() const { return this->m_boneTransforms; };
-
-	private:
 		// an animation-key holds its time-frame and its data
 		template <typename T> struct AnimationKey {
 			double m_time;
@@ -41,18 +28,31 @@ class Animation
 			std::vector<AnimationKey<glm::vec3>> m_scalingKeys;
 		};
 
+		Animation( double, double, const std::map<std::string, AnimationChannel>* );
+		~Animation();
+
+		// calculate bone-transformations for current frame-time
+		void update();
+
+		// initializes this animation with a sekeleton (separation of meshes and animations!)
+		void initSkeleton( MeshNode* );
+
+		// gets the master-list of the bones-transformations in the correct order (bone-indices are very imporant!)
+		const std::vector<glm::mat4>& getBoneTransforms() const { return this->m_boneTransforms; };
+
+	private:
 		// the animation-skeleton part: builds the animation-skeleton hierarchy
 		struct AnimationSkeletonPart {
 			glm::mat4 m_localTransform; // local transform of node: is the model-matrix of the according mesh-node
 			const glm::mat4* m_boneOffset; // bone-offset of this part: is not null if this part has a bone
-			AnimationChannel* m_animationChannel; // the animation-channel of this part: is not null if this part has an animation-channel
+			const AnimationChannel* m_animationChannel; // the animation-channel of this part: is not null if this part has an animation-channel
 			std::vector<AnimationSkeletonPart*> m_children; // children of this part
 		};
 
 		// the root of the animation-skeleton
 		AnimationSkeletonPart* m_skeletonRoot; 
 		// this is the data same animation-instanes share, IT IS NOT OWNED BY ANIMATION but by AnimationFactory
-		std::map<std::string, AnimationChannel>* m_animationChannels;
+		const std::map<std::string, AnimationChannel>* m_animationChannels;
 
 		// the master-list of the bone-transformations which will be re-calculated during each call to update
 		std::vector<glm::mat4> m_boneTransforms;

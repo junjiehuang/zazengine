@@ -154,9 +154,9 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 	// NOTE: for now only first animation is considered, should be enough for doom3
 	aiAnimation* assImpAnim = scene->mAnimations[ 0 ];
 
-	animation = new Animation( assImpAnim->mDuration, assImpAnim->mTicksPerSecond );
-	animation->m_animationChannels = new map<std::string, Animation::AnimationChannel>();
-
+	map<string, Animation::AnimationChannel>* animationChannels = new map<string, Animation::AnimationChannel>();
+	animation = new Animation( assImpAnim->mDuration, assImpAnim->mTicksPerSecond, animationChannels );
+	
 	// extract data from all channels
 	for ( unsigned int i = 0; i < assImpAnim->mNumChannels; i++ )
 	{
@@ -203,7 +203,7 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 			animChannel.m_scalingKeys.push_back( scaleKey );
 		}
 
-		animation->m_animationChannels->insert( std::make_pair( assImpChannel->mNodeName.C_Str(), animChannel ) );
+		animationChannels->insert( std::make_pair( assImpChannel->mNodeName.C_Str(), animChannel ) );
 	}
 		
 	// store this new prototype in our known prototypes
@@ -218,8 +218,5 @@ AnimationFactory::loadFile( const filesystem::path& filePath )
 Animation*
 AnimationFactory::cloneAnimation( Animation* prototype )
 {
-	Animation* clone = new Animation( prototype->m_durationTicks, prototype->m_ticksPerSecond );
-	clone->m_animationChannels = prototype->m_animationChannels;
-
-	return clone;
+	return new Animation( prototype->m_durationTicks, prototype->m_ticksPerSecond, prototype->m_animationChannels );
 }
