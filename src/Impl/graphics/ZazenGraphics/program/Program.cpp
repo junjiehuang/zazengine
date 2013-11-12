@@ -116,7 +116,6 @@ Program::link()
 bool
 Program::activateSubroutine( const std::string& subroutineName, Shader::ShaderType shaderType )
 {
-	vector<GLuint> subroutinesConfig;
 	GLenum shaderTypeGL = GL_VERTEX_SHADER;
 	
 	if ( Shader::ShaderType::FRAGMENT_SHADER == shaderType )
@@ -124,8 +123,8 @@ Program::activateSubroutine( const std::string& subroutineName, Shader::ShaderTy
 		shaderTypeGL = GL_FRAGMENT_SHADER;
 	}
 
-	vector<Subroutine> allSubroutinesTyped = this->m_subroutines[ shaderTypeGL ];
-	vector<Subroutine> activeSubroutinesTyped = this->m_activeSubroutines[ shaderTypeGL ];
+	vector<Subroutine>& allSubroutinesTyped = this->m_subroutines[ shaderTypeGL ];
+	vector<Subroutine>& activeSubroutinesTyped = this->m_activeSubroutines[ shaderTypeGL ];
 	
 	// no subroutines for this kind of shader-type
 	if ( 0 == activeSubroutinesTyped.size() || 0 == allSubroutinesTyped.size() )
@@ -133,6 +132,8 @@ Program::activateSubroutine( const std::string& subroutineName, Shader::ShaderTy
 		return false;
 	}
 
+	vector<GLuint>& subroutineConfig = this->m_activeSubroutineConfig[ shaderTypeGL ];
+	
 	for ( unsigned int i = 0; i < allSubroutinesTyped.size(); i++ )
 	{
 		Subroutine& subroutine = allSubroutinesTyped[ i ];
@@ -151,11 +152,16 @@ Program::activateSubroutine( const std::string& subroutineName, Shader::ShaderTy
 			// the m_uniformLocation correspond to the index j
 			if ( activeSubroutine.m_uniformIndex == subroutine.m_uniformIndex )
 			{
+				// no change, no update
+				if ( activeSubroutine.m_name == subroutineName )
+				{
+					return true;
+				}
+
 				activeSubroutine = subroutine;
 				activeSubroutinesTyped[ j ] = activeSubroutine;
+				subroutineConfig[ j ] = activeSubroutine.m_index;
 			}
-
-			subroutinesConfig.push_back( activeSubroutine.m_index );
 		}
 
 		break;
@@ -163,7 +169,7 @@ Program::activateSubroutine( const std::string& subroutineName, Shader::ShaderTy
 
 	// need to pass exactly GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS items in range 0 to GL_ACTIVE_SUBROUTINES - 1
 	// this implies subroutinesConfig at index 0 is responsible for location 0 and specifies the index of the subroutine
-	glUniformSubroutinesuiv( shaderTypeGL, subroutinesConfig.size(), &subroutinesConfig[ 0 ] );
+	glUniformSubroutinesuiv( shaderTypeGL, subroutineConfig.size(), &subroutineConfig[ 0 ] );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
@@ -234,6 +240,15 @@ Program::use()
 {
 	glUseProgram( this->m_programObject );
 	GL_PEEK_ERRORS_AT_DEBUG
+
+	map<GLenum, vector<GLuint>>::iterator iter = this->m_activeSubroutineConfig.begin();
+	while ( this->m_activeSubroutineConfig.end() != iter )
+	{
+		glUniformSubroutinesuiv( iter->first, iter->second.size(), &iter->second[ 0 ] );
+		GL_PEEK_ERRORS_AT_DEBUG
+
+		iter++;
+	}
 
 	return true;
 }

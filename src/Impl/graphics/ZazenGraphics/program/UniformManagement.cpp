@@ -216,6 +216,7 @@ UniformManagement::loadSubroutines( Program* program, GLenum shaderType )
 			if ( subroutine.m_uniformIndex == program->m_activeSubroutines[ shaderType ].size() )
 			{
 				program->m_activeSubroutines[ shaderType ].push_back( subroutine );
+				program->m_activeSubroutineConfig[ shaderType ].push_back( subroutine.m_index );
 			}
 		}
 	}

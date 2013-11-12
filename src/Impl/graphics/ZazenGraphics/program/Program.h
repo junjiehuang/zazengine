@@ -61,6 +61,7 @@ class Program
 		std::map<std::string, UniformField> m_uniforms;
 		std::map<GLenum, std::vector<Subroutine>> m_subroutines;
 		std::map<GLenum, std::vector<Subroutine>> m_activeSubroutines;
+		std::map<GLenum, std::vector<GLuint>> m_activeSubroutineConfig;
 
 		GLuint getUniformBlockIndex( const std::string& name );
 		UniformField* getUniformField( const std::string& name );

@@ -523,9 +523,6 @@ DRRenderer::preProcessTransparency( std::list<ZazenGraphicsEntity*>& entities )
 bool
 DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 {
-	list<ZazenGraphicsEntity*> staticInstances;
-	list<ZazenGraphicsEntity*> animatedInstances;
-
 	// render to g-buffer FBO
 	if ( false == this->m_gBufferFbo->bind() )
 	{
@@ -548,27 +545,6 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 		return false;
 	}
 
-	list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
-	while ( iter != entities.end() )
-	{
-		ZazenGraphicsEntity* entity = *iter++;
-		Animation* animation = entity->getAnimation();
-
-		if ( 0 == entity->getMeshNode() )
-		{
-			continue;
-		}
-
-		if ( animation )
-		{
-			animatedInstances.push_back( entity );
-		}
-		else
-		{
-			staticInstances.push_back( entity );
-		}
-	}
-
 	// activate geometry-stage program
 	if ( false == this->m_progGeomStage->use() )
 	{
@@ -576,18 +552,24 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 		return false;
 	}
 
-	// switch subroutine in vertex-shader of geometry-stage because won't do skinning for static instances
-	this->m_progGeomStage->activateSubroutine( "processInputsStatic", Shader::VERTEX_SHADER );
+	vector<unsigned int> indices;
+	indices.push_back( 0 ); // diffuse
+	indices.push_back( 1 );	// normal
+	indices.push_back( 2 );	// position
+	indices.push_back( 3 );	// tangents
+	indices.push_back( 4 );	// bi-tangents
 
-	if ( false == this->renderGeometry( staticInstances, this->m_progGeomStage ) )
+	// enable rendering to all render-targets in geometry-stage
+	if ( false == this->m_gBufferFbo->drawBuffers( indices ) )
 	{
 		return false;
 	}
 
-	// switch subroutine in vertex-shader of geometry-stage because need skinning for animated instances
-	this->m_progGeomStage->activateSubroutine( "processInputsAnimated", Shader::VERTEX_SHADER );
+	// check status of FBO, IMPORANT: not before, would have failed
+	CHECK_FRAMEBUFFER_DEBUG
 
-	if ( false == this->renderGeometry( animatedInstances, this->m_progGeomStage ) )
+	// draw all geometry from cameras viewpoint AND apply materials but ignore transparent material
+	if ( false == this->renderEntities( this->m_mainCamera, entities, this->m_progGeomStage, true, false ) )
 	{
 		return false;
 	}
@@ -632,34 +614,6 @@ DRRenderer::renderSkyBox()
 
 	// render the geometry
 	SkyBox::getRef().render( *this->m_mainCamera, this->m_transformsBlock );
-
-	return true;
-}
-
-bool
-DRRenderer::renderGeometry( std::list<ZazenGraphicsEntity*>& entities, Program* program )
-{
-	vector<unsigned int> indices;
-	indices.push_back( 0 ); // diffuse
-	indices.push_back( 1 );	// normal
-	indices.push_back( 2 );	// position
-	indices.push_back( 3 );	// tangents
-	indices.push_back( 4 );	// bi-tangents
-
-	// enable rendering to all render-targets in geometry-stage
-	if ( false == this->m_gBufferFbo->drawBuffers( indices ) )
-	{
-		return false;
-	}
-
-	// check status of FBO, IMPORANT: not before, would have failed
-	CHECK_FRAMEBUFFER_DEBUG
-
-	// draw all geometry from cameras viewpoint AND apply materials but ignore transparent material
-	if ( false == this->renderEntities( this->m_mainCamera, entities, program, true, false ) )
-	{
-		return false;
-	}
 
 	return true;
 }
@@ -1047,6 +1001,13 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 		if ( animation )
 		{
 			currentProgramm->setUniformMatrices( "u_bones[0]", animation->getBoneTransforms() );
+			// switch subroutine in vertex-shader of geometry-stage because need skinning for animated instances
+			currentProgramm->activateSubroutine( "processInputsAnimated", Shader::VERTEX_SHADER );
+		}
+		else
+		{
+			// switch subroutine in vertex-shader of geometry-stage because won't do skinning for static instances
+			currentProgramm->activateSubroutine( "processInputsStatic", Shader::VERTEX_SHADER );
 		}
 
 		if ( material )
