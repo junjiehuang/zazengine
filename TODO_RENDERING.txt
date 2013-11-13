@@ -1,7 +1,5 @@
 Multiple lights
 	-> blending 
-	-> use stencil buffer to reduce lighting to geometry only
-		-> use only for point- & spotlight because directional light will affect sky-box and ambient too
 	-> correct lighting-equations: falloff, cone, ...
 		-> point-light
 	-> Solve Problem of Ambient + Sky-Box Lighting
@@ -10,11 +8,6 @@ Multiple lights
 			-> other lights accumulate by blending
 		-> when directional light in scene
 			-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
-	->  bounding geometry for light
-		-> point-light: sphere with radius 1 and then scale according to light distance & some epsilon
-			-> low-poly count
-		-> spot-light: ?
-	-> lighting of transparency?
 	
 Mip-Map Creation in TextureFactory
 
@@ -23,9 +16,7 @@ Anisotropic filtering
 	
 Shadow-mapping
 	-> shadow-mapping of point-light
-	-> do some sampling on shadow-edges
-		-> multisampling
-		-> Percentage-Closer Filtering			
+
 Msaa
 	-> do sampling in geometry fragment-shader (centroid)
 	-> dual source blending?
@@ -201,6 +192,13 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 				( in perspective projection the perspective division by w is done => the inverse would be multiplication 
 					but we apply the inverse projection transform => need again to divide )
 		4. view-coordinates
+	-> Lighting
+		-> use stencil buffer to reduce lighting to geometry only
+			-> use only for point- & spotlight because directional light will affect sky-box and ambient too
+		->  bounding geometry for light
+			-> point-light: sphere with radius 1 and then scale according to light distance & some epsilon
+				-> low-poly count
+			-> spot-light: ?
 	-> Culling
 		-> View-space culling using camera
 		-> implement CHC++

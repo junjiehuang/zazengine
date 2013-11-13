@@ -722,6 +722,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		return false;
 	}
 
+	// TODO: these are constants - move into initialization phase
 	vector<unsigned int> indices;
 	indices.push_back( 0 ); // diffuse
 	indices.push_back( 1 );	// normals
@@ -793,6 +794,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	glm::mat4 orthoMat = this->m_mainCamera->createOrthoProj( true, true );
 	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat );
 
+	// blend lighting-results 
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_ONE, GL_SRC_COLOR );
 
@@ -806,6 +808,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	// enable depth-writing again
 	glDepthMask( GL_TRUE );
 
+	// turn off blending otherwise would lead to artifacts because everything would be blended (depth maps,...)
 	glDisable( GL_BLEND );
 
 	return true;

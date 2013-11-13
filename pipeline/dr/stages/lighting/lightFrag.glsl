@@ -11,7 +11,7 @@ uniform sampler2DShadow ShadowMap;
 
 out vec4 final_color;
 
-const float shadow_bias = 0.0001;
+const float shadow_bias = 0.005;
 
 layout( shared ) uniform CameraUniforms
 {
@@ -139,7 +139,92 @@ calculateDoom3Lighting( in vec4 diffuseIn, in vec4 normalIn, in vec4 tangentIn, 
 	return finalColor;
 }
 
-void main()
+float
+shadowLookupProj( vec4 shadowCoord, vec2 offset )
+{
+	// IMPORTANT: we are only in clip-space, need to divide by w to reach projected NDC.
+	// normally the forward-rendering shadow-mapping calculates the shadow-coord
+	// in the vertex-shader, which is not possible in the deferred renderer without using 
+	// an additional render-target. in forward-rendering between the vertex-shader
+	// and the fragment-shader where the shadow-map lookup happens
+	// interpolation is carried out by the fixed-function but no perspective division
+	// the shadowcoord is in our case already multiplied with the projection-transform
+	// but we still need to do the projective-division to reach the according space 0-1
+	// because this is not done when applying the projection transform
+	// ADDITION: either use 	
+	//		vec3 shadowCoordPersp = shadowCoord.xyz / shadowCoord.w; with texture( ShadowMap, shadowCoordPersp ) lookup 
+	//		OR use textureProj( ShadowMap, shadowCoord ); directly
+		
+	// IMPORTANT: because we installed a compare-function on this shadow-sampler
+	// we don't need to compare it anymore to the z-value of the shadow-coord
+
+	// IMPORTANT: 2048 is the resolution of the shadow-map, need to adjust it
+	return textureProj( ShadowMap, shadowCoord + vec4( offset.x * 1.0 / 2048.0 * shadowCoord.w, offset.y * 1.0 / 2048.0 * shadowCoord.w, 0.0, 0.0 ) );
+}
+
+float
+shadowLookup( vec3 shadowCoord, vec2 offset )
+{
+	// IMPORTANT: directionaly light uses orthogonal shadow-map so 
+	// transformation of position to shadow-coord is orthgonal projection too
+	// so no need for perspective lookup (or divide) because orthogonal 
+	// projection has 1 at w so there won't be a foreshortening of values
+	// IMPORTANT: because we installed a compare-function on this shadow-sampler
+	// we don't need to compare it anymore to the z-value of the shadow-coord
+
+	// IMPORTANT: 2048 is the resolution of the shadow-map, need to adjust it
+	return texture( ShadowMap, shadowCoord + vec3( offset.x * 1.0 / 2048.0, offset.y * 1.0 / 2048.0, 0.0 )  );
+}
+
+float 
+calculateShadow( vec4 ecPosition )
+{
+	float shadow = 0.0f;
+
+	// for shadow-mapping we need to transform the position of the fragment to light-space
+	// before we can apply the light-space transformation we first need to apply
+	// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
+	// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
+	// OPTIMIZE: precalculate inverse camera-view matrix on CPU
+	vec4 wcPosition = inverse( Camera.viewMatrix ) * ecPosition;
+	vec4 shadowCoord = Light.spaceUniformMatrix * wcPosition;
+
+	shadowCoord.z -= shadow_bias;
+
+	// spot-light - do perspective shadow-lookup
+	if ( 0.0 == Light.config.x )
+	{
+		// doing soft-shadows using 'percentage-closer filtering' (see GPU Gems 1)
+
+		float x,y;
+		for ( y = -1.5 ; y <= 1.5; y += 1.0 )
+			for ( x = -1.5 ; x <= 1.5 ; x += 1.0 )
+				shadow += shadowLookupProj( shadowCoord, vec2( x, y ) );
+				
+		// our filter-kernel has 16 elements => divide with 16
+		shadow /= 16.0;
+	}
+	// directional-light - do normal shadow-lookup 
+	else if ( 1.0 == Light.config.x )
+	{
+		// doing soft-shadows using 'percentage-closer filtering' (see GPU Gems 1)
+
+		float x,y;
+		for ( y = -1.5 ; y <= 1.5; y += 1.0 )
+			for ( x = -1.5 ; x <= 1.5 ; x += 1.0 )
+				shadow += shadowLookup( shadowCoord.xyz, vec2( x, y ) );
+
+		// our filter-kernel has 16 elements => divide with 16
+		shadow /= 16.0;
+	}
+	
+	// TODO: handle point-light (using cube-map)
+
+	return shadow;
+}
+
+void
+main()
 {
 	// fetch the coordinate of this fragment in normalized screen-space ( 0 â€“ 1 ) 
 	vec2 screenCoord = vec2( gl_FragCoord.x / Camera.rectangle.x, gl_FragCoord.y / Camera.rectangle.y );
@@ -157,8 +242,8 @@ void main()
 	vec4 tangent = texture( TangentMap, screenCoord );
 	vec4 biTangent = texture( BiTangentMap, screenCoord );
 
-	// shadow true/false
-	float shadow = 0.0;
+	final_color = vec4( 0.0 );
+	final_color.a = 1.0;
 
 	// sky-box material only diffuse
 	if ( 133 == diffuse.a )
@@ -168,53 +253,10 @@ void main()
 	}
 	else
 	{
-		// do shadow-calculation only when light is shadow-caster 
-		if ( 1.0 == Light.config.z )
-		{
-			// for shadow-mapping we need to transform the position of the fragment to light-space
-			// before we can apply the light-space transformation we first need to apply
-			// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
-			// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
-			// OPTIMIZE: precalculate inverse camera-view matrix on CPU
-			vec4 wcPosition = inverse( Camera.viewMatrix ) * ecPosition;
-			vec4 shadowCoord = Light.spaceUniformMatrix * wcPosition;
+		float shadow = calculateShadow( ecPosition );
 
-			shadowCoord.z -= shadow_bias;
-
-			// spot-light - do perspective shadow-lookup
-			if ( 0.0 == Light.config.x )
-			{
-				// IMPORTANT: we are only in clip-space, need to divide by w to reach projected NDC.
-				// normally the forward-rendering shadow-mapping calculates the shadow-coord
-				// in the vertex-shader, which is not possible in the deferred renderer without using 
-				// an additional render-target. in forward-rendering between the vertex-shader
-				// and the fragment-shader where the shadow-map lookup happens
-				// interpolation is carried out by the fixed-function but no perspective division
-				// the shadowcoord is in our case already multiplied with the projection-transform
-				// but we still need to do the projective-division to reach the according space 0-1
-				// because this is not done when applying the projection transform
-				// ADDITION: either use 	
-				//		vec3 shadowCoordPersp = shadowCoord.xyz / shadowCoord.w; with texture( ShadowMap, shadowCoordPersp ) lookup 
-				//		OR use textureProj( ShadowMap, shadowCoord ); directly
-		
-				// IMPORTANT: because we installed a compare-function on this shadow-sampler
-				// we don't need to compare it anymore to the z-value of the shadow-coord
-				shadow = textureProj( ShadowMap, shadowCoord );
-			}
-			else if ( 1.0 == Light.config.x )
-			{
-				// IMPORTANT: directionaly light uses orthogonal shadow-map so 
-				// transformation of position to shadow-coord is orthgonal projection too
-				// so no need for perspective lookup (or divide) because orthogonal 
-				// projection has 1 at w so there won't be a foreshortening of values
-				// IMPORTANT: because we installed a compare-function on this shadow-sampler
-				// we don't need to compare it anymore to the z-value of the shadow-coord
-				shadow = texture( ShadowMap, shadowCoord.xyz );
-			}
-		}
-
-		// not in shadow
-		if ( shadow != 0.0 )
+		// not totally in shadow
+		if ( shadow > 0.0 )
 		{
 			float matId = diffuse.a;
 
@@ -234,12 +276,12 @@ void main()
 			{
 				final_color = diffuse;
 			}
-		}
-		else
-		{
-			// TODO: handle doom3 material
-			final_color = calculateLambertian( diffuse, normal, ecPosition ) * 0.5;
-			final_color.a = 1.0;
+
+			// apply shadow-filtering: shadow is in the range of 0.0 and 1.0
+			// 0.0 applies to 'totally shadowed'
+			// 1.0 applies to 'totally in light'
+			// all between means partly shadowed, so this will lead to soft-shadows
+			final_color *= shadow;
 		}
 	}
 }

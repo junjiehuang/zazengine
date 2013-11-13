@@ -28,43 +28,47 @@ layout( shared ) uniform TransformUniforms
 
 uniform mat4 u_bones[ MAX_BONES_PER_MESH ];
 
-subroutine vec4 processInputs();
+subroutine void processInputs();
 
-subroutine ( processInputs ) vec4 processInputsAnimated()
+subroutine ( processInputs ) void processInputsAnimated()
 {
-	vec4 skinnedPosition = vec4( 0.0 );
-
 	for ( uint i = 0u; i < in_bone_count; i++ )
 	{
 		uint boneIndex = in_bone_indices[ i ];
 		mat4 bone = u_bones[ boneIndex ];
 		float boneWeight = in_bone_weights[ i ];
 
-		skinnedPosition += boneWeight * ( bone * vec4( in_vertPos, 1.0 ) );
+		ex_position += boneWeight * ( bone * vec4( in_vertPos, 1.0 ) ); // fill up with 1.0 because its a position and thus has a length 
+		ex_normal += boneWeight * ( bone * vec4( in_vertNorm, 0.0 ) ); // fill up with 0.0 because its a direction and has no length as opposed to position
+		ex_tangent += boneWeight * ( bone * vec4( in_tangent, 0.0 ) ); // fill up with 0.0 because its a direction and has no length as opposed to position
 	}
 
-	return skinnedPosition;
+	// NOTE: seems not be necessary
+	//ex_normal = normalize( ex_normal );
+	//ex_tangent = normalize( ex_tangent );
 }
 
-subroutine ( processInputs ) vec4 processInputsStatic()
+subroutine ( processInputs ) void processInputsStatic()
 {
-	return vec4( in_vertPos, 1.0 );
+	ex_position = vec4( in_vertPos, 1.0 ); // fill up with 1.0 because its a position and thus has a length 
+	ex_normal = vec4( in_vertNorm, 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
+	ex_tangent = vec4( in_tangent, 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
 }
 
 subroutine uniform processInputs processInputsSelection;
 
 void main()
 {
-	ex_position = processInputsSelection();
+	processInputsSelection();
 
 	// store position in view-space (EyeCoordinates) 
 	ex_position = Transforms.modelViewMatrix * ex_position;
 	// store normals in view-space too (EC)
-	ex_normal = Transforms.normalsModelViewMatrix * vec4( in_vertNorm, 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
+	ex_normal = Transforms.normalsModelViewMatrix * ex_normal; 
 	// no transform for texture-coords, just interpolated
 	ex_texCoord = in_texCoord;
 
-	ex_tangent = Transforms.normalsModelViewMatrix * vec4( in_tangent, 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
+	ex_tangent = Transforms.normalsModelViewMatrix * ex_tangent;
 	ex_biTangent = vec4( cross( ex_normal.xyz, ex_tangent.xyz ), 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
 	 
 	// OPTIMIZE: premultiply projection & modelView on CPU 

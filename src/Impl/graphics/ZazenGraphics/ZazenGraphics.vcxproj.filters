@@ -112,23 +112,11 @@
     <Filter Include="Quelldateien\animation">
       <UniqueIdentifier>{6600c75e-beb8-4244-af8d-5fe823ee3d6d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry\Animated">
-      <UniqueIdentifier>{73eee140-0ab2-4291-aaa3-16ea1b1addbb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry\Static">
-      <UniqueIdentifier>{c912f8ea-cc99-4cbc-ae8c-b6a69de0341f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Quelldateien\viewer">
       <UniqueIdentifier>{54e16f20-b98e-42fb-89be-c829d2ebe066}</UniqueIdentifier>
     </Filter>
     <Filter Include="Headerdateien\viewer">
       <UniqueIdentifier>{2977bd6d-8829-48e4-a50c-75cd737e72f8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Animated">
-      <UniqueIdentifier>{e51e76c2-9a20-4abd-9f80-23a029279420}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Static">
-      <UniqueIdentifier>{278d255b-8f7b-4fd2-8204-85aebe79e30b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -394,20 +382,8 @@
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\blendTranspVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\animated\geomAnimVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry\Animated</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\static\geomStaticVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry\Static</Filter>
-    </None>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\animated\shadowAnimVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Animated</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\static\shadowStaticVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Static</Filter>
     </None>
   </ItemGroup>
 </Project>
