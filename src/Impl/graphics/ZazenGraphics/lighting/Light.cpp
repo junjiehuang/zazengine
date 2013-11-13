@@ -6,10 +6,10 @@
 using namespace std;
 
 Light*
-Light::createSpotLight( float fov, int width, int height, bool shadowCaster )
+Light::createSpot( float fov, int width, int height, bool shadowCaster )
 {
 	Light* light = new Light( width, height, Light::SPOT, shadowCaster );
-	if ( false == light->createShadowMap( width, height ) )
+	if ( false == light->createShadowMap() )
 	{
 		delete light;
 		return NULL;
@@ -22,16 +22,33 @@ Light::createSpotLight( float fov, int width, int height, bool shadowCaster )
 }
 
 Light*
-Light::createDirectionalLight( int width, int height, bool shadowCaster )
+Light::createDirectional( int width, int height, bool shadowCaster )
 {
 	Light* light = new Light( width, height, Light::DIRECTIONAL, shadowCaster );
-	if ( false == light->createShadowMap( width, height ) )
+	if ( false == light->createShadowMap() )
 	{
 		delete light;
 		return NULL;
 	}
 	
 	light->setupOrtho();
+
+	return light;
+}
+
+Light*
+Light::createPoint( int width, bool shadowCaster )
+{
+	Light* light = new Light( width, width, Light::POINT, shadowCaster );
+	if ( false == light->createShadowMap() )
+	{
+		delete light;
+		return NULL;
+	}
+	
+	// point-light has always field of view of 90 degrees per face (need to cover 360 degrees)
+	light->setFov( 90.0f );
+	light->setupPerspective();
 
 	return light;
 }
@@ -53,11 +70,22 @@ Light::~Light()
 }
 
 bool
-Light::createShadowMap( int width, int height )
+Light::createShadowMap()
 {
 	if ( this->m_shadowCaster )
 	{
-		RenderTarget* shadowMap = RenderTarget::create( width, height, RenderTarget::RT_SHADOW );
+		RenderTarget* shadowMap = NULL;
+
+		if ( LightType::POINT == this->m_type )
+		{
+			// point-lights need a cube shadow-map
+			shadowMap = RenderTarget::create( this->getWidth(), this->getHeight(), RenderTarget::RT_SHADOW_CUBE );
+		}
+		else
+		{
+			shadowMap = RenderTarget::create( this->getWidth(), this->getHeight(), RenderTarget::RT_SHADOW_PLANAR );
+		}
+
 		if ( NULL == shadowMap )
 		{
 			return false;

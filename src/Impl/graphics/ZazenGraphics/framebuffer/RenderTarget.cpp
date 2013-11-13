@@ -15,10 +15,13 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 {
 	GLuint id = 0;
 
-	// use shadow-map pooling: only create maps with different resolution and reuse them
-	if ( RenderTarget::RT_SHADOW == targetType )
+	// use shadow-map pooling: only create maps with different resolution and reuse them 
+	// this is possible only through the use of a deferred-lighting aproach where lighting is decoupled
+	// from geometry-rendering so each light can be rendererd one after another so only need
+	// to hold the current shadow-map in memory
+	if ( RenderTarget::RT_SHADOW_PLANAR == targetType || RT_SHADOW_CUBE == targetType )
 	{
-		RenderTarget* pooledShadowMap = RenderTarget::findShadowMapInPool( width, height );
+		RenderTarget* pooledShadowMap = RenderTarget::findShadowMapInPool( targetType, width, height );
 		if ( NULL != pooledShadowMap )
 		{
 			return pooledShadowMap;
@@ -32,17 +35,13 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		return NULL;
 	}
 
-	glBindTexture( GL_TEXTURE_2D, id );
-	if ( GL_PEEK_ERRORS )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glBindTexture failed - exit";
-		return NULL;
-	}
-
 	RenderTarget* renderTarget = NULL;
 
 	if ( RenderTarget::RT_DEPTH == targetType )
 	{
+		glBindTexture( GL_TEXTURE_2D, id );
+		GL_PEEK_ERRORS_AT
+
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
@@ -54,22 +53,16 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 		GL_PEEK_ERRORS_AT
 
-		// seems not to work on GL 4.3
-		//glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY );
-		//GL_PEEK_ERRORS_AT
-
-		// for now we create shadowmaps in same width and height as their viewing frustum
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
-		if ( GL_PEEK_ERRORS )
-		{
-			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for depth failed - exit";
-			return NULL;
-		}
+		GL_PEEK_ERRORS_AT
 
 		renderTarget = new RenderTarget( id, width, height, targetType );
 	}
-	else if ( RenderTarget::RT_SHADOW == targetType )
+	else if ( RenderTarget::RT_SHADOW_PLANAR == targetType )
 	{
+		glBindTexture( GL_TEXTURE_2D, id );
+		GL_PEEK_ERRORS_AT
+
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -80,22 +73,56 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 		GL_PEEK_ERRORS_AT
 
-		// need to enable comparison-mode for depth-texture to use it as a shadow2DSampler in shader		
+		// need to enable comparison-mode for depth-texture to use it as a textureProj/texture in shader		
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL );
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE );
 		GL_PEEK_ERRORS_AT
 
-		// seems not to work on GL 4.3
-		//glTexParameteri( GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY );
-		// GL_PEEK_ERRORS_AT
-
-		// for now we create shadowmaps in same width and height as their viewing frustum
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
-		if ( GL_PEEK_ERRORS )
+		GL_PEEK_ERRORS_AT
+
+		renderTarget = new RenderTarget( id, width, height, targetType );
+		RenderTarget::m_shadowMapPool.push_back( renderTarget );
+	}
+	else if ( RenderTarget::RT_SHADOW_CUBE == targetType )
+	{
+		glBindTexture( GL_TEXTURE_CUBE_MAP, id );
+		GL_PEEK_ERRORS_AT
+
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); 
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+
+
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		GL_PEEK_ERRORS_AT
+
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
+
+		// need to enable comparison-mode for depth-texture to use it as a textureCube in shader		
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE );
+		GL_PEEK_ERRORS_AT
+
+		for ( int i = 0; i < 6; i++ )
 		{
-			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for shadow failed - exit";
-			return NULL;
+			glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
+			GL_PEEK_ERRORS_AT
 		}
 
 		renderTarget = new RenderTarget( id, width, height, targetType );
@@ -103,6 +130,9 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 	}
 	else if ( RenderTarget::RT_COLOR == targetType )
 	{
+		glBindTexture( GL_TEXTURE_2D, id );
+		GL_PEEK_ERRORS_AT
+
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -114,11 +144,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		GL_PEEK_ERRORS_AT
 
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL );
-		if ( GL_PEEK_ERRORS )
-		{
-			ZazenGraphics::getInstance().getLogger().logError() << "RenderTarget::create: glTexImage2D for color failed - exit";
-			return NULL;
-		}
+		GL_PEEK_ERRORS_AT
 
 		renderTarget = new RenderTarget( id, width, height, targetType );
 	}
@@ -132,14 +158,17 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 }
 
 RenderTarget*
-RenderTarget::findShadowMapInPool( GLsizei width, GLsizei height )
+RenderTarget::findShadowMapInPool( RenderTargetType targetType, GLsizei width, GLsizei height )
 {
 	for ( unsigned int i = 0; i < RenderTarget::m_shadowMapPool.size(); i++ )
 	{
 		RenderTarget* shadowMap = RenderTarget::m_shadowMapPool[ i ];
-		if ( shadowMap->getWidth() == width && shadowMap->getHeight() == height )
+		if ( targetType == shadowMap->getType() )
 		{
-			return shadowMap;
+			if ( shadowMap->getWidth() == width && shadowMap->getHeight() == height )
+			{
+				return shadowMap;
+			}
 		}
 	}
 

@@ -43,6 +43,16 @@ Shader::createShader( Shader::ShaderType type, const std::string& file )
 			return NULL;
 		}
 	}
+	else if ( Shader::GEOMETRY_SHADER == type )
+	{
+		shaderObject = glCreateShader( GL_GEOMETRY_SHADER );
+		if ( 0 == shaderObject )
+		{
+			GL_PEEK_ERRORS_AT
+			ZazenGraphics::getInstance().getLogger().logError() << "Shader::createShader: glCreateShader for GL_GEOMETRY_SHADER \"" << file << "\" failed";
+			return NULL;
+		}
+	}
 
 	sourcePtr = source.c_str();
 	glShaderSource( shaderObject, 1, ( const GLchar** ) &sourcePtr, NULL);

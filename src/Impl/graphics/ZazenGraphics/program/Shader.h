@@ -9,6 +9,7 @@ class Shader
 {
 	public:
 		enum ShaderType {
+			GEOMETRY_SHADER,
 			VERTEX_SHADER,
 			FRAGMENT_SHADER
 		};

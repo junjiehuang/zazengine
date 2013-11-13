@@ -18,8 +18,9 @@ class Light : public Viewer
 			POINT
 		};
 
-		static Light* createSpotLight( float, int, int, bool );
-		static Light* createDirectionalLight( int, int, bool );
+		static Light* createSpot( float, int, int, bool );
+		static Light* createDirectional( int, int, bool );
+		static Light* createPoint( int, bool );
 
 		virtual ~Light();
 
@@ -50,7 +51,7 @@ class Light : public Viewer
 
 		RenderTarget* m_shadowMap;
 
-		bool createShadowMap( int width, int height );
+		bool createShadowMap();
 };
 
 #endif /* _LIGHT_H_ */

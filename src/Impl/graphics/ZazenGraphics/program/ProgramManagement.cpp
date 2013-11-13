@@ -149,6 +149,10 @@ ProgramManagement::parseShaders( TiXmlElement* programNode, Program* program )
 				{
 					shaderType = Shader::FRAGMENT_SHADER;
 				}
+				else if ( shaderTypeStr == "GEOMETRY" )
+				{
+					shaderType = Shader::GEOMETRY_SHADER;
+				}
 				else
 				{
 					ZazenGraphics::getInstance().getLogger().logWarning( "unknown type in shader - will be ignored" );

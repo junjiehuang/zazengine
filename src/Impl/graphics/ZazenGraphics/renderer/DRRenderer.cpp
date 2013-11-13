@@ -356,7 +356,7 @@ DRRenderer::initTransparency()
 		return false;
 	}
 
-	this->m_depthCopy = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), RenderTarget::RT_SHADOW );
+	this->m_depthCopy = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), RenderTarget::RT_SHADOW_PLANAR );
 	if ( NULL == this->m_depthCopy )
 	{
 		return false;

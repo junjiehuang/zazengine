@@ -346,13 +346,19 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 
 		if ( lightType == "DIRECTIONAL" )
 		{
-			light = Light::createDirectionalLight( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), castShadow );
+			light = Light::createDirectional( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), castShadow );
+			boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+		}
+		else if ( lightType == "POINT" )
+		{
+			light = Light::createPoint( shadowMapResX, castShadow );
+			// TODO load correct bounding-geometry
 			boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
 		}
 		// default is spot
 		else
 		{
-			light = Light::createSpotLight( fov, shadowMapResX, shadowMapResY, castShadow );
+			light = Light::createSpot( fov, shadowMapResX, shadowMapResY, castShadow );
 			// TODO load correct bounding-geometry
 			boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
 		}

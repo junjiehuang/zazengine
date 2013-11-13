@@ -235,59 +235,18 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	GL_PEEK_ERRORS_AT
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+	GL_PEEK_ERRORS_AT
 
-	ilBindImage( imageIds[ 0 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
-	if ( GL_PEEK_ERRORS )
+	for ( unsigned int i = 0; i < 6; i++ )
 	{
-		error = true;
-		goto cleanupExit;
-	}
-
-	ilBindImage( imageIds[ 1 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
-	if ( GL_PEEK_ERRORS )
-	{
-		error = true;
-		goto cleanupExit;
-	}
-
-	ilBindImage( imageIds[ 2 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
-	if ( GL_PEEK_ERRORS )
-	{
-		error = true;
-		goto cleanupExit;
-	}
-
-	ilBindImage( imageIds[ 3 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
-	if ( GL_PEEK_ERRORS )
-	{
-		error = true;
-		goto cleanupExit;
-	}
-
-	ilBindImage( imageIds[ 4 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
-	if ( GL_PEEK_ERRORS )
-	{
-		error = true;
-		goto cleanupExit;
-	}
-
-	ilBindImage( imageIds[ 5 ] );
-	glTexImage2D( GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-		ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
-	if ( GL_PEEK_ERRORS )
-	{
-		error = true;
-		goto cleanupExit;
+		ilBindImage( imageIds[ i ] );
+		glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
+			ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
+		if ( GL_PEEK_ERRORS )
+		{
+			error = true;
+			goto cleanupExit;
+		}
 	}
 
 cleanupExit:

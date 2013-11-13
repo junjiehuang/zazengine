@@ -14,7 +14,8 @@ class RenderTarget : public Texture
 		{
 			RT_COLOR = 0,
 			RT_DEPTH,
-			RT_SHADOW
+			RT_SHADOW_PLANAR,
+			RT_SHADOW_CUBE
 		};
 
 		static RenderTarget* create( GLsizei, GLsizei, RenderTargetType );
@@ -37,7 +38,7 @@ class RenderTarget : public Texture
 
 		static std::vector<RenderTarget*> m_shadowMapPool;
 
-		static RenderTarget* findShadowMapInPool( GLsizei, GLsizei );
+		static RenderTarget* findShadowMapInPool( RenderTargetType, GLsizei, GLsizei );
 };
 
 #endif /* _RENDERTARGET_H_ */

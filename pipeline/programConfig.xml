@@ -106,6 +106,7 @@
 
   <program name="ShadowingStageProgramm">
     <shaders>
+      <shader type="GEOMETRY" file="dr/stages/shadowing/shadowGeom.glsl"/>
       <shader type="VERTEX" file="dr/stages/shadowing/shadowVert.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/shadowing/shadowFrag.glsl"/>
     </shaders>

@@ -79,7 +79,7 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 		return false;
 	}
 
-	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW == renderTarget->getType() )
+	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW_PLANAR == renderTarget->getType() || RenderTarget::RT_SHADOW_CUBE == renderTarget->getType() )
 	{
 		this->m_depthBuffer = renderTarget->getId();
 		this->m_depthTarget = renderTarget;
@@ -100,7 +100,7 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 bool
 FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 {
-	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW == renderTarget->getType() )
+	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW_PLANAR == renderTarget->getType() || RenderTarget::RT_SHADOW_CUBE == renderTarget->getType() )
 	{
 		// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
 		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, renderTarget->getId(), 0 );
