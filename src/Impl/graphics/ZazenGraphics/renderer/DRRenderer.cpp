@@ -772,8 +772,16 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	// bind shadow-map when light is shadow-caster
 	if ( light->isShadowCaster() )
 	{
-		// tell program that the shadowmap of spot/directional-light will be available at texture unit 6
-		activeLightingProgram->setUniformInt( "ShadowMap", 6 );
+		if ( Light::LightType::POINT == light->getType() )
+		{
+			// tell program that the shadowmap of point-light will be available at texture unit 6
+			activeLightingProgram->setUniformInt( "ShadowCubeMap", 6 );
+		}
+		else
+		{
+			// tell program that the shadowmap of spot/directional-light will be available at texture unit 6
+			activeLightingProgram->setUniformInt( "ShadowPlanarMap", 6 );
+		}
 
 		if ( false == light->getShadowMap()->bind( 6 ) )
 		{
@@ -841,6 +849,16 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowMap: using program failed - exit" );
 		return false;
+	}
+
+	// the shadow-map of a point-light is a cube-map so we use the geoemtry-shader to perform layer rendering to each cube-map face
+	if ( Light::LightType::POINT == light->getType() )
+	{
+		this->m_progShadowMapping->activateSubroutine( "layerRenderingCube", Shader::GEOMETRY_SHADER );
+	}
+	else
+	{
+		this->m_progShadowMapping->activateSubroutine( "layerRenderingPlanar", Shader::GEOMETRY_SHADER );
 	}
 
 	// IMPORTANT: need to set the viewport for each shadow-map, because resolution can be different for each
@@ -1005,19 +1023,18 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 
 		if ( animation )
 		{
+			// upload bones for animation
 			currentProgramm->setUniformMatrices( "u_bones[0]", animation->getBoneTransforms() );
-			// switch subroutine in vertex-shader of geometry-stage because need skinning for animated instances
 			currentProgramm->activateSubroutine( "processInputsAnimated", Shader::VERTEX_SHADER );
 		}
 		else
 		{
-			// switch subroutine in vertex-shader of geometry-stage because won't do skinning for static instances
+			// switch subroutine in vertex-shader of geometry-stage because need skinning for animated instances
 			currentProgramm->activateSubroutine( "processInputsStatic", Shader::VERTEX_SHADER );
 		}
 
 		if ( material )
 		{
-
 			if ( ( Material::MATERIAL_TRANSPARENT == material->getType() && ! renderTransparency ) ||
 				( Material::MATERIAL_TRANSPARENT != material->getType() && renderTransparency ) )
 			{

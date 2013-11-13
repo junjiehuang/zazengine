@@ -55,6 +55,7 @@ UniformManagement::initUniforms( Program* program )
 		return false;
 	}
 
+	UniformManagement::loadSubroutines( program, GL_GEOMETRY_SHADER );
 	UniformManagement::loadSubroutines( program, GL_VERTEX_SHADER );
 	UniformManagement::loadSubroutines( program, GL_FRAGMENT_SHADER );
 
@@ -220,11 +221,13 @@ UniformManagement::loadSubroutines( Program* program, GLenum shaderType )
 			}
 		}
 	}
-	
+
+	/*
 	if ( program->m_activeSubroutines[ shaderType ].size() != activeSubroutineUniformLocations )
 	{
 		return false;
 	}
+	*/
 
 	return true;
 }

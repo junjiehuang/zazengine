@@ -122,6 +122,10 @@ Program::activateSubroutine( const std::string& subroutineName, Shader::ShaderTy
 	{
 		shaderTypeGL = GL_FRAGMENT_SHADER;
 	}
+	else if ( Shader::ShaderType::GEOMETRY_SHADER == shaderType )
+	{
+		shaderTypeGL = GL_GEOMETRY_SHADER;
+	}
 	
 	vector<GLuint>& subroutineConfig = this->m_activeSubroutineConfig[ shaderTypeGL ];
 	vector<Subroutine>& activeSubroutinesTyped = this->m_activeSubroutines[ shaderTypeGL ];
@@ -239,8 +243,11 @@ Program::use()
 	map<GLenum, vector<GLuint>>::iterator iter = this->m_activeSubroutineConfig.begin();
 	while ( this->m_activeSubroutineConfig.end() != iter )
 	{
-		glUniformSubroutinesuiv( iter->first, iter->second.size(), &iter->second[ 0 ] );
-		GL_PEEK_ERRORS_AT_DEBUG
+		if ( iter->second.size() )
+		{
+			glUniformSubroutinesuiv( iter->first, iter->second.size(), &iter->second[ 0 ] );
+			GL_PEEK_ERRORS_AT_DEBUG
+		}
 
 		iter++;
 	}

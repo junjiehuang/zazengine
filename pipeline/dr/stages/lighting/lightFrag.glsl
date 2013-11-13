@@ -7,7 +7,8 @@ uniform sampler2D DepthMap;
 uniform sampler2D TangentMap;
 uniform sampler2D BiTangentMap;
 
-uniform sampler2DShadow ShadowMap;
+uniform sampler2DShadow ShadowPlanarMap;
+uniform samplerCubeShadow ShadowCubeMap;
 
 out vec4 final_color;
 
@@ -152,14 +153,14 @@ shadowLookupProj( vec4 shadowCoord, vec2 offset )
 	// but we still need to do the projective-division to reach the according space 0-1
 	// because this is not done when applying the projection transform
 	// ADDITION: either use 	
-	//		vec3 shadowCoordPersp = shadowCoord.xyz / shadowCoord.w; with texture( ShadowMap, shadowCoordPersp ) lookup 
-	//		OR use textureProj( ShadowMap, shadowCoord ); directly
+	//		vec3 shadowCoordPersp = shadowCoord.xyz / shadowCoord.w; with texture( ShadowPlanarMap, shadowCoordPersp ) lookup 
+	//		OR use textureProj( ShadowPlanarMap, shadowCoord ); directly
 		
 	// IMPORTANT: because we installed a compare-function on this shadow-sampler
 	// we don't need to compare it anymore to the z-value of the shadow-coord
 
 	// IMPORTANT: 2048 is the resolution of the shadow-map, need to adjust it
-	return textureProj( ShadowMap, shadowCoord + vec4( offset.x * 1.0 / 2048.0 * shadowCoord.w, offset.y * 1.0 / 2048.0 * shadowCoord.w, 0.0, 0.0 ) );
+	return textureProj( ShadowPlanarMap, shadowCoord + vec4( offset.x * 1.0 / 2048.0 * shadowCoord.w, offset.y * 1.0 / 2048.0 * shadowCoord.w, 0.0, 0.0 ) );
 }
 
 float
@@ -173,7 +174,7 @@ shadowLookup( vec3 shadowCoord, vec2 offset )
 	// we don't need to compare it anymore to the z-value of the shadow-coord
 
 	// IMPORTANT: 2048 is the resolution of the shadow-map, need to adjust it
-	return texture( ShadowMap, shadowCoord + vec3( offset.x * 1.0 / 2048.0, offset.y * 1.0 / 2048.0, 0.0 )  );
+	return texture( ShadowPlanarMap, shadowCoord + vec3( offset.x * 1.0 / 2048.0, offset.y * 1.0 / 2048.0, 0.0 )  );
 }
 
 float 

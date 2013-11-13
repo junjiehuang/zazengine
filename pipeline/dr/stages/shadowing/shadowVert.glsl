@@ -7,14 +7,6 @@ in uint in_bone_count;
 in uvec4 in_bone_indices;
 in vec4 in_bone_weights;
 
-layout( shared ) uniform TransformUniforms
-{
-	mat4 modelViewMatrix;
-	mat4 projectionMatrix;
-
-	mat4 normalsModelViewMatrix;
-} Transforms;
-
 uniform mat4 u_bones[ MAX_BONES_PER_MESH ];
 
 subroutine vec4 processInputs();
@@ -44,7 +36,5 @@ subroutine uniform processInputs processInputsSelection;
 
 void main()
 {
-	vec4 processedInputPosition = processInputsSelection();
-	// OPTIMIZE: premultiply projection & modelView on CPU 
-	gl_Position = Transforms.projectionMatrix * Transforms.modelViewMatrix * processedInputPosition;
+	gl_Position = processInputsSelection();
 }
