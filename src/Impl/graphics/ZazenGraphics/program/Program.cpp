@@ -122,49 +122,44 @@ Program::activateSubroutine( const std::string& subroutineName, Shader::ShaderTy
 	{
 		shaderTypeGL = GL_FRAGMENT_SHADER;
 	}
-
-	vector<Subroutine>& allSubroutinesTyped = this->m_subroutines[ shaderTypeGL ];
-	vector<Subroutine>& activeSubroutinesTyped = this->m_activeSubroutines[ shaderTypeGL ];
 	
-	// no subroutines for this kind of shader-type
-	if ( 0 == activeSubroutinesTyped.size() || 0 == allSubroutinesTyped.size() )
+	vector<GLuint>& subroutineConfig = this->m_activeSubroutineConfig[ shaderTypeGL ];
+	vector<Subroutine>& activeSubroutinesTyped = this->m_activeSubroutines[ shaderTypeGL ];
+	map<string, Subroutine>& allSubroutinesTyped = this->m_allSubroutines[ shaderTypeGL ];
+	
+	// no subroutines for this kind of shader-type - no need to check the other vectors because if no subroutines for this
+	// given shader-type the vectors will be empty too
+	if ( allSubroutinesTyped.empty() )
 	{
 		return false;
 	}
 
-	vector<GLuint>& subroutineConfig = this->m_activeSubroutineConfig[ shaderTypeGL ];
-	
-	for ( unsigned int i = 0; i < allSubroutinesTyped.size(); i++ )
+	map<string, Subroutine>::iterator findIter = allSubroutinesTyped.find( subroutineName );
+	if ( allSubroutinesTyped.end() != findIter )
 	{
-		Subroutine& subroutine = allSubroutinesTyped[ i ];
-
-		if ( subroutine.m_name != subroutineName )
-		{
-			continue;
-		}
+		Subroutine& newSubroutine = findIter->second;
 
 		// found the according subroutine, replace it in the active ones
-		for ( unsigned int j = 0; j < activeSubroutinesTyped.size(); j++ )
+		for ( unsigned int i = 0; i < activeSubroutinesTyped.size(); i++ )
 		{
-			Subroutine& activeSubroutine = activeSubroutinesTyped[ j ];
+			Subroutine& activeSubroutine = activeSubroutinesTyped[ i ];
 
 			// only one subroutine can be active with same index, so thats the way we find them
-			// the m_uniformLocation correspond to the index j
-			if ( activeSubroutine.m_uniformIndex == subroutine.m_uniformIndex )
+			// the m_uniformLocation correspond to the index i
+			if ( activeSubroutine.m_uniformIndex == newSubroutine.m_uniformIndex )
 			{
 				// no change, no update
-				if ( activeSubroutine.m_name == subroutineName )
+				if ( activeSubroutine.m_index == newSubroutine.m_index )
 				{
 					return true;
 				}
 
-				activeSubroutine = subroutine;
-				activeSubroutinesTyped[ j ] = activeSubroutine;
-				subroutineConfig[ j ] = activeSubroutine.m_index;
+				subroutineConfig[ i ] = newSubroutine.m_index;
+				activeSubroutinesTyped[ i ] = newSubroutine;
+
+				break;
 			}
 		}
-
-		break;
 	}
 
 	// need to pass exactly GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS items in range 0 to GL_ACTIVE_SUBROUTINES - 1

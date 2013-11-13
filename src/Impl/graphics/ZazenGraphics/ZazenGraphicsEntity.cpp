@@ -93,38 +93,32 @@ ZazenGraphicsEntity::update()
 		// Q
 		if ( 16 == keyCode )
 		{
-			this->m_camera->changeRoll( 50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			//this->postPositionChangedEvent();
+			this->changeRoll( 50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 		// E
 		else if ( 18 == keyCode )
 		{
-			this->m_camera->changeRoll( -50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			//this->postPositionChangedEvent();
+			this->changeRoll( -50.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 		// W
 		else if ( 17 == keyCode )
 		{
-			this->m_camera->strafeForward( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			//this->postPositionChangedEvent();
+			this->strafeForward( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 		// S
 		else if ( 31 == keyCode )
 		{
-			this->m_camera->strafeForward( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			//this->postPositionChangedEvent();
+			this->strafeForward( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 		// A
 		else if ( 30 == keyCode )
 		{
-			this->m_camera->strafeRight( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			//this->postPositionChangedEvent();
+			this->strafeRight( -100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 		// D
 		else if ( 32 == keyCode )
 		{
-			this->m_camera->strafeRight( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-			//this->postPositionChangedEvent();
+			this->strafeRight( 100.0f * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 		}
 	}
 
@@ -164,10 +158,8 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 		int x = any_cast<int>( e.getValue( "x" ) );
 		int y = any_cast<int>( e.getValue( "y" ) );
 
-		this->m_camera->changeHeading( -50.0f * x * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-		this->m_camera->changePitch( 50.0f * y * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
-
-		//this->postPositionChangedEvent();
+		this->changeHeading( -50.0f * x * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
+		this->changePitch( 50.0f * y * ZazenGraphics::getInstance().getCore().getProcessingFactor() );
 	}
 
 	return false;

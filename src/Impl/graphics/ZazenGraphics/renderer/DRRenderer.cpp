@@ -61,7 +61,7 @@ DRRenderer::initialize()
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Renderer..." );
 
 	glEnable( GL_DEPTH_TEST );
-
+	
 	// Cull triangles which normal is not towards the camera
 	glEnable( GL_CULL_FACE );
 
@@ -793,8 +793,8 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	glm::mat4 orthoMat = this->m_mainCamera->createOrthoProj( true, true );
 	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat );
 
-	// TODO: need to set opengl to additiveley blend light-passes
-	// alpha? color modulate?...
+	glEnable( GL_BLEND );
+	glBlendFunc( GL_ONE, GL_SRC_COLOR );
 
 	// disable writing to depth: light-boundaries should not update depth
 	// we also need to READ from depth so no update 
@@ -805,6 +805,8 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	
 	// enable depth-writing again
 	glDepthMask( GL_TRUE );
+
+	glDisable( GL_BLEND );
 
 	return true;
 }

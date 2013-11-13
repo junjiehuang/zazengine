@@ -205,13 +205,13 @@ UniformManagement::loadSubroutines( Program* program, GLenum shaderType )
 		for ( int j = 0; j < compatibleSubroutinesCount; j++ )
 		{
 			glGetActiveSubroutineName( program->getId(), shaderType, compatibleSubroutines[ j ], nameBuffer.size() - 1, &nameLength, &nameBuffer[ 0 ] );
+			string subroutineName( &nameBuffer[ 0 ] );
 
 			Program::Subroutine subroutine;
-			subroutine.m_name = &nameBuffer[ 0 ];
 			subroutine.m_uniformIndex = i;
 			subroutine.m_index = compatibleSubroutines[ j ];
 
-			program->m_subroutines[ shaderType ].push_back( subroutine );
+			program->m_allSubroutines[ shaderType ][ subroutineName ] = subroutine; 
 
 			if ( subroutine.m_uniformIndex == program->m_activeSubroutines[ shaderType ].size() )
 			{

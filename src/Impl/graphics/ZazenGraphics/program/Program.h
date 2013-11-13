@@ -48,7 +48,6 @@ class Program
 		};
 
 		struct Subroutine {
-			std::string m_name;
 			GLint m_index;
 			GLint m_uniformIndex;
 		};
@@ -59,8 +58,14 @@ class Program
 		GLuint m_programObject;
 
 		std::map<std::string, UniformField> m_uniforms;
-		std::map<GLenum, std::vector<Subroutine>> m_subroutines;
+
+		// contains all subroutines for each shader-type available in this program
+		std::map<GLenum, std::map<std::string, Subroutine>> m_allSubroutines;
+
+		// contains the currently active subroutines for the given shader-type (matches the size of the corresponding vector in m_activeSubroutineConfig)
 		std::map<GLenum, std::vector<Subroutine>> m_activeSubroutines;
+		// contains the indices of the currently active subroutines for the given shader-type (matches the size of the corresponding vector in m_activeSubroutines)
+		// used to prevent creating it all over again, size will stay fixed for each shader-type
 		std::map<GLenum, std::vector<GLuint>> m_activeSubroutineConfig;
 
 		GLuint getUniformBlockIndex( const std::string& name );

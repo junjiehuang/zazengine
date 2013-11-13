@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <subSystem type="graphics" file="../bin/zaZenGraphics.dll">
-  <window fullscreen="false" width="1024" height="768"/>
+  <window fullscreen="false" width="1900" height="1080"/>
 
   <pipeline path="../pipeline/"/>
   
