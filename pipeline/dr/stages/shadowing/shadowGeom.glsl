@@ -11,17 +11,16 @@ layout( shared ) uniform TransformUniforms
 	mat4 normalsModelViewMatrix;
 } Transforms;
 
-subroutine vec4 layerRendering( int vertexIndex );
+subroutine void layerRendering( int vertexIndex );
 
-subroutine ( layerRendering ) vec4 layerRenderingCube( int vertexIndex )
+subroutine ( layerRendering ) void layerRenderingCube( int vertexIndex )
 {
-	return Transforms.projectionMatrix * Transforms.modelViewMatrix * gl_in[ vertexIndex ].gl_Position;
+	gl_Position = Transforms.projectionMatrix * gl_in[ vertexIndex ].gl_Position;
 }
 
-subroutine ( layerRendering ) vec4 layerRenderingPlanar( int vertexIndex )
+subroutine ( layerRendering ) void layerRenderingPlanar( int vertexIndex )
 {
-	// OPTIMIZE: premultiply projection & modelView on CPU 
-	return Transforms.projectionMatrix * Transforms.modelViewMatrix * gl_in[ vertexIndex ].gl_Position;
+	gl_Position = Transforms.projectionMatrix * gl_in[ vertexIndex ].gl_Position;
 }
 
 subroutine uniform layerRendering layerRenderingSelection;
@@ -30,10 +29,8 @@ subroutine uniform layerRendering layerRenderingSelection;
 {
 	for( int i = 0; i < gl_in.length(); i++ )
 	{
-		// copy attributes
-		gl_Position = layerRenderingSelection( i );
- 
-		// done with the vertex
+		layerRenderingSelection( i );
+
 		EmitVertex();
 	}
 }

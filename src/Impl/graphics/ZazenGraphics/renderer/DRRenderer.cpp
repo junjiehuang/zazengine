@@ -804,7 +804,9 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 
 	// blend lighting-results 
 	glEnable( GL_BLEND );
-	glBlendFunc( GL_ONE, GL_SRC_COLOR );
+	// need additive-blending
+	glBlendEquation( GL_FUNC_ADD );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
 
 	// disable writing to depth: light-boundaries should not update depth
 	// we also need to READ from depth so no update 
