@@ -856,11 +856,53 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	// the shadow-map of a point-light is a cube-map so we use the geoemtry-shader to perform layer rendering to each cube-map face
 	if ( Light::LightType::POINT == light->getType() )
 	{
-		this->m_progShadowMapping->activateSubroutine( "layerRenderingCube", Shader::GEOMETRY_SHADER );
+		glm::mat4 modelViewMatrix_Neg_Z = light->getModelMatrix();
+
+		// negate z of forward-achsis and negate x of left achsis (both are rotated by 180 degrees around the up-achsis)
+		glm::mat4 modelViewMatrix_Pos_Z = modelViewMatrix_Neg_Z;
+		modelViewMatrix_Pos_Z[ 2 ].z = -modelViewMatrix_Pos_Z[ 2 ].z;
+		modelViewMatrix_Pos_Z[ 0 ].x = -modelViewMatrix_Pos_Z[ 0 ].x;
+
+		// set new forward-achsis to old left-achsis and new left-achsis to old forward-achsis rotated by 180 degrees
+		glm::mat4 modelViewMatrix_Pos_X = light->getModelMatrix();
+		glm::vec4 tmpLeft = modelViewMatrix_Pos_X[ 0 ];
+		glm::vec4 tmpForward = modelViewMatrix_Pos_X[ 2 ];
+		modelViewMatrix_Pos_X[ 2 ] = tmpLeft;
+		modelViewMatrix_Pos_X[ 0 ] = tmpForward;
+		modelViewMatrix_Pos_X[ 0 ].z = -modelViewMatrix_Pos_X[ 0 ].z;
+
+		// negate z of forward-achsis and negate x of left achsis (both are rotated by 180 degrees around the up-achsis)
+		glm::mat4 modelViewMatrix_Neg_X = modelViewMatrix_Pos_X;
+		modelViewMatrix_Neg_X[ 2 ].z = -modelViewMatrix_Pos_Z[ 2 ].z;
+		modelViewMatrix_Neg_X[ 0 ].x = -modelViewMatrix_Pos_Z[ 0 ].x;
+
+		// set new forward-achsis to old up-achsis and new up-achsis to old forward-achsis rotated by 180 degrees
+		glm::mat4 modelViewMatrix_Pos_Y = light->getModelMatrix();
+		glm::vec4 tmpUp = modelViewMatrix_Pos_Y[ 1 ];
+		tmpForward = modelViewMatrix_Pos_Y[ 2 ];
+		modelViewMatrix_Pos_Y[ 2 ] = tmpUp;
+		modelViewMatrix_Pos_Y[ 1 ] = tmpForward;
+		modelViewMatrix_Pos_Y[ 1 ].z = -modelViewMatrix_Pos_Y[ 1 ].z;
+
+		// negate z of forward-achsis and negate x of left achsis (both are rotated by 180 degrees around the up-achsis)
+		glm::mat4 modelViewMatrix_Neg_Y = light->getModelMatrix();
+		modelViewMatrix_Neg_Y[ 2 ].z = -modelViewMatrix_Pos_Z[ 2 ].z;
+		modelViewMatrix_Neg_Y[ 0 ].x = -modelViewMatrix_Pos_Z[ 0 ].x;
+
+		vector<glm::mat4> cubeModelViewMatrices( 6 );
+		cubeModelViewMatrices.push_back( modelViewMatrix_Pos_X );
+		cubeModelViewMatrices.push_back( modelViewMatrix_Neg_X );
+		cubeModelViewMatrices.push_back( modelViewMatrix_Pos_Y );
+		cubeModelViewMatrices.push_back( modelViewMatrix_Neg_Y );
+		cubeModelViewMatrices.push_back( modelViewMatrix_Pos_Z );
+		cubeModelViewMatrices.push_back( modelViewMatrix_Neg_Z );
+
+		this->m_progShadowMapping->setUniformMatrices( "u_cubeModelViewMatrices", cubeModelViewMatrices );
+		this->m_progShadowMapping->activateSubroutine( "layeredRenderingCube", Shader::GEOMETRY_SHADER );
 	}
 	else
 	{
-		this->m_progShadowMapping->activateSubroutine( "layerRenderingPlanar", Shader::GEOMETRY_SHADER );
+		this->m_progShadowMapping->activateSubroutine( "layeredRenderingPlanar", Shader::GEOMETRY_SHADER );
 	}
 
 	// IMPORTANT: need to set the viewport for each shadow-map, because resolution can be different for each

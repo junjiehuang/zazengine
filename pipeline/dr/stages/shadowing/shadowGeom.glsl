@@ -11,25 +11,34 @@ layout( shared ) uniform TransformUniforms
 	mat4 normalsModelViewMatrix;
 } Transforms;
 
-subroutine void layerRendering( int vertexIndex );
+uniform mat4 u_cubeModelViewMatrices[ 6 ];
 
-subroutine ( layerRendering ) void layerRenderingCube( int vertexIndex )
+subroutine void layeredRendering( int vertexIndex );
+
+subroutine ( layeredRendering ) void layeredRenderingCube( int vertexIndex )
 {
-	gl_Position = Transforms.projectionMatrix * gl_in[ vertexIndex ].gl_Position;
+	for ( int i = 0; i < 6; i++ )
+	{
+		gl_Layer = i;
+
+		gl_Position = Transforms.projectionMatrix * u_cubeModelViewMatrices[ i ] * gl_in[ vertexIndex ].gl_Position;
+	
+		EmitVertex();
+	}
 }
 
-subroutine ( layerRendering ) void layerRenderingPlanar( int vertexIndex )
+subroutine ( layeredRendering ) void layeredRenderingPlanar( int vertexIndex )
 {
-	gl_Position = Transforms.projectionMatrix * gl_in[ vertexIndex ].gl_Position;
+	gl_Position = Transforms.projectionMatrix * Transforms.modelViewMatrix * gl_in[ vertexIndex ].gl_Position;
 }
 
-subroutine uniform layerRendering layerRenderingSelection;
+subroutine uniform layeredRendering layeredRenderingSelection;
 
  void main()
 {
 	for( int i = 0; i < gl_in.length(); i++ )
 	{
-		layerRenderingSelection( i );
+		layeredRenderingSelection( i );
 
 		EmitVertex();
 	}

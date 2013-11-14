@@ -44,5 +44,5 @@ subroutine uniform processInputs processInputsSelection;
 
 void main()
 {
-	gl_Position = Transforms.modelViewMatrix * processInputsSelection();
+	gl_Position = processInputsSelection();
 }
