@@ -482,7 +482,6 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 			}
 		}
 	}
-
 	
 	// check once per frame for ALL errors regardless if we are in _DEBUG or not
 	if ( GL_PEEK_ERRORS )
@@ -833,19 +832,6 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 		return false;
 	}
 
-	// attach this shadow-map temporarily to the fbo (other light will use the same fbo)
-	if ( false == this->m_intermediateDepthFB->attachTargetTemp( light->getShadowMap() ) )
-	{
-		return false;
-	}
-
-	// check status now
-	// IMPORANT: don't check too early
-	CHECK_FRAMEBUFFER_DEBUG
-
-	// clear bound buffer
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
 	// use shadow-mapping program
 	if ( false == this->m_progShadowMapping->use() )
 	{
@@ -853,57 +839,96 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 		return false;
 	}
 
-	// the shadow-map of a point-light is a cube-map so we use the geoemtry-shader to perform layer rendering to each cube-map face
+	// the shadow-map of a point-light is a cube-map
 	if ( Light::LightType::POINT == light->getType() )
 	{
-		glm::mat4 modelViewMatrix_Neg_Z = light->getModelMatrix();
+		glm::mat4 viewMatrix_Neg_Z = light->getModelMatrix();
 
 		// negate z of forward-achsis and negate x of left achsis (both are rotated by 180 degrees around the up-achsis)
-		glm::mat4 modelViewMatrix_Pos_Z = modelViewMatrix_Neg_Z;
-		modelViewMatrix_Pos_Z[ 2 ].z = -modelViewMatrix_Pos_Z[ 2 ].z;
-		modelViewMatrix_Pos_Z[ 0 ].x = -modelViewMatrix_Pos_Z[ 0 ].x;
+		glm::mat4 viewMatrix_Pos_Z = viewMatrix_Neg_Z;
+		viewMatrix_Pos_Z[ 2 ].z = -viewMatrix_Pos_Z[ 2 ].z;
+		viewMatrix_Pos_Z[ 0 ].x = -viewMatrix_Pos_Z[ 0 ].x;
 
 		// set new forward-achsis to old left-achsis and new left-achsis to old forward-achsis rotated by 180 degrees
-		glm::mat4 modelViewMatrix_Pos_X = light->getModelMatrix();
-		glm::vec4 tmpLeft = modelViewMatrix_Pos_X[ 0 ];
-		glm::vec4 tmpForward = modelViewMatrix_Pos_X[ 2 ];
-		modelViewMatrix_Pos_X[ 2 ] = tmpLeft;
-		modelViewMatrix_Pos_X[ 0 ] = tmpForward;
-		modelViewMatrix_Pos_X[ 0 ].z = -modelViewMatrix_Pos_X[ 0 ].z;
+		glm::mat4 viewMatrix_Pos_X = light->getModelMatrix();
+		glm::vec4 tmpLeft = viewMatrix_Pos_X[ 0 ];
+		glm::vec4 tmpForward = viewMatrix_Pos_X[ 2 ];
+		viewMatrix_Pos_X[ 2 ] = tmpLeft;
+		viewMatrix_Pos_X[ 0 ] = tmpForward;
+		//viewMatrix_Pos_X[ 0 ].z = -viewMatrix_Pos_X[ 0 ].z;
 
 		// negate z of forward-achsis and negate x of left achsis (both are rotated by 180 degrees around the up-achsis)
-		glm::mat4 modelViewMatrix_Neg_X = modelViewMatrix_Pos_X;
-		modelViewMatrix_Neg_X[ 2 ].z = -modelViewMatrix_Pos_Z[ 2 ].z;
-		modelViewMatrix_Neg_X[ 0 ].x = -modelViewMatrix_Pos_Z[ 0 ].x;
+		glm::mat4 viewMatrix_Neg_X = viewMatrix_Pos_X;
+		viewMatrix_Neg_X[ 2 ].z = -viewMatrix_Neg_X[ 2 ].z;
+		viewMatrix_Neg_X[ 0 ].x = -viewMatrix_Neg_X[ 0 ].x;
 
 		// set new forward-achsis to old up-achsis and new up-achsis to old forward-achsis rotated by 180 degrees
-		glm::mat4 modelViewMatrix_Pos_Y = light->getModelMatrix();
-		glm::vec4 tmpUp = modelViewMatrix_Pos_Y[ 1 ];
-		tmpForward = modelViewMatrix_Pos_Y[ 2 ];
-		modelViewMatrix_Pos_Y[ 2 ] = tmpUp;
-		modelViewMatrix_Pos_Y[ 1 ] = tmpForward;
-		modelViewMatrix_Pos_Y[ 1 ].z = -modelViewMatrix_Pos_Y[ 1 ].z;
+		glm::mat4 viewMatrix_Pos_Y = light->getModelMatrix();
+		glm::vec4 tmpUp = viewMatrix_Pos_Y[ 1 ];
+		tmpForward = viewMatrix_Pos_Y[ 2 ];
+		viewMatrix_Pos_Y[ 2 ] = tmpUp;
+		viewMatrix_Pos_Y[ 1 ] = tmpForward;
+		viewMatrix_Pos_Y[ 1 ].z = -viewMatrix_Pos_Y[ 1 ].z;
 
 		// negate z of forward-achsis and negate x of left achsis (both are rotated by 180 degrees around the up-achsis)
-		glm::mat4 modelViewMatrix_Neg_Y = light->getModelMatrix();
-		modelViewMatrix_Neg_Y[ 2 ].z = -modelViewMatrix_Pos_Z[ 2 ].z;
-		modelViewMatrix_Neg_Y[ 0 ].x = -modelViewMatrix_Pos_Z[ 0 ].x;
+		glm::mat4 viewMatrix_Neg_Y = viewMatrix_Pos_Y;
+		viewMatrix_Neg_Y[ 2 ].z = -viewMatrix_Neg_Y[ 2 ].z;
+		viewMatrix_Neg_Y[ 0 ].x = -viewMatrix_Neg_Y[ 0 ].x;
 
-		vector<glm::mat4> cubeModelViewMatrices( 6 );
-		cubeModelViewMatrices.push_back( modelViewMatrix_Pos_X );
-		cubeModelViewMatrices.push_back( modelViewMatrix_Neg_X );
-		cubeModelViewMatrices.push_back( modelViewMatrix_Pos_Y );
-		cubeModelViewMatrices.push_back( modelViewMatrix_Neg_Y );
-		cubeModelViewMatrices.push_back( modelViewMatrix_Pos_Z );
-		cubeModelViewMatrices.push_back( modelViewMatrix_Neg_Z );
+		std::vector<glm::mat4> cubeModelViewMatrices;
+		cubeModelViewMatrices.push_back( viewMatrix_Pos_X );
+		cubeModelViewMatrices.push_back( viewMatrix_Neg_X );
+		cubeModelViewMatrices.push_back( viewMatrix_Pos_Y );
+		cubeModelViewMatrices.push_back( viewMatrix_Neg_Y );
+		cubeModelViewMatrices.push_back( viewMatrix_Pos_Z );
+		cubeModelViewMatrices.push_back( viewMatrix_Neg_Z );
 
-		this->m_progShadowMapping->setUniformMatrices( "u_cubeModelViewMatrices", cubeModelViewMatrices );
-		this->m_progShadowMapping->activateSubroutine( "layeredRenderingCube", Shader::GEOMETRY_SHADER );
+		// do multi-pass rendering of shadow cube-map
+		for ( unsigned int face = 0; face < 6; face++ )
+		{
+			light->setMatrix( cubeModelViewMatrices[ face ] );
+
+			// attach face of cube-map to FBO
+			if ( false == this->m_intermediateDepthFB->attachTargetTempCube( light->getShadowMap(), face ) )
+			{
+				return false;
+			}
+
+			this->renderShadowPass( entities, light );
+		}
+
+		// reset back to negative z achsis
+		light->setMatrix( viewMatrix_Neg_Z );
 	}
 	else
 	{
-		this->m_progShadowMapping->activateSubroutine( "layeredRenderingPlanar", Shader::GEOMETRY_SHADER );
+		// attach this shadow-map temporarily to the fbo (other light will use the same fbo)
+		if ( false == this->m_intermediateDepthFB->attachTargetTemp( light->getShadowMap() ) )
+		{
+			return false;
+		}
+
+		this->renderShadowPass( entities, light );
 	}
+
+	// back to default framebuffer
+	if ( false == this->m_intermediateDepthFB->unbind() )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool
+DRRenderer::renderShadowPass( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+{
+	// check status now
+	// IMPORANT: don't check too early
+	CHECK_FRAMEBUFFER_DEBUG
+
+	// clear bound buffer
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	// IMPORTANT: need to set the viewport for each shadow-map, because resolution can be different for each
 	light->restoreViewport();
@@ -919,14 +944,6 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	{
 		return false;
 	}
-
-	// back to default framebuffer
-	if ( false == this->m_intermediateDepthFB->unbind() )
-	{
-		return false;
-	}
-
-	return true;
 }
 
 bool

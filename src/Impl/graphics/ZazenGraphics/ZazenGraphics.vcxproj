@@ -167,7 +167,6 @@
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightNoShadowFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowGeom.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\blendTranspFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\blendTranspVert.glsl" />

@@ -28,7 +28,7 @@ class RenderTarget : public Texture
 		RenderTargetType getType() { return this->m_targetType; };
 
 	private:
-		RenderTarget( GLuint, GLsizei, GLsizei, RenderTargetType );
+		RenderTarget( GLuint, GLsizei, GLsizei, RenderTargetType, TextureType );
 		~RenderTarget();
 
 		GLsizei m_width;

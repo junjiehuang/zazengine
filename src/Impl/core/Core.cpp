@@ -101,7 +101,13 @@ Core::shutdown()
 			delete Core::instance->m_subSystemFactory;
 		}
 
-		// TODO delete loggers
+		map<string, ILogger*>::iterator logIter = Core::instance->m_loggers.begin();
+		if ( logIter != Core::instance->m_loggers.end() )
+		{
+			delete logIter->second;
+
+			logIter++;
+		}
 
 		ScriptSystem::shutdown();
 

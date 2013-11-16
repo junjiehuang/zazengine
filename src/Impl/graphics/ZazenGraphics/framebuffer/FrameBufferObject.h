@@ -23,6 +23,7 @@ class FrameBufferObject
 
 		bool attachTarget( RenderTarget* );
 		bool attachTargetTemp( RenderTarget* );
+		bool attachTargetTempCube( RenderTarget*, unsigned int );
 
 		bool drawAllBuffers();
 		bool drawBuffer( unsigned int );

@@ -56,7 +56,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
 		GL_PEEK_ERRORS_AT
 
-		renderTarget = new RenderTarget( id, width, height, targetType );
+		renderTarget = new RenderTarget( id, width, height, targetType, Texture::TEXTURE_2D );
 	}
 	else if ( RenderTarget::RT_SHADOW_PLANAR == targetType )
 	{
@@ -82,7 +82,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
 		GL_PEEK_ERRORS_AT
 
-		renderTarget = new RenderTarget( id, width, height, targetType );
+		renderTarget = new RenderTarget( id, width, height, targetType, Texture::TEXTURE_2D );
 		RenderTarget::m_shadowMapPool.push_back( renderTarget );
 	}
 	else if ( RenderTarget::RT_SHADOW_CUBE == targetType )
@@ -125,7 +125,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 			GL_PEEK_ERRORS_AT
 		}
 
-		renderTarget = new RenderTarget( id, width, height, targetType );
+		renderTarget = new RenderTarget( id, width, height, targetType, Texture::TEXTURE_CUBE );
 		RenderTarget::m_shadowMapPool.push_back( renderTarget );
 	}
 	else if ( RenderTarget::RT_COLOR == targetType )
@@ -146,7 +146,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL );
 		GL_PEEK_ERRORS_AT
 
-		renderTarget = new RenderTarget( id, width, height, targetType );
+		renderTarget = new RenderTarget( id, width, height, targetType, Texture::TEXTURE_2D );
 	}
 	else
 	{
@@ -200,8 +200,8 @@ RenderTarget::cleanup()
 	RenderTarget::m_shadowMapPool.clear();
 }
 
-RenderTarget::RenderTarget( GLuint id, GLsizei width, GLsizei height, RenderTargetType targetType )
-	: Texture( id, Texture::TEXTURE_2D )
+RenderTarget::RenderTarget( GLuint id, GLsizei width, GLsizei height, RenderTargetType targetType, TextureType textureType )
+	: Texture( id, textureType )
 {
 	this->m_targetType = targetType;
 

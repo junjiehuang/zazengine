@@ -385,8 +385,5 @@
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowGeom.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing</Filter>
-    </None>
   </ItemGroup>
 </Project>
