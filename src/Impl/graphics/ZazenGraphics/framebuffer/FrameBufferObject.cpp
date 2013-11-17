@@ -143,7 +143,6 @@ FrameBufferObject::attachTargetTempCube( RenderTarget* renderTarget, unsigned in
 	return true;
 }
 
-
 bool
 FrameBufferObject::bind()
 {

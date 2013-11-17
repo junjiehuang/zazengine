@@ -100,7 +100,6 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 
-
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -113,11 +112,14 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 		GL_PEEK_ERRORS_AT
 
-		// need to enable comparison-mode for depth-texture to use it as a textureCube in shader		
+		// NOTE: we don't do hardware-comparison like GL_COMPARE_R_TO_TEXTURE
+		// we store radial distance from light and then compare in shader
+		/*	
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL );
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE );
 		GL_PEEK_ERRORS_AT
+		*/
 
 		for ( int i = 0; i < 6; i++ )
 		{

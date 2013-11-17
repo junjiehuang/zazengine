@@ -771,10 +771,16 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	// bind shadow-map when light is shadow-caster
 	if ( light->isShadowCaster() )
 	{
+		// WARNING: you can't bind two different texture-types to the same unit - will result in INVALID OPERATION on draw-call
+		// thus we need to bind the shadow cube-map to a different unit than the normal 2d shadow-map
+		int textureUnit = 6;
+
 		if ( Light::LightType::POINT == light->getType() )
 		{
-			// tell program that the shadowmap of point-light will be available at texture unit 6
-			activeLightingProgram->setUniformInt( "ShadowCubeMap", 6 );
+			// tell program that the shadowmap of point-light will be available at texture unit 7
+			activeLightingProgram->setUniformInt( "ShadowCubeMap", 7 );
+
+			textureUnit = 7;
 		}
 		else
 		{
@@ -782,7 +788,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 			activeLightingProgram->setUniformInt( "ShadowPlanarMap", 6 );
 		}
 
-		if ( false == light->getShadowMap()->bind( 6 ) )
+		if ( false == light->getShadowMap()->bind( textureUnit ) )
 		{
 			return false;
 		}
@@ -851,11 +857,10 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 
 		// set new forward-achsis to old left-achsis and new left-achsis to old forward-achsis rotated by 180 degrees
 		glm::mat4 viewMatrix_Pos_X = light->getModelMatrix();
-		glm::vec4 tmpLeft = viewMatrix_Pos_X[ 0 ];
 		glm::vec4 tmpForward = viewMatrix_Pos_X[ 2 ];
-		viewMatrix_Pos_X[ 2 ] = tmpLeft;
+		viewMatrix_Pos_X[ 2 ] = viewMatrix_Pos_X[ 0 ];
 		viewMatrix_Pos_X[ 0 ] = tmpForward;
-		//viewMatrix_Pos_X[ 0 ].z = -viewMatrix_Pos_X[ 0 ].z;
+		viewMatrix_Pos_X[ 0 ].z = -viewMatrix_Pos_X[ 0 ].z;
 
 		// negate z of forward-achsis and negate x of left achsis (both are rotated by 180 degrees around the up-achsis)
 		glm::mat4 viewMatrix_Neg_X = viewMatrix_Pos_X;
@@ -894,7 +899,10 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 				return false;
 			}
 
-			this->renderShadowPass( entities, light );
+			if ( false == this->renderShadowPass( entities, light ) )
+			{
+				return false;
+			}
 		}
 
 		// reset back to negative z achsis
@@ -908,7 +916,10 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 			return false;
 		}
 
-		this->renderShadowPass( entities, light );
+		if ( false == this->renderShadowPass( entities, light ) )
+		{
+			return false;
+		}
 	}
 
 	// back to default framebuffer
@@ -944,6 +955,8 @@ DRRenderer::renderShadowPass( std::list<ZazenGraphicsEntity*>& entities, Light* 
 	{
 		return false;
 	}
+
+	return true;
 }
 
 bool

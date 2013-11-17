@@ -8,7 +8,7 @@ uniform sampler2D TangentMap;
 uniform sampler2D BiTangentMap;
 
 uniform sampler2DShadow ShadowPlanarMap;
-uniform samplerCubeShadow ShadowCubeMap;
+uniform samplerCube ShadowCubeMap;
 
 out vec4 final_color;
 
@@ -37,6 +37,7 @@ calculateLambertian( in vec4 diffuse, in vec4 normal, in vec4 position )
 	normal = normalize( normal );
 
 	// need to transpose light-model matrix to view-space for eye-coordinates 
+	// when rendering the light, the camer IS the light so this works out
 	// OPTIMIZE: premultiply on CPU
 	mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
 
@@ -218,8 +219,27 @@ calculateShadow( vec4 ecPosition )
 		// our filter-kernel has 16 elements => divide with 16
 		shadow /= 16.0;
 	}
-	
-	// TODO: handle point-light (using cube-map)
+	// point-light - do cube-map shadow-lookup
+	else if ( 2.0 == Light.config.x )
+	{
+		// need to transpose light-model matrix to view-space for eye-coordinates 
+		// when rendering the light, the camera IS the light so this works out
+		// OPTIMIZE: premultiply on CPU
+		mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
+
+		vec3 lightPos = lightMV_Matrix[ 3 ].xyz;
+		// no need to normalize, cube-map lookup also works with normalized vectors
+		vec3 lightDir = lightPos - ecPosition.xyz;
+		
+		// the distance from the light to the current fragment in world-coordinates
+		float fragDistToLight = length( lightDir );
+		// the distance from the light to the first hit in NDC (normalized device coordinates)
+		float firstHitDistToLight = texture( ShadowCubeMap, lightDir ).r;
+
+		// problem: fragDistToLight is in NDC and firstHitDistToLight is in world-space, so we cannot compare
+
+		shadow = 1.0;
+	}
 
 	return shadow;
 }
