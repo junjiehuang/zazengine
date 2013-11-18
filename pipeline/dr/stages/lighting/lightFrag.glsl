@@ -177,18 +177,6 @@ shadowLookup( vec3 shadowCoord, vec2 offset )
 	return texture( ShadowPlanarMap, shadowCoord + vec3( offset.x * 1.0 / 2048.0, offset.y * 1.0 / 2048.0, 0.0 )  );
 }
 
-float
-VectorToDepthValue( vec3 Vec )
-{
-    vec3 AbsVec = abs(Vec);
-    float LocalZcomp = max(AbsVec.x, max(AbsVec.y, AbsVec.z));
-
-    const float f = 1000.0;
-    const float n = 0.1;
-    float NormZComp = (f+n) / (f-n) - (2*f*n)/(f-n)/LocalZcomp;
-    return (NormZComp + 1.0) * 0.5;
-}
-
 float 
 calculateShadow( vec4 ecPosition )
 {
@@ -233,22 +221,19 @@ calculateShadow( vec4 ecPosition )
 	// point-light - do cube-map shadow-lookup
 	else if ( 2.0 == Light.config.x )
 	{
-		// need to transpose light-model matrix to view-space for eye-coordinates 
-		// OPTIMIZE: premultiply on CPU
-		mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
-
-		vec3 lightPos = lightMV_Matrix[ 3 ].xyz;
-		// no need to normalize, cube-map lookup also works with normalized vectors
-		vec3 lightDir = lightPos - ecPosition.xyz;
+		// light-position in world-space
+		vec3 lightPos = Light.modelMatrix[ 3 ].xyz;
+		// direction from vertex to light-position in world-space
+		vec3 lightDir = wcPosition.xyz - lightPos;
 
 		// the distance from the light to the current fragment in world-coordinates
 		float fragDistToLight = length( lightDir );
 		// the distance from the light to the first hit in NDC (normalized device coordinates)
 		float firstHitDistToLight = texture( ShadowCubeMap, lightDir ).r;
 
-		fragDistToLight = VectorToDepthValue( lightDir );
+		firstHitDistToLight *= 1000.0;
 
-		if ( fragDistToLight < firstHitDistToLight )
+		if ( fragDistToLight < firstHitDistToLight + 0.15 )
 		{
 			shadow = 1.0;
 		}

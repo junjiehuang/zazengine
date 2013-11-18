@@ -866,6 +866,17 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 		glm::mat4 cpyModelMat = light->getModelMatrix();
 		glm::vec3 cpyLightPos = light->getPosition();
 
+		// bind light uniform-block to update data of this light
+		if ( false == this->m_lightBlock->bindBuffer() )
+		{
+			return false;
+		}
+
+		// upload light-model matrix = orientation of the light in the world
+		this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() );
+
+		this->m_progShadowMapping->activateSubroutine( "calculateDepthDistance", Shader::FRAGMENT_SHADER );
+
 		// do multi-pass rendering of shadow cube-map
 		for ( unsigned int face = 0; face < 6; face++ )
 		{
@@ -891,6 +902,8 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	}
 	else
 	{
+		this->m_progShadowMapping->activateSubroutine( "calculateDepthNDC", Shader::FRAGMENT_SHADER );
+
 		// attach this shadow-map temporarily to the fbo (other light will use the same fbo)
 		if ( false == this->m_intermediateDepthFB->attachTargetTemp( light->getShadowMap() ) )
 		{
