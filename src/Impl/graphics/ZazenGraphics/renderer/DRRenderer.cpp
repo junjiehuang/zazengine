@@ -454,7 +454,15 @@ DRRenderer::initUniformBlocks()
 void 
 DRRenderer::initializeStaticData()
 {
-	this->m_cubeViewMatrices = vector<glm::mat4>( 6 );
+	this->m_cubeInvViewDirections = vector<glm::mat4>( 6 );
+	// insertion-order is very important: first x, then y and last z
+	// HINT: because we construct from it the view-matrix by applying inverse we need to invert y-achsis
+	this->m_cubeInvViewDirections[ 0 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( 1, 0, 0 ), glm::vec3( 0, 1, 0 ) );		// POS X
+	this->m_cubeInvViewDirections[ 1 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( -1, 0, 0 ), glm::vec3( 0, 1, 0 ) );		// NEG X
+	this->m_cubeInvViewDirections[ 2 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 1, 0 ), glm::vec3( 0, 0, -1 ) );		// POS Y
+	this->m_cubeInvViewDirections[ 3 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, -1, 0 ), glm::vec3( 0, 0, 1 ) );		// NEG Y
+	this->m_cubeInvViewDirections[ 4 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, 1 ), glm::vec3( 0, 1, 0 ) );		// POS Z 
+	this->m_cubeInvViewDirections[ 5 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, -1 ),glm::vec3( 0, 1, 0 ) );		// NEG Z
 
 	this->m_gBufferIndices.clear();
 	this->m_gBufferIndices.push_back( 0 ); // diffuse
@@ -856,62 +864,15 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	if ( Light::LightType::POINT == light->getType() )
 	{
 		glm::mat4 cpyModelMat = light->getModelMatrix();
-		glm::vec3 lightPos = light->getPosition();
-
-		// insertion-order is very important: first x, then y and last z
-		this->m_cubeViewMatrices[ 0 ] = glm::lookAt( lightPos, glm::vec3( 1, 0, 0 ), glm::vec3( 0, -1, 0 ) );		// POS X
-		this->m_cubeViewMatrices[ 1 ] = glm::lookAt( lightPos, glm::vec3( -1, 0, 0 ), glm::vec3( 0, -1, 0 ) );		// NEG X
-		this->m_cubeViewMatrices[ 2 ] = glm::lookAt( lightPos, glm::vec3( 0, 1, 0 ), glm::vec3( 0, 0, 1 ) );		// POS Y
-		this->m_cubeViewMatrices[ 3 ] = glm::lookAt( lightPos, glm::vec3( 0, -1, 0 ), glm::vec3( 0, 0, -1 ) );		// NEG Y
-		this->m_cubeViewMatrices[ 4 ] = glm::lookAt( lightPos, glm::vec3( 0, 0, 1 ), glm::vec3( 0, -1, 0 ) );		// POS Z 
-		this->m_cubeViewMatrices[ 5 ] = glm::lookAt( lightPos, glm::vec3( 0, 0, -1 ),glm::vec3( 0, -1, 0 ) );		// NEG Z
-
-		/*
-		glm::mat4 viewMatrix_Neg_Z = light->getModelMatrix();
-
-		// negate z of forward-achsis and negate x of left achsis (both are rotated by 180 degrees around the up-achsis)
-		glm::mat4 viewMatrix_Pos_Z = viewMatrix_Neg_Z;
-		viewMatrix_Pos_Z[ 2 ].z = -viewMatrix_Pos_Z[ 2 ].z;
-		viewMatrix_Pos_Z[ 0 ].x = -viewMatrix_Pos_Z[ 0 ].x;
-
-		// set new forward-achsis to old left-achsis and new left-achsis to old forward-achsis rotated by 180 degrees
-		glm::mat4 viewMatrix_Pos_X = light->getModelMatrix();
-		glm::vec4 tmpForward = viewMatrix_Pos_X[ 2 ];
-		viewMatrix_Pos_X[ 2 ] = viewMatrix_Pos_X[ 0 ];
-		viewMatrix_Pos_X[ 0 ] = tmpForward;
-		viewMatrix_Pos_X[ 0 ].z = -viewMatrix_Pos_X[ 0 ].z;
-
-		// negate z of forward-achsis and negate x of left achsis (both are rotated by 180 degrees around the up-achsis)
-		glm::mat4 viewMatrix_Neg_X = viewMatrix_Pos_X;
-		viewMatrix_Neg_X[ 2 ].z = -viewMatrix_Neg_X[ 2 ].z;
-		viewMatrix_Neg_X[ 0 ].x = -viewMatrix_Neg_X[ 0 ].x;
-
-		// set new forward-achsis to old up-achsis and new up-achsis to old forward-achsis rotated by 180 degrees
-		glm::mat4 viewMatrix_Pos_Y = light->getModelMatrix();
-		glm::vec4 tmpUp = viewMatrix_Pos_Y[ 1 ];
-		tmpForward = viewMatrix_Pos_Y[ 2 ];
-		viewMatrix_Pos_Y[ 2 ] = tmpUp;
-		viewMatrix_Pos_Y[ 1 ] = tmpForward;
-		viewMatrix_Pos_Y[ 1 ].z = -viewMatrix_Pos_Y[ 1 ].z;
-
-		// negate z of forward-achsis and negate x of left achsis (both are rotated by 180 degrees around the up-achsis)
-		glm::mat4 viewMatrix_Neg_Y = viewMatrix_Pos_Y;
-		viewMatrix_Neg_Y[ 2 ].z = -viewMatrix_Neg_Y[ 2 ].z;
-		viewMatrix_Neg_Y[ 0 ].x = -viewMatrix_Neg_Y[ 0 ].x;
-
-		std::vector<glm::mat4> cubeModelViewMatrices;
-		cubeModelViewMatrices.push_back( viewMatrix_Pos_X );
-		cubeModelViewMatrices.push_back( viewMatrix_Neg_X );
-		cubeModelViewMatrices.push_back( viewMatrix_Pos_Y );
-		cubeModelViewMatrices.push_back( viewMatrix_Neg_Y );
-		cubeModelViewMatrices.push_back( viewMatrix_Pos_Z );
-		cubeModelViewMatrices.push_back( viewMatrix_Neg_Z );
-		*/
+		glm::vec3 cpyLightPos = light->getPosition();
 
 		// do multi-pass rendering of shadow cube-map
 		for ( unsigned int face = 0; face < 6; face++ )
 		{
-			light->setModelMatrix( m_cubeViewMatrices[ face ] );
+			// set the inverse view-directions as model matrix which will set them as view-directions (because of inverse of modelmatrix)
+			light->setModelMatrix( this->m_cubeInvViewDirections[ face ] );
+			// set the position of the light to its modelled position
+			light->setPosition( cpyLightPos );
 
 			// attach face of cube-map to FBO
 			if ( false == this->m_intermediateDepthFB->attachTargetTempCube( light->getShadowMap(), face ) )
@@ -925,7 +886,7 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 			}
 		}
 
-		// NOTE: no need to reset view back to negative z achsis because it will end with negative z
+		// NOTE: is not necessary because model-matrix will be overwritten
 		light->setModelMatrix( cpyModelMat );
 	}
 	else

@@ -37,7 +37,6 @@ calculateLambertian( in vec4 diffuse, in vec4 normal, in vec4 position )
 	normal = normalize( normal );
 
 	// need to transpose light-model matrix to view-space for eye-coordinates 
-	// when rendering the light, the camer IS the light so this works out
 	// OPTIMIZE: premultiply on CPU
 	mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
 
@@ -235,7 +234,6 @@ calculateShadow( vec4 ecPosition )
 	else if ( 2.0 == Light.config.x )
 	{
 		// need to transpose light-model matrix to view-space for eye-coordinates 
-		// when rendering the light, the camera IS the light so this works out
 		// OPTIMIZE: premultiply on CPU
 		mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
 

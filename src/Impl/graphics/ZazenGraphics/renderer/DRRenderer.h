@@ -65,7 +65,7 @@ class DRRenderer
 		// unit-cube matrix for directional- and spot-light shadow-mapping
 		glm::mat4 m_unitCubeMatrix;
 		// view-matrices for cube-map rendering 
-		std::vector<glm::mat4> m_cubeViewMatrices;
+		std::vector<glm::mat4> m_cubeInvViewDirections;
 		// the indices of the g-buffer targets
 		std::vector<unsigned int> m_gBufferIndices;
 		////////////////////////////////////////
