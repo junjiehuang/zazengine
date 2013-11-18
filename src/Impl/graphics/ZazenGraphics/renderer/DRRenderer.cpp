@@ -98,6 +98,8 @@ DRRenderer::initialize()
 		return false;
 	}
 
+	this->initializeStaticData();
+
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Renderer finished" );
 
 	return true;
@@ -449,6 +451,20 @@ DRRenderer::initUniformBlocks()
 	return true;
 }
 
+void 
+DRRenderer::initializeStaticData()
+{
+	this->m_cubeViewMatrices = vector<glm::mat4>( 6 );
+
+	this->m_gBufferIndices.clear();
+	this->m_gBufferIndices.push_back( 0 ); // diffuse
+	this->m_gBufferIndices.push_back( 1 );	// normals
+	this->m_gBufferIndices.push_back( 2 );	// positions
+	this->m_gBufferIndices.push_back( 3 );	// tangents
+	this->m_gBufferIndices.push_back( 4 );	// bi-tangents
+	this->m_gBufferIndices.push_back( 6 );	// depth
+}
+
 bool
 DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 {
@@ -721,18 +737,9 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		return false;
 	}
 
-	// TODO: these are constants - move into initialization phase
-	vector<unsigned int> indices;
-	indices.push_back( 0 ); // diffuse
-	indices.push_back( 1 );	// normals
-	indices.push_back( 2 );	// positions
-	indices.push_back( 3 );	// tangents
-	indices.push_back( 4 );	// bi-tangents
-	indices.push_back( 6 );	// depth
-
 	// OPTIMIZE: no need to do for every light!
 	// lighting stage program need all buffers of g-buffer bound as textures
-	if ( false == this->m_gBufferFbo->bindTargets( indices ) )
+	if ( false == this->m_gBufferFbo->bindTargets( this->m_gBufferIndices ) )
 	{
 		return false;
 	}
@@ -786,18 +793,18 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		{
 			// tell program that the shadowmap of spot/directional-light will be available at texture unit 6
 			activeLightingProgram->setUniformInt( "ShadowPlanarMap", 6 );
+
+			// calculate the light-space projection matrix
+			// multiplication with unit-cube is first because has to be carried out the last
+			lightSpaceUnit = this->m_unitCubeMatrix * light->getVPMatrix();
+
+			this->m_lightBlock->updateField( "LightUniforms.spaceUniformMatrix", lightSpaceUnit );
 		}
 
 		if ( false == light->getShadowMap()->bind( textureUnit ) )
 		{
 			return false;
 		}
-
-		// calculate the light-space projection matrix
-		// multiplication with unit-cube is first because has to be carried out the last
-		lightSpaceUnit = this->m_unitCubeMatrix * light->getVPMatrix();
-
-		this->m_lightBlock->updateField( "LightUniforms.spaceUniformMatrix", lightSpaceUnit );
 	}
 
 	// QUESTION: due to a but only bind was called instead of bindBuffer but it worked!! why?
@@ -848,6 +855,18 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	// the shadow-map of a point-light is a cube-map
 	if ( Light::LightType::POINT == light->getType() )
 	{
+		glm::mat4 cpyModelMat = light->getModelMatrix();
+		glm::vec3 lightPos = light->getPosition();
+
+		// insertion-order is very important: first x, then y and last z
+		this->m_cubeViewMatrices[ 0 ] = glm::lookAt( lightPos, glm::vec3( 1, 0, 0 ), glm::vec3( 0, -1, 0 ) );		// POS X
+		this->m_cubeViewMatrices[ 1 ] = glm::lookAt( lightPos, glm::vec3( -1, 0, 0 ), glm::vec3( 0, -1, 0 ) );		// NEG X
+		this->m_cubeViewMatrices[ 2 ] = glm::lookAt( lightPos, glm::vec3( 0, 1, 0 ), glm::vec3( 0, 0, 1 ) );		// POS Y
+		this->m_cubeViewMatrices[ 3 ] = glm::lookAt( lightPos, glm::vec3( 0, -1, 0 ), glm::vec3( 0, 0, -1 ) );		// NEG Y
+		this->m_cubeViewMatrices[ 4 ] = glm::lookAt( lightPos, glm::vec3( 0, 0, 1 ), glm::vec3( 0, -1, 0 ) );		// POS Z 
+		this->m_cubeViewMatrices[ 5 ] = glm::lookAt( lightPos, glm::vec3( 0, 0, -1 ),glm::vec3( 0, -1, 0 ) );		// NEG Z
+
+		/*
 		glm::mat4 viewMatrix_Neg_Z = light->getModelMatrix();
 
 		// negate z of forward-achsis and negate x of left achsis (both are rotated by 180 degrees around the up-achsis)
@@ -887,11 +906,12 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 		cubeModelViewMatrices.push_back( viewMatrix_Neg_Y );
 		cubeModelViewMatrices.push_back( viewMatrix_Pos_Z );
 		cubeModelViewMatrices.push_back( viewMatrix_Neg_Z );
+		*/
 
 		// do multi-pass rendering of shadow cube-map
 		for ( unsigned int face = 0; face < 6; face++ )
 		{
-			light->setMatrix( cubeModelViewMatrices[ face ] );
+			light->setModelMatrix( m_cubeViewMatrices[ face ] );
 
 			// attach face of cube-map to FBO
 			if ( false == this->m_intermediateDepthFB->attachTargetTempCube( light->getShadowMap(), face ) )
@@ -905,8 +925,8 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 			}
 		}
 
-		// reset back to negative z achsis
-		light->setMatrix( viewMatrix_Neg_Z );
+		// NOTE: no need to reset view back to negative z achsis because it will end with negative z
+		light->setModelMatrix( cpyModelMat );
 	}
 	else
 	{

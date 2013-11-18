@@ -55,12 +55,12 @@ ZazenGraphicsEntity::matrixChanged()
 
 	if ( this->m_camera )
 	{
-		this->m_camera->setMatrix( this->getModelMatrix() );
+		this->m_camera->setModelMatrix( this->getModelMatrix() );
 	}
 
 	if ( this->m_light )
 	{
-		this->m_light->setMatrix( this->getModelMatrix() );
+		this->m_light->setModelMatrix( this->getModelMatrix() );
 	}
 }
 

@@ -20,6 +20,8 @@ class Orientation
 		Orientation( glm::mat4& );
 		virtual ~Orientation();
 
+		glm::vec3 getPosition() const { return glm::vec3( this->m_matrix[ 3 ].x, this->m_matrix[ 3 ].y, this->m_matrix[ 3 ].z ); };
+
 		void setPosition( const glm::vec3& );
 		void setPositionInv( const glm::vec3& );
 
@@ -43,7 +45,7 @@ class Orientation
 
 		void set( const glm::vec3& pos, float pitch, float heading, float roll, float scale );
 		void setRaw( const float* rotation, const float* position );
-		void setMatrix( const glm::mat4& mat );
+		void setModelMatrix( const glm::mat4& mat );
 
 		const glm::mat4& getModelMatrix() const { return this->m_matrix; };
 

@@ -61,8 +61,14 @@ class DRRenderer
 		UniformBlock* m_transparentMaterialBlock;
 		////////////////////////////////////////
 
-		// utils matrix
+		// static data which will not change every frame
+		// unit-cube matrix for directional- and spot-light shadow-mapping
 		glm::mat4 m_unitCubeMatrix;
+		// view-matrices for cube-map rendering 
+		std::vector<glm::mat4> m_cubeViewMatrices;
+		// the indices of the g-buffer targets
+		std::vector<unsigned int> m_gBufferIndices;
+		////////////////////////////////////////
 
 		Viewer* m_mainCamera;
 		std::vector<ZazenGraphicsEntity*> m_transparentEntities;
@@ -77,6 +83,8 @@ class DRRenderer
 		bool initShadowMapping();
 		bool initTransparency();
 		bool initUniformBlocks();
+
+		void initializeStaticData();
 
 		bool createMrtBuffer( RenderTarget::RenderTargetType, FrameBufferObject* );
 

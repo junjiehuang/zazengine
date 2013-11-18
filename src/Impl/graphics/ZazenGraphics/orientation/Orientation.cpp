@@ -183,7 +183,7 @@ Orientation::setRaw( const float* rotation, const float* position )
 }
 
 void
-Orientation::setMatrix( const glm::mat4& mat )
+Orientation::setModelMatrix( const glm::mat4& mat )
 {
 	this->m_matrix = mat;
 	this->matrixChanged();

@@ -178,6 +178,18 @@ shadowLookup( vec3 shadowCoord, vec2 offset )
 	return texture( ShadowPlanarMap, shadowCoord + vec3( offset.x * 1.0 / 2048.0, offset.y * 1.0 / 2048.0, 0.0 )  );
 }
 
+float
+VectorToDepthValue( vec3 Vec )
+{
+    vec3 AbsVec = abs(Vec);
+    float LocalZcomp = max(AbsVec.x, max(AbsVec.y, AbsVec.z));
+
+    const float f = 1000.0;
+    const float n = 0.1;
+    float NormZComp = (f+n) / (f-n) - (2*f*n)/(f-n)/LocalZcomp;
+    return (NormZComp + 1.0) * 0.5;
+}
+
 float 
 calculateShadow( vec4 ecPosition )
 {
@@ -230,15 +242,18 @@ calculateShadow( vec4 ecPosition )
 		vec3 lightPos = lightMV_Matrix[ 3 ].xyz;
 		// no need to normalize, cube-map lookup also works with normalized vectors
 		vec3 lightDir = lightPos - ecPosition.xyz;
-		
+
 		// the distance from the light to the current fragment in world-coordinates
 		float fragDistToLight = length( lightDir );
 		// the distance from the light to the first hit in NDC (normalized device coordinates)
 		float firstHitDistToLight = texture( ShadowCubeMap, lightDir ).r;
 
-		// problem: fragDistToLight is in NDC and firstHitDistToLight is in world-space, so we cannot compare
+		fragDistToLight = VectorToDepthValue( lightDir );
 
-		shadow = 1.0;
+		if ( fragDistToLight < firstHitDistToLight )
+		{
+			shadow = 1.0;
+		}
 	}
 
 	return shadow;
