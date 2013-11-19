@@ -104,16 +104,12 @@
     </fragDataLocations>
   </program>
 
-  <program name="ShadowingPlanarStageProgramm">
+  <program name="ShadowingStagePlanarProgramm">
     <shaders>
       <shader type="VERTEX" file="dr/stages/shadowing/planar/shadowPlanarVert.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/shadowing/planar/shadowPlanarFrag.glsl"/>
     </shaders>
 
-    <fragDataLocations>
-      <fragDataLocation colorNumber="0" name="fragDepth"/>
-    </fragDataLocations>
-
     <attribLocations>
       <attribLocation index="0" name="in_vertPos"/>
       <attribLocation index="4" name="in_bone_count"/>
@@ -121,18 +117,27 @@
       <attribLocation index="6" name="in_bone_weights"/>
     </attribLocations>
   </program>
-
-  <!--
-  <program name="ShadowingCubeStageProgramm">
+  
+  <program name="ShadowingStageCubeMultiPassProgramm">
     <shaders>
-      <shader type="VERTEX" file="dr/stages/shadowing/cube/shadowCubeVert.glsl"/>
-      <shader type="GEOMETRY" file="dr/stages/shadowing/cube/shadowCubeGeom.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/shadowing/cube/shadowCubeFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/shadowing/cube/multi/shadowCubeVert.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/shadowing/cube/multi/shadowCubeFrag.glsl"/>
     </shaders>
 
-    <fragDataLocations>
-      <fragDataLocation colorNumber="0" name="fragDepth"/>
-    </fragDataLocations>
+    <attribLocations>
+      <attribLocation index="0" name="in_vertPos"/>
+      <attribLocation index="4" name="in_bone_count"/>
+      <attribLocation index="5" name="in_bone_indices"/>
+      <attribLocation index="6" name="in_bone_weights"/>
+    </attribLocations>
+  </program>
+
+  <program name="ShadowingStageCubeSinglePassProgramm">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/shadowing/cube/single/shadowCubeVert.glsl"/>
+      <shader type="GEOMETRY" file="dr/stages/shadowing/cube/single/shadowCubeGeom.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/shadowing/cube/single/shadowCubeFrag.glsl"/>
+    </shaders>
 
     <attribLocations>
       <attribLocation index="0" name="in_vertPos"/>
@@ -141,5 +146,4 @@
       <attribLocation index="6" name="in_bone_weights"/>
     </attribLocations>
   </program>
-  -->
 </programs>

@@ -7,26 +7,6 @@ in uint in_bone_count;
 in uvec4 in_bone_indices;
 in vec4 in_bone_weights;
 
-out vec4 out_position_world;
-
-layout( shared ) uniform LightUniforms
-{
-	vec4 config;
-
-	mat4 modelMatrix;
-	mat4 spaceUniformMatrix;
-} Light;
-
-layout( shared ) uniform CameraUniforms
-{
-	vec4 rectangle;
-
-	mat4 modelMatrix;
-	mat4 viewMatrix;
-
-	mat4 projectionMatrix;
-} Camera;
-
 layout( shared ) uniform TransformUniforms
 {
 	mat4 modelMatrix;
@@ -64,7 +44,6 @@ subroutine uniform processInputs processInputsSelection;
 
 void main()
 {
-	out_position_world = inverse( Camera.viewMatrix ) * vec4( in_vertPos, 1.0 );
-
-	gl_Position = Transforms.projectionMatrix * out_position_world;
+	// transform vertex into world-space
+	gl_Position = Transforms.modelMatrix * processInputsSelection();
 }

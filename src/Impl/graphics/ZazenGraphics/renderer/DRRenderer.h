@@ -50,8 +50,9 @@ class DRRenderer
 		Program* m_progBlendTransparency;
 
 		// Program and shaders for shadow-mapping
-		Program* m_progShadowPlanarMapping;
-		Program* m_progShadowCubeMapping;
+		Program* m_progShadowMappingPlanar;
+		Program* m_progShadowMappingCubeSinglePass;
+		Program* m_progShadowMappingCubeMultiPass;
 		////////////////////////////////////////
 
 		// Uniform-Blocks
@@ -66,7 +67,7 @@ class DRRenderer
 		// unit-cube matrix for directional- and spot-light shadow-mapping
 		glm::mat4 m_unitCubeMatrix;
 		// view-matrices for cube-map rendering 
-		std::vector<glm::mat4> m_cubeInvViewDirections;
+		std::vector<glm::mat4> m_cubeViewDirections;
 		// the indices of the g-buffer targets
 		std::vector<unsigned int> m_gBufferIndices;
 		////////////////////////////////////////
@@ -100,12 +101,12 @@ class DRRenderer
 
 		bool renderLight( std::list<ZazenGraphicsEntity*>&, Light* );
 		bool renderShadowMap( std::list<ZazenGraphicsEntity*>&, Light* );
-		bool renderShadowPass( std::list<ZazenGraphicsEntity*>&, Light* );
+		bool renderShadowPass( std::list<ZazenGraphicsEntity*>&, Light*, Program* );
 
 		bool renderTransparentInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
-
+		bool renderTransparentEntity( Viewer*, ZazenGraphicsEntity*, Program* );
+		
 		bool renderEntities( Viewer*, std::list<ZazenGraphicsEntity*>&, Program*, bool, bool );
-		bool renderEntity( Viewer*, ZazenGraphicsEntity*, Program* );
 		bool renderMeshNode( MeshNode*, const glm::mat4&, const glm::mat4& );
 
 		static bool depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b );

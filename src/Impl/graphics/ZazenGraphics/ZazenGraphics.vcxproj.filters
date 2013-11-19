@@ -124,6 +124,12 @@
     <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Planar">
       <UniqueIdentifier>{031bbeb9-a9ce-4d52-9703-a2d9f27738ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\SinglePass">
+      <UniqueIdentifier>{cf74b15d-f068-4a52-94cf-def2373e9a26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\MultiPass">
+      <UniqueIdentifier>{83d64cc0-4051-4cdc-a815-4a4b2bbc8867}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -385,20 +391,26 @@
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\shadowCubeFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\shadowCubeGeom.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\shadowCubeVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube</Filter>
-    </None>
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarFrag.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Planar</Filter>
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Planar</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeFrag.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\SinglePass</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeGeom.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\SinglePass</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\SinglePass</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeFrag.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\MultiPass</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\MultiPass</Filter>
     </None>
   </ItemGroup>
 </Project>

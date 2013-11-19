@@ -166,9 +166,11 @@
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightNoShadowFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\shadowCubeFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\shadowCubeGeom.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\shadowCubeVert.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeFrag.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeVert.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeFrag.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeGeom.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\blendTranspFrag.glsl" />
