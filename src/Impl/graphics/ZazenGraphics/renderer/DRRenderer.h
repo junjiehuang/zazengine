@@ -101,6 +101,10 @@ class DRRenderer
 
 		bool renderLight( std::list<ZazenGraphicsEntity*>&, Light* );
 		bool renderShadowMap( std::list<ZazenGraphicsEntity*>&, Light* );
+		bool renderShadowPlanar( std::list<ZazenGraphicsEntity*>&, Light* );
+		bool renderShadowCube( std::list<ZazenGraphicsEntity*>&, Light* );
+		bool renderShadowCubeSinglePass( std::list<ZazenGraphicsEntity*>&, Light* );
+		bool renderShadowCubeMultiPass( std::list<ZazenGraphicsEntity*>&, Light* );
 		bool renderShadowPass( std::list<ZazenGraphicsEntity*>&, Light*, Program* );
 
 		bool renderTransparentInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );

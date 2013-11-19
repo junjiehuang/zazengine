@@ -1,7 +1,14 @@
+Clean-up Uniform-Block Update-Mess
+
+Shadows
+	-> point-light
+	-> directional-light
+
 Multiple lights
-	-> blending 
 	-> correct lighting-equations: falloff, cone, ...
 		-> point-light
+		-> spot-light
+		-> directional-light
 	-> Solve Problem of Ambient + Sky-Box Lighting
 		-> when no directional light in scene
 			-> render full-screen quad and apply ambient-term to non-sky-box material and diffuse-only to sky-box material => need new program

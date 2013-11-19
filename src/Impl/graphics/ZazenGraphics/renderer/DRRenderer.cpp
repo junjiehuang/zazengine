@@ -864,103 +864,18 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 		return false;
 	}
 
-	// the shadow-map of a point-light is a cube-map
+	// point-light has a cube-shadowmap
 	if ( Light::LightType::POINT == light->getType() )
 	{
-		// bind light uniform-block to update data of this light
-		if ( false == this->m_lightBlock->bindBuffer() )
+		if ( false == this->renderShadowCube( entities, light ) )
 		{
 			return false;
-		}
-
-		// upload light-model matrix = orientation of the light in the world is necessary for cube-maped shadow-maps
-		this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() );
-
-		// single-pass program for shadow-mapping is in use
-		if ( this->m_progShadowMappingCubeSinglePass )
-		{
-			std::vector<glm::mat4> cubeMVPTransforms( 6 );
-			glm::vec3 lightPosWorld = light->getPosition();
-			glm::mat4 invLightPosTransf = glm::translate( -lightPosWorld );
-		
-			// calculate model-view-projection matrices for each cube-face
-			for ( unsigned int i = 0; i < 6; ++i )
-			{
-				cubeMVPTransforms[ i ] = this->m_cubeViewDirections[ i ] * invLightPosTransf;
-			}
-
-			if ( false == this->m_progShadowMappingCubeSinglePass->use() )
-			{
-				ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowMap: using cube single-pass program failed - exit" );
-				return false;
-			}
-
-			// upload model-view-projection transformations for each face (used in geometry-shader)
-			this->m_progShadowMappingCubeSinglePass->setUniformMatrices( "u_cubeMVPTransforms[0]", cubeMVPTransforms );
-
-			// attach cube-map faces to frame-buffer object
-			if ( false == this->m_intermediateDepthFB->attachTargetTemp( light->getShadowMap() ) )
-			{
-				return false;
-			}
-
-			// do single shadow-pass - geometry-shader will render to each layer of the cube-map
-			if ( false == this->renderShadowPass( entities, light, this->m_progShadowMappingCubeSinglePass ) )
-			{
-				return false;
-			}
-		}
-		// multi-pass program for shadow-mapping is in use
-		else
-		{
-			std::vector<glm::mat4> cubeViewTransforms( 6 );
-			glm::vec3 lightPosWorld = light->getPosition();
-			glm::mat4 invLightPosTransf = glm::translate( -lightPosWorld );
-		
-			// calculate model-view-projection matrices for each cube-face
-			for ( unsigned int i = 0; i < 6; ++i )
-			{
-				cubeViewTransforms[ i ] = this->m_cubeViewDirections[ i ] * invLightPosTransf;
-			}
-
-			if ( false == this->m_progShadowMappingCubeMultiPass->use() )
-			{
-				ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowMap: using cube multi-pass program failed - exit" );
-				return false;
-			}
-
-			// do 6 passes, one for each cube-map face
-			for ( unsigned int face = 0; face < 6; ++face )
-			{
-				// TODO: set view-matrix
-
-				// attach cube-map faces to frame-buffer object
-				if ( false == this->m_intermediateDepthFB->attachTargetTempCube( light->getShadowMap(), face ) )
-				{
-					return false;
-				}
-
-				if ( false == this->renderShadowPass( entities, light, this->m_progShadowMappingCubeMultiPass ) )
-				{
-					return false;
-				}
-			}
 		}
 	}
+	// directional- and spot-light have a planar (2D) shadow-map 
 	else
 	{
-		if ( false == this->m_intermediateDepthFB->attachTargetTemp( light->getShadowMap() ) )
-		{
-			return false;
-		}
-
-		if ( false == this->m_progShadowMappingPlanar->use() )
-		{
-			ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowMap: using planar program failed - exit" );
-			return false;
-		}
-
-		if ( false == this->renderShadowPass( entities, light, this->m_progShadowMappingPlanar ) )
+		if ( false == this->renderShadowPlanar( entities, light ) )
 		{
 			return false;
 		}
@@ -970,6 +885,144 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	if ( false == this->m_intermediateDepthFB->unbind() )
 	{
 		return false;
+	}
+
+	return true;
+}
+
+bool
+DRRenderer::renderShadowPlanar( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+{
+	if ( false == this->m_intermediateDepthFB->attachTargetTemp( light->getShadowMap() ) )
+	{
+		return false;
+	}
+
+	if ( false == this->m_progShadowMappingPlanar->use() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowMap: using planar program failed - exit" );
+		return false;
+	}
+
+	if ( false == this->renderShadowPass( entities, light, this->m_progShadowMappingPlanar ) )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool
+DRRenderer::renderShadowCube( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+{
+	// bind light uniform-block to update data of this light
+	if ( false == this->m_lightBlock->bindBuffer() )
+	{
+		return false;
+	}
+
+	// upload light-model matrix = orientation of the light in the world is necessary for cube-maped shadow-maps
+	this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() );
+
+	// single-pass program for shadow-mapping is in use
+	// uses geometry-shader to render to layers of the cube-map
+	if ( this->m_progShadowMappingCubeSinglePass )
+	{
+		if ( false == this->renderShadowCubeSinglePass( entities, light ) )
+		{
+			return false;
+		}
+	}
+	// multi-pass program for shadow-mapping is in use
+	// do a pass for each cube-layer
+	else
+	{
+		if ( false == this->renderShadowCubeMultiPass( entities, light ) )
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool
+DRRenderer::renderShadowCubeSinglePass( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+{
+	std::vector<glm::mat4> cubeMVPTransforms( 6 );
+	glm::vec3 lightPosWorld = light->getPosition();
+	glm::mat4 invLightPosTransf = glm::translate( -lightPosWorld );
+		
+	// calculate model-view-projection matrices for each cube-face
+	for ( unsigned int i = 0; i < 6; ++i )
+	{
+		cubeMVPTransforms[ i ] = this->m_cubeViewDirections[ i ] * invLightPosTransf;
+	}
+
+	if ( false == this->m_progShadowMappingCubeSinglePass->use() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowMap: using cube single-pass program failed - exit" );
+		return false;
+	}
+
+	// upload model-view-projection transformations for each face (used in geometry-shader)
+	this->m_progShadowMappingCubeSinglePass->setUniformMatrices( "u_cubeMVPTransforms[0]", cubeMVPTransforms );
+
+	// attach cube-map faces to frame-buffer object
+	if ( false == this->m_intermediateDepthFB->attachTargetTemp( light->getShadowMap() ) )
+	{
+		return false;
+	}
+
+	// do single shadow-pass - geometry-shader will render to each layer of the cube-map
+	if ( false == this->renderShadowPass( entities, light, this->m_progShadowMappingCubeSinglePass ) )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool
+DRRenderer::renderShadowCubeMultiPass( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+{
+	std::vector<glm::mat4> cubeViewTransforms( 6 );
+	glm::vec3 lightPosWorld = light->getPosition();
+	glm::mat4 invLightPosTransf = glm::translate( -lightPosWorld );
+		
+	// calculate model-view matrices for each cube-face - leave out projection, will be applied in shader!
+	for ( unsigned int i = 0; i < 6; ++i )
+	{
+		cubeViewTransforms[ i ] = this->m_cubeViewDirections[ i ] * invLightPosTransf;
+	}
+
+	if ( false == this->m_progShadowMappingCubeMultiPass->use() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowMap: using cube multi-pass program failed - exit" );
+		return false;
+	}
+
+	// do 6 passes, one for each cube-map face
+	for ( unsigned int face = 0; face < 6; ++face )
+	{
+		if ( false == this->m_cameraBlock->bindBuffer() )
+		{
+			return false;
+		}
+
+		// update viewing-matrix for the according cube-face
+		this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", cubeViewTransforms[ face ] );
+
+		// attach cube-map faces to frame-buffer object
+		if ( false == this->m_intermediateDepthFB->attachTargetTempCube( light->getShadowMap(), face ) )
+		{
+			return false;
+		}
+
+		if ( false == this->renderShadowPass( entities, light, this->m_progShadowMappingCubeMultiPass ) )
+		{
+			return false;
+		}
 	}
 
 	return true;
@@ -1124,19 +1177,8 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 		return false;
 	}
 
-	/*
-	glm::vec4 cameraRectangle;
-	cameraRectangle[ 0 ] = ( float ) viewer->getWidth();
-	cameraRectangle[ 1 ] = ( float ) viewer->getHeight();
-
-	// update projection because each viewer can have different projection-transform
-	this->m_cameraBlock->updateField( "CameraUniforms.modelMatrix", viewer->getModelMatrix() );
-	// update projection because each viewer can have different projection-transform
-	this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", viewer->getViewMatrix() );
 	// update projection because each viewer can have different projection-transform*/
 	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", viewer->getProjMatrix() );
-	// upload camera-rectangle
-	//this->m_cameraBlock->updateField( "CameraUniforms.rectangle", cameraRectangle );
 
 	// bind transform uniform-block to update model-, view & projection transforms
 	if ( false == this->m_transformsBlock->bindBuffer() )
@@ -1214,20 +1256,10 @@ DRRenderer::renderTransparentEntity( Viewer* viewer, ZazenGraphicsEntity* entity
 	{
 		return false;
 	}
-
-	glm::vec4 cameraRectangle;
-	cameraRectangle[ 0 ] = ( float ) viewer->getWidth();
-	cameraRectangle[ 1 ] = ( float ) viewer->getHeight();
-
-	// update projection because each viewer can have different projection-transform
-	this->m_cameraBlock->updateField( "CameraUniforms.modelMatrix", viewer->getModelMatrix() );
-	// update projection because each viewer can have different projection-transform
-	this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", viewer->getViewMatrix() );
+	
 	// update projection because each viewer can have different projection-transform
 	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", viewer->getProjMatrix() );
-	// upload camera-rectangle
-	this->m_cameraBlock->updateField( "CameraUniforms.rectangle", cameraRectangle );
-
+	
 	// bind transform uniform-block to update model-, view & projection transforms
 	if ( false == this->m_transformsBlock->bindBuffer() )
 	{
