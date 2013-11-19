@@ -18,10 +18,20 @@ out vec2 ex_texCoord;
 out vec4 ex_tangent;
 out vec4 ex_biTangent;
 
+layout( shared ) uniform CameraUniforms
+{
+	vec4 rectangle;
+
+	mat4 modelMatrix;
+	mat4 viewMatrix;
+
+	mat4 projectionMatrix;
+} Camera;
+
 layout( shared ) uniform TransformUniforms
 {
+	mat4 modelMatrix;
 	mat4 modelViewMatrix;
-	mat4 projectionMatrix;
 
 	mat4 normalsModelViewMatrix;
 } Transforms;
@@ -79,5 +89,5 @@ void main()
 	// after this the coordinates will be between -1 to 1 which is NDC
 	// then view-port transform will happen
 	// then fragment-shader takes over
-	gl_Position = Transforms.projectionMatrix * ex_position;
+	gl_Position = Camera.projectionMatrix * ex_position;
 }

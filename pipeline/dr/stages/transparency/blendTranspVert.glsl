@@ -5,13 +5,15 @@ in vec2 in_texCoord;
 
 out vec2 ex_texCoord;
 
-layout( shared ) uniform TransformUniforms
+layout( shared ) uniform CameraUniforms
 {
-	mat4 modelViewMatrix;
-	mat4 projectionMatrix;
+	vec4 rectangle;
 
-	mat4 normalsModelViewMatrix;
-} Transforms;
+	mat4 modelMatrix;
+	mat4 viewMatrix;
+
+	mat4 projectionMatrix;
+} Camera;
 
 void main()
 {
@@ -19,5 +21,5 @@ void main()
 	ex_texCoord = in_texCoord;
 
 	// OPTIMIZE: premultiply projection & modelView on CPU 
-	gl_Position = Transforms.projectionMatrix * vec4( in_vertPos, 1.0 );
+	gl_Position = Camera.projectionMatrix * vec4( in_vertPos, 1.0 );
 }

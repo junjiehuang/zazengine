@@ -24,6 +24,8 @@ layout( shared ) uniform CameraUniforms
 
 	mat4 modelMatrix;
 	mat4 viewMatrix;
+
+	mat4 projectionMatrix;
 } Camera;
 
 const float blendingFactor = 0.5; // TransparentMaterial.config.x

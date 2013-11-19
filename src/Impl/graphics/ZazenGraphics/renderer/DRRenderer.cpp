@@ -637,7 +637,7 @@ DRRenderer::renderSkyBox()
 	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", 0 );
 
 	// render the geometry
-	SkyBox::getRef().render( *this->m_mainCamera, this->m_transformsBlock );
+	SkyBox::getRef().render( *this->m_mainCamera, this->m_cameraBlock, this->m_transformsBlock );
 
 	return true;
 }
@@ -655,6 +655,8 @@ DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 		return false;
 	}
 
+	// upload projection-matrix
+	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", this->m_mainCamera->getProjMatrix() );
 	// upload world-orientation of camera ( its model-matrix )
 	this->m_cameraBlock->updateField( "CameraUniforms.modelMatrix", this->m_mainCamera->getModelMatrix() );
 	// upload view-matrix of camera (need to transform e.g. light-world position in EyeCoords/Viewspace)
@@ -816,12 +818,10 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		}
 	}
 
-	// QUESTION: due to a but only bind was called instead of bindBuffer but it worked!! why?
-	// update projection-matrix because need ortho-projection for full-screen quad
-	this->m_transformsBlock->bindBuffer();
+	this->m_cameraBlock->bindBuffer();
 	// OPTIMIZE: store in light once, and only update when change
 	glm::mat4 orthoMat = this->m_mainCamera->createOrthoProj( true, true );
-	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat );
+	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", orthoMat );
 
 	// blend lighting-results 
 	glEnable( GL_BLEND );
@@ -1041,12 +1041,10 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	this->m_progBlendTransparency->setUniformInt( "Background", 2 );
 	this->m_progBlendTransparency->setUniformInt( "Transparent", 0 );
 	
-	// QUESTION: due to a but only bind was called instead of bindBuffer but it worked!! why?
-	// update projection-matrix because need ortho-projection for full-screen quad
-	this->m_transformsBlock->bindBuffer();
+	this->m_cameraBlock->bindBuffer();
 	// OPTIMIZE: store in light once, and only update when change
 	glm::mat4 orthoMat = this->m_mainCamera->createOrthoProj( true, true );
-	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", orthoMat );
+	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", orthoMat );
 
 	// disable writing to depth when not last instance because would destroy our depth-buffer
 	// when last instance it doesnt matter because we render to screen-buffer
@@ -1069,15 +1067,21 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 bool
 DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities, Program* currentProgramm, bool applyMaterial, bool renderTransparency )
 {
+	// TODO: move out of render entities, no need to do everytime!!
 	// bind transform uniform-block to update model-, view & projection transforms
-	if ( false == this->m_transformsBlock->bindBuffer() )
+	if ( false == this->m_cameraBlock->bindBuffer() )
 	{
 		return false;
 	}
 
 	// update projection because each viewer can have different projection-transform
-	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", viewer->getProjMatrix() );
+	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", viewer->getProjMatrix() );
 
+	// bind transform uniform-block to update model-, view & projection transforms
+	if ( false == this->m_transformsBlock->bindBuffer() )
+	{
+		return false;
+	}
 	list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
 	while ( iter != entities.end() )
 	{
@@ -1131,7 +1135,7 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 		glm::mat4 modelView = viewer->getViewMatrix() * entity->getModelMatrix();
 
 		// render geometry of this instance
-		if ( false == this->renderMeshNode( entity->getMeshNode(), modelView ) )
+		if ( false == this->renderMeshNode( entity->getMeshNode(), modelView, entity->getModelMatrix() ) )
 		{
 			return false;
 		}
@@ -1143,14 +1147,21 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 bool
 DRRenderer::renderEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* currentProgramm )
 {
+	// TODO: move out of render entities, no need to do everytime!!
 	// bind transform uniform-block to update model-, view & projection transforms
-	if ( false == this->m_transformsBlock->bindBuffer() )
+	if ( false == this->m_cameraBlock->bindBuffer() )
 	{
 		return false;
 	}
 
 	// update projection because each viewer can have different projection-transform
-	this->m_transformsBlock->updateField( "TransformUniforms.projectionMatrix", viewer->getProjMatrix() );
+	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", viewer->getProjMatrix() );
+
+	// bind transform uniform-block to update model-, view & projection transforms
+	if ( false == this->m_transformsBlock->bindBuffer() )
+	{
+		return false;
+	}
 
 	// activate material
 	if ( false == entity->getMaterial()->activate( currentProgramm ) )
@@ -1168,7 +1179,7 @@ DRRenderer::renderEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* 
 	glm::mat4 modelView = viewer->getViewMatrix() * entity->getModelMatrix();
 
 	// render geometry of this instance
-	if ( false == this->renderMeshNode( entity->getMeshNode(), modelView ) )
+	if ( false == this->renderMeshNode( entity->getMeshNode(), modelView, entity->getModelMatrix() ) )
 	{
 		return false;
 	}
@@ -1177,7 +1188,7 @@ DRRenderer::renderEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* 
 }
 
 bool
-DRRenderer::renderMeshNode( MeshNode* meshNode, const glm::mat4& entityModelViewMatrix )
+DRRenderer::renderMeshNode( MeshNode* meshNode, const glm::mat4& entityModelViewMatrix, const glm::mat4& entitiyModelMatrix )
 {
 	// no meshes in this node or any sub-children, nothing to render
 	// because we pre-calculate the global-transformation for each mesh-node during loading
@@ -1191,11 +1202,12 @@ DRRenderer::renderMeshNode( MeshNode* meshNode, const glm::mat4& entityModelView
 	const std::vector<Mesh*>& meshes = meshNode->getMeshes();
 	const std::vector<MeshNode*>& children = meshNode->getChildren();
 	glm::mat4 localModelViewMatrix = entityModelViewMatrix * meshNode->getGlobalTransform();
+	glm::mat4 localModelMatrix = entitiyModelMatrix * meshNode->getGlobalTransform();
 
 	for ( unsigned int i = 0; i < children.size(); i++ )
 	{
 		MeshNode* child = children[ i ];
-		if ( false == this->renderMeshNode( children[ i ], entityModelViewMatrix ) )
+		if ( false == this->renderMeshNode( children[ i ], entityModelViewMatrix, entitiyModelMatrix ) )
 		{
 			return false;
 		}
@@ -1204,32 +1216,26 @@ DRRenderer::renderMeshNode( MeshNode* meshNode, const glm::mat4& entityModelView
 	for ( unsigned int i = 0; i < meshes.size(); i++ )
 	{
 		Mesh* mesh = meshes[ i ];
-		if ( false == this->renderMesh( mesh, localModelViewMatrix ) )
-		{
-			return false;
-		}
+
+		// IMPORTANT: normal-vectors are transformed different than vertices
+		// take the transpose of the inverse modelView or simply reset the translation vector in the modelview-matrix
+		// in other words: only the rotations are applied to normals and they are guaranteed to leave
+		// normalized normals at unit length. THIS METHOD WORKS ALSO WHEN NO NON UNIFORM SCALING IS APPLIED
+		// TODO: scrap this transform because we forbid non-uniform-scaling in our engine for performance reasons
+		glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( localModelViewMatrix ) );
+
+		// update model matrix
+		this->m_transformsBlock->updateField( "TransformUniforms.modelMatrix", localModelMatrix );
+		// update model-view matrix
+		this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", localModelViewMatrix );
+		// update model-view matrix for normals
+		this->m_transformsBlock->updateField( "TransformUniforms.normalsModelViewMatrix", normalModelViewMatrix );
+
+		// render geometry
+		return mesh->render();
 	}
 
 	return true;
-}
-
-bool
-DRRenderer::renderMesh( Mesh* mesh, const glm::mat4& modelViewMatrix )
-{
-	// IMPORTANT: normal-vectors are transformed different than vertices
-	// take the transpose of the inverse modelView or simply reset the translation vector in the modelview-matrix
-	// in other words: only the rotations are applied to normals and they are guaranteed to leave
-	// normalized normals at unit length. THIS METHOD WORKS ALSO WHEN NO NON UNIFORM SCALING IS APPLIED
-	// TODO: scrap this transform because we forbid non-uniform-scaling in our engine for performance reasons
-	glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( modelViewMatrix ) );
-
-	// update model-view matrix
-	this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMatrix );
-	// update model-view matrix for normals
-	this->m_transformsBlock->updateField( "TransformUniforms.normalsModelViewMatrix", normalModelViewMatrix );
-
-	// render geometry
-	return mesh->render();
 }
 
 bool

@@ -7,10 +7,20 @@ in uint in_bone_count;
 in uvec4 in_bone_indices;
 in vec4 in_bone_weights;
 
+layout( shared ) uniform CameraUniforms
+{
+	vec4 rectangle;
+
+	mat4 modelMatrix;
+	mat4 viewMatrix;
+
+	mat4 projectionMatrix;
+} Camera;
+
 layout( shared ) uniform TransformUniforms
 {
+	mat4 modelMatrix;
 	mat4 modelViewMatrix;
-	mat4 projectionMatrix;
 
 	mat4 normalsModelViewMatrix;
 } Transforms;
@@ -44,5 +54,5 @@ subroutine uniform processInputs processInputsSelection;
 
 void main()
 {
-	gl_Position = Transforms.projectionMatrix * Transforms.modelViewMatrix * processInputsSelection();
+	gl_Position = Camera.projectionMatrix * Transforms.modelViewMatrix * processInputsSelection();
 }

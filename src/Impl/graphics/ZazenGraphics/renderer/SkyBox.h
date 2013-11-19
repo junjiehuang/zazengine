@@ -16,7 +16,7 @@ class SkyBox
 
 		static SkyBox& getRef() { return *SkyBox::instance; };
 
-		bool render( const Viewer&, UniformBlock* );
+		bool render( const Viewer&, UniformBlock*, UniformBlock* );
 
 	private:
 		static SkyBox* instance;

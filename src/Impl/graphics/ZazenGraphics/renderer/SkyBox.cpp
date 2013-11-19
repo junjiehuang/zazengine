@@ -111,7 +111,7 @@ SkyBox::~SkyBox()
 }
 
 bool
-SkyBox::render( const Viewer& camera, UniformBlock* transformsBlock )
+SkyBox::render( const Viewer& camera, UniformBlock* cameraBlock, UniformBlock* transformsBlock )
 {
 	// disable depth-writing, sky-box is ALWAYS behind everything else
 	glDisable( GL_DEPTH_TEST );
@@ -127,14 +127,20 @@ SkyBox::render( const Viewer& camera, UniformBlock* transformsBlock )
 	modelViewMat[ 3 ][ 1 ] = 0.0f;
 	modelViewMat[ 3 ][ 2 ] = 0.0f;
 
+	if ( false == cameraBlock->bindBuffer() )
+	{
+		return false;
+	}
+
+	cameraBlock->updateField( "CameraUniforms.projectionMatrix", projMat );
+
 	if ( false == transformsBlock->bindBuffer() )
 	{
 		return false;
 	}
 
 	transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMat );
-	transformsBlock->updateField( "TransformUniforms.projectionMatrix", projMat );
-
+	
 	this->m_cubeMap->bind( 0 );
 
 	glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );

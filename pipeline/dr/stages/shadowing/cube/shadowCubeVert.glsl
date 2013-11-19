@@ -23,14 +23,14 @@ layout( shared ) uniform CameraUniforms
 
 	mat4 modelMatrix;
 	mat4 viewMatrix;
+
+	mat4 projectionMatrix;
 } Camera;
 
 layout( shared ) uniform TransformUniforms
 {
 	mat4 modelMatrix;
-
 	mat4 modelViewMatrix;
-	mat4 projectionMatrix;
 
 	mat4 normalsModelViewMatrix;
 } Transforms;

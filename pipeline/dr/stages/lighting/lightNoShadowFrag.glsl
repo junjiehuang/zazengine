@@ -13,6 +13,8 @@ layout( shared ) uniform CameraUniforms
 
 	mat4 modelMatrix;
 	mat4 viewMatrix;
+
+	mat4 projectionMatrix;
 } Camera;
 
 layout( shared ) uniform LightUniforms

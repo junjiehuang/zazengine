@@ -355,12 +355,6 @@
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing</Filter>
-    </None>
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
     </None>
@@ -390,12 +384,6 @@
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowGeomCube.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowGeomPlanar.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing</Filter>
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\shadowCubeFrag.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube</Filter>
