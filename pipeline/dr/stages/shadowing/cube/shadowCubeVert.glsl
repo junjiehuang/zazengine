@@ -7,7 +7,7 @@ in uint in_bone_count;
 in uvec4 in_bone_indices;
 in vec4 in_bone_weights;
 
-out vec3 out_lightDir_world;
+out vec4 out_position_world;
 
 layout( shared ) uniform LightUniforms
 {
@@ -27,6 +27,8 @@ layout( shared ) uniform CameraUniforms
 
 layout( shared ) uniform TransformUniforms
 {
+	mat4 modelMatrix;
+
 	mat4 modelViewMatrix;
 	mat4 projectionMatrix;
 
@@ -62,10 +64,7 @@ subroutine uniform processInputs processInputsSelection;
 
 void main()
 {
-	vec4 positionViewSpace = Transforms.modelViewMatrix * processInputsSelection();
-	vec4 positionWorldSpace = inverse( Camera.viewMatrix ) * positionViewSpace;
+	out_position_world = inverse( Camera.viewMatrix ) * vec4( in_vertPos, 1.0 );
 
-	out_lightDir_world = positionWorldSpace.xyz - Light.modelMatrix[ 3 ].xyz;
-
-	gl_Position = Transforms.projectionMatrix * positionViewSpace;
+	gl_Position = Transforms.projectionMatrix * out_position_world;
 }

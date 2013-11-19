@@ -31,7 +31,8 @@ DRRenderer::DRRenderer()
 	this->m_progSkyBox = NULL;
 	this->m_progLightingStage = NULL;
 	this->m_progLightingNoShadowStage = NULL;
-	this->m_progShadowMapping = NULL;
+	this->m_progShadowPlanarMapping = NULL;
+	this->m_progShadowCubeMapping = NULL;
 	this->m_progTransparency = NULL;
 	this->m_progBlendTransparency = NULL;
 
@@ -321,8 +322,8 @@ DRRenderer::initShadowMapping()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Shadow-Mapping..." );
 
-	this->m_progShadowMapping = ProgramManagement::get( "ShadowingStageProgramm" );
-	if ( 0 == this->m_progShadowMapping )
+	this->m_progShadowPlanarMapping = ProgramManagement::get( "ShadowingPlanarStageProgramm" );
+	if ( 0 == this->m_progShadowPlanarMapping )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initShadowMapping: coulnd't create program - exit" );
 		return false;
@@ -854,7 +855,7 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	}
 
 	// use shadow-mapping program
-	if ( false == this->m_progShadowMapping->use() )
+	if ( false == this->m_progShadowPlanarMapping->use() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowMap: using program failed - exit" );
 		return false;
@@ -875,7 +876,7 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 		// upload light-model matrix = orientation of the light in the world
 		this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() );
 
-		this->m_progShadowMapping->activateSubroutine( "calculateDepthDistance", Shader::FRAGMENT_SHADER );
+		this->m_progShadowPlanarMapping->activateSubroutine( "calculateDepthDistance", Shader::FRAGMENT_SHADER );
 
 		// do multi-pass rendering of shadow cube-map
 		for ( unsigned int face = 0; face < 6; face++ )
@@ -902,7 +903,7 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	}
 	else
 	{
-		this->m_progShadowMapping->activateSubroutine( "calculateDepthNDC", Shader::FRAGMENT_SHADER );
+		this->m_progShadowPlanarMapping->activateSubroutine( "calculateDepthNDC", Shader::FRAGMENT_SHADER );
 
 		// attach this shadow-map temporarily to the fbo (other light will use the same fbo)
 		if ( false == this->m_intermediateDepthFB->attachTargetTemp( light->getShadowMap() ) )
@@ -939,13 +940,13 @@ DRRenderer::renderShadowPass( std::list<ZazenGraphicsEntity*>& entities, Light* 
 	light->restoreViewport();
 
 	// render scene from view of camera - don't apply material, we need only depth, render transparent materials
-	if ( false == this->renderEntities( light, entities, this->m_progShadowMapping, false, true ) )
+	if ( false == this->renderEntities( light, entities, this->m_progShadowPlanarMapping, false, true ) )
 	{
 		return false;
 	}
 
 	// render scene from view of camera - don't apply material, we need only depth, render opaque materials
-	if ( false == this->renderEntities( light, entities, this->m_progShadowMapping, false, false ) )
+	if ( false == this->renderEntities( light, entities, this->m_progShadowPlanarMapping, false, false ) )
 	{
 		return false;
 	}

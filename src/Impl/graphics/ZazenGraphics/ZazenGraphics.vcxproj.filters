@@ -118,6 +118,12 @@
     <Filter Include="Headerdateien\viewer">
       <UniqueIdentifier>{2977bd6d-8829-48e4-a50c-75cd737e72f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube">
+      <UniqueIdentifier>{e42e78f9-b616-473b-9ab1-27825b0e5c94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Planar">
+      <UniqueIdentifier>{031bbeb9-a9ce-4d52-9703-a2d9f27738ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -384,6 +390,27 @@
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowGeomCube.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\shadowGeomPlanar.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\shadowCubeFrag.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\shadowCubeGeom.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\shadowCubeVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarFrag.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Planar</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Planar</Filter>
     </None>
   </ItemGroup>
 </Project>

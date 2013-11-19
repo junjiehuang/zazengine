@@ -13,6 +13,8 @@ layout( shared ) uniform TransformUniforms
 
 uniform mat4 u_cubeModelViewMatrices[ 10 ];
 
+in vec4 out_position_world;
+
 void
 main()
 {

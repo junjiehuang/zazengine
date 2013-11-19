@@ -104,10 +104,10 @@
     </fragDataLocations>
   </program>
 
-  <program name="ShadowingStageProgramm">
+  <program name="ShadowingPlanarStageProgramm">
     <shaders>
-      <shader type="VERTEX" file="dr/stages/shadowing/shadowVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/shadowing/shadowFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/shadowing/planar/shadowPlanarVert.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/shadowing/planar/shadowPlanarFrag.glsl"/>
     </shaders>
 
     <fragDataLocations>
@@ -121,4 +121,25 @@
       <attribLocation index="6" name="in_bone_weights"/>
     </attribLocations>
   </program>
+
+  <!--
+  <program name="ShadowingCubeStageProgramm">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/shadowing/cube/shadowCubeVert.glsl"/>
+      <shader type="GEOMETRY" file="dr/stages/shadowing/cube/shadowCubeGeom.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/shadowing/cube/shadowCubeFrag.glsl"/>
+    </shaders>
+
+    <fragDataLocations>
+      <fragDataLocation colorNumber="0" name="fragDepth"/>
+    </fragDataLocations>
+
+    <attribLocations>
+      <attribLocation index="0" name="in_vertPos"/>
+      <attribLocation index="4" name="in_bone_count"/>
+      <attribLocation index="5" name="in_bone_indices"/>
+      <attribLocation index="6" name="in_bone_weights"/>
+    </attribLocations>
+  </program>
+  -->
 </programs>
