@@ -22,14 +22,12 @@ class UniformBlock
 		bool bindBase();
 		bool bindBuffer();
 
-		bool updateMat4( const glm::mat4&, int offset );
-		bool updateVec4( const glm::vec4&, int offset );
-
 		bool updateData( const void* data, int size );
 		bool updateData( const void* data, int offset, int size );
 
 		bool updateField( const std::string&, const glm::mat4& );
 		bool updateField( const std::string&, const glm::vec4& );
+		bool updateField( const std::string&, const glm::vec2& );
 
 		~UniformBlock();
 
@@ -54,6 +52,10 @@ class UniformBlock
 		const std::string m_name;
 
 		std::map<std::string, UniformField*> m_fields;
+
+		bool updateMat4( const glm::mat4&, int offset );
+		bool updateVec4( const glm::vec4&, int offset );
+		bool updateVec2( const glm::vec2&, int offset );
 
 		UniformField* getUniformField( const std::string& name );
 

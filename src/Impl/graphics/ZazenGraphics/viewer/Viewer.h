@@ -34,13 +34,16 @@ class Viewer : public Orientation
 		void setupPerspective();
 		void setupOrtho();
 
-		const int& getHeight() const { return this->m_height; };
-		const int& getWidth() const { return this->m_width; };
+		int getHeight() const { return this->m_height; };
+		int getWidth() const { return this->m_width; };
 
 		void setFov( float fov ) { this->m_fov = fov; };
 
 		void setNear( float nearDist ) { this->m_nearDist = nearDist; };
+		float getNear() { return this->m_nearDist; };
+
 		void setFar( float farDist ) { this->m_farDist = farDist; };
+		float getFar() { return this->m_farDist; };
 	
 		void resize( int, int );
 

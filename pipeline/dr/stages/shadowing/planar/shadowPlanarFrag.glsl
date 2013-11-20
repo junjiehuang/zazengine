@@ -2,5 +2,5 @@
 
 void main()
 {
-	// no need to write anything, depth will go by fixed-pipeline to render-target
+	// no need to write anything, NDC depth will go by fixed-pipeline to render-target
 }

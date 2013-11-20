@@ -11,28 +11,39 @@ in uvec4 in_bone_indices;
 in vec4 in_bone_weights;
 
 // do we really need vec4 or does vec3 suffice?
-// IMPORTANT: out-variables are interepolated but no perspective division is applied
+// IMPORTANT: out-variables are interpolated but no perspective division is applied
 out vec4 ex_position;
 out vec4 ex_normal;
 out vec2 ex_texCoord;
 out vec4 ex_tangent;
 out vec4 ex_biTangent;
 
+// THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 layout( shared ) uniform CameraUniforms
 {
-	vec4 rectangle;
+	// the width (x) and height (y) of the camera-window in pixels ( the resolution )
+	vec2 window;	
+	// the near- (x) and far-plane distances (y)
+	vec2 nearFar;
 
+	// the model-matrix of the camera (orienation within world-space)
 	mat4 modelMatrix;
+	// the view-matrix of the camera to apply to the objects to transform to view/eye/camera-space (is its inverse model-matrix)
 	mat4 viewMatrix;
-
+	// the projection-matrix of the camera
 	mat4 projectionMatrix;
 } Camera;
 
+// THE TRANSFORMATIONS FOR THE CURRENT MESH/VERTEX-STREAM
 layout( shared ) uniform TransformUniforms
 {
+	// the model-matrix of the current rendered mesh - transform to world-space
 	mat4 modelMatrix;
+	// the model-view-matrix of the current rendered mesh - the view-matrix is the one of the Camera - transforms from model-space to view/eye/camera-space
 	mat4 modelViewMatrix;
 
+	// the model-view-matrix for the normals - necessary when non-uniform scaling is used
+	// TODO: remove
 	mat4 normalsModelViewMatrix;
 } Transforms;
 

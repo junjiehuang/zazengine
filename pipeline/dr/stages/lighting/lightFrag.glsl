@@ -1,4 +1,4 @@
-#version 330 core
+#version 400 core
 
 uniform sampler2D DiffuseMap;
 uniform sampler2D NormalMap;
@@ -14,16 +14,24 @@ out vec4 final_color;
 
 const float shadow_bias = 0.005;
 
+// THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
+// NOTE: THIS HAS TO BE THE CAMERA THE GEOMETRY-STAGE WAS RENDERED WITH
 layout( shared ) uniform CameraUniforms
 {
-	vec4 rectangle;
+	// the width (x) and height (y) of the camera-window in pixels ( the resolution )
+	vec2 window;	
+	// the near- (x) and far-plane distances (y)
+	vec2 nearFar;
 
+	// the model-matrix of the camera (orienation within world-space)
 	mat4 modelMatrix;
+	// the view-matrix of the camera to apply to the objects to transform to view/eye/camera-space (is its inverse model-matrix)
 	mat4 viewMatrix;
-
+	// the projection-matrix of the camera
 	mat4 projectionMatrix;
 } Camera;
 
+// THE CONFIGURATION OF THE CURRENT LIGHT
 layout( shared ) uniform LightUniforms
 {
 	vec4 config;
@@ -247,8 +255,8 @@ calculateShadow( vec4 ecPosition )
 void
 main()
 {
-	// fetch the coordinate of this fragment in normalized screen-space ( 0 â€“ 1 ) 
-	vec2 screenCoord = vec2( gl_FragCoord.x / Camera.rectangle.x, gl_FragCoord.y / Camera.rectangle.y );
+	// fetch the coordinate of this fragment in normalized screen-space 
+	vec2 screenCoord = vec2( gl_FragCoord.x / Camera.window.x, gl_FragCoord.y / Camera.window.y );
 
 	// fetch diffuse color for this fragment
 	vec4 diffuse = texture( DiffuseMap, screenCoord );

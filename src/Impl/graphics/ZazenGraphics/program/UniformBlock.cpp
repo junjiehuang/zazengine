@@ -83,6 +83,75 @@ UniformBlock::bindBuffer()
 }
 
 bool
+UniformBlock::updateField( const std::string& fieldName, const glm::mat4& data )
+{
+	UniformField* field = this->getUniformField( fieldName );
+	if ( NULL == field )
+	{
+#ifdef _DEBUG
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update unknown field \"" << fieldName << "\"";
+#endif
+		return false;
+	}
+
+#ifdef _DEBUG
+	if ( GL_FLOAT_MAT4 != field->m_type )
+	{
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update field \"" << fieldName << "\" with incompatible mat4 type. field has type " << field->m_type;
+		return false;
+	}
+#endif
+
+	return this->updateMat4( data, field->m_offset );
+}
+
+bool
+UniformBlock::updateField( const std::string& fieldName, const glm::vec4& data )
+{
+	UniformField* field = this->getUniformField( fieldName );
+	if ( NULL == field )
+	{
+#ifdef _DEBUG
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update unknown field \"" << fieldName << "\"";
+#endif
+		return false;
+	}
+
+#ifdef _DEBUG
+	if ( GL_FLOAT_VEC4 != field->m_type )
+	{
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update field \"" << fieldName << "\" with incompatible vec4 type. field has type " << field->m_type;
+		return false;
+	}
+#endif
+
+	return this->updateVec4( data, field->m_offset );
+}
+
+bool
+UniformBlock::updateField( const std::string& fieldName, const glm::vec2& data )
+{
+	UniformField* field = this->getUniformField( fieldName );
+	if ( NULL == field )
+	{
+#ifdef _DEBUG
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update unknown field \"" << fieldName << "\"";
+#endif
+		return false;
+	}
+
+#ifdef _DEBUG
+	if ( GL_FLOAT_VEC2 != field->m_type )
+	{
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update field \"" << fieldName << "\" with incompatible vec2 type. field has type " << field->m_type;
+		return false;
+	}
+#endif
+
+	return this->updateVec2( data, field->m_offset );
+}
+
+bool
 UniformBlock::updateData( const void* data, int offset, int size )
 {
 	glBufferSubData( GL_UNIFORM_BUFFER, offset, size, data );
@@ -113,29 +182,9 @@ UniformBlock::updateVec4( const glm::vec4& vec, int offset )
 }
 
 bool
-UniformBlock::updateField( const std::string& fieldName, const glm::mat4& data )
+UniformBlock::updateVec2( const glm::vec2& vec, int offset )
 {
-	UniformField* field = this->getUniformField( fieldName );
-	if ( NULL == field )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update unknown field \"" << fieldName << "\"";
-		return false;
-	}
-
-	return this->updateMat4( data, field->m_offset );
-}
-
-bool
-UniformBlock::updateField( const std::string& fieldName, const glm::vec4& data )
-{
-	UniformField* field = this->getUniformField( fieldName );
-	if ( NULL == field )
-	{
-		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update unknown field \"" << fieldName << "\"";
-		return false;
-	}
-
-	return this->updateVec4( data, field->m_offset );
+	return this->updateData( glm::value_ptr( vec ), offset, 8 );
 }
 
 UniformBlock::UniformField*

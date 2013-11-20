@@ -1,19 +1,16 @@
-#version 330 core
+#version 400 core
 
 in vec3 in_vertPos;
 in vec2 in_texCoord;
 
 out vec2 ex_texCoord;
 
-layout( shared ) uniform CameraUniforms
+// TRANSFORMATIONS OF THE GEOMETRY TO ACHIEVE BLENDING
+layout( shared ) uniform ScreenRenderingBoundaryUniforms
 {
-	vec4 rectangle;
-
-	mat4 modelMatrix;
-	mat4 viewMatrix;
-
+	// the projection-matrix of the current light-boundary
 	mat4 projectionMatrix;
-} Camera;
+} ScreenRenderingBoundary;
 
 void main()
 {
@@ -21,5 +18,5 @@ void main()
 	ex_texCoord = in_texCoord;
 
 	// OPTIMIZE: premultiply projection & modelView on CPU 
-	gl_Position = Camera.projectionMatrix * vec4( in_vertPos, 1.0 );
+	gl_Position = ScreenRenderingBoundary.projectionMatrix * vec4( in_vertPos, 1.0 );
 }

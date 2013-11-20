@@ -100,22 +100,11 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 bool
 FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 {
-	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW_PLANAR == renderTarget->getType() )
+	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW_PLANAR == renderTarget->getType() || RenderTarget::RT_SHADOW_CUBE == renderTarget->getType() )
 	{
 		// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
 		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, renderTarget->getId(), 0 );
 		GL_PEEK_ERRORS_AT_DEBUG
-	}
-	// attach all 6 faces of the depth cube-map at once
-	else if ( RenderTarget::RT_SHADOW_CUBE == renderTarget->getType() )
-	{
-		// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
-		// for a shadow cube-map we need to attach all 6 faces separately
-		for( int i = 0; i < 6; i++ )
-		{
-			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, renderTarget->getId(), 0 );
-			GL_PEEK_ERRORS_AT_DEBUG
-		}
 	}
 	else if ( RenderTarget::RT_COLOR == renderTarget->getType() )
 	{
@@ -130,7 +119,7 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 }
 
 bool
-FrameBufferObject::attachTargetTempCube( RenderTarget* renderTarget, unsigned int face )
+FrameBufferObject::attachTargetTempCubeFace( RenderTarget* renderTarget, unsigned int face )
 {
 	if ( RenderTarget::RT_SHADOW_CUBE == renderTarget->getType() )
 	{

@@ -42,6 +42,7 @@ DRRenderer::DRRenderer()
 	this->m_lightBlock = NULL;
 	this->m_materialBlock = NULL;
 	this->m_transparentMaterialBlock = NULL;
+	this->m_screenRenderingBoundaryBlock = NULL;
 
 	this->m_fullScreenQuad = NULL;
 
@@ -418,6 +419,13 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
+	this->m_screenRenderingBoundaryBlock = UniformManagement::getBlock( "ScreenRenderingBoundaryUniforms" );
+	if ( 0 == this->m_screenRenderingBoundaryBlock )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find screen-rendering boundary uniform-block - exit" );
+		return false;
+	}
+
 	/* IMPORTANT: found this in forums: 
 		On ATI hardware, you have to call
 
@@ -438,24 +446,34 @@ DRRenderer::initUniformBlocks()
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding transform uniform-block failed - exit" );
 		return false;
 	}
+
 	if ( false == this->m_cameraBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding camera uniform-block failed - exit" );
 		return false;
 	}
+
 	if ( false == this->m_lightBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding light uniform-block failed - exit" );
 		return false;
 	}
+
 	if ( false == this->m_materialBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding material uniform-block failed - exit" );
 		return false;
 	}
+
 	if ( false == this->m_transparentMaterialBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding transparent material uniform-block failed - exit" );
+		return false;
+	}
+
+	if ( false == this->m_screenRenderingBoundaryBlock->bindBase() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding screen-rendering boundary uniform-block failed - exit" );
 		return false;
 	}
 
@@ -465,22 +483,29 @@ DRRenderer::initUniformBlocks()
 void 
 DRRenderer::initializeStaticData()
 {
-	this->m_cubeViewDirections = vector<glm::mat4>( 6 );
 	// insertion-order is very important: first x, then y and last z
-	this->m_cubeViewDirections[ 0 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( 1, 0, 0 ), glm::vec3( 0, -1, 0 ) );		// POS X
-	this->m_cubeViewDirections[ 1 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( -1, 0, 0 ), glm::vec3( 0, -1, 0 ) );		// NEG X
-	this->m_cubeViewDirections[ 2 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, -1, 0 ), glm::vec3( 0, 0, -1 ) );		// POS Y
-	this->m_cubeViewDirections[ 3 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 1, 0 ), glm::vec3( 0, 0, 1 ) );			// NEG Y
-	this->m_cubeViewDirections[ 4 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, 1 ), glm::vec3( 0, -1, 0 ) );		// POS Z 
-	this->m_cubeViewDirections[ 5 ] = glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, -1 ),glm::vec3( 0, -1, 0 ) );		// NEG Z
+	this->m_cubeViewDirections.clear();
+	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 1, 0, 0 ), glm::vec3( 0, -1, 0 ) ) );		// POS X
+	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( -1, 0, 0 ), glm::vec3( 0, -1, 0 ) ) );	// NEG X
+	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, -1, 0 ), glm::vec3( 0, 0, -1 ) ) ); 	// POS Y
+	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 1, 0 ), glm::vec3( 0, 0, 1 ) ) );		// NEG Y
+	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, 1 ), glm::vec3( 0, -1, 0 ) ) );		// POS Z 
+	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, -1 ),glm::vec3( 0, -1, 0 ) ) );		// NEG Z
 
 	this->m_gBufferIndices.clear();
-	this->m_gBufferIndices.push_back( 0 ); // diffuse
+	this->m_gBufferIndices.push_back( 0 );	// diffuse
 	this->m_gBufferIndices.push_back( 1 );	// normals
 	this->m_gBufferIndices.push_back( 2 );	// positions
 	this->m_gBufferIndices.push_back( 3 );	// tangents
 	this->m_gBufferIndices.push_back( 4 );	// bi-tangents
 	this->m_gBufferIndices.push_back( 6 );	// depth
+
+	this->m_gBufferDrawBufferIndices.clear();
+	this->m_gBufferDrawBufferIndices.push_back( 0 );	// diffuse
+	this->m_gBufferDrawBufferIndices.push_back( 1 );	// normal
+	this->m_gBufferDrawBufferIndices.push_back( 2 );	// position
+	this->m_gBufferDrawBufferIndices.push_back( 3 );	// tangents
+	this->m_gBufferDrawBufferIndices.push_back( 4 );	// bi-tangents
 }
 
 bool
@@ -585,21 +610,17 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 		return false;
 	}
 
-	vector<unsigned int> indices;
-	indices.push_back( 0 ); // diffuse
-	indices.push_back( 1 );	// normal
-	indices.push_back( 2 );	// position
-	indices.push_back( 3 );	// tangents
-	indices.push_back( 4 );	// bi-tangents
-
 	// enable rendering to all render-targets in geometry-stage
-	if ( false == this->m_gBufferFbo->drawBuffers( indices ) )
+	if ( false == this->m_gBufferFbo->drawBuffers( m_gBufferDrawBufferIndices ) )
 	{
 		return false;
 	}
 
 	// check status of FBO, IMPORANT: not before, would have failed
 	CHECK_FRAMEBUFFER_DEBUG
+
+	// update all parameters of the camera to render geometry-stage
+	this->updateCameraBlock( this->m_mainCamera );
 
 	// draw all geometry from cameras viewpoint AND apply materials but ignore transparent material
 	if ( false == this->renderEntities( this->m_mainCamera, entities, this->m_progGeomStage, true, false ) )
@@ -654,26 +675,6 @@ DRRenderer::renderSkyBox()
 bool
 DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 {
-	glm::vec4 cameraRectangle;
-	cameraRectangle[ 0 ] = ( float ) this->m_mainCamera->getWidth();
-	cameraRectangle[ 1 ] = ( float ) this->m_mainCamera->getHeight();
-
-	// bind camera uniform-block to update data
-	if ( false == this->m_cameraBlock->bindBuffer() )
-	{
-		return false;
-	}
-
-	// upload projection-matrix
-	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", this->m_mainCamera->getProjMatrix() );
-	// upload world-orientation of camera ( its model-matrix )
-	this->m_cameraBlock->updateField( "CameraUniforms.modelMatrix", this->m_mainCamera->getModelMatrix() );
-	// upload view-matrix of camera (need to transform e.g. light-world position in EyeCoords/Viewspace)
-	this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", this->m_mainCamera->getViewMatrix() );
-	// upload camera-rectangle
-	this->m_cameraBlock->updateField( "CameraUniforms.rectangle", cameraRectangle );
-
-
 	// no transparent objects in scene, render lighting to default framebuffer
 	if ( 0 == this->m_transparentEntities.size() )
 	{
@@ -778,23 +779,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	// tell lighting program that depth-map of scene is bound to texture-unit 5 
 	activeLightingProgram->setUniformInt( "DepthMap", 5 );
 	
-	glm::vec4 lightConfig;
-	glm::mat4 lightSpaceUnit;
-
-	lightConfig[ 0 ] = ( float ) light->getType();
-	lightConfig[ 1 ] = light->getFalloff();
-	lightConfig[ 2 ] = light->isShadowCaster();
-		
-	// bind light uniform-block to update data of this light
-	if ( false == this->m_lightBlock->bindBuffer() )
-	{
-		return false;
-	}
-
-	// upload light-config
-	this->m_lightBlock->updateField( "LightUniforms.config", lightConfig );
-	// upload light-model matrix = orientation of the light in the world
-	this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() );
+	bool updateLightSpaceUnitCube = false;
 
 	// bind shadow-map when light is shadow-caster
 	if ( light->isShadowCaster() )
@@ -814,12 +799,8 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		{
 			// tell program that the shadowmap of spot/directional-light will be available at texture unit 6
 			activeLightingProgram->setUniformInt( "ShadowPlanarMap", 6 );
-
-			// calculate the light-space projection matrix
-			// multiplication with unit-cube is first because has to be carried out the last
-			lightSpaceUnit = this->m_unitCubeMatrix * light->getVPMatrix();
-
-			this->m_lightBlock->updateField( "LightUniforms.spaceUniformMatrix", lightSpaceUnit );
+			// need to update the lights-space unit-cube only when spot/directional-light
+			updateLightSpaceUnitCube = true;
 		}
 
 		if ( false == light->getShadowMap()->bind( textureUnit ) )
@@ -828,11 +809,25 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		}
 	}
 
-	this->m_cameraBlock->bindBuffer();
+	// update configuration of the current light to its uniform-block
+	if ( false == this->updateLightBlock( light, updateLightSpaceUnitCube ) )
+	{
+		return false;
+	}
+
+	// need to re-set the configuration of the camera uniform-block to the main-camera because need the information within the lighting-shader
+	if ( false == this->updateCameraBlock( this->m_mainCamera ) )
+	{
+		return false;
+	}
+
 	// OPTIMIZE: store in light once, and only update when change
 	glm::mat4 orthoMat = this->m_mainCamera->createOrthoProj( true, true );
-	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", orthoMat );
-
+	if ( false == this->updateScreenRenderingBlock( orthoMat ) )
+	{
+		return false;
+	}
+	
 	// blend lighting-results 
 	glEnable( GL_BLEND );
 	// need additive-blending
@@ -858,6 +853,9 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 bool
 DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* light )
 {
+	// update the camera for rendering the shadow-cube - the light is the camera because we render the scene from the perspective of the camera
+	this->updateCameraBlock( light );
+
 	// use shadow-mapping fbo to render depth of light view-point to
 	if ( false == this->m_intermediateDepthFB->bind() )
 	{
@@ -915,15 +913,6 @@ DRRenderer::renderShadowPlanar( std::list<ZazenGraphicsEntity*>& entities, Light
 bool
 DRRenderer::renderShadowCube( std::list<ZazenGraphicsEntity*>& entities, Light* light )
 {
-	// bind light uniform-block to update data of this light
-	if ( false == this->m_lightBlock->bindBuffer() )
-	{
-		return false;
-	}
-
-	// upload light-model matrix = orientation of the light in the world is necessary for cube-maped shadow-maps
-	this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() );
-
 	// single-pass program for shadow-mapping is in use
 	// uses geometry-shader to render to layers of the cube-map
 	if ( this->m_progShadowMappingCubeSinglePass )
@@ -956,7 +945,7 @@ DRRenderer::renderShadowCubeSinglePass( std::list<ZazenGraphicsEntity*>& entitie
 	// calculate model-view-projection matrices for each cube-face
 	for ( unsigned int i = 0; i < 6; ++i )
 	{
-		cubeMVPTransforms[ i ] = this->m_cubeViewDirections[ i ] * invLightPosTransf;
+		cubeMVPTransforms[ i ] = light->getProjMatrix() * this->m_cubeViewDirections[ i ] * invLightPosTransf;
 	}
 
 	if ( false == this->m_progShadowMappingCubeSinglePass->use() )
@@ -1014,7 +1003,7 @@ DRRenderer::renderShadowCubeMultiPass( std::list<ZazenGraphicsEntity*>& entities
 		this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", cubeViewTransforms[ face ] );
 
 		// attach cube-map faces to frame-buffer object
-		if ( false == this->m_intermediateDepthFB->attachTargetTempCube( light->getShadowMap(), face ) )
+		if ( false == this->m_intermediateDepthFB->attachTargetTempCubeFace( light->getShadowMap(), face ) )
 		{
 			return false;
 		}
@@ -1111,6 +1100,11 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	// clear buffer 
 	glClear( GL_COLOR_BUFFER_BIT );
 
+	if ( false == this->updateCameraBlock( this->m_mainCamera ) )
+	{
+		return false;
+	}
+
 	if ( false == this->renderTransparentEntity( this->m_mainCamera, entity, this->m_progTransparency ) )
 	{
 		return false;
@@ -1144,10 +1138,12 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	this->m_progBlendTransparency->setUniformInt( "Background", 2 );
 	this->m_progBlendTransparency->setUniformInt( "Transparent", 0 );
 	
-	this->m_cameraBlock->bindBuffer();
 	// OPTIMIZE: store in light once, and only update when change
 	glm::mat4 orthoMat = this->m_mainCamera->createOrthoProj( true, true );
-	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", orthoMat );
+	if ( false == this->updateScreenRenderingBlock( orthoMat ) )
+	{
+		return false;
+	}
 
 	// disable writing to depth when not last instance because would destroy our depth-buffer
 	// when last instance it doesnt matter because we render to screen-buffer
@@ -1170,21 +1166,12 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 bool
 DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities, Program* currentProgramm, bool applyMaterial, bool renderTransparency )
 {
-	// TODO: move out of render entities, no need to do everytime!!
-	// bind transform uniform-block to update model-, view & projection transforms
-	if ( false == this->m_cameraBlock->bindBuffer() )
-	{
-		return false;
-	}
-
-	// update projection because each viewer can have different projection-transform*/
-	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", viewer->getProjMatrix() );
-
 	// bind transform uniform-block to update model-, view & projection transforms
 	if ( false == this->m_transformsBlock->bindBuffer() )
 	{
 		return false;
 	}
+
 	list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
 	while ( iter != entities.end() )
 	{
@@ -1250,16 +1237,6 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 bool
 DRRenderer::renderTransparentEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* currentProgramm )
 {
-	// TODO: move out of render entities, no need to do everytime!!
-	// bind transform uniform-block to update model-, view & projection transforms
-	if ( false == this->m_cameraBlock->bindBuffer() )
-	{
-		return false;
-	}
-	
-	// update projection because each viewer can have different projection-transform
-	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", viewer->getProjMatrix() );
-	
 	// bind transform uniform-block to update model-, view & projection transforms
 	if ( false == this->m_transformsBlock->bindBuffer() )
 	{
@@ -1347,4 +1324,79 @@ DRRenderer::depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b )
 	// depth sorting: distance holds the z-value of the center in view-space
 	// the larger the negative values the farther way
 	return a->getDistance() < b->getDistance(); 
+}
+
+bool
+DRRenderer::updateCameraBlock( Viewer* viewer )
+{
+	glm::vec2 cameraRectangle;
+	glm::vec2 cameraNearFar;
+	
+	cameraRectangle[ 0 ] = ( float ) viewer->getWidth();
+	cameraRectangle[ 1 ] = ( float ) viewer->getHeight();
+
+	cameraNearFar[ 0 ] = viewer->getNear();
+	cameraNearFar[ 1 ] = viewer->getFar();
+
+	// bind camera uniform-block to update data
+	if ( false == this->m_cameraBlock->bindBuffer() )
+	{
+		return false;
+	}
+
+	// upload cameras window size
+	this->m_cameraBlock->updateField( "CameraUniforms.window", cameraRectangle );
+	// upload cameras near and far distances
+	this->m_cameraBlock->updateField( "CameraUniforms.nearFar", cameraNearFar );
+
+	// upload world-orientation of camera ( its model-matrix )
+	this->m_cameraBlock->updateField( "CameraUniforms.modelMatrix", viewer->getModelMatrix() );
+	// upload view-matrix of camera ( = its inverse model-matrix)
+	this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", viewer->getViewMatrix() );
+	// upload projection-matrix of the camera
+	this->m_cameraBlock->updateField( "CameraUniforms.projectionMatrix", viewer->getProjMatrix() );
+	
+	return true;
+}
+
+bool
+DRRenderer::updateLightBlock( Light* light, bool updateLightSpaceUnitCube )
+{
+	glm::vec4 lightConfig;
+
+	lightConfig[ 0 ] = ( float ) light->getType();
+	lightConfig[ 1 ] = light->getFalloff();
+	lightConfig[ 2 ] = light->isShadowCaster();
+		
+	// bind light uniform-block to update data of this light
+	if ( false == this->m_lightBlock->bindBuffer() )
+	{
+		return false;
+	}
+
+	// upload light-config
+	this->m_lightBlock->updateField( "LightUniforms.config", lightConfig );
+	// upload light-model matrix = orientation of the light in the world
+	this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() );
+
+	if ( updateLightSpaceUnitCube )
+	{
+		glm::mat4 lightSpaceUnit = this->m_unitCubeMatrix * light->getVPMatrix();
+		this->m_lightBlock->updateField( "LightUniforms.spaceUniformMatrix", lightSpaceUnit );
+	}
+
+	return true;
+}
+
+bool
+DRRenderer::updateScreenRenderingBlock( const glm::mat4& projection )
+{
+	if ( false == this->m_screenRenderingBoundaryBlock->bindBuffer() )
+	{
+		return false;
+	}
+
+	this->m_screenRenderingBoundaryBlock->updateField( "ScreenRenderingBoundaryUniforms.projectionMatrix", projection );
+
+	return true;
 }

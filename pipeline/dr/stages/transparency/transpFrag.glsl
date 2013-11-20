@@ -1,4 +1,4 @@
-#version 330 core
+#version 400 core
 
 uniform sampler2D DiffuseTexture;
 uniform sampler2D NormalTexture;
@@ -17,14 +17,19 @@ layout( shared ) uniform TransparentMaterialUniforms
 	vec4 config;
 } TransparentMaterial;
 
-
+// THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 layout( shared ) uniform CameraUniforms
 {
-	vec4 rectangle;
+	// the width (x) and height (y) of the camera-window in pixels ( the resolution )
+	vec2 window;	
+	// the near- (x) and far-plane distances (y)
+	vec2 nearFar;
 
+	// the model-matrix of the camera (orienation within world-space)
 	mat4 modelMatrix;
+	// the view-matrix of the camera to apply to the objects to transform to view/eye/camera-space (is its inverse model-matrix)
 	mat4 viewMatrix;
-
+	// the projection-matrix of the camera
 	mat4 projectionMatrix;
 } Camera;
 
@@ -35,7 +40,7 @@ void main()
 {
 	vec4 refractNormal = 2.0 * texture( NormalTexture, ex_texCoord ) - 1.0;
 
-	vec2 screenTexCoord = vec2( gl_FragCoord.x / Camera.rectangle.x, gl_FragCoord.y / Camera.rectangle.y );
+	vec2 screenTexCoord = vec2( gl_FragCoord.x / Camera.window.x, gl_FragCoord.y / Camera.window.y );
 	vec2 refractTexCoord = screenTexCoord + refractNormal.xy * TransparentMaterial.config.y;
 
 	vec4 bgColorRefract = texture( Background, refractTexCoord );

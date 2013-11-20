@@ -56,8 +56,9 @@ class DRRenderer
 		////////////////////////////////////////
 
 		// Uniform-Blocks
-		UniformBlock* m_transformsBlock;
 		UniformBlock* m_cameraBlock;
+		UniformBlock* m_transformsBlock;
+		UniformBlock* m_screenRenderingBoundaryBlock;
 		UniformBlock* m_lightBlock;
 		UniformBlock* m_materialBlock;
 		UniformBlock* m_transparentMaterialBlock;
@@ -70,6 +71,8 @@ class DRRenderer
 		std::vector<glm::mat4> m_cubeViewDirections;
 		// the indices of the g-buffer targets
 		std::vector<unsigned int> m_gBufferIndices;
+		// the indices of the g-buffer targets
+		std::vector<unsigned int> m_gBufferDrawBufferIndices;
 		////////////////////////////////////////
 
 		Viewer* m_mainCamera;
@@ -112,6 +115,10 @@ class DRRenderer
 		
 		bool renderEntities( Viewer*, std::list<ZazenGraphicsEntity*>&, Program*, bool, bool );
 		bool renderMeshNode( MeshNode*, const glm::mat4&, const glm::mat4& );
+
+		bool updateCameraBlock( Viewer* );
+		bool updateLightBlock( Light*, bool );
+		bool updateScreenRenderingBlock( const glm::mat4& );
 
 		static bool depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b );
 

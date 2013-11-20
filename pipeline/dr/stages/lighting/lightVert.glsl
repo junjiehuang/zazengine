@@ -1,27 +1,17 @@
-#version 330 core
+#version 400 core
 
+// light-boundary has only vertex-positions
 in vec3 in_vertPos;
 
-layout( shared ) uniform CameraUniforms
+// TRANSFORMATIONS OF THE BOUNDARY OF THE CURRENT LIGHT
+layout( shared ) uniform ScreenRenderingBoundaryUniforms
 {
-	vec4 rectangle;
-
-	mat4 modelMatrix;
-	mat4 viewMatrix;
-
+	// the projection-matrix of the current light-boundary
 	mat4 projectionMatrix;
-} Camera;
-
-layout( shared ) uniform TransformUniforms
-{
-	mat4 modelMatrix;
-	mat4 modelViewMatrix;
-
-	mat4 normalsModelViewMatrix;
-} Transforms;
+} ScreenRenderingBoundary;
 
 void main()
 {
 	// HINT: only apply projection-matrix because we do orthogonal quad rendering and apply no modeling
-	gl_Position = Camera.projectionMatrix * vec4( in_vertPos, 1.0 );
+	gl_Position = ScreenRenderingBoundary.projectionMatrix * vec4( in_vertPos, 1.0 );
 }

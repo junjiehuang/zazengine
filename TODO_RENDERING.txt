@@ -1,4 +1,5 @@
-Clean-up Uniform-Block Update-Mess
+Pull bone-matrices into uniform-block
+	-> only update once per frame and not for each shadow-pass
 
 Shadows
 	-> point-light
