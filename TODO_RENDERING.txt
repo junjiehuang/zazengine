@@ -1,10 +1,3 @@
-Pull bone-matrices into uniform-block
-	-> only update once per frame and not for each shadow-pass
-
-Shadows
-	-> point-light
-	-> directional-light
-
 Multiple lights
 	-> correct lighting-equations: falloff, cone, ...
 		-> point-light
@@ -16,6 +9,11 @@ Multiple lights
 			-> other lights accumulate by blending
 		-> when directional light in scene
 			-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
+
+Shadows
+	-> point-light
+	-> directional-light
+
 	
 Mip-Map Creation in TextureFactory
 

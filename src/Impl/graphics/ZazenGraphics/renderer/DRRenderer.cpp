@@ -1297,19 +1297,21 @@ DRRenderer::renderMeshNode( MeshNode* meshNode, const glm::mat4& entityModelView
 	{
 		Mesh* mesh = meshes[ i ];
 
+		
+		// update model matrix
+		this->m_transformsBlock->updateField( "TransformUniforms.modelMatrix", localModelMatrix );
+		// update model-view matrix
+		this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", localModelViewMatrix );
+		
+		// THIS EXISTS FOR LEARNING AND INFORMATION REATIONS!
 		// IMPORTANT: normal-vectors are transformed different than vertices
 		// take the transpose of the inverse modelView or simply reset the translation vector in the modelview-matrix
 		// in other words: only the rotations are applied to normals and they are guaranteed to leave
 		// normalized normals at unit length. THIS METHOD WORKS ALSO WHEN NO NON UNIFORM SCALING IS APPLIED
 		// TODO: scrap this transform because we forbid non-uniform-scaling in our engine for performance reasons
-		glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( localModelViewMatrix ) );
-
-		// update model matrix
-		this->m_transformsBlock->updateField( "TransformUniforms.modelMatrix", localModelMatrix );
-		// update model-view matrix
-		this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", localModelViewMatrix );
+		// glm::mat4 normalModelViewMatrix = glm::transpose( glm::inverse( localModelViewMatrix ) );
 		// update model-view matrix for normals
-		this->m_transformsBlock->updateField( "TransformUniforms.normalsModelViewMatrix", normalModelViewMatrix );
+		// this->m_transformsBlock->updateField( "TransformUniforms.normalsModelViewMatrix", normalModelViewMatrix );
 
 		// render geometry
 		return mesh->render();

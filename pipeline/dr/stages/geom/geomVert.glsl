@@ -41,10 +41,6 @@ layout( shared ) uniform TransformUniforms
 	mat4 modelMatrix;
 	// the model-view-matrix of the current rendered mesh - the view-matrix is the one of the Camera - transforms from model-space to view/eye/camera-space
 	mat4 modelViewMatrix;
-
-	// the model-view-matrix for the normals - necessary when non-uniform scaling is used
-	// TODO: remove
-	mat4 normalsModelViewMatrix;
 } Transforms;
 
 uniform mat4 u_bones[ MAX_BONES_PER_MESH ];
@@ -84,12 +80,13 @@ void main()
 
 	// store position in view-space (EyeCoordinates) 
 	ex_position = Transforms.modelViewMatrix * ex_position;
-	// store normals in view-space too (EC)
-	ex_normal = Transforms.normalsModelViewMatrix * ex_normal; 
+	// store normals in view-space too (EC) - non-uniform scaling is forbidden in this engine therefore we can use the normal modelViewMatrix
+	ex_normal = Transforms.modelViewMatrix * ex_normal; 
 	// no transform for texture-coords, just interpolated
 	ex_texCoord = in_texCoord;
 
-	ex_tangent = Transforms.normalsModelViewMatrix * ex_tangent;
+	// non-uniform scaling is forbidden in this engine therefore we can use the normal modelViewMatrix
+	ex_tangent = Transforms.modelViewMatrix * ex_tangent;
 	ex_biTangent = vec4( cross( ex_normal.xyz, ex_tangent.xyz ), 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
 	 
 	// OPTIMIZE: premultiply projection & modelView on CPU 

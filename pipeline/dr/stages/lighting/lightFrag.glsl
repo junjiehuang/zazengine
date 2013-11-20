@@ -40,55 +40,55 @@ layout( shared ) uniform LightUniforms
 	mat4 spaceUniformMatrix;
 } Light;
 
-vec4
-calculateLambertian( in vec4 diffuse, in vec4 normal, in vec4 position )
+vec3
+calculateLambertian( in vec3 diffuse, in vec3 normal, in vec3 position )
 {
 	// IMPORTANT: need to normalize normals due to possible uniform-scaling applied to models
-	normal = normalize( normal );
+	//normal = normalize( normal );
 
 	// need to transpose light-model matrix to view-space for eye-coordinates 
 	// OPTIMIZE: premultiply on CPU
 	mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
 
 	// light-position is stored in 4th vector
-	vec3 lightPos = vec3( lightMV_Matrix[ 3 ] );
-	vec3 lightDir = normalize( lightPos - vec3( position ) );
+	vec3 lightPos = lightMV_Matrix[ 3 ].xyz;
+	vec3 lightDir = normalize( lightPos - position );
     
 	// calculate attenuation-factor
-	float attenuationFactor = max( dot( vec3( normal ), lightDir ), 0.0 );
+	float attenuationFactor = max( dot( normal, lightDir ), 0.0 );
 
 	return attenuationFactor * diffuse;
 }
 
-vec4
-calculatePhong( in vec4 diffuse, in vec4 normal, in vec4 position )
+vec3
+calculatePhong( in vec3 diffuse, in vec3 normal, in vec3 position )
 {
 	// IMPORTANT: need to normalize normals due to possible uniform-scaling applied to models
-	normal = normalize( normal );
+	//normal = normalize( normal );
 
 	// need to transpose light-model matrix to view-space for eye-coordinates 
 	// OPTIMIZE: premultiply on CPU
 	mat4 lightMV_Matrix = Camera.viewMatrix * Light.modelMatrix;
 
-	vec3 lightPos = vec3( lightMV_Matrix[ 3 ] );
+	vec3 lightPos = lightMV_Matrix[ 3 ].xyz;
 	vec3 lightDir = normalize( lightPos - vec3( position ) );
     
-	vec3 eyeDir = normalize( vec3( Camera.modelMatrix[ 3 ] ) - vec3( position ) );
+	vec3 eyeDir = normalize( Camera.modelMatrix[ 3 ].xyz - position );
 	vec3 vHalfVector = normalize( lightDir + eyeDir );
     
 	// calculate attenuation-factor
-	float attenuationFactor = max( dot( vec3( normal ), lightDir ), 0.0 );
+	float attenuationFactor = max( dot( normal, lightDir ), 0.0 );
 
-	float specularFactor =  pow( max( dot( vec3( normal ), vHalfVector ), 0.0 ), 100 ) * 1.5;
+	float specularFactor =  pow( max( dot( normal, vHalfVector ), 0.0 ), 100 ) * 1.5;
 
 	return attenuationFactor * diffuse + specularFactor;    
 }
 
-vec4
+vec3
 calculateDoom3Lighting( in vec4 diffuseIn, in vec4 normalIn, in vec4 tangentIn, in vec4 biTangentIn, in vec4 positionIn )
 {
 	vec3 fragmentPosition = positionIn.xyz;
-	vec4 specularMaterial = vec4( normalIn.a, tangentIn.a, biTangentIn.a, 1.0 );
+	vec3 specularMaterial = vec3( normalIn.a, tangentIn.a, biTangentIn.a );
 
 	// need to scale light into range -1.0 to +1.0 because was stored in normal-map and does not come from geometry
 	// NOTE: this is the normal in local-space, normal-mapping is done in local-space/tangent-space
@@ -134,7 +134,7 @@ calculateDoom3Lighting( in vec4 diffuseIn, in vec4 normalIn, in vec4 tangentIn, 
 	halfVecLocal.z = dot( halfVec, nTangent );
 	halfVecLocal = normalize( halfVecLocal );
 
-	vec4 finalColor = vec4( 0.0 );
+	vec3 finalColor = vec3( 0.0 );
 
 	// calculate attenuation-factor
 	float lambertFactor = max( dot( nLocal, lightVec ), 0.0 );
@@ -143,7 +143,7 @@ calculateDoom3Lighting( in vec4 diffuseIn, in vec4 normalIn, in vec4 tangentIn, 
 	{
 		float shininess =  pow( max( dot( nLocal, halfVecLocal ), 0.0 ), 90.0 );
 
-		finalColor = vec4( diffuseIn.rgb * lambertFactor, 1.0 );
+		finalColor = diffuseIn.rgb * lambertFactor;
 		finalColor += specularMaterial * shininess;
 	}
 
@@ -291,15 +291,15 @@ main()
 
 			if ( 1.0 == matId )
 			{
-				final_color = calculateLambertian( diffuse, normal, ecPosition );
+				final_color.xyz = calculateLambertian( diffuse.xyz, normal.xyz, ecPosition.xyz );
 			}
 			else if ( 2.0 == matId )
 			{
-				final_color = calculatePhong( diffuse, normal, ecPosition );
+				final_color.xyz = calculatePhong( diffuse.xyz, normal.xyz, ecPosition.xyz );
 			}
 			else if ( 3.0 == matId )
 			{
-				final_color = calculateDoom3Lighting( diffuse, normal, tangent, biTangent, ecPosition );
+				final_color.xyz = calculateDoom3Lighting( diffuse, normal, tangent, biTangent, ecPosition );
 			}
 			else
 			{

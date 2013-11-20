@@ -31,15 +31,11 @@ layout( shared ) uniform TransformUniforms
 	mat4 modelMatrix;
 	// the model-view-matrix of the current rendered mesh - the view-matrix is the one of the Camera - transforms from model-space to view/eye/camera-space
 	mat4 modelViewMatrix;
-
-	// the model-view-matrix for the normals - necessary when non-uniform scaling is used
-	// TODO: remove
-	mat4 normalsModelViewMatrix;
 } Transforms;
 
 void main()
 {
-	ex_normal = Transforms.normalsModelViewMatrix * vec4( in_vertNorm, 0.0 );
+	ex_normal = Transforms.modelMatrix * vec4( in_vertNorm, 0.0 );
 	// no transform for texture-coords, just interpolated
 	ex_texCoord = in_texCoord;
 

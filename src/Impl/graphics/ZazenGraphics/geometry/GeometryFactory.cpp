@@ -213,6 +213,9 @@ GeometryFactory::loadFile( const filesystem::path& filePath )
 
 	const std::string& fileName = filePath.generic_string();
 
+	// TODO: add aiProcess_LimitBoneWeights will default max bones to 4 / vertex
+	// TODO: add aiProcess_ImproveCacheLocality to improve cache-access patterns for vertex-transformation but has O(n) complexity
+
 	this->m_currentScene = aiImportFile( fileName.c_str(), aiProcess_CalcTangentSpace	
 		| aiProcess_JoinIdenticalVertices 
 		| aiProcess_Triangulate 
@@ -377,12 +380,17 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh )
 			int index = face->mIndices[ j ];
 			float boneWeightSum = 0.0f;
 
+			// normalize normals during load-time to ensure they arrive normalized in shader
+			assImpMesh->mNormals[ index ].Normalize();
+
 			indexBuffer[ i * 3 + j ] = index;
 			memcpy( vertexData[ index ].position, &assImpMesh->mVertices[ index ].x, sizeof( MeshBoned::Vertex ) );
 			memcpy( vertexData[ index ].normal, &assImpMesh->mNormals[ index ].x, sizeof( MeshBoned::Normal ) );
 
 			if ( assImpMesh->HasTangentsAndBitangents() )
 			{
+				// normalize tangents during load-time to ensure they arrive normalized in shader
+				assImpMesh->mTangents[ index ].Normalize();
 				memcpy( vertexData[ index ].tangent, &assImpMesh->mTangents[ index ].x, sizeof( MeshBoned::Tangent ) );
 			}
 
@@ -485,10 +493,19 @@ GeometryFactory::processMeshStatic( const struct aiMesh* assImpMesh )
 		{
 			int index = face->mIndices[ j ];
 
+			// normalize normals during load-time to ensure they arrive normalized in shader
+			assImpMesh->mNormals[ index ].Normalize();
+
 			indexBuffer[ i * 3 + j ] = index;
 			memcpy( vertexData[ index ].position, &assImpMesh->mVertices[ index ].x, sizeof( MeshStatic::Vertex ) );
 			memcpy( vertexData[ index ].normal, &assImpMesh->mNormals[ index ].x, sizeof( MeshStatic::Normal ) );
-			memcpy( vertexData[ index ].tangent, &assImpMesh->mTangents[ index ].x, sizeof( MeshStatic::Tangent ) );
+			
+			if ( assImpMesh->HasTangentsAndBitangents() )
+			{
+				// normalize tangents during load-time to ensure they arrive normalized in shader
+				assImpMesh->mTangents[ index ].Normalize();
+				memcpy( vertexData[ index ].tangent, &assImpMesh->mTangents[ index ].x, sizeof( MeshStatic::Tangent ) );
+			}
 
 			if ( assImpMesh->HasTextureCoords( 0 ) )
 			{
