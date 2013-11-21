@@ -34,11 +34,133 @@ layout( shared ) uniform CameraUniforms
 // THE CONFIGURATION OF THE CURRENT LIGHT
 layout( shared ) uniform LightUniforms
 {
-	vec4 config;
+	vec2 shadowResolution;
+
+	vec3 color;
+
+	vec2 power; // x = shininess, y = strength
+
+	vec3 attenuation; // x = constant, y = linear, z = quadratic
+
+	vec2 spot; // x = spot cut-off, y = spot exponent
 
 	mat4 modelMatrix;
 	mat4 spaceUniformMatrix;
 } Light;
+
+subroutine vec3 light();
+
+subroutine ( light ) vec3 directionalLight( vec3 baseColor, vec3 fragPosViewSpace, vec3 normalViewSpace )
+{
+	// need light-position and direction in view-space: multiply model-matrix of light with cameras view-matrix
+	// OPTIMIZE: premultiply on CPU and pass in through Light.modelViewMatrix
+	mat4 lightMVMatrix = Camera.viewMatrix * Light.modelMatrix;
+
+	vec3 lightPosViewSpace = lightMVMatrix[ 3 ].xyz;
+	vec3 lightDirToFragViewSpace = normalize( lightPosViewSpace - fragPosViewSpace );
+    
+	// camera is always at origin 0/0/0 and points into the negative z-achsis so the direction is the negated fragment position in view-space 
+	vec3 eyeDirToFragViewSpace = normalize( -fragPosViewSpace );
+	vec3 vHalfVector = normalize( lightDirToFragViewSpace + eyeDirToFragViewSpace );
+    
+	// diffuse (lambert) factor
+	float diffuseFactor = max( 0.0, dot( normalViewSpace, lightDirToFragViewSpace ) );
+	// OPTIMIZE: calculate only when diffuse > 0
+	float specularFactor = pow( max( 0.0, dot( normalViewSpace, vHalfVector ) ), Light.power.x ); // directional light doesn't apply strength at specular factor but at reflected light calculation
+
+	vec3 scatteredLight = diffuseFactor * Light.color;		// no ambient light for now 
+	vec3 reflectedLight = Light.color * specularFactor * Light.power.y;
+
+	// TODO: directional shadow-calculation
+
+	return baseColor * scatteredLight + reflectedLight;
+}
+
+subroutine ( light ) vec3 spotLight( vec3 baseColor, vec3 fragPosViewSpace, vec3 normalViewSpace )
+{
+	// need light-position and direction in view-space: multiply model-matrix of light with cameras view-matrix
+	// OPTIMIZE: premultiply on CPU and pass in through Light.modelViewMatrix
+	mat4 lightMVMatrix = Camera.viewMatrix * Light.modelMatrix;
+
+	vec3 lightPosViewSpace = lightMVMatrix[ 3 ].xyz;
+	vec3 lightDirToFragViewSpace = lightPosViewSpace - fragPosViewSpace;
+	// need distance in view-space for falloff
+    float lightDistanceViewSpace = length( lightDirToFragViewSpace );
+
+	// normalize light direction
+	lightDirToFragViewSpace /= lightDistanceViewSpace;
+
+	float attenuation = 1.0 / ( Light.attenuation.x +		// constant attenuation
+		Light.attenuation.y * lightDistanceViewSpace +		// linear attenuation
+		Light.attenuation.z * lightDistanceViewSpace * lightDistanceViewSpace	// quadratic attenuation
+
+	// calculate the cosine between the direction of the light-direction the the fragment and the direction of the light itself which is stored in the model-view matrix z-achsis
+	float spotCos = dot( lightDirToFragViewSpace, lightMVMatrix[ 2 ].xyz );
+
+	// camera is always at origin 0/0/0 and points into the negative z-achsis so the direction is the negated fragment position in view-space 
+	vec3 eyeDirToFragViewSpace = normalize( -fragPosViewSpace );
+	vec3 halfVector = normalize( lightDirToFragViewSpace + eyeDirToFragViewSpace );
+    
+	if ( spotCos < Light.spot.x )
+	{
+		attenuation = 0.0;
+	}
+	else
+	{
+		attenuation *= pow( spotCos, Light.spot.y );
+	}
+
+	// diffuse (lambert) factor
+	// OPTIMIZE: calculate only when attenuation > 0
+	float diffuseFactor = max( 0.0, dot( normalViewSpace, lightDirToFragViewSpace ) );
+	// OPTIMIZE: calculate only when diffuse > 0 AND attenuation > 0
+	float specularFactor = pow( max( 0.0, dot( normalViewSpace, halfVector ) ), Light.power.x ) * Light.power.y;
+
+	// OPTIMIZE: calculate only when diffuse > 0 AND attenuation > 0
+	vec3 scatteredLight = diffuseFactor * Light.color * attenuation;	// no ambient light for now 
+	vec3 reflectedLight = Light.color * specularFactor * attenuation;	// no light-strength for now 
+
+	// TODO: cube-maped shadow-calculation
+
+	return baseColor * scatteredLight + reflectedLight;
+}
+
+subroutine ( light ) vec3 pointLight( vec3 baseColor, vec3 fragPosViewSpace, vec3 normalViewSpace )
+{
+	// need light-position and direction in view-space: multiply model-matrix of light with cameras view-matrix
+	// OPTIMIZE: premultiply on CPU and pass in through Light.modelViewMatrix
+	mat4 lightMVMatrix = Camera.viewMatrix * Light.modelMatrix;
+
+	vec3 lightPosViewSpace = lightMVMatrix[ 3 ].xyz;
+	vec3 lightDirToFragViewSpace = lightPosViewSpace - fragPosViewSpace;
+	// need distance in view-space for falloff
+    float lightDistanceViewSpace = length( lightDirToFragViewSpace );
+
+	// normalize light direction
+	lightDirToFragViewSpace /= lightDistanceViewSpace;
+
+	float attenuation = 1.0 / ( Light.attenuation.x +		// constant attenuation
+		Light.attenuation.y * lightDistanceViewSpace +		// linear attenuation
+		Light.attenuation.z * lightDistanceViewSpace * lightDistanceViewSpace	// quadratic attenuation
+
+	// camera is always at origin 0/0/0 and points into the negative z-achsis so the direction is the negated fragment position in view-space 
+	vec3 eyeDirToFragViewSpace = normalize( -fragPosViewSpace );
+	vec3 halfVector = normalize( lightDirToFragViewSpace + eyeDirToFragViewSpace );
+    
+	// diffuse (lambert) factor
+	// OPTIMIZE: calculate only when attenuation > 0
+	float diffuseFactor = max( 0.0, dot( normalViewSpace, lightDirToFragViewSpace ) );
+	// OPTIMIZE: calculate only when diffuse > 0 AND attenuation > 0
+	float specularFactor = pow( max( 0.0, dot( normalViewSpace, halfVector ) ), Light.power.x ) * Light.power.y;
+
+	// OPTIMIZE: calculate only when diffuse > 0 AND attenuation > 0
+	vec3 scatteredLight = diffuseFactor * Light.color * attenuation;	// no ambient light for now 
+	vec3 reflectedLight = Light.color * specularFactor * attenuation;	// no light-strength for now 
+
+	// TODO: cube-maped shadow-calculation
+
+	return baseColor * scatteredLight + reflectedLight;
+}
 
 vec3
 calculateLambertian( in vec3 diffuse, in vec3 normal, in vec3 position )
@@ -74,12 +196,12 @@ calculatePhong( in vec3 diffuse, in vec3 normal, in vec3 position )
 	vec3 lightDir = normalize( lightPos - vec3( position ) );
     
 	vec3 eyeDir = normalize( Camera.modelMatrix[ 3 ].xyz - position );
-	vec3 vHalfVector = normalize( lightDir + eyeDir );
+	vec3 halfVector = normalize( lightDir + eyeDir );
     
 	// calculate attenuation-factor
 	float attenuationFactor = max( dot( normal, lightDir ), 0.0 );
 
-	float specularFactor =  pow( max( dot( normal, vHalfVector ), 0.0 ), 100 ) * 1.5;
+	float specularFactor =  pow( max( dot( normal, halfVector ), 0.0 ), 100 ) * 1.5;
 
 	return attenuationFactor * diffuse + specularFactor;    
 }
@@ -169,8 +291,7 @@ shadowLookupProj( vec4 shadowCoord, vec2 offset )
 	// IMPORTANT: because we installed a compare-function on this shadow-sampler
 	// we don't need to compare it anymore to the z-value of the shadow-coord
 
-	// IMPORTANT: 2048 is the resolution of the shadow-map, need to adjust it
-	return textureProj( ShadowPlanarMap, shadowCoord + vec4( offset.x * 1.0 / 2048.0 * shadowCoord.w, offset.y * 1.0 / 2048.0 * shadowCoord.w, 0.0, 0.0 ) );
+	return textureProj( ShadowPlanarMap, shadowCoord + vec4( offset.x * 1.0 / Light.shadowResolution.x * shadowCoord.w, offset.y * 1.0 / Light.shadowResolution.y * shadowCoord.w, 0.0, 0.0 ) );
 }
 
 float
@@ -184,7 +305,7 @@ shadowLookup( vec3 shadowCoord, vec2 offset )
 	// we don't need to compare it anymore to the z-value of the shadow-coord
 
 	// IMPORTANT: 2048 is the resolution of the shadow-map, need to adjust it
-	return texture( ShadowPlanarMap, shadowCoord + vec3( offset.x * 1.0 / 2048.0, offset.y * 1.0 / 2048.0, 0.0 )  );
+	return texture( ShadowPlanarMap, shadowCoord + vec3( offset.x * 1.0 / Light.shadowResolution.x, offset.y * 1.0 / Light.shadowResolution.y, 0.0 )  );
 }
 
 float 
@@ -252,8 +373,7 @@ calculateShadow( vec4 ecPosition )
 	return shadow;
 }
 
-void
-main()
+void main()
 {
 	// fetch the coordinate of this fragment in normalized screen-space 
 	vec2 screenCoord = vec2( gl_FragCoord.x / Camera.window.x, gl_FragCoord.y / Camera.window.y );

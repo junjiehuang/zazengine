@@ -28,6 +28,7 @@ layout( shared ) uniform CameraUniforms
 layout( shared ) uniform LightUniforms
 {
 	vec4 config; 				// x: type, y: falloff, z: shadowCaster 0/1
+	vec2 shadowResolution;
 
 	mat4 modelMatrix;
 	mat4 spaceUniformMatrix;

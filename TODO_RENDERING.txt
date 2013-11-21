@@ -10,6 +10,12 @@ Multiple lights
 		-> when directional light in scene
 			-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
 
+Replace all If-Then in shaders with subroutines if possible
+	-> geometry-stage material-type
+	-> lighting-stage light-type
+		-> lighting
+		-> shadowing
+
 Shadows
 	-> point-light
 	-> directional-light

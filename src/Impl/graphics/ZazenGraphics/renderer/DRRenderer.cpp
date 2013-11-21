@@ -779,8 +779,6 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	// tell lighting program that depth-map of scene is bound to texture-unit 5 
 	activeLightingProgram->setUniformInt( "DepthMap", 5 );
 	
-	bool updateLightSpaceUnitCube = false;
-
 	// bind shadow-map when light is shadow-caster
 	if ( light->isShadowCaster() )
 	{
@@ -799,8 +797,6 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		{
 			// tell program that the shadowmap of spot/directional-light will be available at texture unit 6
 			activeLightingProgram->setUniformInt( "ShadowPlanarMap", 6 );
-			// need to update the lights-space unit-cube only when spot/directional-light
-			updateLightSpaceUnitCube = true;
 		}
 
 		if ( false == light->getShadowMap()->bind( textureUnit ) )
@@ -810,7 +806,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	}
 
 	// update configuration of the current light to its uniform-block
-	if ( false == this->updateLightBlock( light, updateLightSpaceUnitCube ) )
+	if ( false == this->updateLightBlock( light ) )
 	{
 		return false;
 	}
@@ -1362,29 +1358,55 @@ DRRenderer::updateCameraBlock( Viewer* viewer )
 }
 
 bool
-DRRenderer::updateLightBlock( Light* light, bool updateLightSpaceUnitCube )
+DRRenderer::updateLightBlock( Light* light )
 {
-	glm::vec4 lightConfig;
+	glm::vec2 shadowResolution;
+	glm::vec3 color( 1.0 );
+	glm::vec2 power( 1.0 );
+	glm::vec3 attenuation( 1.0 );
 
-	lightConfig[ 0 ] = ( float ) light->getType();
-	lightConfig[ 1 ] = light->getFalloff();
-	lightConfig[ 2 ] = light->isShadowCaster();
-		
+	// TODO: set color from light
+	// TODO: set power from light
+	// TODO: set attenuation from light
+
+	// shadow-map resolution corresponds to the width and height
+	shadowResolution.x = ( float ) light->getWidth();
+	shadowResolution.y = ( float )  light->getHeight();
+	
 	// bind light uniform-block to update data of this light
 	if ( false == this->m_lightBlock->bindBuffer() )
 	{
 		return false;
 	}
 
-	// upload light-config
-	this->m_lightBlock->updateField( "LightUniforms.config", lightConfig );
+	this->m_lightBlock->updateField( "LightUniforms.shadowResolution", shadowResolution );
+	this->m_lightBlock->updateField( "LightUniforms.color", color );
+	this->m_lightBlock->updateField( "LightUniforms.power", power );
+	
 	// upload light-model matrix = orientation of the light in the world
 	this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() );
 
-	if ( updateLightSpaceUnitCube )
+	if ( Light::LightType::POINT == light->getType() )
 	{
-		glm::mat4 lightSpaceUnit = this->m_unitCubeMatrix * light->getVPMatrix();
-		this->m_lightBlock->updateField( "LightUniforms.spaceUniformMatrix", lightSpaceUnit );
+		this->m_lightBlock->updateField( "LightUniforms.attenuation", attenuation );
+	}
+	else
+	{
+		if ( Light::LightType::SPOT == light->getType() )
+		{
+			glm::vec2 spot( 1.0 );
+
+			this->m_lightBlock->updateField( "LightUniforms.attenuation", attenuation );
+			this->m_lightBlock->updateField( "LightUniforms.spot", spot );
+		}
+
+		// update unit-cube matrix only when its NOT a point light AND shadow-caster
+		// this unit-cube matrix is only needed in case of planar shadow rendering
+		if ( light->isShadowCaster() )
+		{
+			glm::mat4 lightSpaceUnit = this->m_unitCubeMatrix * light->getVPMatrix();
+			this->m_lightBlock->updateField( "LightUniforms.spaceUniformMatrix", lightSpaceUnit );
+		}
 	}
 
 	return true;

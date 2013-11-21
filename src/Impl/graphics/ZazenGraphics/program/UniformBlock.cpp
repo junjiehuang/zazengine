@@ -102,7 +102,7 @@ UniformBlock::updateField( const std::string& fieldName, const glm::mat4& data )
 	}
 #endif
 
-	return this->updateMat4( data, field->m_offset );
+	return this->updateData( glm::value_ptr( data ), field->m_offset, 64 );
 }
 
 bool
@@ -125,7 +125,30 @@ UniformBlock::updateField( const std::string& fieldName, const glm::vec4& data )
 	}
 #endif
 
-	return this->updateVec4( data, field->m_offset );
+	return this->updateData( glm::value_ptr( data ), field->m_offset, 16 );
+}
+
+bool
+UniformBlock::updateField( const std::string& fieldName, const glm::vec3& data )
+{
+	UniformField* field = this->getUniformField( fieldName );
+	if ( NULL == field )
+	{
+#ifdef _DEBUG
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update unknown field \"" << fieldName << "\"";
+#endif
+		return false;
+	}
+
+#ifdef _DEBUG
+	if ( GL_FLOAT_VEC3 != field->m_type )
+	{
+		ZazenGraphics::getInstance().getLogger().logError() << "UniformBlock::updateField: attempted to update field \"" << fieldName << "\" with incompatible vec3 type. field has type " << field->m_type;
+		return false;
+	}
+#endif
+
+	return this->updateData( glm::value_ptr( data ), field->m_offset, 12 );
 }
 
 bool
@@ -148,7 +171,7 @@ UniformBlock::updateField( const std::string& fieldName, const glm::vec2& data )
 	}
 #endif
 
-	return this->updateVec2( data, field->m_offset );
+	return this->updateData( glm::value_ptr( data ), field->m_offset, 8 );
 }
 
 bool
@@ -167,24 +190,6 @@ UniformBlock::updateData( const void* data, int size )
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
-}
-
-bool
-UniformBlock::updateMat4( const glm::mat4& matrix, int offset )
-{
-	return this->updateData( glm::value_ptr( matrix ), offset, 64 );
-}
-
-bool
-UniformBlock::updateVec4( const glm::vec4& vec, int offset )
-{
-	return this->updateData( glm::value_ptr( vec ), offset, 16 );
-}
-
-bool
-UniformBlock::updateVec2( const glm::vec2& vec, int offset )
-{
-	return this->updateData( glm::value_ptr( vec ), offset, 8 );
 }
 
 UniformBlock::UniformField*
