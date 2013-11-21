@@ -591,6 +591,12 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 	// could have changed due to shadow-map or other rendering happend in the frame before
 	this->m_mainCamera->restoreViewport();
 
+	// set alpha to 42 for skybox background
+	// alpha-channel stores material-type, so if no skybox is rendered at all then background will
+	// be set to 42.0 and thus the lighting-shader can skip expensive calculations unnecessary
+	// TODO: test if this really works?
+	glClearColor( 0.0, 0.0, 0.0, 1.0 / 42.0 );
+
 	// clear all targets for the new frame
 	if ( false == this->m_gBufferFbo->clearAll() )
 	{
@@ -779,6 +785,20 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	// tell lighting program that depth-map of scene is bound to texture-unit 5 
 	activeLightingProgram->setUniformInt( "DepthMap", 5 );
 	
+	// activate the corresponding subroutines for the light-type
+	if ( Light::LightType::DIRECTIONAL == light->getType() )
+	{
+		activeLightingProgram->activateSubroutine( "directionalLight", Shader::FRAGMENT_SHADER );
+	}
+	else if ( Light::LightType::SPOT == light->getType() )
+	{
+		activeLightingProgram->activateSubroutine( "spotLight", Shader::FRAGMENT_SHADER );
+	}
+	else if ( Light::LightType::POINT == light->getType() )
+	{
+		activeLightingProgram->activateSubroutine( "pointLight", Shader::FRAGMENT_SHADER );
+	}
+
 	// bind shadow-map when light is shadow-caster
 	if ( light->isShadowCaster() )
 	{
@@ -828,6 +848,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	glEnable( GL_BLEND );
 	// need additive-blending
 	glBlendEquation( GL_FUNC_ADD );
+	// TODO: do some research why this blending-function actually works (it does!)
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
 
 	// disable writing to depth: light-boundaries should not update depth
@@ -1395,6 +1416,8 @@ DRRenderer::updateLightBlock( Light* light )
 		if ( Light::LightType::SPOT == light->getType() )
 		{
 			glm::vec2 spot( 1.0 );
+
+			// TODO: calculate cos( FOV / 2 ) for spot.x - store distance to each side of cone in cos
 
 			this->m_lightBlock->updateField( "LightUniforms.attenuation", attenuation );
 			this->m_lightBlock->updateField( "LightUniforms.spot", spot );

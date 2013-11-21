@@ -1,5 +1,14 @@
 Scenes
-- brdf & model gallery
+
+Monsters Ball - Animations, physical particles & scripting
+	-> doom3 models roaming around
+	-> imp firing fireball
+	-> hellknight walks
+	-> particle-mist is moved by models when walking through it
+	-> shadowing & lighting
+
+Model gallery - Material-system, shadow & lighting
+	-> camera steearble
 	-> famous models with all different brdfs placed in scene like in a gallery
 	-> advanced brdfs
 	-> shadowing
@@ -16,21 +25,20 @@ Scenes
 	-> Asian Dragon
 	-> Thai Statue
 
-- chess
+Chess - transparency rendering, scripting
+	-> pieces move around by themselves
+	-> fixed rotating camera
 	-> show the chess-board 
 	-> different material for black & white
 	-> board reflects
 	-> white transparent
 	-> black subsurface scattering brdf
 	
-- rotating hyperdrive
+Rotating hyperdrive - interesting shadow & lighting situation
 	-> point light in center
 	-> interesting shadow situation
-- physics
-	-> mesh
-	-> spheres
-	-> oder models fall down
 	
-
-
-
+At the sea - water rendering
+	-> reflective
+	-> refractive
+	-> fourier-transformated waves
