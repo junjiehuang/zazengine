@@ -492,14 +492,6 @@ DRRenderer::initializeStaticData()
 	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, 1 ), glm::vec3( 0, -1, 0 ) ) );		// POS Z 
 	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, -1 ),glm::vec3( 0, -1, 0 ) ) );		// NEG Z
 
-	this->m_gBufferIndices.clear();
-	this->m_gBufferIndices.push_back( 0 );	// diffuse
-	this->m_gBufferIndices.push_back( 1 );	// normals
-	this->m_gBufferIndices.push_back( 2 );	// positions
-	this->m_gBufferIndices.push_back( 3 );	// tangents
-	this->m_gBufferIndices.push_back( 4 );	// bi-tangents
-	this->m_gBufferIndices.push_back( 6 );	// depth
-
 	this->m_gBufferDrawBufferIndices.clear();
 	this->m_gBufferDrawBufferIndices.push_back( 0 );	// diffuse
 	this->m_gBufferDrawBufferIndices.push_back( 1 );	// normal
@@ -591,11 +583,11 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 	// could have changed due to shadow-map or other rendering happend in the frame before
 	this->m_mainCamera->restoreViewport();
 
-	// set alpha to 42 for skybox background
+	// TODO: set alpha to 42 for skybox background
 	// alpha-channel stores material-type, so if no skybox is rendered at all then background will
 	// be set to 42.0 and thus the lighting-shader can skip expensive calculations unnecessary
 	// TODO: test if this really works?
-	glClearColor( 0.0, 0.0, 0.0, 1.0 / 42.0 );
+	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 
 	// clear all targets for the new frame
 	if ( false == this->m_gBufferFbo->clearAll() )
@@ -617,7 +609,7 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 	}
 
 	// enable rendering to all render-targets in geometry-stage
-	if ( false == this->m_gBufferFbo->drawBuffers( m_gBufferDrawBufferIndices ) )
+	if ( false == this->m_gBufferFbo->drawBuffers( this->m_gBufferDrawBufferIndices ) )
 	{
 		return false;
 	}
@@ -767,7 +759,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 
 	// OPTIMIZE: no need to do for every light!
 	// lighting stage program need all buffers of g-buffer bound as textures
-	if ( false == this->m_gBufferFbo->bindTargets( this->m_gBufferIndices ) )
+	if ( false == this->m_gBufferFbo->bindTargets( this->m_gBufferDrawBufferIndices ) )
 	{
 		return false;
 	}
@@ -782,9 +774,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	activeLightingProgram->setUniformInt( "TangentMap", 3 );
 	// tell lighting program that bi-tangents-map of scene is bound to texture-unit 4 
 	activeLightingProgram->setUniformInt( "BiTangentMap", 4 );
-	// tell lighting program that depth-map of scene is bound to texture-unit 5 
-	activeLightingProgram->setUniformInt( "DepthMap", 5 );
-	
+
 	// activate the corresponding subroutines for the light-type
 	if ( Light::LightType::DIRECTIONAL == light->getType() )
 	{
@@ -804,19 +794,19 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	{
 		// WARNING: you can't bind two different texture-types to the same unit - will result in INVALID OPERATION on draw-call
 		// thus we need to bind the shadow cube-map to a different unit than the normal 2d shadow-map
-		int textureUnit = 6;
+		int textureUnit = 7;
 
 		if ( Light::LightType::POINT == light->getType() )
 		{
-			// tell program that the shadowmap of point-light will be available at texture unit 7
-			activeLightingProgram->setUniformInt( "ShadowCubeMap", 7 );
+			textureUnit = 8;
 
-			textureUnit = 7;
+			// tell program that the shadowmap of point-light will be available at texture unit 7
+			activeLightingProgram->setUniformInt( "ShadowCubeMap", textureUnit );
 		}
 		else
 		{
 			// tell program that the shadowmap of spot/directional-light will be available at texture unit 6
-			activeLightingProgram->setUniformInt( "ShadowPlanarMap", 6 );
+			activeLightingProgram->setUniformInt( "ShadowPlanarMap", textureUnit );
 		}
 
 		if ( false == light->getShadowMap()->bind( textureUnit ) )
@@ -1409,6 +1399,11 @@ DRRenderer::updateLightBlock( Light* light )
 
 	if ( Light::LightType::POINT == light->getType() )
 	{
+		glm::vec2 nearFar;
+		nearFar.x = light->getNear();
+		nearFar.y = light->getFar();
+
+		this->m_lightBlock->updateField( "LightUniforms.nearFar", nearFar );
 		this->m_lightBlock->updateField( "LightUniforms.attenuation", attenuation );
 	}
 	else
