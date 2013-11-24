@@ -38,6 +38,7 @@ class Viewer : public Orientation
 		int getWidth() const { return this->m_width; };
 
 		void setFov( float fov ) { this->m_fov = fov; };
+		float getFov() { return this->m_fov; };
 
 		void setNear( float nearDist ) { this->m_nearDist = nearDist; };
 		float getNear() { return this->m_nearDist; };
@@ -60,7 +61,7 @@ class Viewer : public Orientation
 		// overridden from Orientation
 		virtual void matrixChanged();
 	
-		private:
+	private:
 		int m_width;
 		int m_height;
 

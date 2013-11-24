@@ -1411,6 +1411,8 @@ DRRenderer::updateLightBlock( Light* light )
 		if ( Light::LightType::SPOT == light->getType() )
 		{
 			glm::vec2 spot( 1.0 );
+			spot.x = cos( light->getFov() / 2.0 );
+			spot.y = 1.0;
 
 			// TODO: calculate cos( FOV / 2 ) for spot.x - store distance to each side of cone in cos
 

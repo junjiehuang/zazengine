@@ -462,7 +462,8 @@ subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec4 fragPosView
 	// calculate the cosine between the direction of the light-direction the the fragment and the direction of the light itself which is stored in the model-view matrix z-achsis
 	float spotCos = dot( lightDirToFragViewSpace, lightMVMatrix[ 2 ].xyz );
 	// attenuation would be 0 so no contribution, return black
-	if ( spotCos < Light.spot.x )
+	// when angle of the half of the spot is larger than the maximum angle of the half of the spot then no contribution of this light
+	if ( spotCos > Light.spot.x )
 	{
 		return vec3( 0.0 );
 	}
