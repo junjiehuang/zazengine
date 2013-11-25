@@ -213,12 +213,14 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 		return 0;
 	}
 
+
 	glGenTextures( 1, &textureId );
 	if ( GL_PEEK_ERRORS )
 	{
 		error = true;
 		goto cleanupExit;
 	}
+
 	glBindTexture( GL_TEXTURE_CUBE_MAP, textureId );
 	if ( GL_PEEK_ERRORS )
 	{
@@ -226,9 +228,9 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 		goto cleanupExit;
 	}
 
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	GL_PEEK_ERRORS_AT
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); 
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR ); 
 	GL_PEEK_ERRORS_AT
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	GL_PEEK_ERRORS_AT
@@ -236,12 +238,31 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 	GL_PEEK_ERRORS_AT
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 	GL_PEEK_ERRORS_AT
-
+	
 	for ( unsigned int i = 0; i < 6; i++ )
 	{
 		ilBindImage( imageIds[ i ] );
-		glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, ilGetInteger( IL_IMAGE_WIDTH ), 
-			ilGetInteger( IL_IMAGE_HEIGHT ), 0, GL_RGBA, GL_UNSIGNED_BYTE, ilGetData() );
+		if ( IL_NO_ERROR != ilGetError() )
+		{
+			error = true;
+			goto cleanupExit;
+		}
+
+		ILint imgFormat = ilGetInteger( IL_IMAGE_FORMAT );
+		ILint imgWidth = ilGetInteger( IL_IMAGE_HEIGHT );
+		ILint imgHeight = ilGetInteger( IL_IMAGE_WIDTH );
+		ILubyte* imgData = ilGetData();
+
+		glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+						0, 
+						GL_RGBA, 
+						imgWidth, 
+						imgHeight, 
+						0, 
+						GL_RGBA, 
+						GL_UNSIGNED_BYTE, 
+						imgData );
+
 		if ( GL_PEEK_ERRORS )
 		{
 			error = true;
@@ -269,6 +290,10 @@ bool
 TextureFactory::createImage( const std::string& fileName, ILuint* imageId )
 {
 	ilGenImages( 1, imageId );
+	if ( IL_NO_ERROR != ilGetError() )
+	{
+		return false;
+	}
 
 	if ( false == TextureFactory::loadImage( fileName, *imageId ) )
 	{
@@ -286,6 +311,10 @@ TextureFactory::createImages( const std::vector<std::string>& fileNames, ILuint*
 	bool errorFlag = false;
 
 	ilGenImages( fileNames.size(), imageIds );
+	if ( IL_NO_ERROR != ilGetError() )
+	{
+		return false;
+	}
 
 	for ( unsigned int i = 0; i < fileNames.size(); i++ )
 	{
@@ -310,12 +339,14 @@ bool
 TextureFactory::loadImage( const std::string& fileName, ILuint imageId )
 {
 	ilBindImage( imageId );
-
-	ILboolean success = ilLoadImage( fileName.c_str() );
-	if ( success )
+	if ( IL_NO_ERROR != ilGetError() )
 	{
-		success = ilConvertImage( IL_RGBA, IL_UNSIGNED_BYTE );
-		if ( !success )
+		return false;
+	}
+
+	if ( IL_TRUE == ilLoadImage( fileName.c_str() ) )
+	{
+		if ( IL_TRUE != ilConvertImage( IL_RGBA, IL_UNSIGNED_BYTE ) )
 		{
 			ZazenGraphics::getInstance().getLogger().logError() << "Texture::loadImage: Image load failed - IL reports error: " << ilGetError();
 			return false;

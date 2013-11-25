@@ -1,8 +1,11 @@
 Bugfixing:
-	-> light mesh rendering leads to error: invalid operation
+	-> light mesh rendering leads to error when a sky-box is used: invalid operation
+		-> the creation of the sky-box cube-map seems to have an influence on it: if just this cube-map is created and the sky-box not even rendered this error shows up
 	-> exponent-calculations not working for phong illumination
-	-> rotating spot-light shadows not working
 	-> point-light shadows not working
+
+No more bindbufferbase of uniformblocks in renderer
+	-> do it after programs are linked in uniformmanagement
 
 Multiple lights
 	-> Solve Problem of Ambient + Sky-Box Lighting
@@ -19,6 +22,14 @@ Mip-Map Creation in TextureFactory
 
 Anisotropic filtering
 	-> GL_EXT_texture_filter_anisotropic
+
+GLFW Context
+	-> Allow Toggle fullscreen
+		-> reinit window & render-context!
+			=> need to reinig glew, programs, textures,... (?)
+			=> lot of work to do, because everything needs to be re-init-able
+		-> for this to work we need to split creation of objects which interact with opengl and the initialization of those object with opengl-state
+			-> initialization must happen in a specific order. faster buffers need to be created first,... 
 
 Msaa
 	-> do sampling in geometry fragment-shader (centroid)
@@ -81,6 +92,7 @@ Particle System
 	
 Text-rendering
 	-> use OGLFT
+	
 
 Transparency-Rendering (see GPU Gems 2 Page 295)
 	-> Differentiate between normal transparency and refractive transparency
@@ -95,15 +107,6 @@ Transparency-Rendering (see GPU Gems 2 Page 295)
 		-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
 			-> optimization: only do additional lookup when alpha-channel is 1.0
 		-> for better quality: do multisampling texture lookups
-		
-GLFW Context
-	-> Allow Toggle fullscreen
-		-> reinit window & render-context!
-			=> need to reinig glew, programs, textures,... (?)
-			=> lot of work to do, because everything needs to be re-init-able
-
-No more bindbufferbase of uniformblocks in renderer
-	-> do it after programs are linked in uniformmanagement
 
 Reflections
 	-> environment (cube-mapping)
@@ -157,13 +160,11 @@ Reflections
 		-> render world mirrored by this plane as usual
 			-> stencil will remove all pixels not affected by this plane
 			-> use according blending-function to create mirror-effect
-			
-Debugging
-	-> Debugging-Context
-	-> ARB_debug_output
-	-> 4.3 debugging-features
 	
 Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
+	-> instanced rendering
+	-> use copies of uniform buffers e.g. for each light a buffer
+		-> this reduces the update just to binding the buffer ot the shader and not uploading values to fields every frame
 	-> Calculate position in Fragment-Shader
 		-> http://www.opengl.org/wiki/Compute_eye_space_from_window_space
 		-> use screen-coordinates & depth instead of spending a whole buffer on it

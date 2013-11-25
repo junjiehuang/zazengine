@@ -55,11 +55,25 @@ Program::printInfoLog()
 		vector<GLchar> buffer( infoLogLen + 1 );
 
 		glGetProgramInfoLog( this->m_programObject, infoLogLen, &charsWritten, &buffer[ 0 ] );
-
 	    if ( charsWritten )
 		{
 			ZazenGraphics::getInstance().getLogger().logError( string( &buffer[ 0 ] ) );
 		}
+	}
+}
+
+void
+Program::validate()
+{
+	GLint validatedFlag = 0;
+
+	glValidateProgram( this->m_programObject );
+
+	glGetProgramiv( this->m_programObject , GL_VALIDATE_STATUS, &validatedFlag );
+	if ( GL_TRUE != validatedFlag )
+	{
+		ZazenGraphics::getInstance().getLogger().logError() << "Program::validate for programm " << this->m_programName << ": failed. Info-Log:";
+		this->printInfoLog();
 	}
 }
 
@@ -69,7 +83,7 @@ Program::attachShader( Shader* shader )
 	glAttachShader( this->m_programObject, shader->getObject() );
 	if ( GL_PEEK_ERRORS )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "Program::attachShader for programm " << this->m_programName << ": glAttachShader";
+		ZazenGraphics::getInstance().getLogger().logError() << "Program::attachShader for programm " << this->m_programName << ": failed.";
 		return false;
 	}
 

@@ -33,7 +33,8 @@ Chess - transparency rendering, scripting
 	-> board reflects
 	-> white transparent
 	-> black subsurface scattering brdf
-	
+	-> instanced rendering of pawns
+
 Rotating hyperdrive - interesting shadow & lighting situation
 	-> point light in center
 	-> interesting shadow situation
@@ -42,3 +43,15 @@ At the sea - water rendering
 	-> reflective
 	-> refractive
 	-> fourier-transformated waves
+	-> planar reflections
+	-> refractions
+	-> tesselation
+	-> directional lighting 
+	-> sun: from dusk till dawn: lighting situations!
+
+zusätzliche szene: 
+	-> viele gleiche meshes -> instanced rendering und viele lichtquellen -> light bounding meshes.
+
+menüsystem für auswahl der szenen
+
+szenen dynamisch laden und entladen

@@ -24,9 +24,6 @@
 
 #include <iostream>
 
-#define REQUIRED_MAJOR_OPENGL_VER 3
-#define REQUIRED_MINOR_OPENGL_VER 1
-
 using namespace std;
 using namespace boost;
 

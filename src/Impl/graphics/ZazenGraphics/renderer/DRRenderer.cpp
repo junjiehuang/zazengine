@@ -63,6 +63,8 @@ DRRenderer::initialize()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Renderer..." );
 
+	GLUtils::enableDebugOutput();
+
 	glEnable( GL_DEPTH_TEST );
 	
 	// Cull triangles which normal is not towards the camera
@@ -651,7 +653,7 @@ DRRenderer::renderSkyBox()
 
 	// check FBO-status
 	CHECK_FRAMEBUFFER_DEBUG
-
+		
 	// sky-box rendering uses its own program
 	if ( false == this->m_progSkyBox->use() )
 	{
@@ -659,6 +661,7 @@ DRRenderer::renderSkyBox()
 		return false;
 	}
 
+	// TODO move into skybox
 	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", 0 );
 
 	// render the geometry
@@ -734,6 +737,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		}
 
 		// enable rendering to 5th target
+		// TODO: this is most probably no more correct
 		if ( false == this->m_gBufferFbo->drawBuffer( 5 ) )
 		{
 			return false;
@@ -789,7 +793,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	// bind shadow-map when light is shadow-caster
 	if ( light->isShadowCaster() )
 	{
-		// WARNING: you can't bind two different texture-types to the same unit - will result in INVALID OPERATION on draw-call
+		// WARNING: you can't bind two different texture-types to the same unit in the same program - will result in INVALID OPERATION on draw-call
 		// thus we need to bind the shadow cube-map to a different unit than the normal 2d shadow-map
 		int textureUnit = 7;
 
@@ -954,7 +958,7 @@ DRRenderer::renderShadowCubeSinglePass( std::list<ZazenGraphicsEntity*>& entitie
 
 	if ( false == this->m_progShadowMappingCubeSinglePass->use() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowMap: using cube single-pass program failed - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowCubeSinglePass: using cube single-pass program failed - exit" );
 		return false;
 	}
 
@@ -991,7 +995,7 @@ DRRenderer::renderShadowCubeMultiPass( std::list<ZazenGraphicsEntity*>& entities
 
 	if ( false == this->m_progShadowMappingCubeMultiPass->use() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowMap: using cube multi-pass program failed - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderShadowCubeMultiPass: using cube multi-pass program failed - exit" );
 		return false;
 	}
 
@@ -1301,7 +1305,6 @@ DRRenderer::renderMeshNode( MeshNode* meshNode, const glm::mat4& entityModelView
 	{
 		Mesh* mesh = meshes[ i ];
 
-		
 		// update model matrix
 		this->m_transformsBlock->updateField( "TransformUniforms.modelMatrix", localModelMatrix );
 		// update model-view matrix

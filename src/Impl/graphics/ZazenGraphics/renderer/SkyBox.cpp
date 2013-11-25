@@ -157,7 +157,7 @@ SkyBox::render( const Viewer& camera, UniformBlock* cameraBlock, UniformBlock* t
 
 	glDisableVertexAttribArray( 0 );
 	GL_PEEK_ERRORS_AT_DEBUG
-
+	
 	// activate z-buffering and face culling
 	glEnable( GL_DEPTH_TEST );
 	GL_PEEK_ERRORS_AT_DEBUG

@@ -7,6 +7,12 @@
 #include <map>
 #include <vector>
 
+#ifdef _DEBUG
+	#define GL_VALIDATE_PROGRAM( prog ) prog->validate()
+#else
+	#define GL_VALIDATE_PROGRAM( prog )
+#endif
+
 class Program
 {
 	public:
@@ -15,6 +21,7 @@ class Program
 		static Program* createProgram( const std::string& );
 
 		void printInfoLog();
+		void validate();
 
 		GLuint getId() const { return this->m_programObject; };
 

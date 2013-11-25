@@ -12,6 +12,9 @@
 using namespace std;
 using namespace boost::filesystem;
 
+#define REQUIRED_MAJOR_OPENGL_VER 4
+#define REQUIRED_MINOR_OPENGL_VER 0
+
 #define WINDOW_BITS_PER_PIXEL 32
 
 RenderingContext* RenderingContext::instance = NULL;
@@ -46,11 +49,15 @@ RenderingContext::initGLFW()
         return false;
 	}
 
-	/*
-	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
-	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
-	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_DEBUG_CONTEXT );
-	*/
+	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
+
+	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, REQUIRED_MAJOR_OPENGL_VER );
+	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, REQUIRED_MINOR_OPENGL_VER );
+
+#ifdef _DEBUG
+	// create a debug-context for debug-build
+	glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE );
+#endif
 
     /* Create a windowed mode window and its OpenGL context */
 	RenderingContext::instance->m_window = glfwCreateWindow( RenderingContext::instance->m_windowWidth, RenderingContext::instance->m_windowHeight, 
