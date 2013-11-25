@@ -47,7 +47,7 @@ MaterialFactory::init( const filesystem::path& path )
 		{
 			std::string name;
 			std::string typeID;
-			Material::MaterialType materialType = Material::MATERIAL_DIFFUSE;
+			Material::MaterialType materialType = Material::MATERIAL_LAMBERTIAN;
 
 			str = materialNode->Attribute( "name" );
 			if ( 0 == str )
@@ -80,11 +80,7 @@ MaterialFactory::init( const filesystem::path& path )
 
 			Material* material = NULL;
 
-			if ( "DIFFUSE" == typeID )
-			{
-				material = MaterialFactory::createClassicMaterial( name, Material::MATERIAL_DIFFUSE, materialTypeNode );
-			}
-			else if ( "LAMBERTIAN" == typeID )
+			if ( "LAMBERTIAN" == typeID )
 			{
 				material = MaterialFactory::createClassicMaterial( name, Material::MATERIAL_LAMBERTIAN, materialTypeNode );
 			}

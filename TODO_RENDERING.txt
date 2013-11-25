@@ -1,8 +1,10 @@
+Bugfixing:
+	-> light mesh rendering leads to error: invalid operation
+	-> exponent-calculations not working for phong illumination
+	-> rotating spot-light shadows not working
+	-> point-light shadows not working
+
 Multiple lights
-	-> correct lighting-equations: falloff, cone, ...
-		-> point-light
-		-> spot-light
-		-> directional-light
 	-> Solve Problem of Ambient + Sky-Box Lighting
 		-> when no directional light in scene
 			-> render full-screen quad and apply ambient-term to non-sky-box material and diffuse-only to sky-box material => need new program
@@ -12,22 +14,11 @@ Multiple lights
 
 Replace all If-Then in shaders with subroutines if possible
 	-> geometry-stage material-type
-	-> lighting-stage light-type
-		-> lighting
-		-> shadowing
-
-Shadows
-	-> point-light
-	-> directional-light
-
 	
 Mip-Map Creation in TextureFactory
 
 Anisotropic filtering
 	-> GL_EXT_texture_filter_anisotropic
-	
-Shadow-mapping
-	-> shadow-mapping of point-light
 
 Msaa
 	-> do sampling in geometry fragment-shader (centroid)

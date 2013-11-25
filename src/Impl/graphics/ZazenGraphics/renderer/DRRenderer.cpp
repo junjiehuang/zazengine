@@ -583,11 +583,8 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 	// could have changed due to shadow-map or other rendering happend in the frame before
 	this->m_mainCamera->restoreViewport();
 
-	// TODO: set alpha to 42 for skybox background
-	// alpha-channel stores material-type, so if no skybox is rendered at all then background will
-	// be set to 42.0 and thus the lighting-shader can skip expensive calculations unnecessary
-	// TODO: test if this really works?
-	glClearColor( 0.0, 0.0, 0.0, 1.0 );
+	// set alpha to 0.0 for skybox/background -> will not run through the whole lighting-shader but just pass through background color
+	glClearColor( 0.0, 0.0, 0.0, 0.0 );
 
 	// clear all targets for the new frame
 	if ( false == this->m_gBufferFbo->clearAll() )

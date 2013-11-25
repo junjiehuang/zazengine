@@ -11,6 +11,6 @@ void main()
 {
 	// sky-box does diffuse-color only
 	out_diffuse.rgb = texture( SkyBoxCubeMap, ex_texCoord ).rgb;
-	// store special material-type for sky-box
-	out_diffuse.a = 42;
+	// store 0 as material-type for sky-box
+	out_diffuse.a = 0.0;
 }

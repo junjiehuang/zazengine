@@ -12,8 +12,8 @@ class Material
 	public:
 		enum MaterialType
 		{
-			MATERIAL_DIFFUSE = 0,
-			MATERIAL_LAMBERTIAN,
+			// NOTE: start with 1, material 0 is reserved for sky-box/background
+			MATERIAL_LAMBERTIAN = 1,
 			MATERIAL_PHONG,
 			MATERIAL_DOOM3,
 			MATERIAL_TRANSPARENT = 99

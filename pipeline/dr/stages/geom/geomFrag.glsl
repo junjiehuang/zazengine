@@ -32,12 +32,13 @@ void main()
 	// store materialtype in diffuse-component alpha-channel
 	out_diffuse.a = Material.config.x;
 
-	// DIFFUSE, LAMBERT & PHONG Material-Types
-	if ( 2 >= Material.config.x )
+	// LAMBERT & PHONG Material-Types
+	if ( 3 > Material.config.x )
 	{
 		// store base-color of material
 		out_diffuse.rgb = Material.color.rgb;
 
+		// apply texture
 		if ( 1.0 == Material.config.y )
 		{
 			out_diffuse.rgb += texture( DiffuseTexture, ex_texCoord ).rgb;
