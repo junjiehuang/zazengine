@@ -79,6 +79,12 @@ class ZazenGraphics : public IGraphics
 		void initScreenShotPath( TiXmlElement* );
 
 		bool createWindow( TiXmlElement* );
+
+		void parseScene( TiXmlElement*, ZazenGraphicsEntity* );
+		void parseLight( TiXmlElement*, ZazenGraphicsEntity* );
+		void parseCamera( TiXmlElement*, ZazenGraphicsEntity* );
+		void parseOrientation( TiXmlElement*, ZazenGraphicsEntity* );
+		void parseAnimation( TiXmlElement*, ZazenGraphicsEntity* );
 };
 
 #endif /* _ZAZENGRAPHICS_H_ */

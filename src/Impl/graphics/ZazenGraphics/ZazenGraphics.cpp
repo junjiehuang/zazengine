@@ -256,297 +256,400 @@ ZazenGraphics::createEntity( TiXmlElement* objectNode, IGameObject* parent )
 		}
 	}
 
-	TiXmlElement* sceneNode = objectNode->FirstChildElement( "scene" );
-	if ( sceneNode )
-	{
-		TiXmlElement* skyBoxNode = sceneNode->FirstChildElement( "skyBox" );
-		if ( skyBoxNode )
-		{
-			const char* str = skyBoxNode->Attribute( "path" );
-			if ( 0 == str )
-			{
-				this->m_logger->logError() << "missing path-attribute in skybox node";
-				return false;
-			}
+	this->parseScene( objectNode, entity );
 
-			std::string skyFolderPathStr = str;
-			filesystem::path fullSkyBoxFolderPath = filesystem::path( m_textureDataPath.generic_string() + skyFolderPathStr );
-			if ( ! filesystem::exists( fullSkyBoxFolderPath ) )
-			{
-				this->m_logger->logError() << "skybox-path " << fullSkyBoxFolderPath << " does not exist";
-				return false;
-			}
+	this->parseLight( objectNode, entity );
 
-			if ( false == filesystem::is_directory( fullSkyBoxFolderPath ) )
-			{
-				this->m_logger->logError() << "skybox-path " << fullSkyBoxFolderPath << " is not a directory";
-				return false;
-			}
+	this->parseCamera( objectNode, entity );
+	
+	this->parseOrientation( objectNode, entity );
 
-			str = skyBoxNode->Attribute( "format" );
-			if ( 0 == str )
-			{
-				this->m_logger->logError( "missing format-attribute in skybox node" );
-				return false;
-			}
-
-			string skyBoxFormat = str;
-			filesystem::path skyBoxFolderPath = filesystem::path( skyFolderPathStr );
-
-			if ( false == SkyBox::initialize( skyBoxFolderPath, skyBoxFormat ) )
-			{
-				this->m_logger->logError( "failed to initialize Sky-Box" );
-				return false;
-			}
-		}
-	}
-
-	TiXmlElement* lightNode = objectNode->FirstChildElement( "light" );
-	if ( lightNode )
-	{
-		std::string lightType = "SPOT";
-
-		const char* str = lightNode->Attribute( "type" );
-		if ( 0 != str )
-		{
-			lightType = str;
-		}
-
-		Light* light = 0;
-
-		bool castShadow = false;
-		float fov = 90.0f;
-		int shadowMapResX = 512;
-		int shadowMapResY = 512;
-		MeshStatic* boundingMesh = NULL;
-
-		TiXmlElement* shadowingNode = objectNode->FirstChildElement( "shadowing" );
-		if ( shadowingNode )
-		{
-			castShadow = true;
-
-			str = shadowingNode->Attribute( "fov" );
-			if ( 0 != str )
-			{
-				fov = ( float ) atof( str );
-			}
-
-			str = shadowingNode->Attribute( "resMapX" );
-			if ( 0 != str )
-			{
-				shadowMapResX = atoi( str );
-			}
-
-			str = shadowingNode->Attribute( "resMapY" );
-			if ( 0 != str )
-			{
-				shadowMapResY = atoi( str );
-			}
-		}
-
-		if ( lightType == "DIRECTIONAL" )
-		{
-			light = Light::createDirectional( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), castShadow );
-			boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
-		}
-		else if ( lightType == "POINT" )
-		{
-			light = Light::createPoint( shadowMapResX, castShadow );
-			// TODO load correct bounding-geometry
-			boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
-		}
-		// default is spot
-		else
-		{
-			light = Light::createSpot( fov, shadowMapResX, shadowMapResY, castShadow );
-			// TODO load correct bounding-geometry
-			boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
-		}
-
-		light->setBoundingMesh( boundingMesh );
-
-		entity->m_light = light;
-	}
-
-	TiXmlElement* cameraNode = objectNode->FirstChildElement( "camera" );
-	if ( cameraNode )
-	{
-		float fov = 90.0f;
-		std::string mode = "PROJ";
-
-		const char* str = cameraNode->Attribute( "fov" );
-		if ( 0 == str )
-		{
-			this->m_logger->logWarning() << "fov attribute missing in cameraNode - use default: " << fov;
-		}
-		else
-		{
-			fov = ( float ) atof( str );
-		}
-
-		str = cameraNode->Attribute( "view" );
-		if ( 0 == str )
-		{
-			this->m_logger->logWarning() << "view attribute missing in cameraNode - use default: " << str;
-		}
-		else
-		{
-			mode = str;
-		}
-
-		Viewer* camera = new Viewer( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight() );
-		if ( mode == "PROJ" )
-		{
-			camera->setFov( fov );
-			camera->setupPerspective();
-		}
-		else if ( mode == "ORTHO" )
-		{
-			camera->setupOrtho();
-		}
-
-		entity->m_camera = camera;
-	}
-
-	TiXmlElement* orientationNode = objectNode->FirstChildElement( "orientation" );
-	if ( orientationNode )
-	{
-		glm::vec3 v;
-		float roll = 0.0f;
-		float pitch = 0.0f;
-		float heading = 0.0f;
-		float scale = 1.0f;
-
-		const char* str = orientationNode->Attribute( "x" );
-		if ( 0 != str )
-		{
-			v[ 0 ] = ( float ) atof( str );
-		}
-
-		str = orientationNode->Attribute( "y" );
-		if ( 0 != str )
-		{
-			v[ 1 ] = ( float ) atof( str );
-		}
-
-		str = orientationNode->Attribute( "z" );
-		if ( 0 != str )
-		{
-			v[ 2 ] = ( float ) atof( str );
-		}
-
-		str = orientationNode->Attribute( "heading" );
-		if ( 0 == str )
-		{
-			this->m_logger->logWarning( "heading attribute missing in orientation - use default: 0.0" ); 
-		}
-		else
-		{
-			heading = ( float ) atof( str );
-		}
-
-		str = orientationNode->Attribute( "roll" );
-		if ( 0 == str )
-		{
-			this->m_logger->logWarning( "roll attribute missing in orientation - use default: 0.0" );
-		}
-		else
-		{
-			roll = ( float ) atof( str );
-		}
-
-		str = orientationNode->Attribute( "pitch" );
-		if ( 0 == str )
-		{
-			this->m_logger->logWarning( "pitch attribute missing in orientation - use default: 0.0" );
-		}
-		else
-		{
-			pitch = ( float ) atof( str );
-		}
-
-		str = orientationNode->Attribute( "scale" );
-		if ( 0 == str )
-		{
-			this->m_logger->logWarning( "scale attribute missing in orientation - use default: 1.0" );
-		}
-		else
-		{
-			scale = ( float ) atof( str );
-		}
-
-		entity->set( v, pitch, heading, roll, scale );
-	}
-
-	TiXmlElement* animationNode = objectNode->FirstChildElement( "animation" );
-	if ( animationNode )
-	{
-		const char* str = animationNode->Attribute( "directory" );
-		if ( 0 != str )
-		{
-			string directory = str;
-			
-			str = animationNode->Attribute( "extension" );
-			if ( 0 != str )
-			{
-				string extension = str;
-
-				entity->m_allAnimations = AnimationFactory::loadDir( directory, extension );
-
-				str = animationNode->Attribute( "active" );
-				if ( 0 != str )
-				{
-					string fileName = directory + "/" + str + extension;
-
-					entity->m_activeAnimation = AnimationFactory::get( fileName );
-					if ( entity->m_activeAnimation )
-					{
-						entity->m_activeAnimation->initSkeleton( entity->getMeshNode() );
-					}
-				}
-			}
-		}
-		else
-		{
-			glm::vec3 animRot;
-
-			const char* str = animationNode->Attribute( "heading" );
-			if ( 0 == str )
-			{
-				this->m_logger->logWarning( "heading attribute missing in animation - use default: 0.0" );
-			}
-			else
-			{
-				animRot[ 0 ] = ( float ) atof( str );
-			}
-
-			str = animationNode->Attribute( "roll" );
-			if ( 0 == str )
-			{
-				this->m_logger->logWarning( "roll attribute missing in animation - use default: 0.0" );
-			}
-			else
-			{
-				animRot[ 1 ] = ( float ) atof( str );
-			}
-
-			str = animationNode->Attribute( "pitch" );
-			if ( 0 == str )
-			{
-				this->m_logger->logWarning( "pitch attribute missing in animation - use default: 0.0" );
-			}
-			else
-			{
-				animRot[ 2 ] = ( float ) atof( str );
-			}
-
-			entity->setAnimation( animRot[ 0 ], animRot[ 1 ], animRot[ 2 ] ); 
-		}
-	}
+	this->parseAnimation( objectNode, entity );
 
 	this->m_entities.push_back( entity );
 
 	return entity;
+}
+
+void
+ZazenGraphics::parseScene( TiXmlElement* objectNode, ZazenGraphicsEntity* entity )
+{
+	TiXmlElement* sceneNode = objectNode->FirstChildElement( "scene" );
+	if ( NULL == sceneNode )
+	{
+		return;
+	}
+
+	TiXmlElement* skyBoxNode = sceneNode->FirstChildElement( "skyBox" );
+	if ( NULL == skyBoxNode )
+	{
+		return;
+	}
+
+	const char* str = skyBoxNode->Attribute( "path" );
+	if ( 0 == str )
+	{
+		this->m_logger->logError() << "missing path-attribute in skybox node";
+	}
+
+	std::string skyFolderPathStr = str;
+	filesystem::path fullSkyBoxFolderPath = filesystem::path( m_textureDataPath.generic_string() + skyFolderPathStr );
+	if ( ! filesystem::exists( fullSkyBoxFolderPath ) )
+	{
+		this->m_logger->logError() << "skybox-path " << fullSkyBoxFolderPath << " does not exist";
+	}
+
+	if ( false == filesystem::is_directory( fullSkyBoxFolderPath ) )
+	{
+		this->m_logger->logError() << "skybox-path " << fullSkyBoxFolderPath << " is not a directory";
+	}
+
+	str = skyBoxNode->Attribute( "format" );
+	if ( 0 == str )
+	{
+		this->m_logger->logError( "missing format-attribute in skybox node" );
+	}
+
+	string skyBoxFormat = str;
+	filesystem::path skyBoxFolderPath = filesystem::path( skyFolderPathStr );
+
+	if ( false == SkyBox::initialize( skyBoxFolderPath, skyBoxFormat ) )
+	{
+		this->m_logger->logError( "failed to initialize Sky-Box" );
+	}
+}
+
+void
+ZazenGraphics::parseLight( TiXmlElement* objectNode, ZazenGraphicsEntity* entity )
+{
+	TiXmlElement* lightNode = objectNode->FirstChildElement( "light" );
+	if ( NULL == lightNode )
+	{
+		return;
+	}
+
+	std::string lightType = "SPOT";
+
+	const char* str = lightNode->Attribute( "type" );
+	if ( 0 != str )
+	{
+		lightType = str;
+	}
+
+	Light* light = 0;
+
+	bool castShadow = false;
+	float fov = 90.0f;
+	int shadowMapResX = 512;
+	int shadowMapResY = 512;
+	glm::vec3 lightColor( 1.0 );
+	glm::vec3 attenuation( 1.0 );
+	glm::vec2 specular( 1.0 );
+	MeshStatic* boundingMesh = NULL;
+
+	TiXmlElement* colorNode = lightNode->FirstChildElement( "color" );
+	if ( colorNode )
+	{
+		str = colorNode->Attribute( "r" );
+		if ( 0 != str )
+		{
+			lightColor.x = ( float ) atof( str );
+		}
+
+		str = colorNode->Attribute( "g" );
+		if ( 0 != str )
+		{
+			lightColor.y = ( float ) atof( str );
+		}
+
+		str = colorNode->Attribute( "b" );
+		if ( 0 != str )
+		{
+			lightColor.z = ( float ) atof( str );
+		}
+	}
+
+	TiXmlElement* attenuationNode = lightNode->FirstChildElement( "attenuation" );
+	if ( attenuationNode )
+	{
+		str = attenuationNode->Attribute( "constant" );
+		if ( 0 != str )
+		{
+			attenuation.x = ( float ) atof( str );
+		}
+
+		str = attenuationNode->Attribute( "linear" );
+		if ( 0 != str )
+		{
+			attenuation.y = ( float ) atof( str );
+		}
+
+		str = attenuationNode->Attribute( "quadratic" );
+		if ( 0 != str )
+		{
+			attenuation.z = ( float ) atof( str );
+		}
+	}
+
+	TiXmlElement* specularNode = lightNode->FirstChildElement( "specular" );
+	if ( specularNode )
+	{
+		str = specularNode->Attribute( "shininess" );
+		if ( 0 != str )
+		{
+			specular.x = ( float ) atof( str );
+		}
+
+		str = specularNode->Attribute( "strength" );
+		if ( 0 != str )
+		{
+			specular.y = ( float ) atof( str );
+		}
+	}
+
+	TiXmlElement* shadowingNode = lightNode->FirstChildElement( "shadowing" );
+	if ( shadowingNode )
+	{
+		castShadow = true;
+
+		str = shadowingNode->Attribute( "fov" );
+		if ( 0 != str )
+		{
+			fov = ( float ) atof( str );
+		}
+
+		str = shadowingNode->Attribute( "resMapX" );
+		if ( 0 != str )
+		{
+			shadowMapResX = atoi( str );
+		}
+
+		str = shadowingNode->Attribute( "resMapY" );
+		if ( 0 != str )
+		{
+			shadowMapResY = atoi( str );
+		}
+	}
+
+	if ( lightType == "DIRECTIONAL" )
+	{
+		light = Light::createDirectional( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), castShadow );
+		boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+	}
+	else if ( lightType == "POINT" )
+	{
+		light = Light::createPoint( shadowMapResX, castShadow );
+		// TODO load correct bounding-geometry
+		boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+	}
+	// default is spot
+	else
+	{
+		light = Light::createSpot( fov, shadowMapResX, shadowMapResY, castShadow );
+		// TODO load correct bounding-geometry
+		boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+	}
+
+	light->m_boundingMesh = boundingMesh;
+	light->m_attenuation = attenuation;
+	light->m_specular = specular;
+	light->m_color = lightColor;
+
+	entity->m_light = light;
+}
+
+void
+ZazenGraphics::parseCamera( TiXmlElement* objectNode, ZazenGraphicsEntity* entity )
+{
+	TiXmlElement* cameraNode = objectNode->FirstChildElement( "camera" );
+	if ( NULL == cameraNode )
+	{
+		return;
+	}
+
+	float fov = 90.0f;
+	std::string mode = "PROJ";
+
+	const char* str = cameraNode->Attribute( "fov" );
+	if ( 0 == str )
+	{
+		this->m_logger->logWarning() << "fov attribute missing in cameraNode - use default: " << fov;
+	}
+	else
+	{
+		fov = ( float ) atof( str );
+	}
+
+	str = cameraNode->Attribute( "view" );
+	if ( 0 == str )
+	{
+		this->m_logger->logWarning() << "view attribute missing in cameraNode - use default: " << str;
+	}
+	else
+	{
+		mode = str;
+	}
+
+	Viewer* camera = new Viewer( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight() );
+	if ( mode == "PROJ" )
+	{
+		camera->setFov( fov );
+		camera->setupPerspective();
+	}
+	else if ( mode == "ORTHO" )
+	{
+		camera->setupOrtho();
+	}
+
+	entity->m_camera = camera;
+}
+
+void
+ZazenGraphics::parseOrientation( TiXmlElement* objectNode, ZazenGraphicsEntity* entity )
+{
+	TiXmlElement* orientationNode = objectNode->FirstChildElement( "orientation" );
+	if ( NULL == orientationNode )
+	{
+		return;
+	}
+
+	glm::vec3 v;
+	float roll = 0.0f;
+	float pitch = 0.0f;
+	float heading = 0.0f;
+	float scale = 1.0f;
+
+	const char* str = orientationNode->Attribute( "x" );
+	if ( 0 != str )
+	{
+		v[ 0 ] = ( float ) atof( str );
+	}
+
+	str = orientationNode->Attribute( "y" );
+	if ( 0 != str )
+	{
+		v[ 1 ] = ( float ) atof( str );
+	}
+
+	str = orientationNode->Attribute( "z" );
+	if ( 0 != str )
+	{
+		v[ 2 ] = ( float ) atof( str );
+	}
+
+	str = orientationNode->Attribute( "heading" );
+	if ( 0 == str )
+	{
+		this->m_logger->logWarning( "heading attribute missing in orientation - use default: 0.0" ); 
+	}
+	else
+	{
+		heading = ( float ) atof( str );
+	}
+
+	str = orientationNode->Attribute( "roll" );
+	if ( 0 == str )
+	{
+		this->m_logger->logWarning( "roll attribute missing in orientation - use default: 0.0" );
+	}
+	else
+	{
+		roll = ( float ) atof( str );
+	}
+
+	str = orientationNode->Attribute( "pitch" );
+	if ( 0 == str )
+	{
+		this->m_logger->logWarning( "pitch attribute missing in orientation - use default: 0.0" );
+	}
+	else
+	{
+		pitch = ( float ) atof( str );
+	}
+
+	str = orientationNode->Attribute( "scale" );
+	if ( 0 == str )
+	{
+		this->m_logger->logWarning( "scale attribute missing in orientation - use default: 1.0" );
+	}
+	else
+	{
+		scale = ( float ) atof( str );
+	}
+
+	entity->set( v, pitch, heading, roll, scale );
+}
+
+void
+ZazenGraphics::parseAnimation( TiXmlElement* objectNode, ZazenGraphicsEntity* entity )
+{
+	TiXmlElement* animationNode = objectNode->FirstChildElement( "animation" );
+	if ( NULL == animationNode )
+	{
+		return;
+	}
+
+	const char* str = animationNode->Attribute( "directory" );
+	if ( 0 != str )
+	{
+		string directory = str;
+			
+		str = animationNode->Attribute( "extension" );
+		if ( 0 != str )
+		{
+			string extension = str;
+
+			entity->m_allAnimations = AnimationFactory::loadDir( directory, extension );
+
+			str = animationNode->Attribute( "active" );
+			if ( 0 != str )
+			{
+				string fileName = directory + "/" + str + extension;
+
+				entity->m_activeAnimation = AnimationFactory::get( fileName );
+				if ( entity->m_activeAnimation )
+				{
+					entity->m_activeAnimation->initSkeleton( entity->getMeshNode() );
+				}
+			}
+		}
+	}
+	else
+	{
+		glm::vec3 animRot;
+
+		const char* str = animationNode->Attribute( "heading" );
+		if ( 0 == str )
+		{
+			this->m_logger->logWarning( "heading attribute missing in animation - use default: 0.0" );
+		}
+		else
+		{
+			animRot[ 0 ] = ( float ) atof( str );
+		}
+
+		str = animationNode->Attribute( "roll" );
+		if ( 0 == str )
+		{
+			this->m_logger->logWarning( "roll attribute missing in animation - use default: 0.0" );
+		}
+		else
+		{
+			animRot[ 1 ] = ( float ) atof( str );
+		}
+
+		str = animationNode->Attribute( "pitch" );
+		if ( 0 == str )
+		{
+			this->m_logger->logWarning( "pitch attribute missing in animation - use default: 0.0" );
+		}
+		else
+		{
+			animRot[ 2 ] = ( float ) atof( str );
+		}
+
+		entity->setAnimation( animRot[ 0 ], animRot[ 1 ], animRot[ 2 ] ); 
+	}
 }
 
 void*

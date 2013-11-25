@@ -1372,13 +1372,9 @@ bool
 DRRenderer::updateLightBlock( Light* light )
 {
 	glm::vec2 shadowResolution;
-	glm::vec3 color( 1.0 );
-	glm::vec2 power( 1.0 );
-	glm::vec3 attenuation( 1.0 );
-
-	// TODO: set color from light
-	// TODO: set power from light
-	// TODO: set attenuation from light
+	const glm::vec3& color = light->getColor();
+	const glm::vec2& specular = light->getSpecular();
+	const glm::vec3& attenuation = light->getAttenuation();
 
 	// shadow-map resolution corresponds to the width and height
 	shadowResolution.x = ( float ) light->getWidth();
@@ -1392,7 +1388,7 @@ DRRenderer::updateLightBlock( Light* light )
 
 	this->m_lightBlock->updateField( "LightUniforms.shadowResolution", shadowResolution );
 	this->m_lightBlock->updateField( "LightUniforms.color", color );
-	this->m_lightBlock->updateField( "LightUniforms.power", power );
+	this->m_lightBlock->updateField( "LightUniforms.specular", specular );
 	
 	// upload light-model matrix = orientation of the light in the world
 	this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() );
@@ -1411,10 +1407,10 @@ DRRenderer::updateLightBlock( Light* light )
 		if ( Light::LightType::SPOT == light->getType() )
 		{
 			glm::vec2 spot( 1.0 );
-			spot.x = cos( light->getFov() / 2.0 );
-			spot.y = 1.0;
+			spot.x = ( float ) cos( light->getFov() / 2.0 );
+			spot.y = 60.0;
 
-			// TODO: calculate cos( FOV / 2 ) for spot.x - store distance to each side of cone in cos
+			// TODO: make spot-exponent configurable
 
 			this->m_lightBlock->updateField( "LightUniforms.attenuation", attenuation );
 			this->m_lightBlock->updateField( "LightUniforms.spot", spot );

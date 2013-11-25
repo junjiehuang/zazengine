@@ -12,6 +12,8 @@
 class Light : public Viewer
 {
 	public:
+		friend class ZazenGraphics;
+
 		enum LightType {
 			SPOT = 0,
 			DIRECTIONAL,
@@ -30,10 +32,10 @@ class Light : public Viewer
 
 		bool isShadowCaster() const { return this->m_shadowCaster; };
 
-		void setColor( const glm::vec4& color ) { this->m_color = color; };
-		const glm::vec4& getColor() const { return this->m_color; };
+		const glm::vec3& getColor() const { return this->m_color; };
+		const glm::vec3& getAttenuation() const { return this->m_attenuation; };
+		const glm::vec2& getSpecular() const { return this->m_specular; };
 
-		void setBoundingMesh( MeshStatic* boundingGeom ) { this->m_boundingMesh = boundingGeom; };
 		MeshStatic* getBoundingMesh() { return this->m_boundingMesh; };
 
 		RenderTarget* getShadowMap() { return this->m_shadowMap; };
@@ -45,7 +47,9 @@ class Light : public Viewer
 		bool m_shadowCaster;
 
 		LightType m_type;
-		glm::vec4 m_color;
+		glm::vec3 m_color;
+		glm::vec3 m_attenuation;
+		glm::vec2 m_specular;
 
 		MeshStatic* m_boundingMesh;
 

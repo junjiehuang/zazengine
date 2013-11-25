@@ -37,7 +37,7 @@ layout( shared ) uniform LightUniforms
 
 	vec3 color;
 
-	vec2 power; // x = shininess, y = strength
+	vec2 specular; // x = shininess, y = strength
 
 	vec3 attenuation; // x = constant, y = linear, z = quadratic
 
@@ -308,10 +308,10 @@ vec3 calculatePhongMaterial( vec3 baseColor, vec3 normalViewSpace, vec3 lightDir
 	// diffuse (lambert) factor
 	float diffuseFactor = max( 0.0, dot( normalViewSpace.xyz, lightDirToFragViewSpace ) );
 	// OPTIMIZE: calculate only when diffuse > 0
-	float specularFactor = pow( max( 0.0, dot( normalViewSpace.xyz, halfVector ) ), Light.power.x ); // directional light doesn't apply strength at specular factor but at reflected light calculation
+	float specularFactor = pow( max( 0.0, dot( normalViewSpace.xyz, halfVector ) ), Light.specular.x ); // directional light doesn't apply strength at specular factor but at reflected light calculation
 
 	vec3 scatteredLight = diffuseFactor * Light.color;		// no ambient light for now 
-	vec3 reflectedLight = Light.color * specularFactor * Light.power.y;
+	vec3 reflectedLight = Light.color * specularFactor * Light.specular.y;
 
 	return baseColor * scatteredLight + reflectedLight; 
 }
@@ -463,13 +463,13 @@ subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec4 fragPosView
 	float spotCos = dot( lightDirToFragViewSpace, lightMVMatrix[ 2 ].xyz );
 	// attenuation would be 0 so no contribution, return black
 	// when angle of the half of the spot is larger than the maximum angle of the half of the spot then no contribution of this light
-	if ( spotCos > Light.spot.x )
+	if ( spotCos < Light.spot.x )
 	{
 		return vec3( 0.0 );
 	}
 	else
 	{
-		attenuation *= pow( spotCos, Light.spot.y );
+		attenuation *= pow( spotCos, 7.0 );
 	}
 
 	vec3 materialAlbedo;
