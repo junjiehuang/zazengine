@@ -91,9 +91,7 @@
     <ClCompile Include="framebuffer\RenderTarget.cpp" />
     <ClCompile Include="geometry\GeometryFactory.cpp" />
     <ClCompile Include="geometry\Mesh.cpp" />
-    <ClCompile Include="geometry\MeshBoned.cpp" />
     <ClCompile Include="geometry\MeshNode.cpp" />
-    <ClCompile Include="geometry\MeshStatic.cpp" />
     <ClCompile Include="lighting\Light.cpp" />
     <ClCompile Include="material\Material.cpp" />
     <ClCompile Include="material\MaterialClassic.cpp" />
@@ -130,9 +128,7 @@
     <ClInclude Include="framebuffer\RenderTarget.h" />
     <ClInclude Include="geometry\GeometryFactory.h" />
     <ClInclude Include="geometry\Mesh.h" />
-    <ClInclude Include="geometry\MeshBoned.h" />
     <ClInclude Include="geometry\MeshNode.h" />
-    <ClInclude Include="geometry\MeshStatic.h" />
     <ClInclude Include="lighting\Light.h" />
     <ClInclude Include="material\Material.h" />
     <ClInclude Include="material\MaterialClassic.h" />

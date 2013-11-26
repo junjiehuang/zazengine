@@ -3,23 +3,17 @@
 
 #include <glm/glm.hpp>
 
+#include <GL/glew.h>
+
 #define BUFFER_OFFSET( i ) ( ( char* ) NULL + ( i ) )
 
 class Mesh
 {
 	public:
-		typedef float Vertex [ 3 ];
-		typedef float Normal [ 3 ];
-		typedef float TexCoord [ 2 ];
-		typedef float Tangent [ 3 ];
-		typedef unsigned int BoneIndex[ 4 ];
-		typedef float BoneWeight[ 4 ];
+		friend class GeometryFactory;
 
-		Mesh( int faceCount, int vertexCount, void* vertexData, unsigned int* indices );
-		virtual ~Mesh();
-
-		void compareAndSetBB( const glm::vec3&, const glm::vec3& );
-		void setBB( const glm::vec3&, const glm::vec3& );
+		Mesh( GLuint vao, GLuint dataVBO, GLuint indexVBO );
+		~Mesh();
 	 
 		const glm::vec3& getCenter() { return this->m_center; };
 		const glm::vec3& getBBMin() { return this->m_bbMin; };
@@ -30,17 +24,13 @@ class Mesh
 
 		bool render();
 
-	protected:
-		virtual unsigned int getVertexSize() = 0;
-		virtual void enableAttributes() = 0;
-		virtual void disableAttributes() = 0;
-
 	private:
-		void* m_vertexData;
-		unsigned int* m_indexBuffer;
+		GLuint m_vao;
+		GLuint m_dataVBO;
+		GLuint m_indexVBO;
 
-		unsigned int m_dataVBO;
-		unsigned int m_indexVBO;
+		void* m_vertexData;
+		GLuint* m_indexData;
 
 		int m_faceCount;
 		int m_vertexCount;
@@ -48,6 +38,9 @@ class Mesh
 		glm::vec3 m_bbMin;
 		glm::vec3 m_bbMax;
 		glm::vec3 m_center;
+
+		void setBB( const glm::vec3&, const glm::vec3& );
+		void compareAndSetBB( const glm::vec3&, const glm::vec3& );
 };
 
 #endif /* _MESH_H_ */

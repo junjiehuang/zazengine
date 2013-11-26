@@ -2,12 +2,12 @@
 #define _GEOMETRY_FACTORY_H_
 
 #include "MeshNode.h"
-#include "MeshStatic.h"
-#include "MeshBoned.h"
 
 #include <assimp/scene.h>
 
 #include <boost/filesystem.hpp>
+
+#include <GL/glew.h>
 
 #include <map>
 #include <string>
@@ -20,14 +20,47 @@ class GeometryFactory
 		static GeometryFactory& getRef() { return *GeometryFactory::instance; };
 
 		MeshNode* getMesh( const std::string& fileName );
-		MeshStatic* createQuad( float width, float height );
+		Mesh* createQuad( float width, float height );
+		Mesh* createUnitCube();
 
 		void free( Mesh* );
 
 	private:
+		typedef float Vertex [ 3 ];
+		typedef float Normal [ 3 ];
+		typedef float TexCoord [ 2 ];
+		typedef float Tangent [ 3 ];
+		typedef unsigned int BoneIndex[ 4 ];
+		typedef float BoneWeight[ 4 ];
+
 		struct MeshBone {
 			std::string m_name;
 			glm::mat4 m_offset; // mesh to bone
+		};
+
+		struct BonedVertexData
+		{
+			Vertex position;
+			Normal normal;
+			TexCoord texCoord;
+			Tangent tangent;
+			unsigned int boneCount;
+			BoneIndex boneIndices;
+			BoneWeight boneWeights;
+		};
+
+		struct StaticVertexData
+		{
+			Vertex position;
+			Normal normal;
+			TexCoord texCoord;
+			Tangent tangent;
+		};
+
+		struct QuadVertexData
+		{
+			Vertex position;
+			TexCoord texCoord;
 		};
 
 		static GeometryFactory* instance;
@@ -49,12 +82,12 @@ class GeometryFactory
 		MeshNode* processNode( const struct aiNode*, const glm::mat4& );		 
 		Mesh* processMesh( const struct aiMesh* );
 
-		MeshBoned* processMeshBoned( const struct aiMesh* );
-		MeshStatic* processMeshStatic( const struct aiMesh* );
+		Mesh* processMeshBoned( const struct aiMesh* );
+		Mesh* processMeshStatic( const struct aiMesh* );
 		
 		int getBoneIndex( const std::string& );
 
-		static void processBoneWeight( MeshBoned::BonedVertexData&, const aiVertexWeight&, unsigned int );
+		static void processBoneWeight( BonedVertexData&, const aiVertexWeight&, unsigned int );
 		static void updateBB( const aiVector3D& vertex, glm::vec3&, glm::vec3& );
 };
 

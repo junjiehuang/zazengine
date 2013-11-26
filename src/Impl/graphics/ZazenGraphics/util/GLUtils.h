@@ -22,7 +22,6 @@ class GLUtils
 	public:
 		static bool peekErrors( const std::string& );
 		static bool peekErrorsSilent();
-		static void enableDebugOutput();
 };
 
 #endif /* _GLUTILS_H */

@@ -342,7 +342,7 @@ ZazenGraphics::parseLight( TiXmlElement* objectNode, ZazenGraphicsEntity* entity
 	glm::vec3 lightColor( 1.0 );
 	glm::vec3 attenuation( 1.0 );
 	glm::vec2 specular( 1.0 );
-	MeshStatic* boundingMesh = NULL;
+	Mesh* boundingMesh = NULL;
 
 	TiXmlElement* colorNode = lightNode->FirstChildElement( "color" );
 	if ( colorNode )

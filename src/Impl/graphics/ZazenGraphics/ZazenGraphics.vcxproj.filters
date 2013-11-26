@@ -228,12 +228,6 @@
     <ClCompile Include="geometry\Mesh.cpp">
       <Filter>Quelldateien\geometry</Filter>
     </ClCompile>
-    <ClCompile Include="geometry\MeshBoned.cpp">
-      <Filter>Quelldateien\geometry</Filter>
-    </ClCompile>
-    <ClCompile Include="geometry\MeshStatic.cpp">
-      <Filter>Quelldateien\geometry</Filter>
-    </ClCompile>
     <ClCompile Include="geometry\MeshNode.cpp">
       <Filter>Quelldateien\geometry</Filter>
     </ClCompile>
@@ -339,12 +333,6 @@
       <Filter>Headerdateien\renderer</Filter>
     </ClInclude>
     <ClInclude Include="geometry\Mesh.h">
-      <Filter>Headerdateien\geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="geometry\MeshBoned.h">
-      <Filter>Headerdateien\geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="geometry\MeshStatic.h">
       <Filter>Headerdateien\geometry</Filter>
     </ClInclude>
     <ClInclude Include="geometry\MeshNode.h">

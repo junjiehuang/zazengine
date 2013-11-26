@@ -36,6 +36,14 @@ RenderingContext::initialize( const std::string& title, int width, int height, b
         return false;
 	}
 	
+#ifdef _DEBUG
+	if ( false == RenderingContext::initDebugging() )
+	{
+		RenderingContext::shutdown();
+        return false;
+	}
+#endif
+
 	return true;
 }
 
@@ -96,6 +104,16 @@ RenderingContext::initGlew()
 
 	// need to peek GL-Errors because a bug in glew will cause INVALID_ENUM when a profile > 3.2 is requested
 	GL_PEEK_ERRORS_SILENT
+
+	return true;
+}
+
+bool
+RenderingContext::initDebugging()
+{
+	glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
+	glDebugMessageControlARB( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE );
+	glDebugMessageCallbackARB( &RenderingContext::debugOutput, NULL );
 
 	return true;
 }
@@ -209,52 +227,74 @@ RenderingContext::takeScreenShot()
 	return true;
 }
 
-/*
-LRESULT CALLBACK
-RenderingContext::WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+// copied and adjusted from ogl demo
+void APIENTRY 
+RenderingContext::debugOutput ( GLenum source,
+								GLenum type,
+								GLuint id,
+								GLenum severity,
+								GLsizei length,
+								const GLchar* message,
+								GLvoid* userParam )
 {
-	switch ( uMsg ) 
+	string debSource;
+	string debType;
+	string debSev;
+
+	if(source == GL_DEBUG_SOURCE_API_ARB)
+		debSource = "OpenGL";
+	else if(source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
+		debSource = "Windows";
+	else if(source == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB)
+		debSource = "Shader Compiler";
+	else if(source == GL_DEBUG_SOURCE_THIRD_PARTY_ARB)
+		debSource = "Third Party";
+	else if(source == GL_DEBUG_SOURCE_APPLICATION_ARB)
+		debSource = "Application";
+	else if (source == GL_DEBUG_SOURCE_OTHER_ARB)
+		debSource = "Other";
+	else
+		assert(0);
+ 
+	if(type == GL_DEBUG_TYPE_ERROR)
+		debType = "error";
+	else if(type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR)
+		debType = "deprecated behavior";
+	else if(type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR)
+		debType = "undefined behavior";
+	else if(type == GL_DEBUG_TYPE_PORTABILITY)
+		debType = "portability";
+	else if(type == GL_DEBUG_TYPE_PERFORMANCE)
+		debType = "performance";
+	else if(type == GL_DEBUG_TYPE_OTHER)
+		debType = "message";
+	else if(type == GL_DEBUG_TYPE_MARKER)
+		debType = "marker";
+	else if(type == GL_DEBUG_TYPE_PUSH_GROUP)
+		debType = "push group";
+	else if(type == GL_DEBUG_TYPE_POP_GROUP)
+		debType = "pop group";
+	else
+		assert(0);
+ 
+	if(severity == GL_DEBUG_SEVERITY_HIGH_ARB)
+		debSev = "high";
+	else if(severity == GL_DEBUG_SEVERITY_MEDIUM_ARB)
+		debSev = "medium";
+	else if(severity == GL_DEBUG_SEVERITY_LOW_ARB)
+		debSev = "low";
+	else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+		debSev = "notification";
+	else
+		assert(0);
+
+
+	if ( GL_DEBUG_TYPE_ERROR == type )
 	{
-		case WM_ACTIVATE:
-		{
-			if ( 0 == HIWORD( wParam ) )
-			{
-				RenderingContext::instance->m_activeFlag = true;
-			}
-			else
-			{
-				RenderingContext::instance->m_activeFlag = false;
-			}
-
-			return 0;
-		}
-
-		case WM_SYSCOMMAND:
-		{
-			switch ( wParam )
-			{
-				case SC_SCREENSAVE:
-				case SC_MONITORPOWER:
-				return 0;
-			}
-
-			break;
-		}
-
-		case WM_CLOSE:
-		{
-			PostQuitMessage( 0 );
-			return 0;
-		}
-
-		case WM_SIZE:
-		{
-			RenderingContext::instance->resize( LOWORD( lParam ), HIWORD( lParam ) );
-			return 0;
-		}
+		ZazenGraphics::getInstance().getLogger().logError() << "OpenGL Debug-Context Output:\n    " << debSource << ": " << debType << " (" << debSev << ") " << id << ": " << message << "\n";
 	}
-
-	// Pass All Unhandled Messages To DefWindowProc
-	return DefWindowProc( hWnd, uMsg, wParam, lParam );
+	else
+	{
+		ZazenGraphics::getInstance().getLogger().logDebug() << "OpenGL Debug-Context Output:\n    " << debSource << ": " << debType << " (" << debSev << ") " << id << ": " << message << "\n";
+	}
 }
-*/

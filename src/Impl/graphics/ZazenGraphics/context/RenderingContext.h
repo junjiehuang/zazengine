@@ -54,6 +54,9 @@ class RenderingContext
 
 		static bool initGLFW();
 		static bool initGlew();
+		static bool initDebugging();
+
+		static void APIENTRY debugOutput( GLenum, GLenum,GLuint, GLenum, GLsizei, const GLchar*, GLvoid* );
 };
 
 #endif /* _RENDERING_CONTEXT_H_ */

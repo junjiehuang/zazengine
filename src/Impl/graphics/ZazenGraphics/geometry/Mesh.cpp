@@ -4,19 +4,27 @@
 
 #include <GL/glew.h>
 
-Mesh::Mesh( int faceCount, int vertexCount, void* vertexData, unsigned int* indices )
-	: m_faceCount( faceCount ),
-	m_vertexCount( vertexCount )
+Mesh::Mesh( GLuint vao, GLuint dataVBO, GLuint indexVBO )
+	: m_vao( vao ), 
+	m_dataVBO( dataVBO ),
+	m_indexVBO( indexVBO )
 {
-	this->m_dataVBO = 0;
-	this->m_indexVBO = 0;
+	// will be set by geometry-factory
+	this->m_vertexData = NULL;
+	this->m_indexData = NULL;
 
-	this->m_vertexData = vertexData;
-	this->m_indexBuffer = indices;
+	// will be set by geometry-factory
+	this->m_faceCount = 0;
+	this->m_vertexCount = 0;
 }
 
 Mesh::~Mesh()
 {
+	if ( this->m_vao )
+	{
+		glDeleteVertexArrays( 1, &this->m_vao );
+	}
+
 	if ( this->m_dataVBO )
 	{
 		glDeleteBuffers( 1, &this->m_dataVBO );
@@ -34,56 +42,27 @@ Mesh::~Mesh()
 		delete[] this->m_vertexData;
 	}
 
-	if ( this->m_indexBuffer )
+	if ( this->m_indexData )
 	{
-		delete[] this->m_indexBuffer;
+		delete[] this->m_indexData;
 	}
 }
 
 bool
 Mesh::render()
 {
-	if ( 0 == this->m_vertexData || 0 == this->m_indexBuffer )
-	{
-		return true;
-	}
+	glBindVertexArray( this->m_vao );
 
-	// lazy loading
-	if ( 0 == this->m_dataVBO )
-	{
-		// generate and setup data vbo
-		glGenBuffers( 1, &this->m_dataVBO );
-		GL_PEEK_ERRORS_AT_DEBUG
-
-		glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );
-		GL_PEEK_ERRORS_AT_DEBUG
-
-		glBufferData( GL_ARRAY_BUFFER, this->getVertexSize() * this->m_vertexCount, this->m_vertexData, GL_STATIC_DRAW );
-		GL_PEEK_ERRORS_AT_DEBUG
-
-		// generate and setup index vbo
-		glGenBuffers( 1, &this->m_indexVBO );
-		GL_PEEK_ERRORS_AT_DEBUG
-
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->m_indexVBO );
-		GL_PEEK_ERRORS_AT_DEBUG
-
-		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( GLuint ) * this->m_faceCount * 3, this->m_indexBuffer, GL_STATIC_DRAW );
-		GL_PEEK_ERRORS_AT_DEBUG
-	}
-
+	/*
 	glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );
 	GL_PEEK_ERRORS_AT_DEBUG
 
-	this->enableAttributes();
-
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->m_indexVBO );
 	GL_PEEK_ERRORS_AT_DEBUG
+	*/
 
 	glDrawElements( GL_TRIANGLES, this->m_faceCount * 3, GL_UNSIGNED_INT, BUFFER_OFFSET( 0 ) );
 	GL_PEEK_ERRORS_AT_DEBUG
-
-	this->disableAttributes();
 
 	return true;
 }

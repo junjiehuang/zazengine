@@ -31,7 +31,7 @@ class DRRenderer
 		RenderTarget* m_depthCopy;
 		////////////////////////////////////////
 
-		MeshStatic* m_fullScreenQuad;
+		Mesh* m_fullScreenQuad;
 
 		// Program and shaders for geometry-stage
 		Program* m_progGeomStage;

@@ -1,7 +1,7 @@
 #ifndef _LIGHT_H_
 #define _LIGHT_H_
 
-#include "../Geometry/MeshStatic.h"
+#include "../Geometry/Mesh.h"
 
 #include "../Viewer/Viewer.h"
 
@@ -36,7 +36,7 @@ class Light : public Viewer
 		const glm::vec3& getAttenuation() const { return this->m_attenuation; };
 		const glm::vec2& getSpecular() const { return this->m_specular; };
 
-		MeshStatic* getBoundingMesh() { return this->m_boundingMesh; };
+		Mesh* getBoundingMesh() { return this->m_boundingMesh; };
 
 		RenderTarget* getShadowMap() { return this->m_shadowMap; };
 
@@ -51,7 +51,7 @@ class Light : public Viewer
 		glm::vec3 m_attenuation;
 		glm::vec2 m_specular;
 
-		MeshStatic* m_boundingMesh;
+		Mesh* m_boundingMesh;
 
 		RenderTarget* m_shadowMap;
 

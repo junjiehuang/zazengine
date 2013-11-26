@@ -63,8 +63,6 @@ DRRenderer::initialize()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Renderer..." );
 
-	GLUtils::enableDebugOutput();
-
 	glEnable( GL_DEPTH_TEST );
 	
 	// Cull triangles which normal is not towards the camera

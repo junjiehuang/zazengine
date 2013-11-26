@@ -1,6 +1,7 @@
 #ifndef _SKYBOX_H_
 #define _SKYBOX_H_
 
+#include "../Geometry/Mesh.h"
 #include "../Texture/Texture.h"
 #include "../Program/UniformBlock.h"
 #include "../Viewer/Viewer.h"
@@ -21,8 +22,7 @@ class SkyBox
 	private:
 		static SkyBox* instance;
 
-		GLuint m_dataVBO;
-		GLuint m_indexVBO;
+		Mesh* m_cubeMesh;
 		Texture* m_cubeMap;
 
 		SkyBox();

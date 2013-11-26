@@ -3,6 +3,7 @@
 #include "../ZazenGraphics.h"
 
 #include "../Util/AssImpUtils.h"
+#include "../Util/GLUtils.h"
 
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
@@ -36,6 +37,8 @@ GeometryFactory::GeometryFactory( const boost::filesystem::path& modelDataPath )
 	: m_modelDataPath( modelDataPath )
 {
 	GeometryFactory::instance = this;
+	
+	this->m_currentScene = NULL;
 }
 
 GeometryFactory::~GeometryFactory()
@@ -86,32 +89,26 @@ GeometryFactory::getMesh( const std::string& fileName )
 	return meshNode;
 }
 
-MeshStatic*
+Mesh*
 GeometryFactory::createQuad( float width, float height )
 {
+	// TODO: check existing quads for same width and height and return if match instead of creating 
+
 	float halfWidth = width / 2;
 	float halfHeight = height / 2;
 
-	// consists of 2 triangles
-	int numFaces = 2;
-	// has 4 vertices
-	int numVertices = 4;
-
 	// indexbuffer for faces
-	GLuint* indexBuffer = new GLuint[ numFaces * 3 ];
-	memset( indexBuffer, 0, numFaces * 3 * sizeof( GLuint ) );
+	GLuint indexData[ 6 ];
+	memset( indexData, 0, 6 * sizeof( GLuint ) );
 
 	// allocate vertexdata
-	MeshStatic::StaticVertexData* vertexData = new MeshStatic::StaticVertexData[ numVertices ];
-	memset( vertexData, 0, numVertices * sizeof( MeshStatic::StaticVertexData ) );
+	QuadVertexData vertexData[ 4 ];
+	memset( vertexData, 0, 4 * sizeof( QuadVertexData ) );
 
 	// top left vertex
 	vertexData[ 0 ].position[ 0 ] = -halfWidth;
 	vertexData[ 0 ].position[ 1 ] = halfHeight;
 	vertexData[ 0 ].position[ 2 ] = 0.0f;
-	vertexData[ 0 ].normal[ 0 ] = 0.0f;
-	vertexData[ 0 ].normal[ 1 ] = 0.0f;
-	vertexData[ 0 ].normal[ 2 ] = 1.0f;
 	vertexData[ 0 ].texCoord[ 0 ] = 0.0f;
 	vertexData[ 0 ].texCoord[ 1 ] = 1.0f;
 
@@ -119,9 +116,6 @@ GeometryFactory::createQuad( float width, float height )
 	vertexData[ 1 ].position[ 0 ] = -halfWidth;
 	vertexData[ 1 ].position[ 1 ] = -halfHeight;
 	vertexData[ 1 ].position[ 2 ] = 0.0f;
-	vertexData[ 1 ].normal[ 0 ] = 0.0f;
-	vertexData[ 1 ].normal[ 1 ] = 0.0f;
-	vertexData[ 1 ].normal[ 2 ] = 1.0f;
 	vertexData[ 1 ].texCoord[ 0 ] = 0.0f;
 	vertexData[ 1 ].texCoord[ 1 ] = 0.0f;
 
@@ -129,9 +123,6 @@ GeometryFactory::createQuad( float width, float height )
 	vertexData[ 2 ].position[ 0 ] = halfWidth;
 	vertexData[ 2 ].position[ 1 ] = -halfHeight;
 	vertexData[ 2 ].position[ 2 ] = 0.0f;
-	vertexData[ 2 ].normal[ 0 ] = 0.0f;
-	vertexData[ 2 ].normal[ 1 ] = 0.0f;
-	vertexData[ 2 ].normal[ 2 ] = 1.0f;
 	vertexData[ 2 ].texCoord[ 0 ] = 1.0f;
 	vertexData[ 2 ].texCoord[ 1 ] = 0.0f;
 
@@ -139,33 +130,151 @@ GeometryFactory::createQuad( float width, float height )
 	vertexData[ 3 ].position[ 0 ] = halfWidth;
 	vertexData[ 3 ].position[ 1 ] = halfHeight;
 	vertexData[ 3 ].position[ 2 ] = 0.0f;
-	vertexData[ 3 ].normal[ 0 ] = 0.0f;
-	vertexData[ 3 ].normal[ 1 ] = 0.0f;
-	vertexData[ 3 ].normal[ 2 ] = 1.0f;
 	vertexData[ 3 ].texCoord[ 0 ] = 1.0f;
 	vertexData[ 3 ].texCoord[ 1 ] = 1.0f;
 
 	// IMPORTANT: OpenGL defaults front-faces to CounterClockWise => specify indices correct
-
 	// first vertex: top left, bottom left, bottom right
-	indexBuffer[ 0 ] = 0;
-	indexBuffer[ 1 ] = 1;
-	indexBuffer[ 2 ] = 2;
+	indexData[ 0 ] = 0;
+	indexData[ 1 ] = 1;
+	indexData[ 2 ] = 2;
 
 	// second vertex: top left, bottom right, top right
-	indexBuffer[ 3 ] = 0;
-	indexBuffer[ 4 ] = 2;
-	indexBuffer[ 5 ] = 3;
+	indexData[ 3 ] = 0;
+	indexData[ 4 ] = 2;
+	indexData[ 5 ] = 3;
+
+	GLuint vao = 0;
+	GLuint dataVBO = 0;
+	GLuint indexVBO = 0;
+
+	// NOTE: the VAO encapuslates ALL of the subsequent buffers and states of the buffers 
+	glGenVertexArrays( 1, &vao ); 
+	glBindVertexArray( vao );
+
+	// generate and setup data vbo
+	glGenBuffers( 1, &dataVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBindBuffer( GL_ARRAY_BUFFER, dataVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBufferData( GL_ARRAY_BUFFER, sizeof( QuadVertexData ) * 4, vertexData, GL_STATIC_DRAW );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to coordinates
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( QuadVertexData ), BUFFER_OFFSET( 0 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 1 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to texture coords
+	glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, sizeof( QuadVertexData ), BUFFER_OFFSET( 12 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+	
+	// generate and setup index vbo
+	glGenBuffers( 1, &indexVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( GLuint ) * 6, indexData, GL_STATIC_DRAW );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBindVertexArray( 0 );
+
+	Mesh* meshQuad = new Mesh( vao, dataVBO, indexVBO );
+	meshQuad->m_faceCount = 2;
+	meshQuad->m_vertexCount = 4;
+	meshQuad->m_vertexData = NULL;	// no dynamic memory for small mesh 
+	meshQuad->m_indexData = NULL;	// no dynamic memory for small mesh 
 
 	// put into map => will be cleaned up
 	MeshNode* containerNode = new MeshNode( "QUAD_MESH" + this->m_allMeshes.size() );
-	MeshStatic* quadMesh = new MeshStatic( numFaces, numVertices, vertexData, indexBuffer );
-
-	containerNode->m_meshes.push_back( quadMesh );
+	containerNode->m_meshes.push_back( meshQuad );
 
 	this->m_allMeshes[ containerNode->getName() ] = containerNode;
 
-	return quadMesh;
+	return meshQuad;
+}
+
+Mesh*
+GeometryFactory::createUnitCube()
+{
+	GLuint vao = 0;
+	GLuint dataVBO = 0;
+	GLuint indexVBO = 0;
+
+	// cube vertices for vertex buffer object
+	GLfloat cube_vertices[] = {
+		-1.0,  1.0,  1.0,
+		-1.0, -1.0,  1.0,
+		1.0, -1.0,  1.0,
+		1.0,  1.0,  1.0,
+		-1.0,  1.0, -1.0,
+		-1.0, -1.0, -1.0,
+		1.0, -1.0, -1.0,
+		1.0,  1.0, -1.0,
+	};
+
+	// cube indices for index buffer object
+	GLuint cube_indices[] = {
+		0, 1, 2, 3,
+		3, 2, 6, 7,
+		7, 6, 5, 4,
+		4, 5, 1, 0,
+		0, 3, 7, 4,
+		1, 2, 6, 5,
+	};
+
+	// NOTE: the VAO encapuslates ALL of the subsequent buffers and states of the buffers 
+	glGenVertexArrays( 1, &vao ); 
+	glBindVertexArray( vao );
+
+	glGenBuffers( 1, &dataVBO );
+	GL_PEEK_ERRORS_AT
+
+	glBindBuffer( GL_ARRAY_BUFFER, dataVBO );
+	GL_PEEK_ERRORS_AT
+
+	glEnableVertexAttribArray( 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBufferData( GL_ARRAY_BUFFER, sizeof( cube_vertices ), cube_vertices, GL_STATIC_DRAW );
+	GL_PEEK_ERRORS_AT
+
+	glGenBuffers( 1, &indexVBO );
+	GL_PEEK_ERRORS_AT
+	
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexVBO );
+	GL_PEEK_ERRORS_AT
+	
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( cube_indices ), cube_indices, GL_STATIC_DRAW );
+	GL_PEEK_ERRORS_AT
+	
+	glBindVertexArray( 0 );
+
+	Mesh* meshUnitCube = new Mesh( vao, dataVBO, indexVBO );
+	meshUnitCube->m_faceCount = 6;
+	meshUnitCube->m_vertexCount = 8;
+	meshUnitCube->m_vertexData = NULL;	// no dynamic memory for small mesh 
+	meshUnitCube->m_indexData = NULL;	// no dynamic memory for small mesh 
+
+	// put into map => will be cleaned up
+	MeshNode* containerNode = new MeshNode( "CUBE_MESH" + this->m_allMeshes.size() );
+	containerNode->m_meshes.push_back( meshUnitCube );
+
+	this->m_allMeshes[ containerNode->getName() ] = containerNode;
+
+	return meshUnitCube;
 }
 
 MeshNode*
@@ -321,22 +430,22 @@ GeometryFactory::processMesh( const struct aiMesh* assImpMesh )
 	return mesh;
 }
 
-MeshBoned*
+Mesh*
 GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh )
 {
 	glm::vec3 meshBBmin;
 	glm::vec3 meshBBmax;
 
-	GLuint* indexBuffer = NULL;
-	MeshBoned::BonedVertexData* vertexData = NULL;
+	GLuint* indexData = NULL;
+	BonedVertexData* vertexData = NULL;
 
 	// allocate vertexdata
-	vertexData = new MeshBoned::BonedVertexData[ assImpMesh->mNumVertices ];
-	memset( vertexData, 0, assImpMesh->mNumVertices * sizeof( MeshBoned::BonedVertexData ) );
+	vertexData = new BonedVertexData[ assImpMesh->mNumVertices ];
+	memset( vertexData, 0, assImpMesh->mNumVertices * sizeof( BonedVertexData ) );
 
 	// indexbuffer for faces
-	indexBuffer = new GLuint[ assImpMesh->mNumFaces * 3 ];
-	memset( indexBuffer, 0, assImpMesh->mNumFaces * 3 * sizeof( GLuint ) );
+	indexData = new GLuint[ assImpMesh->mNumFaces * 3 ];
+	memset( indexData, 0, assImpMesh->mNumFaces * 3 * sizeof( GLuint ) );
 
 	meshBBmin[ 0 ] = numeric_limits<float>::max();
 	meshBBmin[ 1 ] = numeric_limits<float>::max();
@@ -365,7 +474,7 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh )
 		for( unsigned int j = 0; j < bone->mNumWeights; j++ )
 		{
 			aiVertexWeight& newWeight = bone->mWeights[ j ];
-			MeshBoned::BonedVertexData& vertex = vertexData[ newWeight.mVertexId ];
+			BonedVertexData& vertex = vertexData[ newWeight.mVertexId ];
 
 			GeometryFactory::processBoneWeight( vertex, newWeight, boneIndex );
 		}
@@ -383,15 +492,15 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh )
 			// normalize normals during load-time to ensure they arrive normalized in shader
 			assImpMesh->mNormals[ index ].Normalize();
 
-			indexBuffer[ i * 3 + j ] = index;
-			memcpy( vertexData[ index ].position, &assImpMesh->mVertices[ index ].x, sizeof( MeshBoned::Vertex ) );
-			memcpy( vertexData[ index ].normal, &assImpMesh->mNormals[ index ].x, sizeof( MeshBoned::Normal ) );
+			indexData[ i * 3 + j ] = index;
+			memcpy( vertexData[ index ].position, &assImpMesh->mVertices[ index ].x, sizeof( Vertex ) );
+			memcpy( vertexData[ index ].normal, &assImpMesh->mNormals[ index ].x, sizeof( Normal ) );
 
 			if ( assImpMesh->HasTangentsAndBitangents() )
 			{
 				// normalize tangents during load-time to ensure they arrive normalized in shader
 				assImpMesh->mTangents[ index ].Normalize();
-				memcpy( vertexData[ index ].tangent, &assImpMesh->mTangents[ index ].x, sizeof( MeshBoned::Tangent ) );
+				memcpy( vertexData[ index ].tangent, &assImpMesh->mTangents[ index ].x, sizeof( Tangent ) );
 			}
 
 			if ( assImpMesh->HasTextureCoords( 0 ) )
@@ -421,14 +530,98 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh )
 		}
 	}
 
-	MeshBoned* meshBoned = new MeshBoned( assImpMesh->mNumFaces, assImpMesh->mNumVertices, vertexData, indexBuffer );
+	GLuint vao = 0;
+	GLuint dataVBO = 0;
+	GLuint indexVBO = 0;
+
+	// NOTE: the VAO encapuslates ALL of the subsequent buffers and states of the buffers 
+	glGenVertexArrays( 1, &vao ); 
+	glBindVertexArray( vao );
+
+	// generate and setup data vbo
+	glGenBuffers( 1, &dataVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBindBuffer( GL_ARRAY_BUFFER, dataVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBufferData( GL_ARRAY_BUFFER, sizeof( BonedVertexData ) * assImpMesh->mNumVertices, vertexData, GL_STATIC_DRAW );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to coordinates
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( BonedVertexData ), BUFFER_OFFSET( 0 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 1 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to normals
+	glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( BonedVertexData ), BUFFER_OFFSET( 12 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 2 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to texture coords
+	glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, sizeof( BonedVertexData ), BUFFER_OFFSET( 24 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 3 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to tangent
+	glVertexAttribPointer( 3, 3, GL_FLOAT, GL_FALSE, sizeof( BonedVertexData ), BUFFER_OFFSET( 32 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+	
+	glEnableVertexAttribArray( 4 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to bone-count
+	glVertexAttribIPointer( 4, 1, GL_UNSIGNED_INT, sizeof( BonedVertexData ), BUFFER_OFFSET( 44 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 5 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to bone-indices 
+	glVertexAttribIPointer( 5, 4, GL_UNSIGNED_INT, sizeof( BonedVertexData ), BUFFER_OFFSET( 48 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 6 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to bone-weights
+	glVertexAttribPointer( 6, 4, GL_FLOAT, GL_FALSE, sizeof( BonedVertexData ), BUFFER_OFFSET( 64 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// generate and setup index vbo
+	glGenBuffers( 1, &indexVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( GLuint ) * assImpMesh->mNumFaces * 3, indexData, GL_STATIC_DRAW );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBindVertexArray( 0 );
+
+	Mesh* meshBoned = new Mesh( vao, dataVBO, indexVBO );
+	meshBoned->m_faceCount = assImpMesh->mNumFaces;
+	meshBoned->m_vertexCount = assImpMesh->mNumVertices;
+	meshBoned->m_vertexData = vertexData;
+	meshBoned->m_indexData = indexData;
+
 	meshBoned->setBB( meshBBmin, meshBBmax );
 
 	return meshBoned;
 }
 
 void
-GeometryFactory::processBoneWeight( MeshBoned::BonedVertexData& vertex, const aiVertexWeight& newWeight, unsigned int boneIndex )
+GeometryFactory::processBoneWeight( BonedVertexData& vertex, const aiVertexWeight& newWeight, unsigned int boneIndex )
 {
 	// only up to 4 bones per vertex are used
 	if ( 4 > vertex.boneCount )
@@ -460,14 +653,14 @@ GeometryFactory::processBoneWeight( MeshBoned::BonedVertexData& vertex, const ai
 	}
 }
 
-MeshStatic*
+Mesh*
 GeometryFactory::processMeshStatic( const struct aiMesh* assImpMesh )
 {
 	glm::vec3 meshBBmin;
 	glm::vec3 meshBBmax;
 
-	GLuint* indexBuffer = NULL;
-	MeshStatic::StaticVertexData* vertexData = NULL;
+	GLuint* indexData = NULL;
+	StaticVertexData* vertexData = NULL;
 
 	meshBBmin[ 0 ] = numeric_limits<float>::max();
 	meshBBmin[ 1 ] = numeric_limits<float>::max();
@@ -478,12 +671,12 @@ GeometryFactory::processMeshStatic( const struct aiMesh* assImpMesh )
 	meshBBmax[ 2 ] = numeric_limits<float>::min();
 
 	// allocate vertexdata
-	vertexData = new MeshStatic::StaticVertexData[ assImpMesh->mNumVertices ];
-	memset( vertexData, 0, assImpMesh->mNumVertices * sizeof( MeshStatic::StaticVertexData ) );
+	vertexData = new StaticVertexData[ assImpMesh->mNumVertices ];
+	memset( vertexData, 0, assImpMesh->mNumVertices * sizeof( StaticVertexData ) );
 
 	// indexbuffer for faces
-	indexBuffer = new GLuint[ assImpMesh->mNumFaces * 3 ];
-	memset( indexBuffer, 0, assImpMesh->mNumFaces * 3 * sizeof( GLuint ) );
+	indexData = new GLuint[ assImpMesh->mNumFaces * 3 ];
+	memset( indexData, 0, assImpMesh->mNumFaces * 3 * sizeof( GLuint ) );
 
 	for ( unsigned int i = 0; i < assImpMesh->mNumFaces; ++i )
 	{
@@ -496,15 +689,15 @@ GeometryFactory::processMeshStatic( const struct aiMesh* assImpMesh )
 			// normalize normals during load-time to ensure they arrive normalized in shader
 			assImpMesh->mNormals[ index ].Normalize();
 
-			indexBuffer[ i * 3 + j ] = index;
-			memcpy( vertexData[ index ].position, &assImpMesh->mVertices[ index ].x, sizeof( MeshStatic::Vertex ) );
-			memcpy( vertexData[ index ].normal, &assImpMesh->mNormals[ index ].x, sizeof( MeshStatic::Normal ) );
+			indexData[ i * 3 + j ] = index;
+			memcpy( vertexData[ index ].position, &assImpMesh->mVertices[ index ].x, sizeof( Vertex ) );
+			memcpy( vertexData[ index ].normal, &assImpMesh->mNormals[ index ].x, sizeof( Normal ) );
 			
 			if ( assImpMesh->HasTangentsAndBitangents() )
 			{
 				// normalize tangents during load-time to ensure they arrive normalized in shader
 				assImpMesh->mTangents[ index ].Normalize();
-				memcpy( vertexData[ index ].tangent, &assImpMesh->mTangents[ index ].x, sizeof( MeshStatic::Tangent ) );
+				memcpy( vertexData[ index ].tangent, &assImpMesh->mTangents[ index ].x, sizeof( Tangent ) );
 			}
 
 			if ( assImpMesh->HasTextureCoords( 0 ) )
@@ -517,7 +710,70 @@ GeometryFactory::processMeshStatic( const struct aiMesh* assImpMesh )
 		}
 	}
 
-	MeshStatic* meshStatic = new MeshStatic( assImpMesh->mNumFaces, assImpMesh->mNumVertices, vertexData, indexBuffer );
+	GLuint vao = 0;
+	GLuint dataVBO = 0;
+	GLuint indexVBO = 0;
+
+	// NOTE: the VAO encapuslates ALL of the subsequent buffers and states of the buffers 
+	glGenVertexArrays( 1, &vao ); 
+	glBindVertexArray( vao );
+
+	// generate and setup data vbo
+	glGenBuffers( 1, &dataVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBindBuffer( GL_ARRAY_BUFFER, dataVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBufferData( GL_ARRAY_BUFFER, sizeof( StaticVertexData ) * assImpMesh->mNumVertices, vertexData, GL_STATIC_DRAW );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to coordinates
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( StaticVertexData ), BUFFER_OFFSET( 0 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 1 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to normals
+	glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( StaticVertexData ), BUFFER_OFFSET( 12 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 2 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to texture coords
+	glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, sizeof( StaticVertexData ), BUFFER_OFFSET( 24 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glEnableVertexAttribArray( 3 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify pointer to tangent
+	glVertexAttribPointer( 3, 3, GL_FLOAT, GL_FALSE, sizeof( StaticVertexData ), BUFFER_OFFSET( 32 ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// generate and setup index vbo
+	glGenBuffers( 1, &indexVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexVBO );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( GLuint ) * assImpMesh->mNumFaces * 3, indexData, GL_STATIC_DRAW );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBindVertexArray( 0 );
+
+	Mesh* meshStatic = new Mesh( vao, dataVBO, indexVBO );
+	meshStatic->m_faceCount = assImpMesh->mNumFaces;
+	meshStatic->m_vertexCount = assImpMesh->mNumVertices;
+	meshStatic->m_vertexData = vertexData;
+	meshStatic->m_indexData = indexData;
+
 	meshStatic->setBB( meshBBmin, meshBBmax );
 
 	return meshStatic;

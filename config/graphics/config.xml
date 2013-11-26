@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <subSystem type="graphics" file="../bin/zaZenGraphics.dll">
-  <window fullscreen="false" width="1900" height="1080"/>
+  <window fullscreen="false" width="1440" height="900"/>
 
   <pipeline path="../pipeline/"/>
-  
+
   <modelData path="../media/models/"/>
   <animationData path="../media/animations/"/>
   <textureData path="../media/textures/"/>

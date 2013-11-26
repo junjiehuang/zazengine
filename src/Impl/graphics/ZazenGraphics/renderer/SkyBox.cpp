@@ -10,6 +10,7 @@
 
 #include "../Util/GLUtils.h"
 #include "../Texture/TextureFactory.h"
+#include "../Geometry/GeometryFactory.h"
 
 #include "../ZazenGraphics.h"
 
@@ -34,41 +35,13 @@ SkyBox::initialize( const boost::filesystem::path& textureFolder, const std::str
 			return false;
 		}
 
-		// cube vertices for vertex buffer object
-		GLfloat cube_vertices[] = {
-		  -1.0,  1.0,  1.0,
-		  -1.0, -1.0,  1.0,
-		   1.0, -1.0,  1.0,
-		   1.0,  1.0,  1.0,
-		  -1.0,  1.0, -1.0,
-		  -1.0, -1.0, -1.0,
-		   1.0, -1.0, -1.0,
-		   1.0,  1.0, -1.0,
-		};
-
-		glGenBuffers( 1, &SkyBox::instance->m_dataVBO );
-		GL_PEEK_ERRORS_AT
-		glBindBuffer( GL_ARRAY_BUFFER, SkyBox::instance->m_dataVBO );
-		GL_PEEK_ERRORS_AT
-		glBufferData( GL_ARRAY_BUFFER, sizeof( cube_vertices ), cube_vertices, GL_STATIC_DRAW );
-		GL_PEEK_ERRORS_AT
-
-		// cube indices for index buffer object
-		GLint cube_indices[] = {
-		  0, 1, 2, 3,
-		  3, 2, 6, 7,
-		  7, 6, 5, 4,
-		  4, 5, 1, 0,
-		  0, 3, 7, 4,
-		  1, 2, 6, 5,
-		};
-
-		glGenBuffers( 1, &SkyBox::instance->m_indexVBO );
-		GL_PEEK_ERRORS_AT
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, SkyBox::instance->m_indexVBO );
-		GL_PEEK_ERRORS_AT
-		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( cube_indices ), cube_indices, GL_STATIC_DRAW );
-		GL_PEEK_ERRORS_AT
+		SkyBox::instance->m_cubeMesh = GeometryFactory::getRef().createUnitCube();
+		if ( NULL == SkyBox::instance->m_cubeMesh )
+		{
+			ZazenGraphics::getInstance().getLogger().logError( "SkyBox::initialize: couldn't create cube-mesh" );
+			SkyBox::shutdown();
+			return false;
+		}
 	}
 
 	return true;
@@ -87,25 +60,15 @@ SkyBox::shutdown()
 
 SkyBox::SkyBox()
 {
+	this->m_cubeMesh = NULL;
 	this->m_cubeMap = NULL;
-
-	this->m_dataVBO = 0;
-	this->m_indexVBO = 0;
 
 	SkyBox::instance = this;
 }
 
 SkyBox::~SkyBox()
 {
-	if ( this->m_dataVBO )
-	{
-		glDeleteBuffers( 1, &this->m_dataVBO );
-	}
-
-	if ( this->m_indexVBO )
-	{
-		glDeleteBuffers( 1, &this->m_indexVBO );
-	}
+	// NOTE: texture and mesh are owned by their factories
 
 	SkyBox::instance = NULL;
 }
@@ -143,20 +106,7 @@ SkyBox::render( const Viewer& camera, UniformBlock* cameraBlock, UniformBlock* t
 	
 	this->m_cubeMap->bind( 0 );
 
-	glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );
-	GL_PEEK_ERRORS_AT_DEBUG
-	glEnableVertexAttribArray( 0 );
-	GL_PEEK_ERRORS_AT_DEBUG
-	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
-	GL_PEEK_ERRORS_AT_DEBUG
-
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->m_indexVBO );
-	GL_PEEK_ERRORS_AT_DEBUG
-	glDrawElements( GL_QUADS, 24, GL_UNSIGNED_INT, 0 );
-	GL_PEEK_ERRORS_AT_DEBUG
-
-	glDisableVertexAttribArray( 0 );
-	GL_PEEK_ERRORS_AT_DEBUG
+	this->m_cubeMesh->render();
 	
 	// activate z-buffering and face culling
 	glEnable( GL_DEPTH_TEST );
