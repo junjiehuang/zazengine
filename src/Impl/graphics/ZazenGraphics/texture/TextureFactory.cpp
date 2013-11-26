@@ -196,6 +196,9 @@ cleanupExit:
 	// Because we have already copied image data into texture data we can release memory used by image.
  	ilDeleteImages( 1, &imageId ); 
 
+	// unbind currently bound texture
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
 	return textureId;
 }
 
@@ -213,7 +216,6 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 		return 0;
 	}
 
-
 	glGenTextures( 1, &textureId );
 	if ( GL_PEEK_ERRORS )
 	{
@@ -228,17 +230,32 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 		goto cleanupExit;
 	}
 
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+	GL_PEEK_ERRORS_AT
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	GL_PEEK_ERRORS_AT
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR ); 
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	GL_PEEK_ERRORS_AT
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	GL_PEEK_ERRORS_AT
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	GL_PEEK_ERRORS_AT
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+
+	/*
+	glTexParameterfv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BORDER_COLOR, &glm::vec4(0.0f)[0]);
 	GL_PEEK_ERRORS_AT
-	
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_LOD, -1000.f);
+	GL_PEEK_ERRORS_AT
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LOD, 1000.f);
+	GL_PEEK_ERRORS_AT
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_LOD_BIAS, 0.0f);
+	GL_PEEK_ERRORS_AT
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+	GL_PEEK_ERRORS_AT
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	GL_PEEK_ERRORS_AT
+	*/
+
 	for ( unsigned int i = 0; i < 6; i++ )
 	{
 		ilBindImage( imageIds[ i ] );
@@ -248,20 +265,15 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 			goto cleanupExit;
 		}
 
-		ILint imgFormat = ilGetInteger( IL_IMAGE_FORMAT );
-		ILint imgWidth = ilGetInteger( IL_IMAGE_HEIGHT );
-		ILint imgHeight = ilGetInteger( IL_IMAGE_WIDTH );
-		ILubyte* imgData = ilGetData();
-
 		glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
 						0, 
-						GL_RGBA, 
-						imgWidth, 
-						imgHeight, 
+						ilGetInteger( IL_IMAGE_FORMAT ), 
+						ilGetInteger( IL_IMAGE_WIDTH ), 
+						ilGetInteger( IL_IMAGE_HEIGHT ), 
 						0, 
 						GL_RGBA, 
 						GL_UNSIGNED_BYTE, 
-						imgData );
+						ilGetData() );
 
 		if ( GL_PEEK_ERRORS )
 		{
@@ -270,17 +282,31 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 		}
 	}
 
+	/*
+	glGenerateMipmap( GL_TEXTURE_CUBE_MAP );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+	*/
+
 cleanupExit:
 	if ( error )
 	{
 		if ( textureId )
 		{
 			glDeleteTextures( 1, &textureId );
+			GL_PEEK_ERRORS_AT
 		}
 	}
 
 	// Because we have already copied image data into texture data we can release memory used by image.
 	ilDeleteImages( fileNames.size(), imageIds ); 
+
+	// unbind currently bound texture
+	glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
+	GL_PEEK_ERRORS_AT
 
 	return textureId;
 }
