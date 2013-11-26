@@ -240,6 +240,7 @@ RenderingContext::debugOutput ( GLenum source,
 	string debSource;
 	string debType;
 	string debSev;
+	string newLine;
 
 	if(source == GL_DEBUG_SOURCE_API_ARB)
 		debSource = "OpenGL";
@@ -254,7 +255,7 @@ RenderingContext::debugOutput ( GLenum source,
 	else if (source == GL_DEBUG_SOURCE_OTHER_ARB)
 		debSource = "Other";
 	else
-		assert(0);
+		debSource = "N/A";
  
 	if(type == GL_DEBUG_TYPE_ERROR)
 		debType = "error";
@@ -275,7 +276,7 @@ RenderingContext::debugOutput ( GLenum source,
 	else if(type == GL_DEBUG_TYPE_POP_GROUP)
 		debType = "pop group";
 	else
-		assert(0);
+		debType = "N/A";
  
 	if(severity == GL_DEBUG_SEVERITY_HIGH_ARB)
 		debSev = "high";
@@ -286,15 +287,19 @@ RenderingContext::debugOutput ( GLenum source,
 	else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
 		debSev = "notification";
 	else
-		assert(0);
+		debSev = "N/A";
 
-
+	if ( message[ length - 1 ] != '\n' )
+	{
+		newLine = "\n";
+	}
+	
 	if ( GL_DEBUG_TYPE_ERROR == type )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "OpenGL Debug-Context Output:\n    " << debSource << ": " << debType << " (" << debSev << ") " << id << ": " << message << "\n";
+		ZazenGraphics::getInstance().getLogger().logError() << "OpenGL Debug-Context Output:\n    " << debSource << ": " << debType << " (" << debSev << ") " << id << ": " << message << newLine;
 	}
 	else
 	{
-		ZazenGraphics::getInstance().getLogger().logDebug() << "OpenGL Debug-Context Output:\n    " << debSource << ": " << debType << " (" << debSev << ") " << id << ": " << message << "\n";
+		ZazenGraphics::getInstance().getLogger().logDebug() << "OpenGL Debug-Context Output:\n    " << debSource << ": " << debType << " (" << debSev << ") " << id << ": " << message << newLine;
 	}
 }

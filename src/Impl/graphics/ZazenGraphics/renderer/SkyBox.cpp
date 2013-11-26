@@ -104,7 +104,7 @@ SkyBox::render( const Viewer& camera, UniformBlock* cameraBlock, UniformBlock* t
 
 	transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMat );
 	
-	this->m_cubeMap->bind( 0 );
+	//this->m_cubeMap->bind( 0 );
 
 	this->m_cubeMesh->render();
 	

@@ -13,6 +13,8 @@
 using namespace std;
 using namespace boost;
 
+#define BUFFER_OFFSET( i ) ( ( char* ) NULL + ( i ) )
+
 GeometryFactory* GeometryFactory::instance = NULL;
 
 void
@@ -188,9 +190,7 @@ GeometryFactory::createQuad( float width, float height )
 
 	glBindVertexArray( 0 );
 
-	Mesh* meshQuad = new Mesh( vao, dataVBO, indexVBO );
-	meshQuad->m_faceCount = 2;
-	meshQuad->m_vertexCount = 4;
+	Mesh* meshQuad = new Mesh( vao, dataVBO, indexVBO, 6 );
 	meshQuad->m_vertexData = NULL;	// no dynamic memory for small mesh 
 	meshQuad->m_indexData = NULL;	// no dynamic memory for small mesh 
 
@@ -223,13 +223,26 @@ GeometryFactory::createUnitCube()
 	};
 
 	// cube indices for index buffer object
+	// NOTE: specify indices in CCW (is the default for OpenGL and not changed in this renderer)
 	GLuint cube_indices[] = {
-		0, 1, 2, 3,
-		3, 2, 6, 7,
-		7, 6, 5, 4,
-		4, 5, 1, 0,
-		0, 3, 7, 4,
-		1, 2, 6, 5,
+		// pos z
+		0, 1, 2,
+		2, 3, 0,
+		// neg z
+		7, 6, 5,
+		5, 4, 7,
+		// pos y
+		4, 0, 3,
+		3, 7, 4,
+		// neg Y
+		5, 1, 2,
+		2, 6, 5,
+		// pos x
+		4, 5, 1,
+		1, 0, 4,
+		// neg x
+		3, 2, 6,
+		6, 7, 3
 	};
 
 	// NOTE: the VAO encapuslates ALL of the subsequent buffers and states of the buffers 
@@ -262,9 +275,7 @@ GeometryFactory::createUnitCube()
 	
 	glBindVertexArray( 0 );
 
-	Mesh* meshUnitCube = new Mesh( vao, dataVBO, indexVBO );
-	meshUnitCube->m_faceCount = 6;
-	meshUnitCube->m_vertexCount = 8;
+	Mesh* meshUnitCube = new Mesh( vao, dataVBO, indexVBO, 36 );
 	meshUnitCube->m_vertexData = NULL;	// no dynamic memory for small mesh 
 	meshUnitCube->m_indexData = NULL;	// no dynamic memory for small mesh 
 
@@ -609,9 +620,7 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh )
 
 	glBindVertexArray( 0 );
 
-	Mesh* meshBoned = new Mesh( vao, dataVBO, indexVBO );
-	meshBoned->m_faceCount = assImpMesh->mNumFaces;
-	meshBoned->m_vertexCount = assImpMesh->mNumVertices;
+	Mesh* meshBoned = new Mesh( vao, dataVBO, indexVBO, assImpMesh->mNumFaces * 3 );
 	meshBoned->m_vertexData = vertexData;
 	meshBoned->m_indexData = indexData;
 
@@ -768,9 +777,7 @@ GeometryFactory::processMeshStatic( const struct aiMesh* assImpMesh )
 
 	glBindVertexArray( 0 );
 
-	Mesh* meshStatic = new Mesh( vao, dataVBO, indexVBO );
-	meshStatic->m_faceCount = assImpMesh->mNumFaces;
-	meshStatic->m_vertexCount = assImpMesh->mNumVertices;
+	Mesh* meshStatic = new Mesh( vao, dataVBO, indexVBO, assImpMesh->mNumFaces * 3 );
 	meshStatic->m_vertexData = vertexData;
 	meshStatic->m_indexData = indexData;
 

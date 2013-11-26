@@ -4,18 +4,15 @@
 
 #include <GL/glew.h>
 
-Mesh::Mesh( GLuint vao, GLuint dataVBO, GLuint indexVBO )
+Mesh::Mesh( GLuint vao, GLuint dataVBO, GLuint indexVBO, int indicesCount )
 	: m_vao( vao ), 
 	m_dataVBO( dataVBO ),
-	m_indexVBO( indexVBO )
+	m_indexVBO( indexVBO ),
+	m_indicesCount( indicesCount )
 {
 	// will be set by geometry-factory
 	this->m_vertexData = NULL;
 	this->m_indexData = NULL;
-
-	// will be set by geometry-factory
-	this->m_faceCount = 0;
-	this->m_vertexCount = 0;
 }
 
 Mesh::~Mesh()
@@ -52,16 +49,9 @@ bool
 Mesh::render()
 {
 	glBindVertexArray( this->m_vao );
-
-	/*
-	glBindBuffer( GL_ARRAY_BUFFER, this->m_dataVBO );
 	GL_PEEK_ERRORS_AT_DEBUG
 
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->m_indexVBO );
-	GL_PEEK_ERRORS_AT_DEBUG
-	*/
-
-	glDrawElements( GL_TRIANGLES, this->m_faceCount * 3, GL_UNSIGNED_INT, BUFFER_OFFSET( 0 ) );
+	glDrawElements( GL_TRIANGLES, this->m_indicesCount, GL_UNSIGNED_INT, 0 );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
