@@ -660,7 +660,8 @@ DRRenderer::renderSkyBox()
 	}
 
 	// TODO move into skybox
-	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", 0 );
+	// NOTE: need to bind cube-map to unit 8 because unit 0 is already occupied by 2D-textures during light-rendering - it is not allowed to bind different types of textures to the same unit
+	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", 8 );
 
 	// render the geometry
 	SkyBox::getRef().render( *this->m_mainCamera, this->m_cameraBlock, this->m_transformsBlock );
