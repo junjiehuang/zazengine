@@ -1,11 +1,34 @@
 Bugfixing:
-	-> light mesh rendering leads to error when a sky-box is used: invalid operation
-		-> the creation of the sky-box cube-map seems to have an influence on it: if just this cube-map is created and the sky-box not even rendered this error shows up
+	-> error in light-shader problem:
+		1. sky-box binds its environment cube-map to texture-unit 0
+		2. lighting-shader binds diffuse 2d-texture to texture-unit 0
+		3. INVALID_OPERATION because it is not allowed to have two different types of texture bound to the same unit
+		Solution
+			-> unbind cube-texture(s) always after usage
+				-> upside: clean and obvious
+				-> downside: additional driver calls for unbinding (glActiveTexture and glBindTexture)
+			-> bind cube-textures always to the same texture-unit - define ranges for all types of textures - there are at least 80 texture-units available for OpenGL 4.3
+				-> upside: no additional unbind-calls
+				-> downside: implicit knowledge of texture-unit ranges necessary
+			-> let texture-class handle everything for you: just call bind on texture and you get returned an index where this unit was bound to. texture-class guarantees that not two types of texture bind to same unit
+				-> upside: no additional unbind-calls, transparent
+				-> downside: is it possible without too high performance impact?
 	-> exponent-calculations not working for phong illumination
 	-> point-light shadows not working
 
 No more bindbufferbase of uniformblocks in renderer
 	-> do it after programs are linked in uniformmanagement
+
+Replace all If-Then in shaders with subroutines if possible
+	-> geometry-stage material-type
+
+Textures
+	-> use RGBA only when alpha-channel is really necessary, so far only RGB is used, reduce storage
+	-> Anisotropic filtering: GL_EXT_texture_filter_anisotropic
+	-> Mip-Maps
+		-> in texture-factory - allow do enable/disable - do we need it for normal-maps?
+		-> disable for depth/shadow/color attachments - no need for them in this case because will fit the screen exactly
+			-> refactor render-target: copies of texparameteri all over the place
 
 Multiple lights
 	-> Solve Problem of Ambient + Sky-Box Lighting
@@ -14,15 +37,6 @@ Multiple lights
 			-> other lights accumulate by blending
 		-> when directional light in scene
 			-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
-
-Replace all If-Then in shaders with subroutines if possible
-	-> geometry-stage material-type
-	
-Mip-Map Creation in TextureFactory
-
-Anisotropic filtering
-	-> GL_EXT_texture_filter_anisotropic
-
 GLFW Context
 	-> Allow Toggle fullscreen
 		-> reinit window & render-context!

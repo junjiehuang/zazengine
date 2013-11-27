@@ -17,11 +17,13 @@ class Texture
 		GLuint getId() const { return this->m_id; };
 
 		bool bind( int textureUnit );
+		bool unbind();
 
 	private:
 		static GLint m_currentTextureUnit;
 
 		GLuint m_id;
+		GLint m_boundToUnit;
 		TextureType m_textureType;
 
 };

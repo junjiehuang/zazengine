@@ -104,9 +104,13 @@ SkyBox::render( const Viewer& camera, UniformBlock* cameraBlock, UniformBlock* t
 
 	transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMat );
 	
-	this->m_cubeMap->bind( 0 );
+	// NOTE: need to bind cube-map to unit 8 because unit 0 is already occupied by 2D-textures during light-rendering - it is not allowed to bind different types of textures to the same unit
+	this->m_cubeMap->bind( 8 );
 	this->m_cubeMesh->render();
-	
+
+	// NOTE: need to unbind cube-map because unit 0 is already occupied by 2D-textures during light-rendering - it is not allowed to bind different types of textures to the same unit
+	//this->m_cubeMap->unbind();
+
 	// activate z-buffering and face culling
 	glEnable( GL_DEPTH_TEST );
 	GL_PEEK_ERRORS_AT_DEBUG
