@@ -300,6 +300,6 @@ RenderingContext::debugOutput ( GLenum source,
 	}
 	else
 	{
-		ZazenGraphics::getInstance().getLogger().logDebug() << "OpenGL Debug-Context Output:\n    " << debSource << ": " << debType << " (" << debSev << ") " << id << ": " << message << newLine;
+		//ZazenGraphics::getInstance().getLogger().logDebug() << "OpenGL Debug-Context Output:\n    " << debSource << ": " << debType << " (" << debSev << ") " << id << ": " << message << newLine;
 	}
 }

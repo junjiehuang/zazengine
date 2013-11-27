@@ -37,7 +37,7 @@ layout( shared ) uniform LightUniforms
 
 	vec3 color;
 
-	vec2 power; // x = shininess, y = strength
+	vec2 specular; // x = shininess, y = strength
 
 	vec3 attenuation; // x = constant, y = linear, z = quadratic
 
@@ -212,8 +212,12 @@ float calculateShadowProjective( vec4 fragPosViewSpace )
 	// before we can apply the light-space transformation we first need to apply
 	// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
 	// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
-	// OPTIMIZE: precalculate inverse camera-view matrix on CPU
-	vec4 fragPosWorldSpace = inverse( Camera.viewMatrix ) * fragPosViewSpace;
+
+	// NOTE: the inverse of the view-matrix should be the modelmatrix because:
+	// let M be the model-matrix and V be the view-matrix
+	// V = inv( M ) thus for a matrix A holds true: inv( inv ( A ) ) = A
+	// so when you calculate matrix X = inv( V ) this can be expanded to X = inv( inv( M ) ) which is again M
+	vec4 fragPosWorldSpace = Camera.modelMatrix * fragPosViewSpace;
 	vec4 shadowCoord = Light.spaceUniformMatrix * fragPosWorldSpace;
 
 	shadowCoord.z -= shadow_bias;
@@ -238,8 +242,12 @@ float calculateShadowDirectional( vec4 fragPosViewSpace )
 	// before we can apply the light-space transformation we first need to apply
 	// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
 	// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
-	// OPTIMIZE: precalculate inverse camera-view matrix on CPU
-	vec4 fragPosWorldSpace = inverse( Camera.viewMatrix ) * fragPosViewSpace;
+
+	// NOTE: the inverse of the view-matrix should be the modelmatrix because:
+	// let M be the model-matrix and V be the view-matrix
+	// V = inv( M ) thus for a matrix A holds true: inv( inv ( A ) ) = A
+	// so when you calculate matrix X = inv( V ) this can be expanded to X = inv( inv( M ) ) which is again M
+	vec4 fragPosWorldSpace = Camera.modelMatrix * fragPosViewSpace;
 	vec4 shadowCoord = Light.spaceUniformMatrix * fragPosWorldSpace;
 
 	// doing soft-shadows using 'percentage-closer filtering' (see GPU Gems 1)
@@ -264,8 +272,12 @@ float calculateShadowCube( vec4 fragPosViewSpace )
 	// before we can apply the light-space transformation we first need to apply
 	// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
 	// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
-	// OPTIMIZE: precalculate inverse camera-view matrix on CPU
-	vec4 fragPosWorldSpace = inverse( Camera.viewMatrix ) * fragPosViewSpace;
+
+	// NOTE: the inverse of the view-matrix should be the modelmatrix because:
+	// let M be the model-matrix and V be the view-matrix
+	// V = inv( M ) thus for a matrix A holds true: inv( inv ( A ) ) = A
+	// so when you calculate matrix X = inv( V ) this can be expanded to X = inv( inv( M ) ) which is again M
+	vec4 fragPosWorldSpace = Camera.modelMatrix * fragPosViewSpace;
 
 	// light-position in world-space
 	vec3 lightPosWorldSpace = Light.modelMatrix[ 3 ].xyz;
@@ -308,10 +320,10 @@ vec3 calculatePhongMaterial( vec3 baseColor, vec3 normalViewSpace, vec3 lightDir
 	// diffuse (lambert) factor
 	float diffuseFactor = max( 0.0, dot( normalViewSpace.xyz, lightDirToFragViewSpace ) );
 	// OPTIMIZE: calculate only when diffuse > 0
-	float specularFactor = pow( max( 0.0, dot( normalViewSpace.xyz, halfVector ) ), Light.power.x ); // directional light doesn't apply strength at specular factor but at reflected light calculation
+	float specularFactor = pow( max( 0.0, dot( normalViewSpace.xyz, halfVector ) ), Light.specular.x ); // directional light doesn't apply strength at specular factor but at reflected light calculation
 
 	vec3 scatteredLight = diffuseFactor * Light.color;		// no ambient light for now 
-	vec3 reflectedLight = Light.color * specularFactor * Light.power.y;
+	vec3 reflectedLight = Light.color * specularFactor * Light.specular.y;
 
 	return baseColor * scatteredLight + reflectedLight; 
 }
@@ -419,6 +431,7 @@ subroutine ( lightingFunction ) vec3 directionalLight( vec4 baseColor, vec4 frag
 	{
 		materialAlbedo = calculateDoom3Material( baseColor.rgb, normalViewSpace, lightDirToFragViewSpace, fragPosViewSpace.xyz );
 	}
+	// unknown material, just pass through base-color
 	else
 	{
 		materialAlbedo = baseColor.rgb;
@@ -462,13 +475,15 @@ subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec4 fragPosView
 	// calculate the cosine between the direction of the light-direction the the fragment and the direction of the light itself which is stored in the model-view matrix z-achsis
 	float spotCos = dot( lightDirToFragViewSpace, lightMVMatrix[ 2 ].xyz );
 	// attenuation would be 0 so no contribution, return black
+	// when angle of the half of the spot is larger than the maximum angle of the half of the spot then no contribution of this light
 	if ( spotCos < Light.spot.x )
 	{
 		return vec3( 0.0 );
 	}
 	else
 	{
-		attenuation *= pow( spotCos, Light.spot.y );
+		// TODO: make configurable
+		attenuation *= pow( spotCos, 7.0 );
 	}
 
 	vec3 materialAlbedo;
@@ -488,6 +503,7 @@ subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec4 fragPosView
 	{
 		materialAlbedo = calculateDoom3Material( baseColor.rgb, normalViewSpace, lightDirToFragViewSpace, fragPosViewSpace.xyz );
 	}
+	// unknown material, just pass through base-color
 	else
 	{
 		materialAlbedo = baseColor.rgb;
@@ -547,6 +563,7 @@ subroutine ( lightingFunction ) vec3 pointLight( vec4 baseColor, vec4 fragPosVie
 	{
 		materialAlbedo = calculateDoom3Material( baseColor.rgb, normalViewSpace, lightDirToFragViewSpace, fragPosViewSpace.xyz );
 	}
+	// unknown material, just pass through base-color
 	else
 	{
 		materialAlbedo = baseColor.rgb;
@@ -575,7 +592,7 @@ void main()
 	final_color.a = 1.0;
 
 	// apply lighting and shadowing only when material is not sky-box (for sky-box just pass through sky-box texture color)
-	if ( 42 != baseColor.a )
+	if ( 0.0 != baseColor.a )
 	{
 		vec4 normalViewSpace = texture( NormalMap, screenCoord );
 		// position of fragment is stored in model-view coordinates = EyeCoordinates (EC) / View space (VS) / Camera Space

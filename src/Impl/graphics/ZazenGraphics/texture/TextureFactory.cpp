@@ -230,7 +230,9 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 		goto cleanupExit;
 	}
 
+	// TODO: need to be able to switch mipmaps generation on/off
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+	//glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	GL_PEEK_ERRORS_AT
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	GL_PEEK_ERRORS_AT
@@ -240,21 +242,10 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 	GL_PEEK_ERRORS_AT
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	GL_PEEK_ERRORS_AT
-
-	/*
-	glTexParameterfv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BORDER_COLOR, &glm::vec4(0.0f)[0]);
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0 ); 
 	GL_PEEK_ERRORS_AT
-	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_LOD, -1000.f);
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 10 ); 
 	GL_PEEK_ERRORS_AT
-	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LOD, 1000.f);
-	GL_PEEK_ERRORS_AT
-	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_LOD_BIAS, 0.0f);
-	GL_PEEK_ERRORS_AT
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-	GL_PEEK_ERRORS_AT
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-	GL_PEEK_ERRORS_AT
-	*/
 
 	for ( unsigned int i = 0; i < 6; i++ )
 	{
@@ -264,16 +255,16 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 			error = true;
 			goto cleanupExit;
 		}
-
-		glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
-						0, 
-						ilGetInteger( IL_IMAGE_FORMAT ), 
-						ilGetInteger( IL_IMAGE_WIDTH ), 
-						ilGetInteger( IL_IMAGE_HEIGHT ), 
-						0, 
-						GL_RGBA, 
-						GL_UNSIGNED_BYTE, 
-						ilGetData() );
+		
+		glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,	// face
+						0,									// level
+						ilGetInteger( IL_IMAGE_FORMAT ),	// internal format
+						ilGetInteger( IL_IMAGE_WIDTH ),		// width of face
+						ilGetInteger( IL_IMAGE_HEIGHT ),	// height of face
+						0,									// border
+						GL_RGBA,							// format
+						GL_UNSIGNED_BYTE,					// data-type
+						ilGetData() );						// data
 
 		if ( GL_PEEK_ERRORS )
 		{
@@ -282,14 +273,12 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 		}
 	}
 
-	/*
 	glGenerateMipmap( GL_TEXTURE_CUBE_MAP );
 	if ( GL_PEEK_ERRORS )
 	{
 		error = true;
 		goto cleanupExit;
 	}
-	*/
 
 cleanupExit:
 	if ( error )
@@ -302,7 +291,7 @@ cleanupExit:
 	}
 
 	// Because we have already copied image data into texture data we can release memory used by image.
-	ilDeleteImages( fileNames.size(), imageIds ); 
+	ilDeleteImages( 6, imageIds ); 
 
 	// unbind currently bound texture
 	glBindTexture( GL_TEXTURE_CUBE_MAP, 0 );
