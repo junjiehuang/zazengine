@@ -35,10 +35,6 @@ layout( shared ) uniform TransformUniforms
 
 void main()
 {
-	ex_normal = Transforms.modelMatrix * vec4( in_vertNorm, 0.0 );
-	// no transform for texture-coords, just interpolated
-	ex_texCoord = in_texCoord;
-
 	// OPTIMIZE: premultiply projection & modelView on CPU 
 	gl_Position = Camera.projectionMatrix * Transforms.modelViewMatrix * vec4( in_vertPos, 1.0 );
 	

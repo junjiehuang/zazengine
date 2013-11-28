@@ -6,8 +6,6 @@ uniform sampler2D NormalTexture;
 uniform sampler2D Background;
 uniform sampler2DShadow BackgroundDepth;
 
-in vec4 ex_pos;
-in vec4 ex_normal;
 in vec2 ex_texCoord;
 
 out vec4 out_color;
