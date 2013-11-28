@@ -168,17 +168,27 @@ float calculateShadowCube( vec4 fragPosViewSpace )
 
 	// the distance from the light to the current fragment in world-coordinates
 	float fragDistToLight = length( lightDirWorldSpace );
-	// the distance from the light to the first hit in NDC (normalized device coordinates)
-	float firstHitDistToLight = texture( ShadowCubeMap, lightDirWorldSpace ).r;
 
-	// need nearFar from light because shadow-map was rendered from the viewpoint of the light
-	firstHitDistToLight *= Light.nearFar.y;
-
-	// TODO: do percentage-closer filtering
-	if ( fragDistToLight < firstHitDistToLight + 0.15 )
+	float x,y;
+	for ( y = -0.5 ; y <= 0.5; y += 0.1 )
 	{
-		shadow = 1.0;
+		for ( x = -0.5 ; x <= 0.5 ; x += 0.1 )
+		{
+			// the distance from the light to the first hit in NDC (normalized device coordinates)
+			float firstHitDistToLight = texture( ShadowCubeMap, lightDirWorldSpace + vec3( x, y, 0.0 ) ).r;
+
+			// need nearFar from light because shadow-map was rendered from the viewpoint of the light
+			firstHitDistToLight *= Light.nearFar.y;
+
+			if ( fragDistToLight < firstHitDistToLight + 0.15 )
+			{
+				shadow++;
+			}
+		}
 	}
+
+	// our filter-kernel has 110 elements => divide with 110
+	shadow /= 110.0;
 
 	return shadow;
 }

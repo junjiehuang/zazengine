@@ -132,7 +132,8 @@
     </attribLocations>
   </program>
 
-  <program name="ShadowingStageCubeSinglePassProgramm">
+  <!-- ignore single-pass programm for now, use multi-pass version - it works -->
+  <program name="ShadowingStageCubeSinglePassProgramm_NA">
     <shaders>
       <shader type="VERTEX" file="dr/stages/shadowing/cube/single/shadowCubeVert.glsl"/>
       <shader type="GEOMETRY" file="dr/stages/shadowing/cube/single/shadowCubeGeom.glsl"/>

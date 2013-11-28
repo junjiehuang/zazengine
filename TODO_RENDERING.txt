@@ -13,7 +13,8 @@ Bugfixing:
 			-> let texture-class handle everything for you: just call bind on texture and you get returned an index where this unit was bound to. texture-class guarantees that not two types of texture bind to same unit
 				-> upside: no additional unbind-calls, transparent
 				-> downside: is it possible without too high performance impact?
-	-> point-light shadows not working
+	-> point-light shadows not working for single-pass version
+	-> transparency seems to work no more
 
 No more bindbufferbase of uniformblocks in renderer
 	-> do it after programs are linked in uniformmanagement
@@ -28,14 +29,6 @@ Textures
 		-> in texture-factory - allow do enable/disable - do we need it for normal-maps?
 		-> disable for depth/shadow/color attachments - no need for them in this case because will fit the screen exactly
 			-> refactor render-target: copies of texparameteri all over the place
-
-Multiple lights
-	-> Solve Problem of Ambient + Sky-Box Lighting
-		-> when no directional light in scene
-			-> render full-screen quad and apply ambient-term to non-sky-box material and diffuse-only to sky-box material => need new program
-			-> other lights accumulate by blending
-		-> when directional light in scene
-			-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
 GLFW Context
 	-> Allow Toggle fullscreen
 		-> reinit window & render-context!
@@ -61,7 +54,7 @@ Post-Processing in Screen-Space
 	-> Bloom
 	-> Tone-Mapping
 	-> Depth Of Field
-
+	
 Need generic effect/material functionality
 	-> no need to set input or output indices in shaders, can be done with layout ( location = ... )
 		-> remove glGetFragDataLocation, glBindFragDataLocation, glGetAttribLocation, glBindAttribLocation
@@ -105,21 +98,6 @@ Particle System
 	
 Text-rendering
 	-> use OGLFT
-	
-
-Transparency-Rendering (see GPU Gems 2 Page 295)
-	-> Differentiate between normal transparency and refractive transparency
-		-> normal transparency can be rendered at the very last using normal opengl blending
-			-> no overhead of copying depth, reading background and combining results into new background
-		-> split into two types: TRANSPARENT_BLENDING & TRANSPARENT_REFRACTION
-	
-	-> Do Colored Shadow-Rendering for Transparent objects
-		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
-			-> optimization: when material is transparent write to 1.0 to alpha-channel, else 0.0
-			=> need additional render-target in shadow-fbo: shadow-color target
-		-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
-			-> optimization: only do additional lookup when alpha-channel is 1.0
-		-> for better quality: do multisampling texture lookups
 
 Reflections
 	-> environment (cube-mapping)
@@ -173,7 +151,21 @@ Reflections
 		-> render world mirrored by this plane as usual
 			-> stencil will remove all pixels not affected by this plane
 			-> use according blending-function to create mirror-effect
+
+Transparency-Rendering (see GPU Gems 2 Page 295)
+	-> Differentiate between normal transparency and refractive transparency
+		-> normal transparency can be rendered at the very last using normal opengl blending
+			-> no overhead of copying depth, reading background and combining results into new background
+		-> split into two types: TRANSPARENT_BLENDING & TRANSPARENT_REFRACTION
 	
+	-> Do Colored Shadow-Rendering for Transparent objects
+		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
+			-> optimization: when material is transparent write to 1.0 to alpha-channel, else 0.0
+			=> need additional render-target in shadow-fbo: shadow-color target
+		-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
+			-> optimization: only do additional lookup when alpha-channel is 1.0
+		-> for better quality: do multisampling texture lookups
+
 Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 	-> instanced rendering
 	-> use copies of uniform buffers e.g. for each light a buffer
@@ -216,6 +208,12 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 			-> point-light: sphere with radius 1 and then scale according to light distance & some epsilon
 				-> low-poly count
 			-> spot-light: ?
+			-> Solve Problem of Ambient + Sky-Box Lighting
+				-> when no directional light in scene
+					-> render full-screen quad and apply ambient-term to non-sky-box material and diffuse-only to sky-box material => need new program
+					-> other lights accumulate by blending
+				-> when directional light in scene
+					-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
 	-> Culling
 		-> View-space culling using camera
 		-> implement CHC++
