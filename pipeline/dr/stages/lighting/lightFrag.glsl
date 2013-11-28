@@ -11,7 +11,8 @@ uniform samplerCube ShadowCubeMap;
 
 out vec4 final_color;
 
-const float shadow_bias = 0.001;
+// TODO: make configurable/light
+const float shadow_bias = 0.005;
 
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 // NOTE: THIS HAS TO BE THE CAMERA THE GEOMETRY-STAGE WAS RENDERED WITH
@@ -105,6 +106,7 @@ float calculateShadowProjective( vec4 fragPosViewSpace )
 	shadowCoord.z -= shadow_bias;
 
 	// doing soft-shadows using 'percentage-closer filtering' (see GPU Gems 1)
+	// TODO: make samples-count configurable by light
 	float x,y;
 	for ( y = -1.5 ; y <= 1.5; y += 1.0 )
 		for ( x = -1.5 ; x <= 1.5 ; x += 1.0 )
@@ -135,6 +137,7 @@ float calculateShadowDirectional( vec4 fragPosViewSpace )
 	// doing soft-shadows using 'percentage-closer filtering' (see GPU Gems 1)
 	shadowCoord.z -= shadow_bias;
 
+	// TODO: make samples-count configurable by light
 	float x,y;
 	for ( y = -1.5 ; y <= 1.5; y += 1.0 )
 		for ( x = -1.5 ; x <= 1.5 ; x += 1.0 )
@@ -169,6 +172,7 @@ float calculateShadowCube( vec4 fragPosViewSpace )
 	// the distance from the light to the current fragment in world-coordinates
 	float fragDistToLight = length( lightDirWorldSpace );
 
+	// TODO: make samples-count configurable by light
 	float x,y;
 	for ( y = -0.5 ; y <= 0.5; y += 0.1 )
 	{
@@ -313,26 +317,24 @@ subroutine ( lightingFunction ) vec3 directionalLight( vec4 baseColor, vec4 frag
 	// need light-position and direction in view-space: multiply model-matrix of light with cameras view-matrix
 	// OPTIMIZE: premultiply on CPU and pass in through Light.modelViewMatrix
 	mat4 lightMVMatrix = Camera.viewMatrix * Light.modelMatrix;
+	vec3 lightDirectionViewSpace = lightMVMatrix[ 2 ].xyz;
 
-	vec3 lightPosViewSpace = lightMVMatrix[ 3 ].xyz;
-	vec3 lightDirToFragViewSpace = normalize( lightPosViewSpace - fragPosViewSpace.xyz );
-     
 	vec3 materialAlbedo;
 
 	// lambert-material
 	if ( 1.0 == baseColor.a )
 	{
-		materialAlbedo = calculateLambertianMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirToFragViewSpace );
+		materialAlbedo = calculateLambertianMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirectionViewSpace );
 	}
 	// phong-material
 	else if ( 2.0 == baseColor.a )
 	{
-		materialAlbedo = calculatePhongMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirToFragViewSpace, fragPosViewSpace.xyz );
+		materialAlbedo = calculatePhongMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirectionViewSpace, fragPosViewSpace.xyz );
 	}
 	// doom3-material
 	else if ( 3.0 == baseColor.a )
 	{
-		materialAlbedo = calculateDoom3Material( baseColor.rgb, normalViewSpace, lightDirToFragViewSpace, fragPosViewSpace.xyz );
+		materialAlbedo = calculateDoom3Material( baseColor.rgb, normalViewSpace, lightDirectionViewSpace, fragPosViewSpace.xyz );
 	}
 	// unknown material, just pass through base-color
 	else

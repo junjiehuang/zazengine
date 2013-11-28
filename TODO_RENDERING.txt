@@ -16,11 +16,16 @@ Bugfixing:
 	-> point-light shadows not working for single-pass version
 	-> transparency seems to work no more
 
+Lighting
+	-> make z-bias configurable/light - directional lights need a higher bias
+	-> make filter-width of PCF configurable and filtering on/off possible
+
 No more bindbufferbase of uniformblocks in renderer
 	-> do it after programs are linked in uniformmanagement
 
 Replace all If-Then in shaders with subroutines if possible
 	-> geometry-stage material-type
+	-> lighting-shadowing also possible to replace by subroutines instead of complete shader-switch
 
 Textures
 	-> use RGBA only when alpha-channel is really necessary, so far only RGB is used, reduce storage

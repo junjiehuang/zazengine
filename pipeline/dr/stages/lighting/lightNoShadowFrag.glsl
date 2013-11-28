@@ -156,26 +156,24 @@ subroutine ( lightingFunction ) vec3 directionalLight( vec4 baseColor, vec4 frag
 	// need light-position and direction in view-space: multiply model-matrix of light with cameras view-matrix
 	// OPTIMIZE: premultiply on CPU and pass in through Light.modelViewMatrix
 	mat4 lightMVMatrix = Camera.viewMatrix * Light.modelMatrix;
+	vec3 lightDirectionViewSpace = lightMVMatrix[ 2 ].xyz;
 
-	vec3 lightPosViewSpace = lightMVMatrix[ 3 ].xyz;
-	vec3 lightDirToFragViewSpace = normalize( lightPosViewSpace - fragPosViewSpace.xyz );
-     
 	vec3 materialAlbedo;
 
 	// lambert-material
 	if ( 1.0 == baseColor.a )
 	{
-		materialAlbedo = calculateLambertianMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirToFragViewSpace );
+		materialAlbedo = calculateLambertianMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirectionViewSpace );
 	}
 	// phong-material
 	else if ( 2.0 == baseColor.a )
 	{
-		materialAlbedo = calculatePhongMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirToFragViewSpace, fragPosViewSpace.xyz );
+		materialAlbedo = calculatePhongMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirectionViewSpace, fragPosViewSpace.xyz );
 	}
 	// doom3-material
 	else if ( 3.0 == baseColor.a )
 	{
-		materialAlbedo = calculateDoom3Material( baseColor.rgb, normalViewSpace, lightDirToFragViewSpace, fragPosViewSpace.xyz );
+		materialAlbedo = calculateDoom3Material( baseColor.rgb, normalViewSpace, lightDirectionViewSpace, fragPosViewSpace.xyz );
 	}
 	// unknown material, just pass through base-color
 	else
