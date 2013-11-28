@@ -13,7 +13,6 @@ Bugfixing:
 			-> let texture-class handle everything for you: just call bind on texture and you get returned an index where this unit was bound to. texture-class guarantees that not two types of texture bind to same unit
 				-> upside: no additional unbind-calls, transparent
 				-> downside: is it possible without too high performance impact?
-	-> exponent-calculations not working for phong illumination
 	-> point-light shadows not working
 
 No more bindbufferbase of uniformblocks in renderer
