@@ -287,7 +287,7 @@ Program::setUniformInt( const std::string& name, int value )
 		return false;
 	}
 
-	glUniform1i( field->m_index, value );
+	glUniform1i( field->m_location, value );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
@@ -302,7 +302,7 @@ Program::setUniformMatrices( const std::string& name, const std::vector<glm::mat
 		return false;
 	}
 
-	glUniformMatrix4fv( field->m_index, matrices.size(), GL_FALSE, glm::value_ptr( matrices[ 0 ] ) );
+	glUniformMatrix4fv( field->m_location, matrices.size(), GL_FALSE, glm::value_ptr( matrices[ 0 ] ) );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
@@ -330,6 +330,10 @@ Program::getUniformField( const std::string& name )
 	{
 		return &findIter->second;
 	}
+
+#ifdef _DEBUG
+	ZazenGraphics::getInstance().getLogger().logWarning() << "Program::getUniformField couldn't find uniform-field '" << name << "' - updating will be ignored.";
+#endif
 
 	return NULL;
 }

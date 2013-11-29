@@ -13,7 +13,6 @@ Bugfixing:
 			-> let texture-class handle everything for you: just call bind on texture and you get returned an index where this unit was bound to. texture-class guarantees that not two types of texture bind to same unit
 				-> upside: no additional unbind-calls, transparent
 				-> downside: is it possible without too high performance impact?
-	-> point-light shadows not working for single-pass version
 	-> transparency seems to work no more
 
 Lighting

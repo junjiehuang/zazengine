@@ -34,7 +34,6 @@ class UniformBlock
 
 	private:
 		struct UniformField {
-			GLuint m_index;
 			GLint m_offset;
 			GLenum m_type;
 			GLint m_size;

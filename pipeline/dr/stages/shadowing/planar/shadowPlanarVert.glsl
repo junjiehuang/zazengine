@@ -31,10 +31,6 @@ layout( shared ) uniform TransformUniforms
 	mat4 modelMatrix;
 	// the model-view-matrix of the current rendered mesh - the view-matrix is the one of the Camera - transforms from model-space to view/eye/camera-space
 	mat4 modelViewMatrix;
-
-	// the model-view-matrix for the normals - necessary when non-uniform scaling is used
-	// TODO: remove
-	mat4 normalsModelViewMatrix;
 } Transforms;
 
 uniform mat4 u_bones[ MAX_BONES_PER_MESH ];

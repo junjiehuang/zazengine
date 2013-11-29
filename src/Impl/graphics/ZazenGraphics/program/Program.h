@@ -48,9 +48,9 @@ class Program
 
 	private:
 		struct UniformField {
-			GLuint m_index;
+			GLint m_location;
 			GLenum m_type;
-			GLint m_size;
+			GLuint m_size;
 			std::string m_name;
 		};
 

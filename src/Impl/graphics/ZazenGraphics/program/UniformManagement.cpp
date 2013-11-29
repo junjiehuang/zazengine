@@ -77,23 +77,27 @@ UniformManagement::loadUniformsActive( Program* program, GLint activeUniformsCou
 			GLsizei nameLength = 0;
 			vector<GLchar> nameBuffer( 1024 );
 
-			GLint uniformSize = 0;
+			GLint uniformLocation = -1;
 			GLenum uniformType = 0;
+			GLint uniformSize = 0;
 
-			GLint uniformBlockOffset = -1;
 			glGetActiveUniform( program->getId(), i, nameBuffer.size() - 1, &nameLength, &uniformSize, &uniformType, &nameBuffer[ 0 ] );
-			glGetActiveUniformsiv( program->getId(), 1, &uniformIndex, GL_UNIFORM_OFFSET, &uniformBlockOffset );
+			
+			uniformLocation = glGetUniformLocation( program->getId(), &nameBuffer[ 0 ] );
+			if ( -1 == uniformLocation )
+			{
+				continue;
+			}
+
 			// TODO check for opengl-errors
 
-			string uniformFieldName( &nameBuffer[ 0 ] );
-
 			Program::UniformField uniformField;
-			uniformField.m_index = uniformIndex;
-			uniformField.m_name = uniformFieldName;
+			uniformField.m_location = uniformLocation;
+			uniformField.m_name = &nameBuffer[ 0 ];
 			uniformField.m_size = uniformSize;
 			uniformField.m_type = uniformType;
 
-			program->m_uniforms[ uniformFieldName ] = uniformField;
+			program->m_uniforms[ &nameBuffer[ 0 ] ] = uniformField;
 		}
 	}
 }
@@ -157,7 +161,6 @@ UniformManagement::loadUniformBlocks( Program* program, GLint activeUniformsCoun
 				if ( NULL == uniformField )
 				{
 					uniformField = new UniformBlock::UniformField();
-					uniformField->m_index = uniformIndex;
 					uniformField->m_name = uniformFieldName;
 					uniformField->m_offset = uniformBlockOffset;
 					uniformField->m_size = uniformSize;
