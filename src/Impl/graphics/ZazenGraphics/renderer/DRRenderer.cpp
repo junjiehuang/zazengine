@@ -736,7 +736,6 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		}
 
 		// enable rendering to 5th target
-		// TODO: this is most probably no more correct
 		if ( false == this->m_gBufferFbo->drawBuffer( 5 ) )
 		{
 			return false;
@@ -1128,7 +1127,7 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	}
 	else 
 	{
-		// draw combination to new target (swap-rendering)
+		// draw combination to new target (ping-pong rendering)
 		this->m_gBufferFbo->drawBuffer( combinationTarget );
 
 		glClear( GL_COLOR_BUFFER_BIT );
@@ -1244,12 +1243,6 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 bool
 DRRenderer::renderTransparentEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* currentProgramm )
 {
-	// bind transform uniform-block to update model-, view & projection transforms
-	if ( false == this->m_transformsBlock->bindBuffer() )
-	{
-		return false;
-	}
-
 	// activate material
 	if ( false == entity->getMaterial()->activate( currentProgramm ) )
 	{

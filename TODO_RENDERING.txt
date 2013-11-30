@@ -14,10 +14,13 @@ Bugfixing:
 				-> upside: no additional unbind-calls, transparent
 				-> downside: is it possible without too high performance impact?
 	-> transparency seems to work no more
+		-> check if alpha cleared to 0.0 and skybox alpha to 0.0 is the problem
 
 Lighting
 	-> make z-bias configurable/light - directional lights need a higher bias
 	-> make filter-width of PCF configurable and filtering on/off possible
+	-> add projective textures for the lightsources
+		-> cube-map is invariant => vertex must be transformed to view-space and then lookup vector calcualted
 
 No more bindbufferbase of uniformblocks in renderer
 	-> do it after programs are linked in uniformmanagement
@@ -33,6 +36,12 @@ Textures
 		-> in texture-factory - allow do enable/disable - do we need it for normal-maps?
 		-> disable for depth/shadow/color attachments - no need for them in this case because will fit the screen exactly
 			-> refactor render-target: copies of texparameteri all over the place
+
+Materials
+	-> microfacet
+	-> anisotrophic material
+	-> cook-torrance
+
 GLFW Context
 	-> Allow Toggle fullscreen
 		-> reinit window & render-context!
