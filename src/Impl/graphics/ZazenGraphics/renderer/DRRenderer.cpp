@@ -1103,7 +1103,10 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	// transparent objects are always rendered intermediate to g-buffer color target 0
 	this->m_gBufferFbo->drawBuffer( 0 );
 
-	// clear buffer 
+	// clear buffer
+	// need to set alpha-clearing to 1.0 because was set to 0.0 during geometry-stage to mark bits as background/sky-box material (alpha-channel of diffuse-texture stores material-id)
+	// need to set alpha-channel to 1.0 now because will mark the background-pixels
+	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT );
 
 	if ( false == this->updateCameraBlock( this->m_mainCamera ) )
