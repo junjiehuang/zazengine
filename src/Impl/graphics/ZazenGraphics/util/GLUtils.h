@@ -15,6 +15,19 @@
 	#define GL_PEEK_ERRORS_AT_DEBUG
 #endif
 
+#ifdef _NSIGHT_DEBUG
+#include <nvToolsExt.h>
+
+#define NVTX_RANGE_PUSH( str ) nvtxRangePushA( str );
+#define NVTX_RANGE_POP nvtxRangePop();
+
+#else
+
+#define NVTX_RANGE_PUSH( str ) 
+#define NVTX_RANGE_POP
+
+#endif
+
 #include <string>
 
 class GLUtils

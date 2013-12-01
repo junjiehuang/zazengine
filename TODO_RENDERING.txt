@@ -1,24 +1,8 @@
-Bugfixing:
-	-> error in light-shader problem:
-		1. sky-box binds its environment cube-map to texture-unit 0
-		2. lighting-shader binds diffuse 2d-texture to texture-unit 0
-		3. INVALID_OPERATION because it is not allowed to have two different types of texture bound to the same unit
-		Solution
-			-> unbind cube-texture(s) always after usage
-				-> upside: clean and obvious
-				-> downside: additional driver calls for unbinding (glActiveTexture and glBindTexture)
-			-> bind cube-textures always to the same texture-unit - define ranges for all types of textures - there are at least 80 texture-units available for OpenGL 4.3
-				-> upside: no additional unbind-calls
-				-> downside: implicit knowledge of texture-unit ranges necessary
-			-> let texture-class handle everything for you: just call bind on texture and you get returned an index where this unit was bound to. texture-class guarantees that not two types of texture bind to same unit
-				-> upside: no additional unbind-calls, transparent
-				-> downside: is it possible without too high performance impact?
-
-Lighting
-	-> make z-bias configurable/light - directional lights need a higher bias
-	-> make filter-width of PCF configurable and filtering on/off possible
-	-> add projective textures for the lightsources
-		-> cube-map is invariant => vertex must be transformed to view-space and then lookup vector calcualted
+Explore Bindless G-Buffer
+	-> more cleaner solution
+	-> can be extended more easily
+	-> faster
+	-> order indipendent transparency (OIT) in deferred rendering!!!
 
 No more bindbufferbase of uniformblocks in renderer
 	-> do it after programs are linked in uniformmanagement
@@ -34,6 +18,7 @@ Textures
 		-> in texture-factory - allow do enable/disable - do we need it for normal-maps?
 		-> disable for depth/shadow/color attachments - no need for them in this case because will fit the screen exactly
 			-> refactor render-target: copies of texparameteri all over the place
+	-> use compression?
 
 Materials
 	-> microfacet
@@ -65,7 +50,33 @@ Post-Processing in Screen-Space
 	-> Bloom
 	-> Tone-Mapping
 	-> Depth Of Field
+
+Particle System
+	-> techniques
+		-> transform-feedback rendering
+		-> compute-shaders ?
+		-> tesselation-shaders ?
+		-> geometry-shaders ?
+	-> gravity
+	-> global physically simulated
+		-> bounce off other geometry
+	-> local physically simulated
+		-> no bouncing off other geometry
+	-> poing-lights
+		-> glowing huge number of point-light particles illuminate dark scene
+			-> no shadow-casting
+	-> no poing-lights
+		-> don't illuminate scene
 	
+Text-rendering
+	-> use OGLFT
+
+Lighting
+	-> make z-bias configurable/light - directional lights need a higher bias
+	-> make filter-width of PCF configurable and filtering on/off possible
+	-> add projective textures for the lightsources
+		-> cube-map is invariant => vertex must be transformed to view-space and then lookup vector calcualted
+
 Need generic effect/material functionality
 	-> no need to set input or output indices in shaders, can be done with layout ( location = ... )
 		-> remove glGetFragDataLocation, glBindFragDataLocation, glGetAttribLocation, glBindAttribLocation
@@ -89,26 +100,6 @@ Need generic effect/material functionality
 		-> cook torrance sparrow
 		-> subsurface scattering
 		-> microfacet
-
-Particle System
-	-> techniques
-		-> transform-feedback rendering
-		-> compute-shaders ?
-		-> tesselation-shaders ?
-		-> geometry-shaders ?
-	-> gravity
-	-> global physically simulated
-		-> bounce off other geometry
-	-> local physically simulated
-		-> no bouncing off other geometry
-	-> poing-lights
-		-> glowing huge number of point-light particles illuminate dark scene
-			-> no shadow-casting
-	-> no poing-lights
-		-> don't illuminate scene
-	
-Text-rendering
-	-> use OGLFT
 
 Reflections
 	-> environment (cube-mapping)

@@ -45,16 +45,16 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>libs/include/;../../../IFaces/;$(BOOST_PATH)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/include/;../../../IFaces/;$(BOOST_PATH);$(NVTOOLSEXT_PATH)/include;</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251;4275;</DisableSpecificWarnings>
-      <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions);_NSIGHT_DEBUG</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(BOOST_PATH)/stage/lib/;libs/lib/;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libboost_filesystem-vc110-mt-gd-1_54.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;opengl32.lib;glu32.lib;assimp.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BOOST_PATH)/stage/lib/;libs/lib/;$(NVTOOLSEXT_PATH)/lib/$(Platform);</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libboost_filesystem-vc110-mt-gd-1_54.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;opengl32.lib;glu32.lib;assimp.lib;glfw3.lib;%(AdditionalDependencies);nvToolsExt32_1.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy $(ProjectDir)libs\lib\*.dll $(SolutionDir)$(Configuration)</Command>
@@ -66,7 +66,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>libs/include/;../../../IFaces/;$(BOOST_PATH)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/include/;../../../IFaces/;$(BOOST_PATH);$(NVTOOLSEXT_PATH)/include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

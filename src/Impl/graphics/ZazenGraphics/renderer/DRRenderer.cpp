@@ -515,22 +515,36 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 			
 			// culling is done outside renderer in special visibility-detection, renderer just issues commands to GPU
 
-			this->preProcessTransparency( entities );
+			NVTX_RANGE_PUSH( "Frame" );
 
+			NVTX_RANGE_PUSH( "PP Transp" )
+			this->preProcessTransparency( entities );
+			NVTX_RANGE_POP
+
+			NVTX_RANGE_PUSH( "G-Stage" )
 			if ( false == this->doGeometryStage( entities ) )
 			{
 				return false;
 			}
+			NVTX_RANGE_POP
 
+			NVTX_RANGE_PUSH( "L-Stage" )
 			if ( false == this->doLightingStage( entities ) )
 			{
 				return false;
 			}
+			NVTX_RANGE_POP
 
+			NVTX_RANGE_PUSH( "T-Stage" )
 			if ( false == this->doTransparencyStage( entities ) )
 			{
 				return false;
 			}
+			NVTX_RANGE_POP
+
+			NVTX_RANGE_POP
+
+			break;
 		}
 	}
 	
@@ -592,11 +606,13 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 		return false;
 	}
 
+	NVTX_RANGE_PUSH( "Skybox" )
 	// render sky-box first with disabled depth-write => will be behind all other objects
 	if ( false == this->renderSkyBox() )
 	{
 		return false;
 	}
+	NVTX_RANGE_POP
 
 	// activate geometry-stage program
 	if ( false == this->m_progGeomStage->use() )
@@ -660,8 +676,9 @@ DRRenderer::renderSkyBox()
 	}
 
 	// TODO move into skybox
-	// NOTE: need to bind cube-map to unit 8 because unit 0 is already occupied by 2D-textures during light-rendering - it is not allowed to bind different types of textures to the same unit
-	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", 8 );
+	// NOTE: need to bind cube-map to unit at Texture::CUBE_RANGE_START because unit 0 is already occupied by 2D-textures during light-rendering - 
+	// it is not allowed to bind different types of textures to the same unit
+	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", Texture::CUBE_RANGE_START );
 
 	// render the geometry
 	SkyBox::getRef().render( *this->m_mainCamera, this->m_cameraBlock, this->m_transformsBlock );
@@ -712,10 +729,12 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	// light is shadow-caster: render shadow map for this light
 	if ( light->isShadowCaster() )
 	{
+		NVTX_RANGE_PUSH( "ShadowMapping" )
 		if ( false == this->renderShadowMap( entities, light ) )
 		{
 			return false;
 		}
+		NVTX_RANGE_POP
 
 		activeLightingProgram = this->m_progLightingStage;
 	}
@@ -797,14 +816,14 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 
 		if ( Light::LightType::POINT == light->getType() )
 		{
-			textureUnit = 8;
+			textureUnit = Texture::CUBE_RANGE_START;
 
-			// tell program that the shadowmap of point-light will be available at texture unit 7
+			// tell program that the shadowmap of point-light will be available at texture unit Texture::CUBE_RANGE_START
 			activeLightingProgram->setUniformInt( "ShadowCubeMap", textureUnit );
 		}
 		else
 		{
-			// tell program that the shadowmap of spot/directional-light will be available at texture unit 6
+			// tell program that the shadowmap of spot/directional-light will be available at texture unit 7
 			activeLightingProgram->setUniformInt( "ShadowPlanarMap", textureUnit );
 		}
 
@@ -1077,6 +1096,8 @@ DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 bool
 DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int backgroundIndex, unsigned int combinationTarget, bool lastInstance )
 {
+	NVTX_RANGE_PUSH( "T Render" );
+
 	if ( false == this->m_progTransparency->use() )
 	{
 		return false;
@@ -1119,6 +1140,10 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 		return false;
 	}
 
+	NVTX_RANGE_POP
+
+	NVTX_RANGE_PUSH( "T Blend" );
+
 	// after rendering last instance we will combine to default-framebuffer for final result
 	if ( lastInstance )
 	{
@@ -1135,6 +1160,7 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 
 		glClear( GL_COLOR_BUFFER_BIT );
 	}
+
 
 	if ( false == this->m_progBlendTransparency->use() )
 	{
@@ -1168,6 +1194,8 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	{
 		glDepthMask( GL_TRUE );
 	}
+
+	NVTX_RANGE_POP
 
 	return true;
 }

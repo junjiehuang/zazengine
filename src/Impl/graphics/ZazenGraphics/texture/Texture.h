@@ -6,6 +6,8 @@
 class Texture
 {
 	public:
+		static const int CUBE_RANGE_START = 20;
+
 		enum TextureType {
 			TEXTURE_2D,
 			TEXTURE_CUBE
@@ -17,8 +19,7 @@ class Texture
 		GLuint getId() const { return this->m_id; };
 
 		bool bind( int textureUnit );
-		bool unbind();
-
+		
 	private:
 		static GLint m_currentTextureUnit;
 
