@@ -56,7 +56,7 @@ class Program
 
 		struct Subroutine {
 			GLint m_index;
-			GLint m_uniformIndex;
+			GLint m_uniformLocation;
 		};
 
 		Program( GLuint programObject, const std::string& programName );

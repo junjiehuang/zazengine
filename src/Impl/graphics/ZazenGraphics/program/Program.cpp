@@ -90,7 +90,6 @@ Program::attachShader( Shader* shader )
 	return true;
 }
 
-
 bool
 Program::detachShader( Shader* shader )
 {
@@ -164,7 +163,7 @@ Program::activateSubroutine( const std::string& subroutineName, Shader::ShaderTy
 
 			// only one subroutine can be active with same index, so thats the way we find them
 			// the m_uniformLocation correspond to the index i
-			if ( activeSubroutine.m_uniformIndex == newSubroutine.m_uniformIndex )
+			if ( activeSubroutine.m_uniformLocation == newSubroutine.m_uniformLocation )
 			{
 				// no change, no update
 				if ( activeSubroutine.m_index == newSubroutine.m_index )

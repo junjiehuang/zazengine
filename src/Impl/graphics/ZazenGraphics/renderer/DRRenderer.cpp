@@ -30,7 +30,6 @@ DRRenderer::DRRenderer()
 	this->m_progGeomStage = NULL;
 	this->m_progSkyBox = NULL;
 	this->m_progLightingStage = NULL;
-	this->m_progLightingNoShadowStage = NULL;
 	this->m_progShadowMappingPlanar = NULL;
 	this->m_progShadowMappingCubeSinglePass = NULL;
 	this->m_progShadowMappingCubeMultiPass = NULL;
@@ -302,13 +301,6 @@ DRRenderer::initLightingStage()
 
 	this->m_progLightingStage = ProgramManagement::get( "LightingStageProgramm" );
 	if ( 0 == this->m_progLightingStage )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: coulnd't create program - exit" );
-		return false;
-	}
-
-	this->m_progLightingNoShadowStage = ProgramManagement::get( "LightingNoShadowStageProgramm" );
-	if ( 0 == this->m_progLightingNoShadowStage )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: coulnd't create program - exit" );
 		return false;
@@ -721,10 +713,6 @@ DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 bool
 DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light )
 {
-	// different programs could be active according whether light is shadow-caster or not
-	// IMPORANT: unbinding textures will fail when shadowmap is not used within program due to no shadow-mapping
-	Program* activeLightingProgram = NULL;
-
 	// light is shadow-caster: render shadow map for this light
 	if ( light->isShadowCaster() )
 	{
@@ -734,13 +722,6 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 			return false;
 		}
 		NVTX_RANGE_POP
-
-		activeLightingProgram = this->m_progLightingStage;
-	}
-	// light is no shadow-caster => choose different lighting-stage program
-	else
-	{
-		activeLightingProgram = this->m_progLightingNoShadowStage;
 	}
 
 	// if there are some transparent objects in scene, render lighting result to intermediate 
@@ -768,7 +749,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	this->m_mainCamera->restoreViewport();
 
 	// activate lighting-stage shader
-	if ( false == activeLightingProgram->use() )
+	if ( false == this->m_progLightingStage->use() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderLight: using program failed - exit" );
 		return false;
@@ -782,28 +763,28 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	}
 
 	// tell lighting program that diffusemap is bound to texture-unit 0
-	activeLightingProgram->setUniformInt( "DiffuseMap", 0 );
+	this->m_progLightingStage->setUniformInt( "DiffuseMap", 0 );
 	// tell lighting program that normalmap is bound to texture-unit 1
-	activeLightingProgram->setUniformInt( "NormalMap", 1 );
+	this->m_progLightingStage->setUniformInt( "NormalMap", 1 );
 	// tell lighting program that generic map is bound to texture-unit 2
-	activeLightingProgram->setUniformInt( "PositionMap", 2 );
+	this->m_progLightingStage->setUniformInt( "PositionMap", 2 );
 	// tell lighting program that tangents-map of scene is bound to texture-unit 3 
-	activeLightingProgram->setUniformInt( "TangentMap", 3 );
+	this->m_progLightingStage->setUniformInt( "TangentMap", 3 );
 	// tell lighting program that bi-tangents-map of scene is bound to texture-unit 4 
-	activeLightingProgram->setUniformInt( "BiTangentMap", 4 );
+	this->m_progLightingStage->setUniformInt( "BiTangentMap", 4 );
 
 	// activate the corresponding subroutines for the light-type
 	if ( Light::LightType::DIRECTIONAL == light->getType() )
 	{
-		activeLightingProgram->activateSubroutine( "directionalLight", Shader::FRAGMENT_SHADER );
+		this->m_progLightingStage->activateSubroutine( "directionalLight", Shader::FRAGMENT_SHADER );
 	}
 	else if ( Light::LightType::SPOT == light->getType() )
 	{
-		activeLightingProgram->activateSubroutine( "spotLight", Shader::FRAGMENT_SHADER );
+		this->m_progLightingStage->activateSubroutine( "spotLight", Shader::FRAGMENT_SHADER );
 	}
 	else if ( Light::LightType::POINT == light->getType() )
 	{
-		activeLightingProgram->activateSubroutine( "pointLight", Shader::FRAGMENT_SHADER );
+		this->m_progLightingStage->activateSubroutine( "pointLight", Shader::FRAGMENT_SHADER );
 	}
 
 	// bind shadow-map when light is shadow-caster
@@ -818,18 +799,33 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 			textureUnit = Texture::CUBE_RANGE_START;
 
 			// tell program that the shadowmap of point-light will be available at texture unit Texture::CUBE_RANGE_START
-			activeLightingProgram->setUniformInt( "ShadowCubeMap", textureUnit );
+			this->m_progLightingStage->setUniformInt( "ShadowCubeMap", textureUnit );
+
+			this->m_progLightingStage->activateSubroutine( "cubeShadow", Shader::FRAGMENT_SHADER );
 		}
 		else
 		{
 			// tell program that the shadowmap of spot/directional-light will be available at texture unit 7
-			activeLightingProgram->setUniformInt( "ShadowPlanarMap", textureUnit );
+			this->m_progLightingStage->setUniformInt( "ShadowPlanarMap", textureUnit );
+
+			if ( Light::LightType::DIRECTIONAL == light->getType() )
+			{
+				this->m_progLightingStage->activateSubroutine( "directionalShadow", Shader::FRAGMENT_SHADER );
+			}
+			else if ( Light::LightType::SPOT == light->getType() )
+			{
+				this->m_progLightingStage->activateSubroutine( "projectiveShadow", Shader::FRAGMENT_SHADER );
+			}
 		}
 
 		if ( false == light->getShadowMap()->bind( textureUnit ) )
 		{
 			return false;
 		}
+	}
+	else
+	{
+		this->m_progLightingStage->activateSubroutine( "noShadow", Shader::FRAGMENT_SHADER );
 	}
 
 	// update configuration of the current light to its uniform-block

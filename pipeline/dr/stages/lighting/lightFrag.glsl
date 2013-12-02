@@ -52,6 +52,7 @@ layout( shared ) uniform LightUniforms
 } Light;
 	
 ///////////////////////////////////////////////////////////////////////////
+
 float shadowLookupProj( vec4 shadowCoord, vec2 offset )
 {
 	// IMPORTANT: we are only in clip-space, need to divide by w to reach projected NDC.
@@ -86,39 +87,9 @@ shadowLookup( vec3 shadowCoord, vec2 offset )
 	return texture( ShadowPlanarMap, shadowCoord + vec3( offset.x * 1.0 / Light.shadowResolution.x, offset.y * 1.0 / Light.shadowResolution.y, 0.0 )  );
 }
 
-// shadowing-functions for all three light-types (directional, spot, point)
-float calculateShadowProjective( vec4 fragPosViewSpace )
-{
-	float shadow = 0.0f;
+subroutine float shadowFunction( vec4 fragPosViewSpace );
 
-	// for shadow-mapping we need to transform the position of the fragment to light-space
-	// before we can apply the light-space transformation we first need to apply
-	// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
-	// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
-
-	// NOTE: the inverse of the view-matrix should be the modelmatrix because:
-	// let M be the model-matrix and V be the view-matrix
-	// V = inv( M ) thus for a matrix A holds true: inv( inv ( A ) ) = A
-	// so when you calculate matrix X = inv( V ) this can be expanded to X = inv( inv( M ) ) which is again M
-	vec4 fragPosWorldSpace = Camera.modelMatrix * fragPosViewSpace;
-	vec4 shadowCoord = Light.spaceUniformMatrix * fragPosWorldSpace;
-
-	shadowCoord.z -= shadow_bias;
-
-	// doing soft-shadows using 'percentage-closer filtering' (see GPU Gems 1)
-	// TODO: make samples-count configurable by light
-	float x,y;
-	for ( y = -1.5 ; y <= 1.5; y += 1.0 )
-		for ( x = -1.5 ; x <= 1.5 ; x += 1.0 )
-			shadow += shadowLookupProj( shadowCoord, vec2( x, y ) );
-				
-	// our filter-kernel has 16 elements => divide with 16
-	shadow /= 16.0;
-
-	return shadow;
-}
-
-float calculateShadowDirectional( vec4 fragPosViewSpace )
+subroutine ( shadowFunction ) float directionalShadow( vec4 fragPosViewSpace )
 {
 	float shadow = 0.0f;
 
@@ -149,7 +120,38 @@ float calculateShadowDirectional( vec4 fragPosViewSpace )
 	return shadow;
 }
 
-float calculateShadowCube( vec4 fragPosViewSpace )
+subroutine ( shadowFunction ) float projectiveShadow( vec4 fragPosViewSpace )
+{
+	float shadow = 0.0f;
+
+	// for shadow-mapping we need to transform the position of the fragment to light-space
+	// before we can apply the light-space transformation we first need to apply
+	// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
+	// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
+
+	// NOTE: the inverse of the view-matrix should be the modelmatrix because:
+	// let M be the model-matrix and V be the view-matrix
+	// V = inv( M ) thus for a matrix A holds true: inv( inv ( A ) ) = A
+	// so when you calculate matrix X = inv( V ) this can be expanded to X = inv( inv( M ) ) which is again M
+	vec4 fragPosWorldSpace = Camera.modelMatrix * fragPosViewSpace;
+	vec4 shadowCoord = Light.spaceUniformMatrix * fragPosWorldSpace;
+
+	shadowCoord.z -= shadow_bias;
+
+	// doing soft-shadows using 'percentage-closer filtering' (see GPU Gems 1)
+	// TODO: make samples-count configurable by light
+	float x,y;
+	for ( y = -1.5 ; y <= 1.5; y += 1.0 )
+		for ( x = -1.5 ; x <= 1.5 ; x += 1.0 )
+			shadow += shadowLookupProj( shadowCoord, vec2( x, y ) );
+				
+	// our filter-kernel has 16 elements => divide with 16
+	shadow /= 16.0;
+
+	return shadow;
+}
+
+subroutine ( shadowFunction ) float cubeShadow( vec4 fragPosViewSpace )
 {
 	float shadow = 0.0f;
 
@@ -196,6 +198,13 @@ float calculateShadowCube( vec4 fragPosViewSpace )
 
 	return shadow;
 }
+
+subroutine ( shadowFunction ) float noShadow( vec4 fragPosViewSpace )
+{
+	return 1.0;
+}
+
+subroutine uniform shadowFunction shadowFunctionSelection;
 ///////////////////////////////////////////////////////////////////////////
 
 vec3 calculateLambertianMaterial( vec3 baseColor, vec3 normalViewSpace, vec3 lightDirToFragViewSpace )
@@ -307,7 +316,7 @@ subroutine uniform lightingFunction lightingFunctionSelection;
 subroutine ( lightingFunction ) vec3 directionalLight( vec4 baseColor, vec4 fragPosViewSpace, vec4 normalViewSpace )
 {
 	// calculate shadow-contribution first to skip calculations if totally in shadow
-	float shadowFactor = calculateShadowDirectional( fragPosViewSpace );
+	float shadowFactor = shadowFunctionSelection( fragPosViewSpace );
 	// total in shadow, return black
 	if ( 0.0 == shadowFactor )
 	{
@@ -354,7 +363,7 @@ subroutine ( lightingFunction ) vec3 directionalLight( vec4 baseColor, vec4 frag
 subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec4 fragPosViewSpace, vec4 normalViewSpace )
 {
 	// calculate shadow-contribution first to skip calculations if totally in shadow
-	float shadowFactor = calculateShadowProjective( fragPosViewSpace );
+	float shadowFactor = shadowFunctionSelection( fragPosViewSpace );
 	// total in shadow, return black
 	if ( 0.0 == shadowFactor )
 	{
@@ -428,7 +437,7 @@ subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec4 fragPosView
 subroutine ( lightingFunction ) vec3 pointLight( vec4 baseColor, vec4 fragPosViewSpace, vec4 normalViewSpace )
 {
 	// calculate shadow-contribution first to skip calculations if totally in shadow
-	float shadowFactor = calculateShadowCube( fragPosViewSpace );
+	float shadowFactor = shadowFunctionSelection( fragPosViewSpace );
 	// total in shadow, return black
 	if ( 0.0 == shadowFactor )
 	{

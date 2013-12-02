@@ -189,6 +189,13 @@ UniformManagement::loadSubroutines( Program* program, GLenum shaderType )
 	glGetProgramStageiv( program->getId(), shaderType, GL_ACTIVE_SUBROUTINE_UNIFORMS, &activeSubroutineUniforms );
 	glGetProgramStageiv( program->getId(), shaderType, GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS, &activeSubroutineUniformLocations );
 
+	// allocate space for the subroutines
+	if ( activeSubroutineUniforms )
+	{
+		program->m_activeSubroutines[ shaderType ] = vector<Program::Subroutine>( activeSubroutineUniforms );
+		program->m_activeSubroutineConfig[ shaderType ] = vector<GLuint>( activeSubroutineUniforms );
+	}
+
 	// the uniforms selecting the subroutine to call
 	for ( int i = 0; i < activeSubroutineUniforms; i++ )
 	{
@@ -212,25 +219,15 @@ UniformManagement::loadSubroutines( Program* program, GLenum shaderType )
 			string subroutineName( &nameBuffer[ 0 ] );
 
 			Program::Subroutine subroutine;
-			subroutine.m_uniformIndex = i;
+			subroutine.m_uniformLocation = location;
 			subroutine.m_index = compatibleSubroutines[ j ];
 
 			program->m_allSubroutines[ shaderType ][ subroutineName ] = subroutine; 
 
-			if ( subroutine.m_uniformIndex == program->m_activeSubroutines[ shaderType ].size() )
-			{
-				program->m_activeSubroutines[ shaderType ].push_back( subroutine );
-				program->m_activeSubroutineConfig[ shaderType ].push_back( subroutine.m_index );
-			}
+			program->m_activeSubroutines[ shaderType ][ location ] = subroutine;
+			program->m_activeSubroutineConfig[ shaderType ][ location ] = subroutine.m_index;
 		}
 	}
-
-	/*
-	if ( program->m_activeSubroutines[ shaderType ].size() != activeSubroutineUniformLocations )
-	{
-		return false;
-	}
-	*/
 
 	return true;
 }

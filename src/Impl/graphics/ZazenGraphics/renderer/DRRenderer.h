@@ -42,10 +42,6 @@ class DRRenderer
 		Program* m_progLightingStage;
 		////////////////////////////////////////
 
-		// Program and shaders for lighting-stage withOUT shadowing
-		Program* m_progLightingNoShadowStage;
-		////////////////////////////////////////
-
 		Program* m_progTransparency;
 		Program* m_progBlendTransparency;
 

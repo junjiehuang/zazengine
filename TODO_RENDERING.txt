@@ -1,6 +1,3 @@
-Replace all If-Then in shaders with subroutines if possible
-	-> lighting-shadowing also possible to replace by subroutines instead of complete shader-switch
-
 Explore Bindless G-Buffer
 	-> more cleaner solution
 	-> can be extended more easily

@@ -89,21 +89,6 @@
     </fragDataLocations>
   </program>
 
-  <program name="LightingNoShadowStageProgramm">
-    <shaders>
-      <shader type="VERTEX" file="dr/stages/lighting/lightVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/lighting/lightNoShadowFrag.glsl"/>
-    </shaders>
-
-    <attribLocations>
-      <attribLocation index="0" name="in_vertPos"/>
-    </attribLocations>
-
-    <fragDataLocations>
-      <fragDataLocation colorNumber="0" name="final_color"/>
-    </fragDataLocations>
-  </program>
-
   <program name="ShadowingStagePlanarProgramm">
     <shaders>
       <shader type="VERTEX" file="dr/stages/shadowing/planar/shadowPlanarVert.glsl"/>
