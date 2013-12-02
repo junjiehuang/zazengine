@@ -237,69 +237,85 @@ RenderingContext::debugOutput ( GLenum source,
 								const GLchar* message,
 								GLvoid* userParam )
 {
-	string debSource;
-	string debType;
-	string debSev;
-	string newLine;
+	std::ostringstream str;
+
+	str << "OpenGL Debug-Context Output:\n    ";
 
 	if(source == GL_DEBUG_SOURCE_API_ARB)
-		debSource = "OpenGL";
+		str << "OpenGL";
 	else if(source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
-		debSource = "Windows";
+		str << "Windows";
 	else if(source == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB)
-		debSource = "Shader Compiler";
+		str << "Shader Compiler";
 	else if(source == GL_DEBUG_SOURCE_THIRD_PARTY_ARB)
-		debSource = "Third Party";
+		str << "Third Party";
 	else if(source == GL_DEBUG_SOURCE_APPLICATION_ARB)
-		debSource = "Application";
+		str << "Application";
 	else if (source == GL_DEBUG_SOURCE_OTHER_ARB)
-		debSource = "Other";
+		str << "Other";
 	else
-		debSource = "N/A";
+		str << "N/A";
  
+	str << ": ";
+
 	if(type == GL_DEBUG_TYPE_ERROR)
-		debType = "error";
+		str << "error";
 	else if(type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR)
-		debType = "deprecated behavior";
+		str << "deprecated behavior";
 	else if(type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR)
-		debType = "undefined behavior";
+		str << "undefined behavior";
 	else if(type == GL_DEBUG_TYPE_PORTABILITY)
-		debType = "portability";
+		str << "portability";
 	else if(type == GL_DEBUG_TYPE_PERFORMANCE)
-		debType = "performance";
+		str << "performance";
 	else if(type == GL_DEBUG_TYPE_OTHER)
-		debType = "message";
+		str << "message";
 	else if(type == GL_DEBUG_TYPE_MARKER)
-		debType = "marker";
+		str << "marker";
 	else if(type == GL_DEBUG_TYPE_PUSH_GROUP)
-		debType = "push group";
+		str << "push group";
 	else if(type == GL_DEBUG_TYPE_POP_GROUP)
-		debType = "pop group";
+		str << "pop group";
 	else
-		debType = "N/A";
+		str << "N/A";
  
+	str << "(";
+
 	if(severity == GL_DEBUG_SEVERITY_HIGH_ARB)
-		debSev = "high";
+		str << "high";
 	else if(severity == GL_DEBUG_SEVERITY_MEDIUM_ARB)
-		debSev = "medium";
+		str << "medium";
 	else if(severity == GL_DEBUG_SEVERITY_LOW_ARB)
-		debSev = "low";
+		str << "low";
 	else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
-		debSev = "notification";
+		str << "notification";
 	else
-		debSev = "N/A";
+		str << "N/A";
+
+	str << ") ";
+	str << id;
+	str << ": ";
+	str << message;
 
 	if ( message[ length - 1 ] != '\n' )
 	{
-		newLine = "\n";
+		str << "\n";
 	}
 	
 	if ( GL_DEBUG_TYPE_ERROR == type )
 	{
-		ZazenGraphics::getInstance().getLogger().logError() << "OpenGL Debug-Context Output:\n    " << debSource << ": " << debType << " (" << debSev << ") " << id << ": " << message << newLine;
+		ZazenGraphics::getInstance().getLogger().logError() << str.str();
 	}
-	else
+	else if ( GL_DEBUG_SEVERITY_MEDIUM_ARB == type )
 	{
-		//ZazenGraphics::getInstance().getLogger().logDebug() << "OpenGL Debug-Context Output:\n    " << debSource << ": " << debType << " (" << debSev << ") " << id << ": " << message << newLine;
+		ZazenGraphics::getInstance().getLogger().logWarning() << str.str();
+	}
+	else if ( GL_DEBUG_SEVERITY_LOW_ARB == type )
+	{
+		ZazenGraphics::getInstance().getLogger().logDebug() << str.str();
+	}
+	else if ( GL_DEBUG_SEVERITY_NOTIFICATION == type )
+	{
+		ZazenGraphics::getInstance().getLogger().logDebug() << str.str();
 	}
 }

@@ -537,7 +537,7 @@ ZazenGraphics::parseOrientation( TiXmlElement* objectNode, ZazenGraphicsEntity* 
 	str = orientationNode->Attribute( "heading" );
 	if ( 0 == str )
 	{
-		this->m_logger->logWarning( "heading attribute missing in orientation - use default: 0.0" ); 
+		this->m_logger->logDebug( "heading attribute missing in orientation - use default: 0.0" ); 
 	}
 	else
 	{
@@ -547,7 +547,7 @@ ZazenGraphics::parseOrientation( TiXmlElement* objectNode, ZazenGraphicsEntity* 
 	str = orientationNode->Attribute( "roll" );
 	if ( 0 == str )
 	{
-		this->m_logger->logWarning( "roll attribute missing in orientation - use default: 0.0" );
+		this->m_logger->logDebug( "roll attribute missing in orientation - use default: 0.0" );
 	}
 	else
 	{
@@ -557,7 +557,7 @@ ZazenGraphics::parseOrientation( TiXmlElement* objectNode, ZazenGraphicsEntity* 
 	str = orientationNode->Attribute( "pitch" );
 	if ( 0 == str )
 	{
-		this->m_logger->logWarning( "pitch attribute missing in orientation - use default: 0.0" );
+		this->m_logger->logDebug( "pitch attribute missing in orientation - use default: 0.0" );
 	}
 	else
 	{
@@ -567,7 +567,7 @@ ZazenGraphics::parseOrientation( TiXmlElement* objectNode, ZazenGraphicsEntity* 
 	str = orientationNode->Attribute( "scale" );
 	if ( 0 == str )
 	{
-		this->m_logger->logWarning( "scale attribute missing in orientation - use default: 1.0" );
+		this->m_logger->logDebug( "scale attribute missing in orientation - use default: 1.0" );
 	}
 	else
 	{

@@ -5,6 +5,9 @@
 
 #include <iostream>
 
+#define MAX_MIPMAP_LEVEL 10
+#define ANISOTROPY_LEVEL 4.0f
+
 using namespace std;
 using namespace boost;
 
@@ -163,10 +166,15 @@ TextureFactory::createTexture( const std::string& fullFileName )
 	GL_PEEK_ERRORS_AT
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 	GL_PEEK_ERRORS_AT
-
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 	GL_PEEK_ERRORS_AT
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	GL_PEEK_ERRORS_AT
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 ); 
+	GL_PEEK_ERRORS_AT
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, MAX_MIPMAP_LEVEL ); 
+	GL_PEEK_ERRORS_AT
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ANISOTROPY_LEVEL ); 
 	GL_PEEK_ERRORS_AT
 
 	glTexImage2D( GL_TEXTURE_2D,
@@ -178,6 +186,13 @@ TextureFactory::createTexture( const std::string& fullFileName )
 					GL_RGBA,
 					GL_UNSIGNED_BYTE,
 					ilGetData() );
+	if ( GL_PEEK_ERRORS )
+	{
+		error = true;
+		goto cleanupExit;
+	}
+
+	glGenerateMipmap( GL_TEXTURE_2D );
 	if ( GL_PEEK_ERRORS )
 	{
 		error = true;
@@ -230,9 +245,7 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 		goto cleanupExit;
 	}
 
-	// TODO: need to be able to switch mipmaps generation on/off
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-	//glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	GL_PEEK_ERRORS_AT
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	GL_PEEK_ERRORS_AT
@@ -244,7 +257,9 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 	GL_PEEK_ERRORS_AT
 	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0 ); 
 	GL_PEEK_ERRORS_AT
-	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 10 ); 
+	glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, MAX_MIPMAP_LEVEL ); 
+	GL_PEEK_ERRORS_AT
+	glTexParameterf( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT, ANISOTROPY_LEVEL ); 
 	GL_PEEK_ERRORS_AT
 
 	for ( unsigned int i = 0; i < 6; i++ )

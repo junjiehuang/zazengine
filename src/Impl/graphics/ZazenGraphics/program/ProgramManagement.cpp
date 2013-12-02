@@ -210,7 +210,7 @@ ProgramManagement::parseFragDataLocations( TiXmlElement* programNode, Program* p
 	TiXmlElement* fragDataLocationsNode = programNode->FirstChildElement( "fragDataLocations" );
 	if ( 0 == fragDataLocationsNode )
 	{
-		ZazenGraphics::getInstance().getLogger().logWarning() << "no fragment-data locations defined for program ";
+		ZazenGraphics::getInstance().getLogger().logDebug() << "no fragment-data locations defined for program ";
 		return true;
 	}
 

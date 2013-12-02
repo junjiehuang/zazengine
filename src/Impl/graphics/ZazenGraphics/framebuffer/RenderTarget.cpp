@@ -37,7 +37,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 
 	RenderTarget* renderTarget = NULL;
 
-	if ( RenderTarget::RT_DEPTH == targetType )
+	if ( RenderTarget::RT_COLOR == targetType || RenderTarget::RT_DEPTH == targetType )
 	{
 		glBindTexture( GL_TEXTURE_2D, id );
 		GL_PEEK_ERRORS_AT
@@ -46,15 +46,25 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		GL_PEEK_ERRORS_AT
-
-		// Remove artifact on the edges of the shadowmap
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 		GL_PEEK_ERRORS_AT
-
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 ); 
 		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 ); 
+		GL_PEEK_ERRORS_AT
+
+		if ( RenderTarget::RT_COLOR == targetType )
+		{
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL );
+			GL_PEEK_ERRORS_AT
+		}
+		else
+		{
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
+			GL_PEEK_ERRORS_AT
+		}
 
 		renderTarget = new RenderTarget( id, width, height, targetType, Texture::TEXTURE_2D );
 	}
@@ -63,14 +73,18 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glBindTexture( GL_TEXTURE_2D, id );
 		GL_PEEK_ERRORS_AT
 
+		// need linear filtering for shadow-maps
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		GL_PEEK_ERRORS_AT
-
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 ); 
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 ); 
 		GL_PEEK_ERRORS_AT
 
 		// need to enable comparison-mode for depth-texture to use it as a textureProj/texture in shader		
@@ -90,26 +104,20 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		glBindTexture( GL_TEXTURE_CUBE_MAP, id );
 		GL_PEEK_ERRORS_AT
 
-		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		GL_PEEK_ERRORS_AT
-		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); 
-		GL_PEEK_ERRORS_AT
-		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		GL_PEEK_ERRORS_AT
-		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-		GL_PEEK_ERRORS_AT
-		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
-
+		// need linear filtering for shadow-maps
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		GL_PEEK_ERRORS_AT
-		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR ); 
 		GL_PEEK_ERRORS_AT
-
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 		GL_PEEK_ERRORS_AT
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0 ); 
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0 ); 
 		GL_PEEK_ERRORS_AT
 
 		// NOTE: we don't do hardware-comparison like GL_COMPARE_R_TO_TEXTURE
@@ -129,26 +137,6 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 
 		renderTarget = new RenderTarget( id, width, height, targetType, Texture::TEXTURE_CUBE );
 		RenderTarget::m_shadowMapPool.push_back( renderTarget );
-	}
-	else if ( RenderTarget::RT_COLOR == targetType )
-	{
-		glBindTexture( GL_TEXTURE_2D, id );
-		GL_PEEK_ERRORS_AT
-
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		GL_PEEK_ERRORS_AT
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		GL_PEEK_ERRORS_AT
-
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		GL_PEEK_ERRORS_AT
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-		GL_PEEK_ERRORS_AT
-
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL );
-		GL_PEEK_ERRORS_AT
-
-		renderTarget = new RenderTarget( id, width, height, targetType, Texture::TEXTURE_2D );
 	}
 	else
 	{

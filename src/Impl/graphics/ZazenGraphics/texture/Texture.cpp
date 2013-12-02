@@ -29,7 +29,7 @@ Texture::bind( int textureUnit )
 	// check if 2D-textures are bound to units within their supposed range ( < Texture::CUBE_RANGE_START )
 	if ( Texture::TEXTURE_2D == this->m_textureType ) 
 	{
-		if ( Texture::CUBE_RANGE_START >= textureUnit )
+		if ( Texture::CUBE_RANGE_START <= textureUnit )
 		{
 			ZazenGraphics::getInstance().getLogger().logWarning() << "Texture::bind binding 2D-Texture in Cube-Texture range! Unit is " << textureUnit;
 		}
@@ -37,7 +37,7 @@ Texture::bind( int textureUnit )
 	// check if Cube-textures are bound to units within their supposed range ( >= Texture::CUBE_RANGE_START )
 	else if ( Texture::TEXTURE_CUBE == this->m_textureType ) 
 	{
-		if ( Texture::CUBE_RANGE_START < textureUnit  )
+		if ( Texture::CUBE_RANGE_START > textureUnit  )
 		{
 			ZazenGraphics::getInstance().getLogger().logWarning() << "Texture::bind binding Cube-Texture in 2D-Texture range! Unit is " << textureUnit;
 		}
