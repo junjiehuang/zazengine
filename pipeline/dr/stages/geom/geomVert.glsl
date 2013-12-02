@@ -59,10 +59,6 @@ subroutine ( processInputs ) void processInputsAnimated()
 		ex_normal += boneWeight * ( bone * vec4( in_vertNorm, 0.0 ) ); // fill up with 0.0 because its a direction and has no length as opposed to position
 		ex_tangent += boneWeight * ( bone * vec4( in_tangent, 0.0 ) ); // fill up with 0.0 because its a direction and has no length as opposed to position
 	}
-
-	// NOTE: seems not be necessary
-	//ex_normal = normalize( ex_normal );
-	//ex_tangent = normalize( ex_tangent );
 }
 
 subroutine ( processInputs ) void processInputsStatic()

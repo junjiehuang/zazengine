@@ -16,8 +16,6 @@ class MaterialDoom3 : public Material
 		bool activate( Program* );
 
 	private:
-		UniformBlock* m_materialConfig;
-
 		Texture* m_diffuseTexture;
 		Texture* m_specularTexture;
 		Texture* m_normalMap;

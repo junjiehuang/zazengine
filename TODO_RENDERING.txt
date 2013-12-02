@@ -1,5 +1,4 @@
 Replace all If-Then in shaders with subroutines if possible
-	-> geometry-stage material-type
 	-> lighting-shadowing also possible to replace by subroutines instead of complete shader-switch
 
 Explore Bindless G-Buffer

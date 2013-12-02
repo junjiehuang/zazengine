@@ -517,9 +517,8 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 
 			NVTX_RANGE_PUSH( "Frame" );
 
-			NVTX_RANGE_PUSH( "PP Transp" )
+			// NOTE: there is no GPU work going on thus no RANGE_PUSH
 			this->preProcessTransparency( entities );
-			NVTX_RANGE_POP
 
 			NVTX_RANGE_PUSH( "G-Stage" )
 			if ( false == this->doGeometryStage( entities ) )

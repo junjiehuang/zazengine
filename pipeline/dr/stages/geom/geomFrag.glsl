@@ -19,9 +19,56 @@ layout( location = 4 ) out vec4 out_biTangent;
 
 layout( shared ) uniform MaterialUniforms
 {
-	vec4 config; 			// x=materialtype, y=apply texture
+	vec2 config;
 	vec4 color;     		// base-color of material
 } Material;
+
+subroutine void storeMaterialProperties();
+
+// LAMBERT & PHONG Material-Types
+subroutine ( storeMaterialProperties ) void classicMaterial()
+{
+	// store materialtype in diffuse-component alpha-channel
+	out_diffuse.a = Material.config.x;
+
+	// store base-color of material
+	out_diffuse.rgb = Material.color.rgb;
+
+	out_normal.xyz = ex_normal.xyz;
+
+	// set alpha component to 0 => RFU
+	out_normal.a = 0.0;
+	out_tangent.a = 0.0;
+}
+
+// LAMBERT & PHONG Material-Types
+subroutine ( storeMaterialProperties ) void classicMaterialTextured()
+{
+	// set classic material first
+	classicMaterial();
+	// then just add diffuse-texture color
+	out_diffuse.rgb += texture( DiffuseTexture, ex_texCoord ).rgb;
+}
+
+subroutine ( storeMaterialProperties ) void doom3Material()
+{
+	// hard-code doom3 material to 3.0
+	out_diffuse.a = 3.0;
+
+	// store base-color of material
+	out_diffuse.rgb = texture( DiffuseTexture, ex_texCoord ).rgb;
+	// store normals of normal-map
+	out_normal.rgb = texture( NormalMap, ex_texCoord ).rgb;
+
+	vec3 specular = texture( SpecularTexture, ex_texCoord ).rgb;
+
+	// store specular material in the 3 unused alpha-channels
+	out_normal.a = specular.r;
+	out_tangent.a = specular.g;
+	out_biTangent.a = specular.b;
+}
+
+subroutine uniform storeMaterialProperties storeMaterialPropertiesSelection;
 
 void main()
 {
@@ -29,40 +76,5 @@ void main()
 	out_tangent = ex_tangent;
 	out_biTangent = ex_biTangent;
 
-	// store materialtype in diffuse-component alpha-channel
-	out_diffuse.a = Material.config.x;
-
-	// LAMBERT & PHONG Material-Types
-	if ( 3 > Material.config.x )
-	{
-		// store base-color of material
-		out_diffuse.rgb = Material.color.rgb;
-
-		// apply texture
-		if ( 1.0 == Material.config.y )
-		{
-			out_diffuse.rgb += texture( DiffuseTexture, ex_texCoord ).rgb;
-		}
-
-		out_normal.xyz = ex_normal.xyz;
-
-		// set alpha component to 0 => RFU
-		out_normal.a = 0.0;
-		out_tangent.a = 0.0;
-	}
-	// DOOM3 Material-Type
-	else if ( 3 == Material.config.x )
-	{
-		// store base-color of material
-		out_diffuse.rgb = texture( DiffuseTexture, ex_texCoord ).rgb;
-		// store normals of normal-map
-		out_normal.rgb = texture( NormalMap, ex_texCoord ).rgb;
-
-		vec3 specular = texture( SpecularTexture, ex_texCoord ).rgb;
-
-		// store specular material in the 3 unused alpha-channels
-		out_normal.a = specular.r;
-		out_tangent.a = specular.g;
-		out_biTangent.a = specular.b;
-	}
+	storeMaterialPropertiesSelection();
 }

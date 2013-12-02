@@ -25,12 +25,7 @@ MaterialDoom3::activate( Program* currentProgramm )
 		currentProgramm->setUniformInt( "NormalMap", 2 );
 	}
 
-	glm::vec4 materialCfg;
-	materialCfg[ 0 ] = ( float ) this->getType();
-
-	this->m_materialConfig->bindBuffer();
-
-	this->m_materialConfig->updateField( "MaterialUniforms.config", materialCfg );
+	currentProgramm->activateSubroutine( "doom3Material", Shader::FRAGMENT_SHADER );
 
 	return true;
 }
@@ -41,8 +36,6 @@ MaterialDoom3::MaterialDoom3( const std::string& name )
 	this->m_diffuseTexture = NULL;
 	this->m_specularTexture = NULL;
 	this->m_normalMap = NULL;
-
-	this->m_materialConfig = UniformManagement::getBlock( "MaterialUniforms" );
 }
 
 MaterialDoom3::~MaterialDoom3()
