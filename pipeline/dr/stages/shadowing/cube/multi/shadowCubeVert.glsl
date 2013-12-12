@@ -2,10 +2,12 @@
 
 #define MAX_BONES_PER_MESH 128
 
-in vec3 in_vertPos;
-in uint in_bone_count;
-in uvec4 in_bone_indices;
-in vec4 in_bone_weights;
+// continue with index 4 after in_vertPos because VAO is arranged this way, in between are the normals, tex-coords and tangents
+// those are not needed for shadowing
+layout( location = 0 ) in vec3 in_vertPos;
+layout( location = 4 ) in uint in_bone_count;
+layout( location = 5 ) in uvec4 in_bone_indices;
+layout( location = 6 ) in vec4 in_bone_weights;
 
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 // THIS CORRESPONDS TO THE CAMERA USED FOR RENDERING THE SHADOW-MAP IN THE CASE OF SHADOW-RENDERING IT IS THE LIGHT ITSELF

@@ -6,24 +6,6 @@
       <shader type="VERTEX" file="dr/stages/geom/geomVert.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/geom/geomFrag.glsl"/>
     </shaders>
-
-    <fragDataLocations>
-      <fragDataLocation colorNumber="0" name="out_diffuse"/>
-      <fragDataLocation colorNumber="1" name="out_normal"/>
-      <fragDataLocation colorNumber="2" name="out_position"/>
-      <fragDataLocation colorNumber="3" name="out_tangent"/>
-      <fragDataLocation colorNumber="4" name="out_biTangent"/>
-    </fragDataLocations>
-
-    <attribLocations>
-      <attribLocation index="0" name="in_vertPos"/>
-      <attribLocation index="1" name="in_vertNorm"/>
-      <attribLocation index="2" name="in_texCoord"/>
-      <attribLocation index="3" name="in_tangent"/>
-      <attribLocation index="4" name="in_bone_count"/>
-      <attribLocation index="5" name="in_bone_indices"/>
-      <attribLocation index="6" name="in_bone_weights"/>
-    </attribLocations>
   </program>
 
   <program name="TransparencyProgram">
@@ -31,16 +13,6 @@
       <shader type="VERTEX" file="dr/stages/transparency/transpVert.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/transparency/transpFrag.glsl"/>
     </shaders>
-
-    <fragDataLocations>
-      <fragDataLocation colorNumber="0" name="out_diffuse"/>
-    </fragDataLocations>
-
-    <attribLocations>
-      <attribLocation index="0" name="in_vertPos"/>
-      <attribLocation index="1" name="in_vertNorm"/>
-      <attribLocation index="2" name="in_texCoord"/>
-    </attribLocations>
   </program>
 
   <program name="BlendTransparencyProgram">
@@ -48,15 +20,6 @@
       <shader type="VERTEX" file="dr/stages/transparency/blendTranspVert.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/transparency/blendTranspFrag.glsl"/>
     </shaders>
-
-    <attribLocations>
-      <attribLocation index="0" name="in_vertPos"/>
-      <attribLocation index="1" name="in_texCoord"/>
-    </attribLocations>
-
-    <fragDataLocations>
-      <fragDataLocation colorNumber="0" name="out_color"/>
-    </fragDataLocations>
   </program>
 
   <program name="SkyBoxProgram">
@@ -64,14 +27,6 @@
       <shader type="VERTEX" file="dr/stages/geom/skyBoxVert.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/geom/skyBoxFrag.glsl"/>
     </shaders>
-
-    <fragDataLocations>
-      <fragDataLocation colorNumber="0" name="out_diffuse"/>
-    </fragDataLocations>
-
-    <attribLocations>
-      <attribLocation index="0" name="in_vertPos"/>
-    </attribLocations>
   </program>
 
   <program name="LightingStageProgramm">
@@ -79,14 +34,6 @@
       <shader type="VERTEX" file="dr/stages/lighting/lightVert.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/lighting/lightFrag.glsl"/>
     </shaders>
-
-    <attribLocations>
-      <attribLocation index="0" name="in_vertPos"/>
-    </attribLocations>
-
-    <fragDataLocations>
-      <fragDataLocation colorNumber="0" name="final_color"/>
-    </fragDataLocations>
   </program>
 
   <program name="ShadowingStagePlanarProgramm">
@@ -94,27 +41,13 @@
       <shader type="VERTEX" file="dr/stages/shadowing/planar/shadowPlanarVert.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/shadowing/planar/shadowPlanarFrag.glsl"/>
     </shaders>
-
-    <attribLocations>
-      <attribLocation index="0" name="in_vertPos"/>
-      <attribLocation index="4" name="in_bone_count"/>
-      <attribLocation index="5" name="in_bone_indices"/>
-      <attribLocation index="6" name="in_bone_weights"/>
-    </attribLocations>
   </program>
-  
+
   <program name="ShadowingStageCubeMultiPassProgramm_NA">
     <shaders>
       <shader type="VERTEX" file="dr/stages/shadowing/cube/multi/shadowCubeVert.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/shadowing/cube/multi/shadowCubeFrag.glsl"/>
     </shaders>
-
-    <attribLocations>
-      <attribLocation index="0" name="in_vertPos"/>
-      <attribLocation index="4" name="in_bone_count"/>
-      <attribLocation index="5" name="in_bone_indices"/>
-      <attribLocation index="6" name="in_bone_weights"/>
-    </attribLocations>
   </program>
 
   <program name="ShadowingStageCubeSinglePassProgramm">
@@ -123,12 +56,5 @@
       <shader type="GEOMETRY" file="dr/stages/shadowing/cube/single/shadowCubeGeom.glsl"/>
       <shader type="FRAGMENT" file="dr/stages/shadowing/cube/single/shadowCubeFrag.glsl"/>
     </shaders>
-
-    <attribLocations>
-      <attribLocation index="0" name="in_vertPos"/>
-      <attribLocation index="4" name="in_bone_count"/>
-      <attribLocation index="5" name="in_bone_indices"/>
-      <attribLocation index="6" name="in_bone_weights"/>
-    </attribLocations>
   </program>
 </programs>

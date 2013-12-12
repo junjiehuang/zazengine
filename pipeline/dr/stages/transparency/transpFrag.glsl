@@ -8,7 +8,7 @@ uniform sampler2DShadow BackgroundDepth;
 
 in vec2 ex_texCoord;
 
-out vec4 out_color;
+layout( location = 0 ) out vec4 out_color;
 
 layout( shared ) uniform TransparentMaterialUniforms
 {

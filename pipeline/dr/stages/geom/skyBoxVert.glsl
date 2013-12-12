@@ -1,6 +1,6 @@
 #version 400 core
 
-in vec3 in_vertPos;
+layout( location = 0 ) in vec3 in_vertPos;
 
 out vec3 ex_texCoord;
 

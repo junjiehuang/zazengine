@@ -160,7 +160,6 @@
     <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightNoShadowFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeVert.glsl" />

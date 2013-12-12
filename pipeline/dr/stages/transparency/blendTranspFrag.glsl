@@ -5,7 +5,7 @@ uniform sampler2D Transparent;
 
 in vec2 ex_texCoord;
 
-out vec4 out_color;
+layout( location = 0 ) out vec4 out_color;
 
 void main()
 {

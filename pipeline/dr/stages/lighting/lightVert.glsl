@@ -1,7 +1,7 @@
 #version 400 core
 
 // light-boundary has only vertex-positions
-in vec3 in_vertPos;
+layout( location = 0 ) in vec3 in_vertPos;
 
 // TRANSFORMATIONS OF THE BOUNDARY OF THE CURRENT LIGHT
 layout( shared ) uniform ScreenRenderingBoundaryUniforms

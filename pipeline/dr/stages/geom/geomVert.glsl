@@ -2,13 +2,13 @@
 
 #define MAX_BONES_PER_MESH 128
 
-in vec3 in_vertPos;
-in vec3 in_vertNorm;
-in vec2 in_texCoord;
-in vec3 in_tangent;
-in uint in_bone_count;
-in uvec4 in_bone_indices;
-in vec4 in_bone_weights;
+layout( location = 0 ) in vec3 in_vertPos;
+layout( location = 1 ) in vec3 in_vertNorm;
+layout( location = 2 ) in vec2 in_texCoord;
+layout( location = 3 ) in vec3 in_tangent;
+layout( location = 4 ) in uint in_bone_count;
+layout( location = 5 ) in uvec4 in_bone_indices;
+layout( location = 6 ) in vec4 in_bone_weights;
 
 // do we really need vec4 or does vec3 suffice?
 // IMPORTANT: out-variables are interpolated but no perspective division is applied

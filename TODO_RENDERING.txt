@@ -1,3 +1,9 @@
+Console
+	-> implement console for input of text and commands
+
+Menu-selection
+	-> implement menu
+
 Explore Bindless G-Buffer
 	-> more cleaner solution
 	-> can be extended more easily

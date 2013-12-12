@@ -355,9 +355,6 @@
     <None Include="..\..\..\..\config\graphics\config.xml">
       <Filter>Ressourcendateien\Config</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightNoShadowFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
-    </None>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox</Filter>
     </None>

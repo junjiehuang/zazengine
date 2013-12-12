@@ -9,7 +9,7 @@ uniform sampler2D BiTangentMap;
 uniform sampler2DShadow ShadowPlanarMap;
 uniform samplerCube ShadowCubeMap;
 
-out vec4 final_color;
+layout( location = 0 ) out vec4 final_color;
 
 // TODO: make configurable/light
 const float shadow_bias = 0.005;

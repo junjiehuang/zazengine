@@ -4,7 +4,6 @@ in vec3 ex_texCoord;
 
 uniform samplerCube SkyBoxCubeMap;
 
-// OPTIMIZE: remove bindfraglocation in init
 layout( location = 0 ) out vec4 out_diffuse;
 
 void main()

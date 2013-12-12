@@ -208,7 +208,7 @@ RenderingContext::swapBuffers()
 		}
 
 		fileName << index;
-		fileName << ".tiff";
+		fileName << ".png";
 
 		TextureFactory::captureScreen( fileName.str().c_str() );
 
@@ -227,7 +227,6 @@ RenderingContext::takeScreenShot()
 	return true;
 }
 
-// copied and adjusted from ogl demo
 void APIENTRY 
 RenderingContext::debugOutput ( GLenum source,
 								GLenum type,
@@ -241,53 +240,53 @@ RenderingContext::debugOutput ( GLenum source,
 
 	str << "OpenGL Debug-Context Output:\n    ";
 
-	if(source == GL_DEBUG_SOURCE_API_ARB)
+	if( GL_DEBUG_SOURCE_API_ARB == source )
 		str << "OpenGL";
-	else if(source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
+	else if( GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB == source )
 		str << "Windows";
-	else if(source == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB)
+	else if( GL_DEBUG_SOURCE_SHADER_COMPILER_ARB == source )
 		str << "Shader Compiler";
-	else if(source == GL_DEBUG_SOURCE_THIRD_PARTY_ARB)
+	else if( GL_DEBUG_SOURCE_THIRD_PARTY_ARB == source )
 		str << "Third Party";
-	else if(source == GL_DEBUG_SOURCE_APPLICATION_ARB)
+	else if( GL_DEBUG_SOURCE_APPLICATION_ARB == source )
 		str << "Application";
-	else if (source == GL_DEBUG_SOURCE_OTHER_ARB)
+	else if ( GL_DEBUG_SOURCE_OTHER_ARB == source )
 		str << "Other";
 	else
 		str << "N/A";
  
 	str << ": ";
 
-	if(type == GL_DEBUG_TYPE_ERROR)
+	if( GL_DEBUG_TYPE_ERROR == type )
 		str << "error";
-	else if(type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR)
+	else if( GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR == type )
 		str << "deprecated behavior";
-	else if(type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR)
+	else if( GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR == type )
 		str << "undefined behavior";
-	else if(type == GL_DEBUG_TYPE_PORTABILITY)
+	else if( GL_DEBUG_TYPE_PORTABILITY == type )
 		str << "portability";
-	else if(type == GL_DEBUG_TYPE_PERFORMANCE)
+	else if( GL_DEBUG_TYPE_PERFORMANCE == type )
 		str << "performance";
-	else if(type == GL_DEBUG_TYPE_OTHER)
+	else if( GL_DEBUG_TYPE_OTHER == type )
 		str << "message";
-	else if(type == GL_DEBUG_TYPE_MARKER)
+	else if( GL_DEBUG_TYPE_MARKER == type )
 		str << "marker";
-	else if(type == GL_DEBUG_TYPE_PUSH_GROUP)
+	else if( GL_DEBUG_TYPE_PUSH_GROUP == type )
 		str << "push group";
-	else if(type == GL_DEBUG_TYPE_POP_GROUP)
+	else if( GL_DEBUG_TYPE_POP_GROUP == type )
 		str << "pop group";
 	else
 		str << "N/A";
  
 	str << "(";
 
-	if(severity == GL_DEBUG_SEVERITY_HIGH_ARB)
+	if( GL_DEBUG_SEVERITY_HIGH_ARB == severity )
 		str << "high";
-	else if(severity == GL_DEBUG_SEVERITY_MEDIUM_ARB)
+	else if( GL_DEBUG_SEVERITY_MEDIUM_ARB == severity )
 		str << "medium";
-	else if(severity == GL_DEBUG_SEVERITY_LOW_ARB)
+	else if( GL_DEBUG_SEVERITY_LOW_ARB == severity )
 		str << "low";
-	else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+	else if ( GL_DEBUG_SEVERITY_NOTIFICATION == severity )
 		str << "notification";
 	else
 		str << "N/A";
