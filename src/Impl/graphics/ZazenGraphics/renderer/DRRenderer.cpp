@@ -22,7 +22,7 @@ using namespace std;
 
 DRRenderer::DRRenderer()
 {
-	this->m_gBufferFbo = NULL;
+	this->m_fbo = NULL;
 	this->m_intermediateDepthFB = NULL;
 
 	this->m_depthCopy = NULL;
@@ -43,7 +43,7 @@ DRRenderer::DRRenderer()
 	this->m_transparentMaterialBlock = NULL;
 	this->m_screenRenderingBoundaryBlock = NULL;
 
-	this->m_fullScreenQuad = NULL;
+	this->m_fsq = NULL;
 
 	this->m_unitCubeMatrix = glm::mat4(
 		0.5, 0.0, 0.0, 0.0, 
@@ -117,7 +117,7 @@ DRRenderer::shutdown()
 	FrameBufferObject::destroy( this->m_intermediateDepthFB );
 
 	// cleaning up framebuffer
-	FrameBufferObject::destroy( this->m_gBufferFbo );
+	FrameBufferObject::destroy( this->m_fbo );
 	
 	// deleting shadow-map pool
 	RenderTarget::cleanup();
@@ -146,15 +146,15 @@ DRRenderer::initFBOs()
 bool
 DRRenderer::initGBuffer()
 {
-	this->m_gBufferFbo = FrameBufferObject::create();
-	if ( NULL == this->m_gBufferFbo )
+	this->m_fbo = FrameBufferObject::create();
+	if ( NULL == this->m_fbo )
 	{
 		return false;
 	}
 
 	// needs to be bound to attach render-targets
 	// the order of the following calls is important and depermines the index
-	if ( false == this->m_gBufferFbo->bind() )
+	if ( false == this->m_fbo->bind() )
 	{
 		return false;
 	}
@@ -163,43 +163,43 @@ DRRenderer::initGBuffer()
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 
 	// render-target at index 0: diffuse color
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )		
 	{
 		return false;
 	}
 
 	// render-target at index 1: normals
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )		
 	{
 		return false;
 	}
 
 	// render-target at index 2: positions in viewing-coords (Eye-Space)
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )		
 	{
 		return false;
 	}
 
 	// render-target at index 3: tangents
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )		
 	{
 		return false;
 	}
 
 	// render-target at index 4: bi-tangents
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )		
 	{
 		return false;
 	}
 
 	// render-target at index 5: intermediate lighting-result
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_gBufferFbo ) )		
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )		
 	{
 		return false;
 	}
 
 	// render-target at index 6: depth-buffer
-	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH, this->m_gBufferFbo ) )		
+	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH, this->m_fbo ) )		
 	{
 		return false;
 	}
@@ -214,7 +214,7 @@ DRRenderer::initGBuffer()
 	}
 
 	// unbind => switch back to default framebuffer
-	if ( false == this->m_gBufferFbo->unbind() )
+	if ( false == this->m_fbo->unbind() )
 	{
 		return false;
 	}
@@ -356,8 +356,8 @@ DRRenderer::initTransparency()
 		return false;
 	}
 	
-	this->m_fullScreenQuad = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
-	if ( NULL == this->m_fullScreenQuad )
+	this->m_fsq = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+	if ( NULL == this->m_fsq )
 	{
 		return false;
 	}
@@ -579,7 +579,7 @@ bool
 DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 {
 	// render to g-buffer FBO
-	if ( false == this->m_gBufferFbo->bind() )
+	if ( false == this->m_fbo->bind() )
 	{
 		return false;
 	}
@@ -589,7 +589,7 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 	this->m_mainCamera->restoreViewport();
 
 	// clear all targets for the new frame
-	if ( false == this->m_gBufferFbo->clearAll() )
+	if ( false == this->m_fbo->clearAll() )
 	{
 		return false;
 	}
@@ -610,7 +610,7 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 	}
 
 	// enable rendering to all render-targets in geometry-stage
-	if ( false == this->m_gBufferFbo->drawBuffers( this->m_gBufferDrawBufferIndices ) )
+	if ( false == this->m_fbo->drawBuffers( this->m_gBufferDrawBufferIndices ) )
 	{
 		return false;
 	}
@@ -639,10 +639,8 @@ DRRenderer::renderSkyBox()
 		return true;
 	}
 
-	// only render to buffer with index 0 which is diffuse-color only
-	// IMPORANT: sky-box doesn't render normals, depth and other stuff
-	//		because lighting and other effects won't be applied, only diffuse color matters
-	if ( false == this->m_gBufferFbo->drawBuffer( 5 ) )
+	// render to target 5 which gathers the final result before post-processing
+	if ( false == this->m_fbo->drawBuffer( 5 ) )
 	{
 		return false;
 	}
@@ -701,16 +699,16 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 			return false;
 		}
 		NVTX_RANGE_POP
-	}
 
-	// render to g-buffer
-	if ( false == this->m_gBufferFbo->bind() )
-	{
-		return false;
+		// switch back to g-buffer because was switched to intermediateFB during shadow-map rendering
+		if ( false == this->m_fbo->bind() )
+		{
+			return false;
+		}
 	}
-
+	
 	// enable rendering to 5th target
-	if ( false == this->m_gBufferFbo->drawBuffer( 5 ) )
+	if ( false == this->m_fbo->drawBuffer( 5 ) )
 	{
 		return false;
 	}
@@ -731,7 +729,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 
 	// OPTIMIZE: no need to do for every light!
 	// lighting stage program need all buffers of g-buffer bound as textures
-	if ( false == this->m_gBufferFbo->bindTargets( this->m_gBufferDrawBufferIndices ) )
+	if ( false == this->m_fbo->bindTargets( this->m_gBufferDrawBufferIndices ) )
 	{
 		return false;
 	}
@@ -826,6 +824,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	// need additive-blending
 	glBlendEquation( GL_FUNC_ADD );
 	// TODO: do some research why this blending-function actually works (it does!)
+	// TODO: GL_ONE_MINUS_SRC_ALPHA solves the problem with the sky-box but then the skybox is gone
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
 
 	// disable writing to depth: light-boundaries should not update depth
@@ -1040,8 +1039,9 @@ DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 	if ( 0 == this->m_transparentEntities.size() )
 	{
 		// final light-gather is accumulated in render-target with index 5
-		this->m_gBufferFbo->blitToSystemFB( 5 );
+		this->m_fbo->blitToSystemFB( 5 );
 	}
+	// if transparent entities present, ping-pong render them
 	else
 	{
 		unsigned int combinationTarget = 1;
@@ -1075,26 +1075,26 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	}
 
 	// bind background to index 2 because DiffuseColor of Material is at index 0 and NormalMap of Material is at index 1
-	this->m_gBufferFbo->getAttachedTargets()[ backgroundIndex ]->bind( 2 );
+	this->m_fbo->getAttachedTargets()[ backgroundIndex ]->bind( 2 );
 	// bind depth-copy to index 3
 	this->m_depthCopy->bind( 3 );
 
 	this->m_progTransparency->setUniformInt( "Background", 2 );
 	this->m_progTransparency->setUniformInt( "BackgroundDepth", 3 );
 
-	this->m_gBufferFbo->bind();
+	this->m_fbo->bind();
 	
 	// copy depth of g-buffer to target, because we need to access the depth in transparency-rendering
 	// to prevent artifacts. at the same time we write depth when rendering transparency so
 	// we cannot bind the g-buffer depth => need to copy
 	// TODO: PROBLEM if the resolutions of the depth-copies don't match artifacts are introduced!!!
-	if ( false == this->m_gBufferFbo->copyDepthToTarget( this->m_depthCopy ) )
+	if ( false == this->m_fbo->copyDepthToTarget( this->m_depthCopy ) )
 	{
 		return false;
 	}
 
 	// transparent objects are always rendered intermediate to g-buffer color target 0
-	this->m_gBufferFbo->drawBuffer( 0 );
+	this->m_fbo->drawBuffer( 0 );
 
 	// clear buffer
 	// need to set alpha-clearing to 1.0 because was set to 0.0 during geometry-stage to mark bits as background/sky-box material (alpha-channel of diffuse-texture stores material-id)
@@ -1120,7 +1120,7 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	if ( lastInstance )
 	{
 		// back to default-framebuffer
-		this->m_gBufferFbo->unbind();
+		this->m_fbo->unbind();
 
 		// clear default-framebuffer color & depth
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -1128,7 +1128,7 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	else 
 	{
 		// draw combination to new target (ping-pong rendering)
-		this->m_gBufferFbo->drawBuffer( combinationTarget );
+		this->m_fbo->drawBuffer( combinationTarget );
 
 		glClear( GL_COLOR_BUFFER_BIT );
 	}
@@ -1140,7 +1140,7 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	}
 
 	// transparent object was rendered to g-buffer color target 0
-	this->m_gBufferFbo->getAttachedTargets()[ 0 ]->bind( 0 );
+	this->m_fbo->getAttachedTargets()[ 0 ]->bind( 0 );
 
 	this->m_progBlendTransparency->setUniformInt( "Background", 2 );
 	this->m_progBlendTransparency->setUniformInt( "Transparent", 0 );
@@ -1159,7 +1159,7 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 		glDepthMask( GL_FALSE );
 	}
 
-	this->m_fullScreenQuad->render();
+	this->m_fsq->render();
 
 	// enable depth-writing again
 	if ( ! lastInstance )

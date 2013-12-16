@@ -25,13 +25,15 @@ class DRRenderer
 
 	private:
 		// Multiple-Render-Targes & Framebuffer for Deferred Rendering
-		FrameBufferObject* m_gBufferFbo;
+		FrameBufferObject* m_fbo;
 		FrameBufferObject* m_intermediateDepthFB;
 
 		RenderTarget* m_depthCopy;
 		////////////////////////////////////////
 
-		Mesh* m_fullScreenQuad;
+		// full-screen-quad (FSQ) needed to perform lighting- and post-processing passes 
+		Mesh* m_fsq;
+		////////////////////////////////////////
 
 		// Program and shaders for geometry-stage
 		Program* m_progGeomStage;
