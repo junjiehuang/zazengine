@@ -1,3 +1,20 @@
+Fix bugs
+	-> correct blending equation
+		-> skybox/background not transparent to all
+		-> additive blending of multiple light-sources
+	
+		-> need to find a blending-equation which overwrites skybox/background the first time with color and then continues normally with additive
+			-> must use correct alpha-values to steer this. the good thing is: we can set them individually for the skyboy/background in the skyboxfrag-shader and for each lighted fragment in the lightfrag-shader
+			-> find the equation!
+	
+	-> use stencil-buffer to mark mesh-fragments so non-mesh fragments (=skybox/background) frags are discarded early and lighting-shader does not have to perform check on material id in main
+	-> reconstruct z of normals, tangents and bi-tangents in lighting shader
+	-> reconstruct ec-position from depth
+
+	-> update blog
+
+	-> get rid of 2nd fbo
+
 Console
 	-> implement console for input of text and commands
 
