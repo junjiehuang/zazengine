@@ -265,7 +265,7 @@ ProgramManagement::parseAttribLocations( TiXmlElement* programNode, Program* pro
 	TiXmlElement* attribLocationsNode = programNode->FirstChildElement( "attribLocations" );
 	if ( 0 == attribLocationsNode )
 	{
-		ZazenGraphics::getInstance().getLogger().logWarning() << "no attribLocations defined for program ";
+		ZazenGraphics::getInstance().getLogger().logInfo() << "no attribLocations defined for program ";
 		return true;
 	}
 

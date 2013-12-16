@@ -35,9 +35,22 @@ GLUtils::peekErrors( const std::string& locationInfo )
 
 	while ( GL_NO_ERROR != ( status = glGetError() ) )
 	{
+		string errorString;
+		const GLubyte* errorStrGlu = gluErrorString( status );
+
+		// is null when not a known error
+		if ( NULL == errorStrGlu )
+		{
+			errorString = "unknown glu-error";
+		}
+		else
+		{
+			errorString = ( const char* ) errorStrGlu;
+		}
+
 		errors << "    " << errorCount + 1;
 		errors << ": \'";
-		errors << ( const char* ) gluErrorString( status );
+		errors << errorString;
 		errors << "\'";
 		errors << endl;
 

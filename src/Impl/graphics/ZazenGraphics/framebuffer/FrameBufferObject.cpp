@@ -133,6 +133,17 @@ FrameBufferObject::attachTargetTempCubeFace( RenderTarget* renderTarget, unsigne
 }
 
 bool
+FrameBufferObject::restoreDepthTarget()
+{
+	if ( this->m_depthTarget )
+	{
+		return this->attachTargetTemp( this->m_depthTarget );
+	}
+
+	return false;
+}
+
+bool
 FrameBufferObject::bind()
 {
 	// bind the framebuffer of the geometry-stage
@@ -149,6 +160,34 @@ FrameBufferObject::copyDepthToTarget( RenderTarget* target )
 	GL_PEEK_ERRORS_AT_DEBUG
 	glCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 0, 0, target->getWidth(), target->getHeight() );
 	GL_PEEK_ERRORS_AT_DEBUG
+
+	return true;
+}
+
+bool
+FrameBufferObject::blitToSystemFB( unsigned int targetIndex )
+{
+	RenderTarget* target = this->m_attachedTargets[ targetIndex ];
+
+	// specify this render-target as the read-target
+	glReadBuffer( this->m_colorBufferTargets[ targetIndex ] );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify this FBO as the read-fbo
+	glBindFramebuffer( GL_READ_FRAMEBUFFER, this->m_id );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify the system framebuffer as draw-fbo
+	glBindFramebuffer( GL_DRAW_FRAMEBUFFER_EXT, 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// perform the blit-operation
+	glBlitFramebuffer( 0, 0, target->getWidth(), target->getHeight(), 0, 0, target->getWidth(), target->getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST );
+	GL_PEEK_ERRORS_AT_DEBUG
+		
+	// unbind this FBO as read-target
+	glBindFramebufferEXT( GL_READ_FRAMEBUFFER_EXT, 0 );
+	GL_PEEK_ERRORS_AT_DEBUG 
 
 	return true;
 }
@@ -305,10 +344,14 @@ FrameBufferObject::checkStatus()
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER" );
 	}
-	 else if ( GL_FRAMEBUFFER_BINDING == status )
+	else if ( GL_FRAMEBUFFER_BINDING == status )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "FrameBufferObject::checkStatus: GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER" );
 	}
-	
+	else
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "FrameBufferObject::checkStatus: unknown status " + status );
+	}
+
 	return false;
 }

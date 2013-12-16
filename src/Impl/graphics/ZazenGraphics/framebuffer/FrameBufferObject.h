@@ -24,6 +24,7 @@ class FrameBufferObject
 		bool attachTarget( RenderTarget* );
 		bool attachTargetTemp( RenderTarget* );
 		bool attachTargetTempCubeFace( RenderTarget*, unsigned int );
+		bool restoreDepthTarget();
 
 		bool drawAllBuffers();
 		bool drawBuffer( unsigned int );
@@ -32,13 +33,15 @@ class FrameBufferObject
 
 		bool copyDepthToTarget( RenderTarget* );
 
+		bool blitToSystemFB( unsigned int );
+
 		bool bind();
 		bool unbind();
 
 		bool bindAllTargets();
 		bool bindTargets( std::vector<unsigned int> );
 		bool bindTarget( unsigned int );
-
+		
 		bool clearAll();
 
 		const std::vector<RenderTarget*>& getAttachedTargets() { return this->m_attachedTargets; };

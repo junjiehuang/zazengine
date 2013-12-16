@@ -588,9 +588,6 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 	// could have changed due to shadow-map or other rendering happend in the frame before
 	this->m_mainCamera->restoreViewport();
 
-	// set alpha to 0.0 for skybox/background -> will not run through the whole lighting-shader but just pass through background color
-	glClearColor( 0.0, 0.0, 0.0, 0.0 );
-
 	// clear all targets for the new frame
 	if ( false == this->m_gBufferFbo->clearAll() )
 	{
@@ -630,12 +627,6 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 		return false;
 	}
 
-	// switch back to default framebuffer
-	if ( false == this->m_gBufferFbo->unbind() )
-	{
-		return false;
-	}
-
 	return true;
 }
 
@@ -651,7 +642,7 @@ DRRenderer::renderSkyBox()
 	// only render to buffer with index 0 which is diffuse-color only
 	// IMPORANT: sky-box doesn't render normals, depth and other stuff
 	//		because lighting and other effects won't be applied, only diffuse color matters
-	if ( false == this->m_gBufferFbo->drawBuffer( 0 ) )
+	if ( false == this->m_gBufferFbo->drawBuffer( 5 ) )
 	{
 		return false;
 	}
@@ -680,13 +671,6 @@ DRRenderer::renderSkyBox()
 bool
 DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 {
-	// no transparent objects in scene, render lighting to default framebuffer
-	if ( 0 == this->m_transparentEntities.size() )
-	{
-		// clear frame-buffer
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	}
-
 	// render the contribution of each light-entiy to the scene
 	std::list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
 	while ( iter != entities.end() )
@@ -700,11 +684,6 @@ DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 				return false;
 			}
 		}
-	}
-
-	if ( 0 < this->m_transparentEntities.size() )
-	{
-		this->m_gBufferFbo->unbind();
 	}
 
 	return true;
@@ -724,25 +703,20 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		NVTX_RANGE_POP
 	}
 
-	// if there are some transparent objects in scene, render lighting result to intermediate 
-	// 5th g-buffer target because needed as background for transparency blending
-	if ( 0 < this->m_transparentEntities.size() )
+	// render to g-buffer
+	if ( false == this->m_gBufferFbo->bind() )
 	{
-		// render to g-buffer
-		if ( false == this->m_gBufferFbo->bind() )
-		{
-			return false;
-		}
-
-		// enable rendering to 5th target
-		if ( false == this->m_gBufferFbo->drawBuffer( 5 ) )
-		{
-			return false;
-		}
-
-		// check status of FBO, IMPORANT: not before, would have failed
-		CHECK_FRAMEBUFFER_DEBUG
+		return false;
 	}
+
+	// enable rendering to 5th target
+	if ( false == this->m_gBufferFbo->drawBuffer( 5 ) )
+	{
+		return false;
+	}
+
+	// check status of FBO, IMPORANT: not before, would have failed
+	CHECK_FRAMEBUFFER_DEBUG
 
 	// IMPORTANT: need to re-set the viewport for each FBO
 	// could have changed due to shadow-map or other rendering happend in the frame before
@@ -899,12 +873,6 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 		}
 	}
 
-	// back to default framebuffer
-	if ( false == this->m_intermediateDepthFB->unbind() )
-	{
-		return false;
-	}
-
 	return true;
 }
 
@@ -1045,8 +1013,7 @@ DRRenderer::renderShadowPass( list<ZazenGraphicsEntity*>& entities, Light* light
 	CHECK_FRAMEBUFFER_DEBUG
 
 	// clear bound buffer
-	// TODO: GL_DEPTH_BUFFER_BIT should be enough if really only the depth is rendered
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glClear( GL_DEPTH_BUFFER_BIT );
 
 	// IMPORTANT: need to set the viewport for each shadow-map, because resolution can be different for each
 	light->restoreViewport();
@@ -1069,20 +1036,29 @@ DRRenderer::renderShadowPass( list<ZazenGraphicsEntity*>& entities, Light* light
 bool
 DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 {
-	unsigned int combinationTarget = 1;
-	unsigned int backgroundIndex = 5;
-
-	for ( unsigned int i = 0; i < this->m_transparentEntities.size(); i++ )
+	// when no transparent entities are present, just blit the final gathering to the system framebuffer
+	if ( 0 == this->m_transparentEntities.size() )
 	{
-		ZazenGraphicsEntity* entity = this->m_transparentEntities[ i ];
+		// final light-gather is accumulated in render-target with index 5
+		this->m_gBufferFbo->blitToSystemFB( 5 );
+	}
+	else
+	{
+		unsigned int combinationTarget = 1;
+		unsigned int backgroundIndex = 5;
 
-		if ( false == this->renderTransparentInstance( entity, backgroundIndex, combinationTarget,
-			i == this->m_transparentEntities.size() - 1 ) )
+		for ( unsigned int i = 0; i < this->m_transparentEntities.size(); i++ )
 		{
-			return false;
-		}
+			ZazenGraphicsEntity* entity = this->m_transparentEntities[ i ];
 
-		std::swap( combinationTarget, backgroundIndex );
+			if ( false == this->renderTransparentInstance( entity, backgroundIndex, combinationTarget,
+				i == this->m_transparentEntities.size() - 1 ) )
+			{
+				return false;
+			}
+
+			std::swap( combinationTarget, backgroundIndex );
+		}
 	}
 
 	return true;
@@ -1111,6 +1087,7 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	// copy depth of g-buffer to target, because we need to access the depth in transparency-rendering
 	// to prevent artifacts. at the same time we write depth when rendering transparency so
 	// we cannot bind the g-buffer depth => need to copy
+	// TODO: PROBLEM if the resolutions of the depth-copies don't match artifacts are introduced!!!
 	if ( false == this->m_gBufferFbo->copyDepthToTarget( this->m_depthCopy ) )
 	{
 		return false;

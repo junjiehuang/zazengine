@@ -18,8 +18,8 @@ layout( location = 4 ) out vec4 out_biTangent;
 
 layout( shared ) uniform MaterialUniforms
 {
-	vec2 config;
-	vec4 color;     		// base-color of material
+	vec2 config;	// x holds material-type (1.0 lambert, 2.0 phong, 3.0 doom3)
+	vec4 color;		// base-color of material
 } Material;
 
 subroutine void storeMaterialProperties();
@@ -71,9 +71,11 @@ subroutine uniform storeMaterialProperties storeMaterialPropertiesSelection;
 
 void main()
 {
+	// just write through without any change depending on the material
 	out_position = ex_position;
 	out_tangent = ex_tangent;
 	out_biTangent = ex_biTangent;
 
+	// subroutine-call based on the selection from application
 	storeMaterialPropertiesSelection();
 }
