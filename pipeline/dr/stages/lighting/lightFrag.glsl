@@ -501,18 +501,11 @@ void main()
 	vec2 screenCoord = vec2( gl_FragCoord.x / Camera.window.x, gl_FragCoord.y / Camera.window.y );
 
 	vec4 baseColor = texture( DiffuseMap, screenCoord );
+	vec4 normalViewSpace = texture( NormalMap, screenCoord );
+	// position of fragment is stored in model-view coordinates = EyeCoordinates (EC) / View space (VS) / Camera Space
+	// EC/VS/CameraSpace is what we need for lighting-calculations
+	vec4 fragPosViewSpace = texture( PositionMap, screenCoord );
 
-	final_color = baseColor;
+	final_color.xyz = lightingFunctionSelection( baseColor, fragPosViewSpace, normalViewSpace );
 	final_color.a = 1.0;
-
-	// apply lighting and shadowing only when material is not sky-box (for sky-box just pass through sky-box texture color)
-	if ( 0.0 != baseColor.a )
-	{
-		vec4 normalViewSpace = texture( NormalMap, screenCoord );
-		// position of fragment is stored in model-view coordinates = EyeCoordinates (EC) / View space (VS) / Camera Space
-		// EC/VS/CameraSpace is what we need for lighting-calculations
-		vec4 fragPosViewSpace = texture( PositionMap, screenCoord );
-
-		final_color.xyz = lightingFunctionSelection( baseColor, fragPosViewSpace, normalViewSpace );
-	}
 }

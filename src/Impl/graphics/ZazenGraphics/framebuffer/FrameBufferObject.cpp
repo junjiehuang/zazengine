@@ -79,7 +79,9 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 		return false;
 	}
 
-	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW_PLANAR == renderTarget->getType() || RenderTarget::RT_SHADOW_CUBE == renderTarget->getType() )
+	// any depth-target is regarded as depth-buffer
+	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_DEPTH_STENCIL == renderTarget->getType() ||
+		 RenderTarget::RT_SHADOW_PLANAR == renderTarget->getType() || RenderTarget::RT_SHADOW_CUBE == renderTarget->getType() )
 	{
 		this->m_depthBuffer = renderTarget->getId();
 		this->m_depthTarget = renderTarget;
@@ -104,6 +106,12 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 	{
 		// add this as a depth-attachment to get correct depth-visibility in our deferred rendering
 		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, renderTarget->getId(), 0 );
+		GL_PEEK_ERRORS_AT_DEBUG
+	}
+	else if ( RenderTarget::RT_DEPTH_STENCIL == renderTarget->getType() )
+	{
+		// add this as a depth- AND stencil-attachment to get correct depth-visibility and stencil-buffer in our deferred rendering
+		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, renderTarget->getId(), 0 );
 		GL_PEEK_ERRORS_AT_DEBUG
 	}
 	else if ( RenderTarget::RT_COLOR == renderTarget->getType() )
@@ -301,7 +309,7 @@ FrameBufferObject::clearAll()
 
 	// turn on color drawing ( was turned off in shadowmaping )
 	// clear the colorbuffers AND our depth-buffer ( m_geometryDepth );
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;

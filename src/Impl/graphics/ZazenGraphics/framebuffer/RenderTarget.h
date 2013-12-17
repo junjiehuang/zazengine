@@ -14,6 +14,7 @@ class RenderTarget : public Texture
 		{
 			RT_COLOR = 0,
 			RT_DEPTH,
+			RT_DEPTH_STENCIL,
 			RT_SHADOW_PLANAR,
 			RT_SHADOW_CUBE
 		};

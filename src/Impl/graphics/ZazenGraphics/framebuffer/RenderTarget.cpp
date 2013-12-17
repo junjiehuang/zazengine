@@ -37,7 +37,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 
 	RenderTarget* renderTarget = NULL;
 
-	if ( RenderTarget::RT_COLOR == targetType || RenderTarget::RT_DEPTH == targetType )
+	if ( RenderTarget::RT_COLOR == targetType || RenderTarget::RT_DEPTH == targetType || RenderTarget::RT_DEPTH_STENCIL == targetType )
 	{
 		glBindTexture( GL_TEXTURE_2D, id );
 		GL_PEEK_ERRORS_AT
@@ -60,9 +60,14 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL );
 			GL_PEEK_ERRORS_AT
 		}
-		else
+		else if ( RenderTarget::RT_DEPTH == targetType )
 		{
 			glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
+			GL_PEEK_ERRORS_AT
+		}
+		else
+		{
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL );
 			GL_PEEK_ERRORS_AT
 		}
 
