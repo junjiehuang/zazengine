@@ -591,14 +591,6 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 		return false;
 	}
 
-	NVTX_RANGE_PUSH( "Skybox" )
-	// render sky-box first with disabled depth-write => will be behind all other objects
-	if ( false == this->renderSkyBox() )
-	{
-		return false;
-	}
-	NVTX_RANGE_POP
-
 	// activate geometry-stage program
 	if ( false == this->m_progGeomStage->use() )
 	{
@@ -630,6 +622,14 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 	{
 		return false;
 	}
+
+	NVTX_RANGE_PUSH( "Skybox" )
+	// render sky-box 
+	if ( false == this->renderSkyBox() )
+	{
+		return false;
+	}
+	NVTX_RANGE_POP
 
 	// disable stencil-test so not to interfere with lightin-stage (it will handle the stencil-test by itself)
 	glDisable( GL_STENCIL_TEST );
@@ -666,6 +666,11 @@ DRRenderer::renderSkyBox()
 	// NOTE: need to bind cube-map to unit at Texture::CUBE_RANGE_START because unit 0 is already occupied by 2D-textures during light-rendering - 
 	// it is not allowed to bind different types of textures to the same unit
 	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", Texture::CUBE_RANGE_START );
+
+	// stencil-test will pass only when a 0 is found in stencil-buffer - mesh-fragments were marked with 1 in geometry-stage
+	glStencilFunc( GL_NOTEQUAL, 0x1, 0x1 );
+	// don't touch the stencil-buffer, keep it for all fail-scenarios the same
+	glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
 
 	// render the geometry
 	SkyBox::getRef().render( *this->m_mainCamera, this->m_cameraBlock, this->m_transformsBlock );
@@ -826,12 +831,10 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		return false;
 	}
 	
-	// blend lighting-results 
+	// blend lighting-results, defaults to GL_FUNC_ADD, exactly what we need
 	glEnable( GL_BLEND );
-	// need additive-blending
-	glBlendEquation( GL_FUNC_ADD );
-	// TODO: do some research why this blending-function actually works (it does!)
-	// TODO: GL_ONE_MINUS_SRC_ALPHA solves the problem with the sky-box but then the skybox is gone
+	// the source (from lighting-shader) is weighted by the alpha-value (constant 1.0 for now)
+	// the destination is weighted by the inverse of the source-color which creates a saturation effect with multiple lights
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
 
 	// disable writing to depth: light-boundaries should not update depth

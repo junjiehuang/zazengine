@@ -8,8 +8,7 @@ layout( location = 0 ) out vec4 out_diffuse;
 
 void main()
 {
-	// sky-box does diffuse-color only
+	// sky-box has diffuse-color only
 	out_diffuse.rgb = texture( SkyBoxCubeMap, ex_texCoord ).rgb;
-	// store 0 as material-type for sky-box
-	out_diffuse.a = 0.0;
+	out_diffuse.a = 1.0;
 }
