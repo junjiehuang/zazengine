@@ -22,6 +22,28 @@ layout( shared ) uniform MaterialUniforms
 	vec4 color;		// base-color of material
 } Material;
 
+// encodes a vec3 direction-vector into its vec2 representation to save one channel in the render-target 
+// will be reconstructed in lighting-stage
+vec2 encodeDirection( vec3 n )
+{
+	// all encodings need normalized normals
+	n = normalize( n );
+
+	/* UNIT-LENGTH ENCODING
+	return n.xy;
+	*/
+
+	/* SPHEREMAP-TRANSFORM ENCODING USED IN CRYENGINE 3.0
+    vec2 enc = normalize( n.xy ) * ( sqrt( -n.z * 0.5 + 0.5 ) );
+    enc = enc * 0.5 + 0.5;
+    return enc;
+	*/
+	
+	// SPHEREMAP-TRANSFORM ENCODING USING LAMBERT AZIMUTHAL EQUAL-AREA PROJECTION
+	float f = sqrt( 8 * n.z + 8 );
+    return n.xy / f + 0.5;
+}
+
 subroutine void storeMaterialProperties();
 
 // LAMBERT & PHONG Material-Types
@@ -33,11 +55,11 @@ subroutine ( storeMaterialProperties ) void classicMaterial()
 	// store base-color of material
 	out_diffuse.rgb = Material.color.rgb;
 
-	out_normal.xyz = ex_normal.xyz;
+	out_normal.rg = encodeDirection( ex_normal.xyz );
 
-	// set alpha component to 0 => RFU
+	// RFU
+	out_normal.b = 0.0;
 	out_normal.a = 0.0;
-	out_tangent.a = 0.0;
 }
 
 // LAMBERT & PHONG Material-Types
@@ -56,15 +78,17 @@ subroutine ( storeMaterialProperties ) void doom3Material()
 
 	// store base-color of material
 	out_diffuse.rgb = texture( DiffuseTexture, ex_texCoord ).rgb;
-	// store normals of normal-map
-	out_normal.rgb = texture( NormalMap, ex_texCoord ).rgb;
-
+	// store normal of normal-map - scaling is done in lighting-shader
+	out_normal.rg = encodeDirection( texture( NormalMap, ex_texCoord).rgb );
+	// fetch specular and store it in alpha-channels of directions
 	vec3 specular = texture( SpecularTexture, ex_texCoord ).rgb;
-
 	// store specular material in the 3 unused alpha-channels
 	out_normal.a = specular.r;
 	out_tangent.a = specular.g;
 	out_biTangent.a = specular.b;
+
+	// RFU
+	out_normal.b = 0.0;
 }
 
 subroutine uniform storeMaterialProperties storeMaterialPropertiesSelection;
@@ -73,8 +97,15 @@ void main()
 {
 	// just write through without any change depending on the material
 	out_position = ex_position;
-	out_tangent = ex_tangent;
-	out_biTangent = ex_biTangent;
+
+	// encode both tangent and bi-tanget to save one channel 
+	// works the same way as normals because tangent&bitangent are directions
+	out_tangent.xy = encodeDirection( ex_tangent.xyz );
+	out_biTangent.xy = encodeDirection( ex_biTangent.xyz );
+
+	// RFU
+	out_tangent.z = 0.0;
+	out_biTangent.z = 0.0;
 
 	// subroutine-call based on the selection from application
 	storeMaterialPropertiesSelection();

@@ -50,8 +50,34 @@ layout( shared ) uniform LightUniforms
 	mat4 modelMatrix;
 	mat4 spaceUniformMatrix;
 } Light;
-	
 ///////////////////////////////////////////////////////////////////////////
+
+// UTILITIES
+// decodes a vec2 direction-vector to its vec3 representation which was encoded in the geometry-stage
+vec3 decodeDirection( vec2 enc )
+{
+	/* UNIT-LENGTH RECONSTRUCTION
+	float z = sqrt( 1.0 - enc.x * enc.x - enc.y * enc.y );
+	return vec3( enc.xy, z );
+	*/
+
+	/* SPHEREMAP TRANSFORM RECONSTRUCTION USED IN CRYENGINE 3.0
+    vec4 nn = vec4( enc, 0.0, 0.0 ) *vec4(2,2,0,0) + vec4(-1,-1,1,-1);
+    float l = dot(nn.xyz,-nn.xyw);
+    nn.z = l;
+    nn.xy *= sqrt(l);
+    return nn.xyz * 2 + vec3(0,0,-1);
+	*/
+
+	// SPHEREMAP-TRANSFORM RECONSTRUCTION USING LAMBERT AZIMUTHAL EQUAL-AREA PROJECTION
+	vec2 fenc = enc * 4 - 2;
+    float f = dot( fenc, fenc );
+    float g = sqrt( 1 - f / 4 );
+    vec3 n;
+    n.xy = fenc * g;
+    n.z = 1 - f / 2;
+    return n;
+}
 
 float shadowLookupProj( vec4 shadowCoord, vec2 offset )
 {
@@ -86,7 +112,9 @@ shadowLookup( vec3 shadowCoord, vec2 offset )
 
 	return texture( ShadowPlanarMap, shadowCoord + vec3( offset.x * 1.0 / Light.shadowResolution.x, offset.y * 1.0 / Light.shadowResolution.y, 0.0 )  );
 }
+///////////////////////////////////////////////////////////////////////////
 
+// Shadow-calculations
 subroutine float shadowFunction( vec4 fragPosViewSpace );
 
 subroutine ( shadowFunction ) float directionalShadow( vec4 fragPosViewSpace )
@@ -210,8 +238,9 @@ subroutine uniform shadowFunction shadowFunctionSelection;
 vec3 calculateLambertianMaterial( vec3 baseColor, vec3 normalViewSpace, vec3 lightDirToFragViewSpace )
 {
 	// need to normalize because for some models the normalization seems to be destroyed (e.g. teapot)
-	// TODO: research why this is so 
-	normalViewSpace = normalize( normalViewSpace );
+	// TODO: research why this is so
+	// NOTE: it seems that due to the encoding/decoding approach there is no more need to normalize because it was already normalized during encoding-phase
+	//normalViewSpace = normalize( normalViewSpace );
 
 	// diffuse (lambert) factor
 	float diffuseFactor = max( 0.0, dot( normalViewSpace.xyz, lightDirToFragViewSpace ) );
@@ -224,7 +253,8 @@ vec3 calculatePhongMaterial( vec3 baseColor, vec3 normalViewSpace, vec3 lightDir
 {
 	// need to normalize because for some models the normalization seems to be destroyed (e.g. teapot)
 	// TODO: research why this is so 
-	normalViewSpace = normalize( normalViewSpace );
+	// NOTE: it seems that due to the encoding/decoding approach there is no more need to normalize because it was already normalized during encoding-phase
+	//normalViewSpace = normalize( normalViewSpace );
 
 	// camera is always at origin 0/0/0 and points into the negative z-achsis so the direction is the negated fragment position in view-space 
 	vec3 eyeDirToFragViewSpace = normalize( -fragPosViewSpace );
@@ -244,6 +274,7 @@ vec3 calculatePhongMaterial( vec3 baseColor, vec3 normalViewSpace, vec3 lightDir
 vec3 calculateDoom3Material( vec3 baseColor, vec4 normalIn, vec3 lightDirToFragViewSpace, vec3 fragPosViewSpace )
 {
 	// NO NEED TO NORMALIZE FOR D3 MODELS
+	// NOTE: it seems that due to the encoding/decoding approach there is no more need to normalize because it was already normalized during encoding-phase
 	// normalIn = normalize( normalIn );
 
 	// fetch the coordinate of this fragment in normalized screen-space 
@@ -263,8 +294,9 @@ vec3 calculateDoom3Material( vec3 baseColor, vec4 normalIn, vec3 lightDirToFragV
 	nLocal = normalize( nLocal );
 
 	// calculate our normal in tangent-space
-	vec3 t = normalize( tangentIn.xyz );
-	vec3 b = normalize( biTangentIn.xyz );
+	// first we need to decode our tangent & bitangent because were stored encoded to a vec2
+	vec3 t = decodeDirection( tangentIn.xy );
+	vec3 b = decodeDirection( biTangentIn.xy );
 	vec3 nTangent = cross( t, b );
 	nTangent = normalize( nTangent );
 
@@ -505,6 +537,9 @@ void main()
 	// position of fragment is stored in model-view coordinates = EyeCoordinates (EC) / View space (VS) / Camera Space
 	// EC/VS/CameraSpace is what we need for lighting-calculations
 	vec4 fragPosViewSpace = texture( PositionMap, screenCoord );
+
+	// reconstruct z of normal
+	normalViewSpace.xyz = decodeDirection( normalViewSpace.xy );
 
 	final_color.xyz = lightingFunctionSelection( baseColor, fragPosViewSpace, normalViewSpace );
 	final_color.a = 1.0;

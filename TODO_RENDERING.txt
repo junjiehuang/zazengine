@@ -1,10 +1,6 @@
-Fix bugs
-	-> reconstruct z of normals, tangents and bi-tangents in lighting shader
-		-> http://aras-p.info/texts/CompactNormalStorage.html
+Research & Refactoring
 	-> reconstruct ec-position from depth
-
 	-> update blog
-
 	-> get rid of 2nd fbo
 
 Console
