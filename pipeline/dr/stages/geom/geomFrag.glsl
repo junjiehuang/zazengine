@@ -77,8 +77,14 @@ subroutine ( storeMaterialProperties ) void doom3Material()
 
 	// store base-color of material
 	out_diffuse.rgb = texture( DiffuseTexture, ex_texCoord ).rgb;
-	// store normal of normal-map - scaling is done in lighting-shader
-	out_normal.rg = encodeDirection( texture( NormalMap, ex_texCoord).rgb );
+
+	// doom3 pulls its normals from normal-maps
+	vec3 normal = texture( NormalMap, ex_texCoord).rgb;
+	// need to scale light into range -1.0 to +1.0 because was stored in normal-map and does not come from geometry
+	normal = 2.0 * normal.xyz - 1.0;
+	// encode normal
+	out_normal.rg = encodeDirection( normal );
+
 	// fetch specular and store it in alpha-channels of directions
 	vec3 specular = texture( SpecularTexture, ex_texCoord ).rgb;
 	// store specular material in the 3 unused alpha-channels

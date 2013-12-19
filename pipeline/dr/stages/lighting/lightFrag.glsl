@@ -11,7 +11,6 @@ uniform samplerCube ShadowCubeMap;
 
 layout( location = 0 ) out vec4 final_color;
 
-in vec3 ex_eye_dir_clip;
 in vec2 ex_screen_coord;
 
 // TODO: make configurable/light
@@ -64,16 +63,13 @@ vec3 calcEyeFromDepth( float depth )
 	vec2 ndc;      
 	vec3 eye;
  
-	eye.z = Camera.nearFar.x * Camera.nearFar.y / ( ( depth * ( Camera.nearFar.y - Camera.nearFar.x ) ) - Camera.nearFar.y );
- 
+	// TODO: move into vertex-shader
 	ndc.x = ( ( gl_FragCoord.x * ( 1 / Camera.window.x ) ) - 0.5 ) * 2.0;
 	ndc.y = ( ( gl_FragCoord.y * ( 1 / Camera.window.y ) ) - 0.5 ) * 2.0;
 
-	eye.x = ( ( -ndc.x * eye.z ) * ( Camera.frustum.x + Camera.frustum.x ) / ( 2 * Camera.nearFar.x ) 
-		- eye.z * ( Camera.frustum.x - Camera.frustum.x ) / ( 2 * Camera.nearFar.x ) );
-
-	eye.y = ( ( -ndc.y * eye.z ) * ( Camera.frustum.y + Camera.frustum.y ) / ( 2 * Camera.nearFar.x ) 
-		- eye.z * ( Camera.frustum.y - Camera.frustum.y ) / ( 2 * Camera.nearFar.x ) );
+	eye.z = Camera.nearFar.x * Camera.nearFar.y / ( ( depth * ( Camera.nearFar.y - Camera.nearFar.x ) ) - Camera.nearFar.y );
+ 	eye.x = ( -ndc.x * eye.z ) * ( Camera.frustum.x / Camera.nearFar.x );
+	eye.y = ( -ndc.y * eye.z ) * ( Camera.frustum.y / Camera.nearFar.x );
  
 	return eye;
 }
@@ -298,10 +294,6 @@ vec3 calculatePhongMaterial( vec3 baseColor, vec3 normalViewSpace, vec3 lightDir
 
 vec3 calculateDoom3Material( vec3 baseColor, vec4 normalIn, vec3 lightDirToFragViewSpace, vec3 fragPosViewSpace )
 {
-	// NO NEED TO NORMALIZE FOR D3 MODELS
-	// NOTE: it seems that due to the encoding/decoding approach there is no more need to normalize because it was already normalized during encoding-phase
-	// normalIn = normalize( normalIn );
-
 	vec4 tangentIn = texture( TangentMap, ex_screen_coord );
 	vec4 biTangentIn = texture( BiTangentMap, ex_screen_coord );
 	vec3 specularMaterial = vec3( normalIn.a, tangentIn.a, biTangentIn.a );
@@ -310,17 +302,15 @@ vec3 calculateDoom3Material( vec3 baseColor, vec4 normalIn, vec3 lightDirToFragV
 	vec3 eyeDirToFragViewSpace = normalize( -fragPosViewSpace );
 	vec3 halfVectorViewSpace = normalize( lightDirToFragViewSpace + eyeDirToFragViewSpace );
 
-	// need to scale light into range -1.0 to +1.0 because was stored in normal-map and does not come from geometry
 	// NOTE: this is the normal in local-space, normal-mapping is done in local-space/tangent-space
-	vec3 nLocal = 2.0 * normalIn.xyz - 1.0;
-	nLocal = normalize( nLocal );
+	vec3 nLocal = normalIn.xyz;
 
 	// calculate our normal in tangent-space
 	// first we need to decode our tangent & bitangent because were stored encoded to a vec2
 	vec3 t = decodeDirection( tangentIn.xy );
 	vec3 b = decodeDirection( biTangentIn.xy );
 	vec3 nTangent = cross( t, b );
-	nTangent = normalize( nTangent );
+	nTangent = nTangent;
 
 	// transform into tangent-space
 	// TODO answer and research questions
@@ -361,6 +351,28 @@ vec3 calculateDoom3Material( vec3 baseColor, vec4 normalIn, vec3 lightDirToFragV
 	return finalColor;
 }
 
+vec3 calculateMaterialAlbedo( vec4 baseColor, vec3 lightDirectionViewSpace, vec4 normalViewSpace, vec4 fragPosViewSpace )
+{
+	// lambert-material
+	if ( 1.0 == baseColor.a )
+	{
+		return calculateLambertianMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirectionViewSpace );
+	}
+	// phong-material
+	else if ( 2.0 == baseColor.a )
+	{
+		return calculatePhongMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirectionViewSpace, fragPosViewSpace.xyz );
+	}
+	// doom3-material
+	else if ( 3.0 == baseColor.a )
+	{
+		return calculateDoom3Material( baseColor.rgb, normalViewSpace, lightDirectionViewSpace, fragPosViewSpace.xyz );
+	}
+	
+	// unknown material, just pass through base-color
+	return baseColor.rgb;
+}
+
 ///////////////////////////////////////////////////////////////////////////
 // lighting-functions for all three light-types (directional, spot, point)
 subroutine vec3 lightingFunction( vec4 baseColor, vec4 fragPosViewSpace, vec4 normalViewSpace );
@@ -381,29 +393,8 @@ subroutine ( lightingFunction ) vec3 directionalLight( vec4 baseColor, vec4 frag
 	// OPTIMIZE: premultiply on CPU and pass in through Light.modelViewMatrix
 	mat4 lightMVMatrix = Camera.viewMatrix * Light.modelMatrix;
 	vec3 lightDirectionViewSpace = lightMVMatrix[ 2 ].xyz;
-
-	vec3 materialAlbedo;
-
-	// lambert-material
-	if ( 1.0 == baseColor.a )
-	{
-		materialAlbedo = calculateLambertianMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirectionViewSpace );
-	}
-	// phong-material
-	else if ( 2.0 == baseColor.a )
-	{
-		materialAlbedo = calculatePhongMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirectionViewSpace, fragPosViewSpace.xyz );
-	}
-	// doom3-material
-	else if ( 3.0 == baseColor.a )
-	{
-		materialAlbedo = calculateDoom3Material( baseColor.rgb, normalViewSpace, lightDirectionViewSpace, fragPosViewSpace.xyz );
-	}
-	// unknown material, just pass through base-color
-	else
-	{
-		materialAlbedo = baseColor.rgb;
-	}
+	
+	vec3 materialAlbedo = calculateMaterialAlbedo( baseColor, lightDirectionViewSpace, normalViewSpace, fragPosViewSpace );
 
 	// apply shadow-filtering: shadow is in the range of 0.0 and 1.0
 	// 0.0 applies to 'totally shadowed'
@@ -454,28 +445,7 @@ subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec4 fragPosView
 		attenuation *= pow( spotCos, 7.0 );
 	}
 
-	vec3 materialAlbedo;
-
-	// lambert-material
-	if ( 1.0 == baseColor.a )
-	{
-		materialAlbedo = calculateLambertianMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirToFragViewSpace );
-	}
-	// phong-material
-	else if ( 2.0 == baseColor.a )
-	{
-		materialAlbedo = calculatePhongMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirToFragViewSpace, fragPosViewSpace.xyz );
-	}
-	// doom3-material
-	else if ( 3.0 == baseColor.a )
-	{
-		materialAlbedo = calculateDoom3Material( baseColor.rgb, normalViewSpace, lightDirToFragViewSpace, fragPosViewSpace.xyz );
-	}
-	// unknown material, just pass through base-color
-	else
-	{
-		materialAlbedo = baseColor.rgb;
-	}
+	vec3 materialAlbedo = calculateMaterialAlbedo( baseColor, lightDirToFragViewSpace, normalViewSpace, fragPosViewSpace );
 
 	materialAlbedo *= attenuation; // apply spot-light's attenuation
 
@@ -514,28 +484,7 @@ subroutine ( lightingFunction ) vec3 pointLight( vec4 baseColor, vec4 fragPosVie
 		Light.attenuation.y * lightDistanceViewSpace +		// linear attenuation
 		Light.attenuation.z * lightDistanceViewSpace * lightDistanceViewSpace );	// quadratic attenuation
 
-	vec3 materialAlbedo;
-
-	// lambert-material
-	if ( 1.0 == baseColor.a )
-	{
-		materialAlbedo = calculateLambertianMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirToFragViewSpace );
-	}
-	// phong-material
-	else if ( 2.0 == baseColor.a )
-	{
-		materialAlbedo = calculatePhongMaterial( baseColor.rgb, normalViewSpace.xyz, lightDirToFragViewSpace, fragPosViewSpace.xyz );
-	}
-	// doom3-material
-	else if ( 3.0 == baseColor.a )
-	{
-		materialAlbedo = calculateDoom3Material( baseColor.rgb, normalViewSpace, lightDirToFragViewSpace, fragPosViewSpace.xyz );
-	}
-	// unknown material, just pass through base-color
-	else
-	{
-		materialAlbedo = baseColor.rgb;
-	}
+	vec3 materialAlbedo = calculateMaterialAlbedo( baseColor, lightDirToFragViewSpace, normalViewSpace, fragPosViewSpace );
 
 	materialAlbedo *= attenuation; // apply point-light's attenuation
 

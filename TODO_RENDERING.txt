@@ -1,13 +1,20 @@
 Research & Refactoring
 	-> refactoring of shaders
-		-> remove clip-eye dir in light-frag
 		-> move reconstruction-code of frag-coord to NDC into light-frag?
 		-> mark regions with ///////////////////
 		-> define naming-convention for in/out - variables
 	
 	-> mrt color-targets 32f too high precision, 16F should be enough?
-	-> shadow map sampling: cube-map artifacts?
 	-> copy of depth in post-processing leads to shadow artifacts
+
+	-> shadow map sampling: cube-map artifacts?
+
+	-> math
+		-> normal mapping
+		-> reconstructing eye coord
+		-> encoding/decoding normals
+
+	-> get rid of tangent & bi-tangent?
 
 	-> update blog
 		-> http://aras-p.info/texts/CompactNormalStorage.html

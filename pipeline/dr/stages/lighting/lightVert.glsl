@@ -3,8 +3,6 @@
 // light-boundary has only vertex-positions
 layout( location = 0 ) in vec3 in_vertPos;
 
-// the eye-coordinate in clip-space from the origin
-out vec3 ex_eye_dir_clip;
 // the screen-coordinate interpolated for each fragment
 // is used to do the texture-fetches of the MRTs
 out vec2 ex_screen_coord;
@@ -26,6 +24,4 @@ void main()
 
 	// need to transform from clip-space which is in range [-1.0 1.0] to texture-space [0.0 to 1.0]
 	ex_screen_coord = ( clipPos.xy + 1.0 ) * 0.5;
-	// 
-	ex_eye_dir_clip = vec3( clipPos.xy, -1 );
 }
