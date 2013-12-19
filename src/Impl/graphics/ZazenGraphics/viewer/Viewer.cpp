@@ -18,6 +18,9 @@ Viewer::Viewer( int width, int height )
 	this->m_nearDist = 0.1f;
 	this->m_farDist = 1000.0f;
 
+	this->m_rightFrustum = 0.0;
+	this->m_topFrustum = 0.0;
+
 	this->m_fov = 90.0f;
 }
 
@@ -64,12 +67,21 @@ Viewer::createOrthoProj( bool centered, bool normalizeZ ) const
 		zFar = 1.0;
 	}
 
+	// TODO: need to set m_topFrustum and m_rightFrustum
+
 	return glm::ortho( left, right, bottom, top, zNear, zFar );
 }
 
 void
 Viewer::setupPerspective()
 {
+	float aspect = ( float ) this->m_width / ( float ) this->m_height;
+	float const rad = glm::radians( this->m_fov );
+	float tanHalfFovy = tan( rad / 2.0f );
+	
+	this->m_topFrustum = this->m_nearDist * tanHalfFovy;
+	this->m_rightFrustum = this->m_topFrustum * aspect;
+
 	this->m_projectionMatrix = this->createPerspProj();
 }
 

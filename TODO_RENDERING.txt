@@ -1,6 +1,18 @@
 Research & Refactoring
-	-> reconstruct ec-position from depth
+	-> refactoring of shaders
+		-> remove clip-eye dir in light-frag
+		-> move reconstruction-code of frag-coord to NDC into light-frag?
+		-> mark regions with ///////////////////
+		-> define naming-convention for in/out - variables
+	
+	-> mrt color-targets 32f too high precision, 16F should be enough?
+	-> shadow map sampling: cube-map artifacts?
+	-> copy of depth in post-processing leads to shadow artifacts
+
 	-> update blog
+		-> http://aras-p.info/texts/CompactNormalStorage.html
+		-> https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
+
 	-> get rid of 2nd fbo
 
 Console
@@ -169,37 +181,6 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 	-> use copies of uniform buffers e.g. for each light a buffer
 		-> this reduces the update just to binding the buffer ot the shader and not uploading values to fields every frame
 		-> No more bindbufferbase of uniformblocks in renderer - do it after programs are linked in uniformmanagement
-	-> Calculate position in Fragment-Shader
-		-> http://www.opengl.org/wiki/Compute_eye_space_from_window_space
-		-> use screen-coordinates & depth instead of spending a whole buffer on it
-		-> compare Performance!!
-		From Object-Coordinates to Viewport-Coordinates
-		1. Input of object coordinates  aka object-space
-				modeling transform
-		2. world-coordinates aka world-space
-				viewing transform
-		3. view-coordinates ( aka eye-coordinates or eye-space)
-				projection transform
-		4. clip-coordinates ( aka clip-space ): all in range of -/+ clip-volume
-				perspective division
-		5. normaliced device coordinates ( NDC ): all in range from -1 to +1 (center is 0/0/0 )
-				view-port transform
-		6. viewport coordinates: all in range from 0/0 to resolutionX/resolutionY of viewport
-		7. fragment-shader operates on viewport coordinates
-		From Viewport- to View-Space Coordinates
-		1. Input of Viewport-Coordinates AND depth in NDC-space for each fragment
-				transform x & y to NDC: 
-					- divide by resolutionX/resolutionY => range from 0 to 1
-					- transform x by: x * 2 - 1 => in range from -1 to 1
-					- transform y by: ( 1 - y ) * 2 - 1 => in range from -1 to 1: need to take care of the origin! it makes a difference wheter its in the left UPPER or left LOWER corner
-		2. NDC
-				add depth to x & y-vector because now all in same space
-		3. clip-coordinates
-				apply inverse projection transformation to position
-				divide by w to transform back to homogenous coordinates
-				( in perspective projection the perspective division by w is done => the inverse would be multiplication 
-					but we apply the inverse projection transform => need again to divide )
-		4. view-coordinates
 	-> Lighting
 		-> use stencil buffer to reduce lighting to geometry only
 			-> use only for point- & spotlight because directional light will affect sky-box and ambient too

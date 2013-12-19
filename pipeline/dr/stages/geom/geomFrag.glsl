@@ -12,9 +12,8 @@ uniform sampler2D NormalMap;
 
 layout( location = 0 ) out vec4 out_diffuse;
 layout( location = 1 ) out vec4 out_normal;
-layout( location = 2 ) out vec4 out_position;
-layout( location = 3 ) out vec4 out_tangent;
-layout( location = 4 ) out vec4 out_biTangent;
+layout( location = 2 ) out vec4 out_tangent;
+layout( location = 3 ) out vec4 out_biTangent;
 
 layout( shared ) uniform MaterialUniforms
 {
@@ -95,10 +94,7 @@ subroutine uniform storeMaterialProperties storeMaterialPropertiesSelection;
 
 void main()
 {
-	// just write through without any change depending on the material
-	out_position = ex_position;
-
-	// encode both tangent and bi-tanget to save one channel 
+	// encode both tangent and bi-tanget to save one channel each
 	// works the same way as normals because tangent&bitangent are directions
 	out_tangent.xy = encodeDirection( ex_tangent.xyz );
 	out_biTangent.xy = encodeDirection( ex_biTangent.xyz );

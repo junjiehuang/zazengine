@@ -2,14 +2,17 @@
 
 uniform sampler2D DiffuseMap;
 uniform sampler2D NormalMap;
-uniform sampler2D PositionMap;
 uniform sampler2D TangentMap;
 uniform sampler2D BiTangentMap;
+uniform sampler2D DepthMap;
 
 uniform sampler2DShadow ShadowPlanarMap;
 uniform samplerCube ShadowCubeMap;
 
 layout( location = 0 ) out vec4 final_color;
+
+in vec3 ex_eye_dir_clip;
+in vec2 ex_screen_coord;
 
 // TODO: make configurable/light
 const float shadow_bias = 0.005;
@@ -22,6 +25,8 @@ layout( shared ) uniform CameraUniforms
 	vec2 window;	
 	// the near- (x) and far-plane distances (y)
 	vec2 nearFar;
+	// the symetric frustum: right (left=-right) and top (bottom=-top)
+	vec2 frustum;
 
 	// the model-matrix of the camera (orienation within world-space)
 	mat4 modelMatrix;
@@ -53,6 +58,26 @@ layout( shared ) uniform LightUniforms
 ///////////////////////////////////////////////////////////////////////////
 
 // UTILITIES
+// calculates the eye-coordinate of the fragment from depth
+vec3 calcEyeFromDepth( float depth )
+{
+	vec2 ndc;      
+	vec3 eye;
+ 
+	eye.z = Camera.nearFar.x * Camera.nearFar.y / ( ( depth * ( Camera.nearFar.y - Camera.nearFar.x ) ) - Camera.nearFar.y );
+ 
+	ndc.x = ( ( gl_FragCoord.x * ( 1 / Camera.window.x ) ) - 0.5 ) * 2.0;
+	ndc.y = ( ( gl_FragCoord.y * ( 1 / Camera.window.y ) ) - 0.5 ) * 2.0;
+
+	eye.x = ( ( -ndc.x * eye.z ) * ( Camera.frustum.x + Camera.frustum.x ) / ( 2 * Camera.nearFar.x ) 
+		- eye.z * ( Camera.frustum.x - Camera.frustum.x ) / ( 2 * Camera.nearFar.x ) );
+
+	eye.y = ( ( -ndc.y * eye.z ) * ( Camera.frustum.y + Camera.frustum.y ) / ( 2 * Camera.nearFar.x ) 
+		- eye.z * ( Camera.frustum.y - Camera.frustum.y ) / ( 2 * Camera.nearFar.x ) );
+ 
+	return eye;
+}
+
 // decodes a vec2 direction-vector to its vec3 representation which was encoded in the geometry-stage
 vec3 decodeDirection( vec2 enc )
 {
@@ -277,11 +302,8 @@ vec3 calculateDoom3Material( vec3 baseColor, vec4 normalIn, vec3 lightDirToFragV
 	// NOTE: it seems that due to the encoding/decoding approach there is no more need to normalize because it was already normalized during encoding-phase
 	// normalIn = normalize( normalIn );
 
-	// fetch the coordinate of this fragment in normalized screen-space 
-	vec2 screenCoord = vec2( gl_FragCoord.x / Camera.window.x, gl_FragCoord.y / Camera.window.y );
-
-	vec4 tangentIn = texture( TangentMap, screenCoord );
-	vec4 biTangentIn = texture( BiTangentMap, screenCoord );
+	vec4 tangentIn = texture( TangentMap, ex_screen_coord );
+	vec4 biTangentIn = texture( BiTangentMap, ex_screen_coord );
 	vec3 specularMaterial = vec3( normalIn.a, tangentIn.a, biTangentIn.a );
 
 	// camera is always at origin 0/0/0 and points into the negative z-achsis so the direction is the negated fragment position in view-space 
@@ -529,18 +551,17 @@ subroutine ( lightingFunction ) vec3 pointLight( vec4 baseColor, vec4 fragPosVie
 
 void main()
 {
-	// fetch the coordinate of this fragment in normalized screen-space 
-	vec2 screenCoord = vec2( gl_FragCoord.x / Camera.window.x, gl_FragCoord.y / Camera.window.y );
+	float depth = texture( DepthMap, ex_screen_coord );
+	vec4 baseColor = texture( DiffuseMap, ex_screen_coord );
+	vec4 normalViewSpace = texture( NormalMap, ex_screen_coord );
 
-	vec4 baseColor = texture( DiffuseMap, screenCoord );
-	vec4 normalViewSpace = texture( NormalMap, screenCoord );
-	// position of fragment is stored in model-view coordinates = EyeCoordinates (EC) / View space (VS) / Camera Space
-	// EC/VS/CameraSpace is what we need for lighting-calculations
-	vec4 fragPosViewSpace = texture( PositionMap, screenCoord );
-
+	// reconstruct eye-position (fragments-position in view-space) from depth
+	vec3 fragPosViewSpace = calcEyeFromDepth( depth );
 	// reconstruct z of normal
 	normalViewSpace.xyz = decodeDirection( normalViewSpace.xy );
 
-	final_color.xyz = lightingFunctionSelection( baseColor, fragPosViewSpace, normalViewSpace );
+	// TODO: clean-up the vector-layouts!
+
+	final_color.xyz = lightingFunctionSelection( baseColor, vec4( fragPosViewSpace, 1.0 ), normalViewSpace );
 	final_color.a = 1.0;
 }

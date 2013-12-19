@@ -17,6 +17,8 @@ layout( shared ) uniform CameraUniforms
 	vec2 window;	
 	// the near- (x) and far-plane distances (y)
 	vec2 nearFar;
+	// the symetric frustum: right (left=-right) and top (bottom=-top)
+	vec2 frustum;
 
 	// the model-matrix of the camera (orienation within world-space)
 	mat4 modelMatrix;

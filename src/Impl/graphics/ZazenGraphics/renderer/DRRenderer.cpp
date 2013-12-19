@@ -171,31 +171,25 @@ DRRenderer::initGBuffer()
 		return false;
 	}
 
-	// render-target at index 2: positions in viewing-coords (Eye-Space)
+	// render-target at index 2: tangents
 	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )		
 	{
 		return false;
 	}
 
-	// render-target at index 3: tangents
+	// render-target at index 3: bi-tangents
 	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )		
 	{
 		return false;
 	}
 
-	// render-target at index 4: bi-tangents
+	// render-target at index 4: intermediate lighting-result
 	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )		
 	{
 		return false;
 	}
 
-	// render-target at index 5: intermediate lighting-result
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )		
-	{
-		return false;
-	}
-
-	// render-target at index 6: depth-stencil-buffer
+	// render-target at index 5: depth-stencil-buffer
 	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH_STENCIL, this->m_fbo ) )		
 	{
 		return false;
@@ -484,9 +478,16 @@ DRRenderer::initializeStaticData()
 	this->m_gBufferDrawBufferIndices.clear();
 	this->m_gBufferDrawBufferIndices.push_back( 0 );	// diffuse
 	this->m_gBufferDrawBufferIndices.push_back( 1 );	// normal
-	this->m_gBufferDrawBufferIndices.push_back( 2 );	// position
-	this->m_gBufferDrawBufferIndices.push_back( 3 );	// tangents
-	this->m_gBufferDrawBufferIndices.push_back( 4 );	// bi-tangents
+	this->m_gBufferDrawBufferIndices.push_back( 2 );	// tangents
+	this->m_gBufferDrawBufferIndices.push_back( 3 );	// bi-tangents
+
+	this->m_gBufferBindTargetIndices.clear();
+	this->m_gBufferBindTargetIndices.push_back( 0 );	// diffuse
+	this->m_gBufferBindTargetIndices.push_back( 1 );	// normal
+	this->m_gBufferBindTargetIndices.push_back( 2 );	// tangents
+	this->m_gBufferBindTargetIndices.push_back( 3 );	// bi-tangents
+	this->m_gBufferBindTargetIndices.push_back( 5 );	// depth-map
+
 }
 
 bool
@@ -646,8 +647,8 @@ DRRenderer::renderSkyBox()
 		return true;
 	}
 
-	// render to target 5 which gathers the final result before post-processing
-	if ( false == this->m_fbo->drawBuffer( 5 ) )
+	// render to target 4 which gathers the final result before post-processing
+	if ( false == this->m_fbo->drawBuffer( 4 ) )
 	{
 		return false;
 	}
@@ -719,8 +720,8 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		}
 	}
 	
-	// enable rendering to 5th target
-	if ( false == this->m_fbo->drawBuffer( 5 ) )
+	// render to target 4 which gathers the final result before post-processing
+	if ( false == this->m_fbo->drawBuffer( 4 ) )
 	{
 		return false;
 	}
@@ -741,7 +742,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 
 	// OPTIMIZE: no need to do for every light!
 	// lighting stage program need all buffers of g-buffer bound as textures
-	if ( false == this->m_fbo->bindTargets( this->m_gBufferDrawBufferIndices ) )
+	if ( false == this->m_fbo->bindTargets( this->m_gBufferBindTargetIndices ) )
 	{
 		return false;
 	}
@@ -750,12 +751,12 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	this->m_progLightingStage->setUniformInt( "DiffuseMap", 0 );
 	// tell lighting program that normalmap is bound to texture-unit 1
 	this->m_progLightingStage->setUniformInt( "NormalMap", 1 );
-	// tell lighting program that generic map is bound to texture-unit 2
-	this->m_progLightingStage->setUniformInt( "PositionMap", 2 );
-	// tell lighting program that tangents-map of scene is bound to texture-unit 3 
-	this->m_progLightingStage->setUniformInt( "TangentMap", 3 );
-	// tell lighting program that bi-tangents-map of scene is bound to texture-unit 4 
-	this->m_progLightingStage->setUniformInt( "BiTangentMap", 4 );
+	// tell lighting program that tangents-map of scene is bound to texture-unit 2
+	this->m_progLightingStage->setUniformInt( "TangentMap", 2 );
+	// tell lighting program that bi-tangents-map of scene is bound to texture-unit 3 
+	this->m_progLightingStage->setUniformInt( "BiTangentMap", 3 );
+	// tell lighting program that depth-map of scene is bound to texture-unit 4 
+	this->m_progLightingStage->setUniformInt( "DepthMap", 4 );
 
 	// activate the corresponding subroutines for the light-type
 	if ( Light::LightType::DIRECTIONAL == light->getType() )
@@ -1058,14 +1059,14 @@ DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 	// when no transparent entities are present, just blit the final gathering to the system framebuffer
 	if ( 0 == this->m_transparentEntities.size() )
 	{
-		// final light-gather is accumulated in render-target with index 5
-		this->m_fbo->blitToSystemFB( 5 );
+		// final light-gather is accumulated in render-target with index 4
+		this->m_fbo->blitToSystemFB( 4 );
 	}
 	// if transparent entities present, ping-pong render them
 	else
 	{
 		unsigned int combinationTarget = 1;
-		unsigned int backgroundIndex = 5;
+		unsigned int backgroundIndex = 4;
 
 		for ( unsigned int i = 0; i < this->m_transparentEntities.size(); i++ )
 		{
@@ -1355,12 +1356,16 @@ DRRenderer::updateCameraBlock( Viewer* viewer )
 {
 	glm::vec2 cameraRectangle;
 	glm::vec2 cameraNearFar;
-	
+	glm::vec2 cameraFrustum;
+
 	cameraRectangle[ 0 ] = ( float ) viewer->getWidth();
 	cameraRectangle[ 1 ] = ( float ) viewer->getHeight();
 
 	cameraNearFar[ 0 ] = viewer->getNear();
 	cameraNearFar[ 1 ] = viewer->getFar();
+
+	cameraFrustum[ 0 ] = viewer->getRightFrustum();
+	cameraFrustum[ 1 ] = viewer->getTopFrustum();
 
 	// bind camera uniform-block to update data
 	if ( false == this->m_cameraBlock->bindBuffer() )
@@ -1372,6 +1377,8 @@ DRRenderer::updateCameraBlock( Viewer* viewer )
 	this->m_cameraBlock->updateField( "CameraUniforms.window", cameraRectangle );
 	// upload cameras near and far distances
 	this->m_cameraBlock->updateField( "CameraUniforms.nearFar", cameraNearFar );
+	// upload cameras right and top frustum (symetric!)
+	this->m_cameraBlock->updateField( "CameraUniforms.frustum", cameraFrustum );
 
 	// upload world-orientation of camera ( its model-matrix )
 	this->m_cameraBlock->updateField( "CameraUniforms.modelMatrix", viewer->getModelMatrix() );

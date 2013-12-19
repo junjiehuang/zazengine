@@ -67,8 +67,10 @@ class DRRenderer
 		glm::mat4 m_unitCubeMatrix;
 		// view-matrices for cube-map rendering 
 		std::vector<glm::mat4> m_cubeViewDirections;
-		// the indices of the g-buffer targets
+		// the indices of the g-buffer targets for drawing to during geometry-stage
 		std::vector<unsigned int> m_gBufferDrawBufferIndices;
+		// the indices of the g-buffer targets to be bound during lighting-stage
+		std::vector<unsigned int> m_gBufferBindTargetIndices;
 		////////////////////////////////////////
 
 		Viewer* m_mainCamera;

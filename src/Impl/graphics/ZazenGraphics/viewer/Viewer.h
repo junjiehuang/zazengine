@@ -38,14 +38,17 @@ class Viewer : public Orientation
 		int getWidth() const { return this->m_width; };
 
 		void setFov( float fov ) { this->m_fov = fov; };
-		float getFov() { return this->m_fov; };
+		float getFov() const { return this->m_fov; };
 
 		void setNear( float nearDist ) { this->m_nearDist = nearDist; };
-		float getNear() { return this->m_nearDist; };
+		float getNear() const { return this->m_nearDist; };
 
 		void setFar( float farDist ) { this->m_farDist = farDist; };
-		float getFar() { return this->m_farDist; };
+		float getFar() const { return this->m_farDist; };
 	
+		float getRightFrustum() const { return this->m_rightFrustum; };
+		float getTopFrustum() const { return this->m_topFrustum; };
+
 		void resize( int, int );
 
 		glm::mat4 createPerspProj() const;
@@ -70,6 +73,9 @@ class Viewer : public Orientation
 		float m_nearDist;
 		float m_farDist;
 	
+		float m_rightFrustum;
+		float m_topFrustum;
+
 		glm::mat4 m_modelMatrix;
 		glm::mat4 m_viewMatrix;
 		glm::mat4 m_projectionMatrix;
