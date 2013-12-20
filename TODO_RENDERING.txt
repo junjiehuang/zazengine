@@ -1,26 +1,36 @@
 Research & Refactoring
-	-> refactoring of shaders
-		-> move reconstruction-code of frag-coord to NDC into light-frag?
-		-> mark regions with ///////////////////
-		-> define naming-convention for in/out - variables
-	
-	-> mrt color-targets 32f too high precision, 16F should be enough?
-	-> copy of depth in post-processing leads to shadow artifacts
+	-> refactor light-shader
+		-> point- & spot-light do nearly the same work
+		-> function-parameteres different
+		-> check if specular terms really necessary for all 3 channels or if only one is enough
 
-	-> shadow map sampling: cube-map artifacts?
-
-	-> math
+	-> understand math behind
 		-> normal mapping
 		-> reconstructing eye coord
 		-> encoding/decoding normals
-
+	
 	-> get rid of tangent & bi-tangent?
+		-> from tangent-space to world-space
+		-> http://beyond3d.com/showthread.php?t=56393
+		-> http://www.gamedev.net/topic/415263-convert-normal-from-tangent-to-world-space/
+		-> http://www.gamasutra.com/view/feature/2361/let_there_be_light_a_unified_.php
+		-> http://www.spuify.co.uk/?cat=11
+
+	-> introduce Subsurface scattering material
 
 	-> update blog
+		-> describe materials of renderer
+		-> describe methods to encode directions
 		-> http://aras-p.info/texts/CompactNormalStorage.html
 		-> https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
 
-	-> get rid of 2nd fbo
+	-> shadow map sampling: cube-map artifacts?
+	-> articfacts in shadow during transparency rendering?
+
+	-> split into frontend & backend
+		-> issue commands: static objects, no new -> stateless
+		-> issuing commands is api independent but api must have a corresponding functionality
+
 
 Console
 	-> implement console for input of text and commands
@@ -28,11 +38,12 @@ Console
 Menu-selection
 	-> implement menu
 
-Explore Bindless G-Buffer
+Explore Bindless G-Buffer also called layered rendering
 	-> more cleaner solution
 	-> can be extended more easily
 	-> faster
 	-> order indipendent transparency (OIT) in deferred rendering!!!
+	-> http://openglinsights.com/bendingthepipeline.html#EfficientLayeredFragmentBufferTechniques
 
 Materials after new g-buffer rendering-system
 	-> microfacet

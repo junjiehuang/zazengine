@@ -11,7 +11,10 @@ uniform samplerCube ShadowCubeMap;
 
 layout( location = 0 ) out vec4 final_color;
 
-in vec2 ex_screen_coord;
+// the screen-coordinate interpolated for each fragment - is used to do the texture-fetches of the MRTs
+in vec2 ex_screen_texture_coord;
+// the normalized-device-coordinates
+in vec3 ex_ndc;
 
 // TODO: make configurable/light
 const float shadow_bias = 0.005;
@@ -58,45 +61,29 @@ layout( shared ) uniform LightUniforms
 
 // UTILITIES
 // calculates the eye-coordinate of the fragment from depth
+// THIS WORKS FOR SYMETRIC FRUSTUMS ONLY ( e.g. created by gluPerspective or glm::createPerspective )
 vec3 calcEyeFromDepth( float depth )
 {
-	vec2 ndc;      
 	vec3 eye;
- 
-	// TODO: move into vertex-shader
-	ndc.x = ( ( gl_FragCoord.x * ( 1 / Camera.window.x ) ) - 0.5 ) * 2.0;
-	ndc.y = ( ( gl_FragCoord.y * ( 1 / Camera.window.y ) ) - 0.5 ) * 2.0;
 
+	// TODO: research what is going on here
 	eye.z = Camera.nearFar.x * Camera.nearFar.y / ( ( depth * ( Camera.nearFar.y - Camera.nearFar.x ) ) - Camera.nearFar.y );
- 	eye.x = ( -ndc.x * eye.z ) * ( Camera.frustum.x / Camera.nearFar.x );
-	eye.y = ( -ndc.y * eye.z ) * ( Camera.frustum.y / Camera.nearFar.x );
+ 	eye.x = ( -ex_ndc.x * eye.z ) * ( Camera.frustum.x / Camera.nearFar.x );
+	eye.y = ( -ex_ndc.y * eye.z ) * ( Camera.frustum.y / Camera.nearFar.x );
  
 	return eye;
 }
 
 // decodes a vec2 direction-vector to its vec3 representation which was encoded in the geometry-stage
-vec3 decodeDirection( vec2 enc )
+vec3 decodeDirection( vec2 dir )
 {
-	/* UNIT-LENGTH RECONSTRUCTION
-	float z = sqrt( 1.0 - enc.x * enc.x - enc.y * enc.y );
-	return vec3( enc.xy, z );
-	*/
-
-	/* SPHEREMAP TRANSFORM RECONSTRUCTION USED IN CRYENGINE 3.0
-    vec4 nn = vec4( enc, 0.0, 0.0 ) *vec4(2,2,0,0) + vec4(-1,-1,1,-1);
-    float l = dot(nn.xyz,-nn.xyw);
-    nn.z = l;
-    nn.xy *= sqrt(l);
-    return nn.xyz * 2 + vec3(0,0,-1);
-	*/
-
-	// SPHEREMAP-TRANSFORM RECONSTRUCTION USING LAMBERT AZIMUTHAL EQUAL-AREA PROJECTION
-	vec2 fenc = enc * 4 - 2;
+	/* SPHEREMAP-TRANSFORM RECONSTRUCTION USING LAMBERT AZIMUTHAL EQUAL-AREA PROJECTION */
+	vec2 fenc = dir * 4 - 2;
     float f = dot( fenc, fenc );
-    float g = sqrt( 1 - f / 4 );
+    float g = sqrt( 1 - f * 0.25 ); // 0.25 can be represented exactly in binary system
     vec3 n;
     n.xy = fenc * g;
-    n.z = 1 - f / 2;
+    n.z = 1 - f * 0.5; // 0.5 can be represented exactly in binary system
     return n;
 }
 
@@ -294,8 +281,8 @@ vec3 calculatePhongMaterial( vec3 baseColor, vec3 normalViewSpace, vec3 lightDir
 
 vec3 calculateDoom3Material( vec3 baseColor, vec4 normalIn, vec3 lightDirToFragViewSpace, vec3 fragPosViewSpace )
 {
-	vec4 tangentIn = texture( TangentMap, ex_screen_coord );
-	vec4 biTangentIn = texture( BiTangentMap, ex_screen_coord );
+	vec4 tangentIn = texture( TangentMap, ex_screen_texture_coord );
+	vec4 biTangentIn = texture( BiTangentMap, ex_screen_texture_coord );
 	vec3 specularMaterial = vec3( normalIn.a, tangentIn.a, biTangentIn.a );
 
 	// camera is always at origin 0/0/0 and points into the negative z-achsis so the direction is the negated fragment position in view-space 
@@ -500,9 +487,9 @@ subroutine ( lightingFunction ) vec3 pointLight( vec4 baseColor, vec4 fragPosVie
 
 void main()
 {
-	float depth = texture( DepthMap, ex_screen_coord );
-	vec4 baseColor = texture( DiffuseMap, ex_screen_coord );
-	vec4 normalViewSpace = texture( NormalMap, ex_screen_coord );
+	float depth = texture( DepthMap, ex_screen_texture_coord );
+	vec4 baseColor = texture( DiffuseMap, ex_screen_texture_coord );
+	vec4 normalViewSpace = texture( NormalMap, ex_screen_texture_coord );
 
 	// reconstruct eye-position (fragments-position in view-space) from depth
 	vec3 fragPosViewSpace = calcEyeFromDepth( depth );

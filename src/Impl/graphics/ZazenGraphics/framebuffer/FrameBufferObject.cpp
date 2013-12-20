@@ -162,17 +162,6 @@ FrameBufferObject::bind()
 }
 
 bool
-FrameBufferObject::copyDepthToTarget( RenderTarget* target )
-{
-	glReadBuffer( GL_NONE );
-	GL_PEEK_ERRORS_AT_DEBUG
-	glCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 0, 0, target->getWidth(), target->getHeight() );
-	GL_PEEK_ERRORS_AT_DEBUG
-
-	return true;
-}
-
-bool
 FrameBufferObject::blitToSystemFB( unsigned int targetIndex )
 {
 	RenderTarget* target = this->m_attachedTargets[ targetIndex ];
@@ -186,7 +175,7 @@ FrameBufferObject::blitToSystemFB( unsigned int targetIndex )
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	// specify the system framebuffer as draw-fbo
-	glBindFramebuffer( GL_DRAW_FRAMEBUFFER_EXT, 0 );
+	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	// perform the blit-operation
@@ -194,7 +183,43 @@ FrameBufferObject::blitToSystemFB( unsigned int targetIndex )
 	GL_PEEK_ERRORS_AT_DEBUG
 		
 	// unbind this FBO as read-target
-	glBindFramebufferEXT( GL_READ_FRAMEBUFFER_EXT, 0 );
+	glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 );
+	GL_PEEK_ERRORS_AT_DEBUG 
+
+	return true;
+}
+
+bool
+FrameBufferObject::blitDepthToFBO( FrameBufferObject* targetFbo )
+{
+	RenderTarget* target = this->m_depthTarget;
+
+	// specify this render-target as the read-target
+	glReadBuffer( GL_NONE );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify this FBO as the read-fbo
+	glBindFramebuffer( GL_READ_FRAMEBUFFER, this->m_id );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	CHECK_FRAMEBUFFER_DEBUG
+	
+	// specify this render-target as the read-target
+	glDrawBuffer( GL_NONE );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify the system framebuffer as draw-fbo
+	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, targetFbo->getId() );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	CHECK_FRAMEBUFFER_DEBUG
+
+	// perform the blit-operation
+	glBlitFramebuffer( 0, 0, target->getWidth(), target->getHeight(), 0, 0, target->getWidth(), target->getHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// unbind this FBO as read-target
+	glBindFramebuffer( GL_FRAMEBUFFER, this->m_id );
 	GL_PEEK_ERRORS_AT_DEBUG 
 
 	return true;

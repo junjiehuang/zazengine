@@ -25,8 +25,6 @@ DRRenderer::DRRenderer()
 	this->m_fbo = NULL;
 	this->m_intermediateDepthFB = NULL;
 
-	this->m_depthCopy = NULL;
-
 	this->m_progGeomStage = NULL;
 	this->m_progSkyBox = NULL;
 	this->m_progLightingStage = NULL;
@@ -234,6 +232,11 @@ DRRenderer::initIntermediateDepthBuffer()
 	// no drawing & reading in shadow-fbo, set initial, fbo will keep this state, no need to set it every bind
 	this->m_intermediateDepthFB->drawNone();
 
+	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH, this->m_intermediateDepthFB ) )		
+	{
+		return false;
+	}
+
 	// back to default frame-buffer
 	if ( false == this->m_intermediateDepthFB->unbind() )
 	{
@@ -349,12 +352,6 @@ DRRenderer::initTransparency()
 	
 	this->m_fsq = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
 	if ( NULL == this->m_fsq )
-	{
-		return false;
-	}
-
-	this->m_depthCopy = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), RenderTarget::RT_SHADOW_PLANAR );
-	if ( NULL == this->m_depthCopy )
 	{
 		return false;
 	}
@@ -1068,6 +1065,14 @@ DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 		unsigned int combinationTarget = 1;
 		unsigned int backgroundIndex = 4;
 
+		this->m_intermediateDepthFB->bind();
+		// could have been changed bevore during shadow-map rendering
+		this->m_intermediateDepthFB->restoreDepthTarget();
+
+		CHECK_FRAMEBUFFER_DEBUG
+
+		this->m_fbo->bind();
+
 		for ( unsigned int i = 0; i < this->m_transparentEntities.size(); i++ )
 		{
 			ZazenGraphicsEntity* entity = this->m_transparentEntities[ i ];
@@ -1097,22 +1102,15 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 
 	// bind background to index 2 because DiffuseColor of Material is at index 0 and NormalMap of Material is at index 1
 	this->m_fbo->getAttachedTargets()[ backgroundIndex ]->bind( 2 );
-	// bind depth-copy to index 3
-	this->m_depthCopy->bind( 3 );
+	// bind depth of intermediate depth-FBO to target 3 - will act as background-depth
+	this->m_intermediateDepthFB->getAttachedDepthTarget()->bind( 3 );
 
 	this->m_progTransparency->setUniformInt( "Background", 2 );
 	this->m_progTransparency->setUniformInt( "BackgroundDepth", 3 );
-
-	this->m_fbo->bind();
 	
-	// copy depth of g-buffer to target, because we need to access the depth in transparency-rendering
-	// to prevent artifacts. at the same time we write depth when rendering transparency so
-	// we cannot bind the g-buffer depth => need to copy
-	// TODO: PROBLEM if the resolutions of the depth-copies don't match artifacts are introduced!!!
-	if ( false == this->m_fbo->copyDepthToTarget( this->m_depthCopy ) )
-	{
-		return false;
-	}
+	// copy depth of g-buffer to intermediate depth-fbo, because we need to access the depth in transparency-rendering
+	// to prevent artifacts. at the same time we write depth when rendering transparency so we cannot bind the g-buffer depth => need to copy
+	this->m_fbo->blitDepthToFBO( this->m_intermediateDepthFB );
 
 	// transparent objects are always rendered intermediate to g-buffer color target 0
 	this->m_fbo->drawBuffer( 0 );

@@ -21,6 +21,8 @@ class FrameBufferObject
 
 		static bool checkStatus();
 
+		GLuint getId() const { return this->m_id; };
+
 		bool attachTarget( RenderTarget* );
 		bool attachTargetTemp( RenderTarget* );
 		bool attachTargetTempCubeFace( RenderTarget*, unsigned int );
@@ -34,6 +36,7 @@ class FrameBufferObject
 		bool copyDepthToTarget( RenderTarget* );
 
 		bool blitToSystemFB( unsigned int );
+		bool blitDepthToFBO( FrameBufferObject* );
 
 		bool bind();
 		bool unbind();

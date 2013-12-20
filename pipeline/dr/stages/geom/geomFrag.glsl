@@ -23,24 +23,14 @@ layout( shared ) uniform MaterialUniforms
 
 // encodes a vec3 direction-vector into its vec2 representation to save one channel in the render-target 
 // will be reconstructed in lighting-stage
-vec2 encodeDirection( vec3 n )
+vec2 encodeDirection( vec3 dir )
 {
-	// all encodings need normalized normals
-	n = normalize( n );
-
-	/* UNIT-LENGTH ENCODING
-	return n.xy;
-	*/
-
-	/* SPHEREMAP-TRANSFORM ENCODING USED IN CRYENGINE 3.0
-    vec2 enc = normalize( n.xy ) * ( sqrt( -n.z * 0.5 + 0.5 ) );
-    enc = enc * 0.5 + 0.5;
-    return enc;
-	*/
+	// encoding need normalized direction
+	dir = normalize( dir );
 	
-	// SPHEREMAP-TRANSFORM ENCODING USING LAMBERT AZIMUTHAL EQUAL-AREA PROJECTION
-	float f = sqrt( 8 * n.z + 8 );
-    return n.xy / f + 0.5;
+	/* SPHEREMAP-TRANSFORM ENCODING USING LAMBERT AZIMUTHAL EQUAL-AREA PROJECTION */
+	float f = sqrt( 8 * dir.z + 8 );
+    return dir.xy / f + 0.5;
 }
 
 subroutine void storeMaterialProperties();

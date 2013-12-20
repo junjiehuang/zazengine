@@ -27,8 +27,6 @@ class DRRenderer
 		// Multiple-Render-Targes & Framebuffer for Deferred Rendering
 		FrameBufferObject* m_fbo;
 		FrameBufferObject* m_intermediateDepthFB;
-
-		RenderTarget* m_depthCopy;
 		////////////////////////////////////////
 
 		// full-screen-quad (FSQ) needed to perform lighting- and post-processing passes 

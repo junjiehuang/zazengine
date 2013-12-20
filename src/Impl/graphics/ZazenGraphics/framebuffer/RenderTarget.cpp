@@ -57,7 +57,7 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 
 		if ( RenderTarget::RT_COLOR == targetType )
 		{
-			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL );
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL );
 			GL_PEEK_ERRORS_AT
 		}
 		else if ( RenderTarget::RT_DEPTH == targetType )
