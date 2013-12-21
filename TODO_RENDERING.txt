@@ -1,32 +1,26 @@
-Research & Refactoring
-	-> refactor light-shader
-		-> point- & spot-light do nearly the same work
-		-> function-parameteres different
-		-> check if specular terms really necessary for all 3 channels or if only one is enough
-
-	-> understand math behind
-		-> normal mapping
-		-> reconstructing eye coord
-		-> encoding/decoding normals
-	
-	-> get rid of tangent & bi-tangent?
-		-> from tangent-space to world-space
-		-> http://beyond3d.com/showthread.php?t=56393
-		-> http://www.gamedev.net/topic/415263-convert-normal-from-tangent-to-world-space/
-		-> http://www.gamasutra.com/view/feature/2361/let_there_be_light_a_unified_.php
-		-> http://www.spuify.co.uk/?cat=11
-
-	-> introduce Subsurface scattering material
-
+For Geometry-Stage
 	-> update blog
 		-> describe materials of renderer
 		-> describe methods to encode directions
 		-> http://aras-p.info/texts/CompactNormalStorage.html
 		-> https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
 
+For Lighting-Stage
+	-> understand math behind
+		-> normal mapping
+		-> reconstructing eye coord
+		-> encoding/decoding normals
+
+	-> refactor light-shader
+	-> point- & spot-light do nearly the same work
+	-> function-parameteres different
 	-> shadow map sampling: cube-map artifacts?
+
+For Transparency-Stage
+	-> fix it, refraction is broken!
 	-> articfacts in shadow during transparency rendering?
 
+For Software-Architecture in Renderer
 	-> split into frontend & backend
 		-> issue commands: static objects, no new -> stateless
 		-> issuing commands is api independent but api must have a corresponding functionality
@@ -116,6 +110,13 @@ Need generic effect/material functionality
 		-> sub-surface-scattering
 		-> cook torrance sparrow
 		-> subsurface scattering
+			-> use depth-map to calculate distance the light traveled: http://http.developer.nvidia.com/GPUGems/gpugems_ch16.html
+				-> 1. lookup depth of light
+				-> 2. transform position into light-space
+				-> 3. calculate distance from position to light
+				-> 4. transform depth of light to distanceo to light
+			-> or use fake hack: http://machinesdontcare.wordpress.com/2008/10/29/subsurface-scatter-shader/ 
+
 		-> microfacet
 
 Reflections

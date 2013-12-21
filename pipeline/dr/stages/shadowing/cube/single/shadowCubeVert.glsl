@@ -14,8 +14,10 @@ layout( shared ) uniform TransformUniforms
 {
 	// the model-matrix of the current rendered mesh - transform to world-space
 	mat4 modelMatrix;
-	// the model-view-matrix of the current rendered mesh - the view-matrix is the one of the Camera - transforms from model-space to view/eye/camera-space
+	// the model-view-matrix of the current rendered mesh - the view-matrix is the one of the Camera
 	mat4 modelViewMatrix;
+	// the model-view-projection matrix of the current rendered mesh - the view-projection-matrix is the one of the Camera
+	mat4 modelViewProjMatrix;
 } Transforms;
 
 uniform mat4 u_bones[ MAX_BONES_PER_MESH ];

@@ -1249,11 +1249,12 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 			}
 		}
 
-		// calculate model-view matrix once for this entity, hierarchical node-transforms are applied during mesh-rendering
+		// calculate model-view and mvp matrix once for this entity, hierarchical node-transforms are applied during mesh-rendering
 		glm::mat4 modelView = viewer->getViewMatrix() * entity->getModelMatrix();
+		glm::mat4 modelViewProj = viewer->getVPMatrix() * entity->getModelMatrix();
 
 		// render geometry of this instance
-		if ( false == this->renderMeshNode( entity->getMeshNode(), modelView, entity->getModelMatrix() ) )
+		if ( false == this->renderMeshNode( entity->getMeshNode(), modelViewProj, modelView, entity->getModelMatrix() ) )
 		{
 			return false;
 		}
@@ -1277,11 +1278,12 @@ DRRenderer::renderTransparentEntity( Viewer* viewer, ZazenGraphicsEntity* entity
 		return false;
 	}
 		
-	// calculate model-view matrix once for this entity, hierarchical node-transforms are applied during mesh-rendering
+	// calculate model-view and mvp matrix once for this entity, hierarchical node-transforms are applied during mesh-rendering
 	glm::mat4 modelView = viewer->getViewMatrix() * entity->getModelMatrix();
+	glm::mat4 modelViewProj = viewer->getVPMatrix() * entity->getModelMatrix();
 
 	// render geometry of this instance
-	if ( false == this->renderMeshNode( entity->getMeshNode(), modelView, entity->getModelMatrix() ) )
+	if ( false == this->renderMeshNode( entity->getMeshNode(), modelViewProj, modelView, entity->getModelMatrix() ) )
 	{
 		return false;
 	}
@@ -1290,7 +1292,7 @@ DRRenderer::renderTransparentEntity( Viewer* viewer, ZazenGraphicsEntity* entity
 }
 
 bool
-DRRenderer::renderMeshNode( MeshNode* meshNode, const glm::mat4& entityModelViewMatrix, const glm::mat4& entitiyModelMatrix )
+DRRenderer::renderMeshNode( MeshNode* meshNode, const glm::mat4& entityMVPMatrix, const glm::mat4& entityMVMatrix, const glm::mat4& entitiyModelMatrix )
 {
 	// no meshes in this node or any sub-children, nothing to render
 	// because we pre-calculate the global-transformation for each mesh-node during loading
@@ -1303,13 +1305,14 @@ DRRenderer::renderMeshNode( MeshNode* meshNode, const glm::mat4& entityModelView
 
 	const std::vector<Mesh*>& meshes = meshNode->getMeshes();
 	const std::vector<MeshNode*>& children = meshNode->getChildren();
-	glm::mat4 localModelViewMatrix = entityModelViewMatrix * meshNode->getGlobalTransform();
+	glm::mat4 localMVPMatrix = entityMVPMatrix * meshNode->getGlobalTransform();
+	glm::mat4 localMVMatrix = entityMVMatrix * meshNode->getGlobalTransform();
 	glm::mat4 localModelMatrix = entitiyModelMatrix * meshNode->getGlobalTransform();
 
 	for ( unsigned int i = 0; i < children.size(); i++ )
 	{
 		MeshNode* child = children[ i ];
-		if ( false == this->renderMeshNode( children[ i ], entityModelViewMatrix, entitiyModelMatrix ) )
+		if ( false == this->renderMeshNode( children[ i ], entityMVPMatrix, entityMVMatrix, entitiyModelMatrix ) )
 		{
 			return false;
 		}
@@ -1322,7 +1325,9 @@ DRRenderer::renderMeshNode( MeshNode* meshNode, const glm::mat4& entityModelView
 		// update model matrix
 		this->m_transformsBlock->updateField( "TransformUniforms.modelMatrix", localModelMatrix );
 		// update model-view matrix
-		this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", localModelViewMatrix );
+		this->m_transformsBlock->updateField( "TransformUniforms.modelViewMatrix", localMVMatrix );
+		// update model-view-projection matrix
+		this->m_transformsBlock->updateField( "TransformUniforms.modelViewProjMatrix", localMVPMatrix );
 		
 		// THIS EXISTS FOR LEARNING AND INFORMATION REATIONS!
 		// IMPORTANT: normal-vectors are transformed different than vertices

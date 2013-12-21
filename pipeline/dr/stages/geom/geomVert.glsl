@@ -1,7 +1,9 @@
 #version 400 core
 
+// restrict to max of 128 bones per mesh
 #define MAX_BONES_PER_MESH 128
 
+// inputs from the vertex-stream
 layout( location = 0 ) in vec3 in_vertPos;
 layout( location = 1 ) in vec3 in_vertNorm;
 layout( location = 2 ) in vec2 in_texCoord;
@@ -10,90 +12,78 @@ layout( location = 4 ) in uint in_bone_count;
 layout( location = 5 ) in uvec4 in_bone_indices;
 layout( location = 6 ) in vec4 in_bone_weights;
 
-// do we really need vec4 or does vec3 suffice?
-// IMPORTANT: out-variables are interpolated but no perspective division is applied
-out vec4 ex_position;
-out vec4 ex_normal;
-out vec2 ex_texCoord;
-out vec4 ex_tangent;
-out vec4 ex_biTangent;
-
-// THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
-layout( shared ) uniform CameraUniforms
+// defines the output-interface block to the fragment-shader
+out VS_TO_FS_OUT
 {
-	// the width (x) and height (y) of the camera-window in pixels ( the resolution )
-	vec2 window;	
-	// the near- (x) and far-plane distances (y)
-	vec2 nearFar;
-	// the symetric frustum: right (left=-right) and top (bottom=-top)
-	vec2 frustum;
-
-	// the model-matrix of the camera (orienation within world-space)
-	mat4 modelMatrix;
-	// the view-matrix of the camera to apply to the objects to transform to view/eye/camera-space (is its inverse model-matrix)
-	mat4 viewMatrix;
-	// the projection-matrix of the camera
-	mat4 projectionMatrix;
-} Camera;
+	vec4 normal;
+	vec2 texCoord;
+	vec4 tangent;
+	vec4 biTangent;
+} VS_TO_FS;
 
 // THE TRANSFORMATIONS FOR THE CURRENT MESH/VERTEX-STREAM
 layout( shared ) uniform TransformUniforms
 {
-	// the model-matrix of the current rendered mesh - transform to world-space
+	// the model-matrix of the current rendered mesh 
 	mat4 modelMatrix;
-	// the model-view-matrix of the current rendered mesh - the view-matrix is the one of the Camera - transforms from model-space to view/eye/camera-space
+	// the model-view-matrix of the current rendered mesh - the view-matrix is the one of the Camera
 	mat4 modelViewMatrix;
+	// the model-view-projection matrix of the current rendered mesh - the view-projection-matrix is the one of the Camera
+	mat4 modelViewProjMatrix;
 } Transforms;
 
+// the bones for skinning
 uniform mat4 u_bones[ MAX_BONES_PER_MESH ];
 
-subroutine void processInputs();
+// the prototype of the input-processing subroutines - all implementing subroutines copy the corresponding data into the VS_TO_FS block and returns the position
+// application will select according whether a mesh is animated or not
+// NOTE: directions have to be filled up with 0.0 as w because have no length
+// NOTE: positions have to be filled up with 1.0 because have a length 
+subroutine vec4 processInputs();
+// subroutine selection-uniform
+subroutine uniform processInputs processInputsSelection;
 
-subroutine ( processInputs ) void processInputsAnimated()
+// skinning is performed
+subroutine ( processInputs ) vec4 processInputsAnimated()
 {
+	vec4 position = vec4( 0.0 );
+
 	for ( uint i = 0u; i < in_bone_count; i++ )
 	{
 		uint boneIndex = in_bone_indices[ i ];
 		mat4 bone = u_bones[ boneIndex ];
 		float boneWeight = in_bone_weights[ i ];
 
-		ex_position += boneWeight * ( bone * vec4( in_vertPos, 1.0 ) ); // fill up with 1.0 because its a position and thus has a length 
-		ex_normal += boneWeight * ( bone * vec4( in_vertNorm, 0.0 ) ); // fill up with 0.0 because its a direction and has no length as opposed to position
-		ex_tangent += boneWeight * ( bone * vec4( in_tangent, 0.0 ) ); // fill up with 0.0 because its a direction and has no length as opposed to position
+		position += boneWeight * ( bone * vec4( in_vertPos, 1.0 ) );
+		VS_TO_FS.normal += boneWeight * ( bone * vec4( in_vertNorm, 0.0 ) );
+		VS_TO_FS.tangent += boneWeight * ( bone * vec4( in_tangent, 0.0 ) );
 	}
+
+	return position;
 }
 
-subroutine ( processInputs ) void processInputsStatic()
+// no animation performed, just copy
+subroutine ( processInputs ) vec4 processInputsStatic()
 {
-	ex_position = vec4( in_vertPos, 1.0 ); // fill up with 1.0 because its a position and thus has a length 
-	ex_normal = vec4( in_vertNorm, 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
-	ex_tangent = vec4( in_tangent, 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
+	VS_TO_FS.normal = vec4( in_vertNorm, 0.0 );
+	VS_TO_FS.tangent = vec4( in_tangent, 0.0 );
+	return vec4( in_vertPos, 1.0 );
 }
-
-subroutine uniform processInputs processInputsSelection;
 
 void main()
 {
-	processInputsSelection();
+	// returns position transformed or static depending if mesh is animated or not
+	vec4 position = processInputsSelection();
 
-	// store position in view-space (EyeCoordinates) 
-	ex_position = Transforms.modelViewMatrix * ex_position;
-	// store normals in view-space too (EC) - non-uniform scaling is forbidden in this engine therefore we can use the normal modelViewMatrix
-	ex_normal = Transforms.modelViewMatrix * ex_normal; 
-	// no transform for texture-coords, just interpolated
-	ex_texCoord = in_texCoord;
+	// no transform for texture-coords, just interpolated accross vertices
+	VS_TO_FS.texCoord = in_texCoord;
 
 	// non-uniform scaling is forbidden in this engine therefore we can use the normal modelViewMatrix
-	ex_tangent = Transforms.modelViewMatrix * ex_tangent;
-	ex_biTangent = vec4( cross( ex_normal.xyz, ex_tangent.xyz ), 0.0 ); // fill up with 0.0 because its a direction and has no length as opposed to position
+	VS_TO_FS.normal = Transforms.modelViewMatrix * VS_TO_FS.normal; 
+	// non-uniform scaling is forbidden in this engine therefore we can use the normal modelViewMatrix
+	VS_TO_FS.tangent = Transforms.modelViewMatrix * VS_TO_FS.tangent;
+	// construct bi-tangent from normal and tangent using the cross-product
+	VS_TO_FS.biTangent = vec4( cross( VS_TO_FS.normal.xyz, VS_TO_FS.tangent.xyz ), 0.0 ); 
 	 
-	// OPTIMIZE: premultiply projection & modelView on CPU 
-	// calculate position of vertex using MVP-matrix. 
-	// will then be in clip-space after this transformation is applied
-	// clipping will be applied
-	// then opengl will apply perspective division 
-	// after this the coordinates will be between -1 to 1 which is NDC
-	// then view-port transform will happen
-	// then fragment-shader takes over
-	gl_Position = Camera.projectionMatrix * ex_position;
+	gl_Position = Transforms.modelViewProjMatrix * position;
 }

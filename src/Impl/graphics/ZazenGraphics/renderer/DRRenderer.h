@@ -110,7 +110,7 @@ class DRRenderer
 		bool renderTransparentEntity( Viewer*, ZazenGraphicsEntity*, Program* );
 		
 		bool renderEntities( Viewer*, std::list<ZazenGraphicsEntity*>&, Program*, bool, bool );
-		bool renderMeshNode( MeshNode*, const glm::mat4&, const glm::mat4& );
+		bool renderMeshNode( MeshNode*, const glm::mat4&, const glm::mat4&, const glm::mat4& );
 
 		bool updateCameraBlock( Viewer* );
 		bool updateLightBlock( Light* );

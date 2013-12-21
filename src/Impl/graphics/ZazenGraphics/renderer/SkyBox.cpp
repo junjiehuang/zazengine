@@ -85,24 +85,19 @@ SkyBox::render( const Viewer& camera, UniformBlock* cameraBlock, UniformBlock* t
 	// force projective-projection in sky-box (if camera could have ortho)
 	glm::mat4 projMat = camera.createPerspProj();
 	// reset modelview back to origin, to stick with camera, sky-box is so far away that it doesn't move
-	glm::mat4 modelViewMat = camera.getViewMatrix();
-	modelViewMat[ 3 ][ 0 ] = 0.0f;
-	modelViewMat[ 3 ][ 1 ] = 0.0f;
-	modelViewMat[ 3 ][ 2 ] = 0.0f;
+	glm::mat4 modelViewProjMat = camera.getViewMatrix();
+	modelViewProjMat[ 3 ][ 0 ] = 0.0f;
+	modelViewProjMat[ 3 ][ 1 ] = 0.0f;
+	modelViewProjMat[ 3 ][ 2 ] = 0.0f;
 
-	if ( false == cameraBlock->bindBuffer() )
-	{
-		return false;
-	}
-
-	cameraBlock->updateField( "CameraUniforms.projectionMatrix", projMat );
+	modelViewProjMat = projMat * modelViewProjMat;
 
 	if ( false == transformsBlock->bindBuffer() )
 	{
 		return false;
 	}
 
-	transformsBlock->updateField( "TransformUniforms.modelViewMatrix", modelViewMat );
+	transformsBlock->updateField( "TransformUniforms.modelViewProjMatrix", modelViewProjMat );
 	
 	// NOTE: need to bind cube-map to unit Texture::CUBE_RANGE_START because unit 0 is already occupied by 2D-textures during light-rendering - 
 	// it is not allowed to bind different types of textures to the same unit

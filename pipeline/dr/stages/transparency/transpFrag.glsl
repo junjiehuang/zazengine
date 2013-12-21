@@ -10,8 +10,10 @@ in vec2 ex_texCoord;
 
 layout( location = 0 ) out vec4 out_color;
 
+// THE CONFIGURATION OF THE CURRENTLY TRANSPARENTY MATERIAL
 layout( shared ) uniform TransparentMaterialUniforms
 {
+	// TODO: document components
 	vec4 config;
 } TransparentMaterial;
 

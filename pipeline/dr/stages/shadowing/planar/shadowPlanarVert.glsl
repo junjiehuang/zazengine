@@ -9,32 +9,15 @@ layout( location = 4 ) in uint in_bone_count;
 layout( location = 5 ) in uvec4 in_bone_indices;
 layout( location = 6 ) in vec4 in_bone_weights;
 
-// THE CURRENT CAMERA
-// THIS CORRESPONDS TO THE CAMERA USED FOR RENDERING THE SHADOW-MAP IN THE CASE OF SHADOW-RENDERING IT IS THE LIGHT ITSELF
-layout( shared ) uniform CameraUniforms
-{
-	// the width (x) and height (y) of the camera-window in pixels ( the resolution )
-	vec2 window;	
-	// the near- (x) and far-plane distances (y)
-	vec2 nearFar;
-	// the symetric frustum: right (left=-right) and top (bottom=-top)
-	vec2 frustum;
-
-	// the model-matrix of the camera (orienation within world-space)
-	mat4 modelMatrix;
-	// the view-matrix of the camera to apply to the objects to transform to view/eye/camera-space (is its inverse model-matrix)
-	mat4 viewMatrix;
-	// the projection-matrix of the camera
-	mat4 projectionMatrix;
-} Camera;
-
 // TRANSFORMATIONS FOR THE CURRENT MESH/VERTEX-STREAM
 layout( shared ) uniform TransformUniforms
 {
 	// the model-matrix of the current rendered mesh - transform to world-space
 	mat4 modelMatrix;
-	// the model-view-matrix of the current rendered mesh - the view-matrix is the one of the Camera - transforms from model-space to view/eye/camera-space
+	// the model-view-matrix of the current rendered mesh - the view-matrix is the one of the Camera
 	mat4 modelViewMatrix;
+	// the model-view-projection matrix of the current rendered mesh - the view-projection-matrix is the one of the Camera
+	mat4 modelViewProjMatrix;
 } Transforms;
 
 uniform mat4 u_bones[ MAX_BONES_PER_MESH ];
@@ -66,5 +49,5 @@ subroutine uniform processInputs processInputsSelection;
 
 void main()
 {
-	gl_Position = Camera.projectionMatrix * Transforms.modelViewMatrix * processInputsSelection();
+	gl_Position = Transforms.modelViewProjMatrix * processInputsSelection();
 }
