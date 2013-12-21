@@ -811,7 +811,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	}
 
 	// update configuration of the current light to its uniform-block
-	if ( false == this->updateLightBlock( light ) )
+	if ( false == this->updateLightBlock( light, this->m_mainCamera ) )
 	{
 		return false;
 	}
@@ -1394,12 +1394,13 @@ DRRenderer::updateCameraBlock( Viewer* viewer )
 }
 
 bool
-DRRenderer::updateLightBlock( Light* light )
+DRRenderer::updateLightBlock( Light* light, Viewer* camera )
 {
 	glm::vec2 shadowResolution;
 	const glm::vec3& color = light->getColor();
 	const glm::vec2& specular = light->getSpecular();
 	const glm::vec3& attenuation = light->getAttenuation();
+	glm::mat4 lightMVMatrix = camera->getViewMatrix() * light->getModelMatrix();
 
 	// shadow-map resolution corresponds to the width and height
 	shadowResolution.x = ( float ) light->getWidth();
@@ -1414,7 +1415,8 @@ DRRenderer::updateLightBlock( Light* light )
 	this->m_lightBlock->updateField( "LightUniforms.shadowResolution", shadowResolution );
 	this->m_lightBlock->updateField( "LightUniforms.color", color );
 	this->m_lightBlock->updateField( "LightUniforms.specular", specular );
-	
+	this->m_lightBlock->updateField( "LightUniforms.modelViewMatrix", lightMVMatrix );
+
 	// upload light-model matrix = orientation of the light in the world
 	this->m_lightBlock->updateField( "LightUniforms.modelMatrix", light->getModelMatrix() );
 

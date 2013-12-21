@@ -1,23 +1,16 @@
 #version 400 core
 
-uniform sampler2D DiffuseMap;
-uniform sampler2D NormalMap;
-uniform sampler2D TangentMap;
-uniform sampler2D BiTangentMap;
-uniform sampler2D DepthMap;
+// defines the output-interface block to the fragment-shader
+in VS_TO_FS_OUT
+{
+	// the screen-coordinate interpolated for each fragment - is used to do the texture-fetches of the MRTs
+	vec2 screenTexCoord;
+	// the normalized-device-coordinates
+	vec3 ndc;
+} VS_TO_FS;
 
-uniform sampler2DShadow ShadowPlanarMap;
-uniform samplerCube ShadowCubeMap;
-
+// final color output
 layout( location = 0 ) out vec4 final_color;
-
-// the screen-coordinate interpolated for each fragment - is used to do the texture-fetches of the MRTs
-in vec2 ex_screen_texture_coord;
-// the normalized-device-coordinates
-in vec3 ex_ndc;
-
-// TODO: make configurable/light
-const float shadow_bias = 0.005;
 
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 // NOTE: THIS HAS TO BE THE CAMERA THE GEOMETRY-STAGE WAS RENDERED WITH
@@ -41,25 +34,45 @@ layout( shared ) uniform CameraUniforms
 // THE CONFIGURATION OF THE CURRENT LIGHT
 layout( shared ) uniform LightUniforms
 {
-	vec2 shadowResolution;
-
+	// color of the light
 	vec3 color;
+	// specular attributes: x = shininess, y = strength
+	vec2 specular; 
+	// attenuation attributes: x = constant, y = linear, z = quadratic
+	vec3 attenuation; 
+	// spot attributes: x = spot cut-off, y = spot exponent
+	vec2 spot; 
 
-	vec2 specular; // x = shininess, y = strength
+	// resolution of the planar shadow-map 
+	vec2 shadowRes;
 
-	vec3 attenuation; // x = constant, y = linear, z = quadratic
-
-	vec2 spot; // x = spot cut-off, y = spot exponent
-
-	// the near- (x) and far-plane distances (y)
-	// this is necessary for correct shadow-mapping 
+	// the near- (x) and far-plane distances (y) - necessary for correct shadow-map sampling
 	vec2 nearFar;
+	// orientation and position of light in world-space
 	mat4 modelMatrix;
+	// orientation and position of light in view-space - view-matrix of the Camera
+	mat4 modelViewMatrix;
+	// planar shadow-map transformation
 	mat4 spaceUniformMatrix;
 } Light;
+
+// the render-targets of the g-buffer bound as samplers
+uniform sampler2D DiffuseMap;
+uniform sampler2D NormalMap;
+uniform sampler2D TangentMap;
+uniform sampler2D BiTangentMap;
+uniform sampler2D DepthMap;
+
+// the shadow-maps - bound depending on light-type
+uniform sampler2DShadow ShadowPlanarMap;
+uniform samplerCube ShadowCubeMap;
+
+const float shadow_bias = 0.001;
 ///////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////
 // UTILITIES
+
 // calculates the eye-coordinate of the fragment from depth
 // THIS WORKS FOR SYMETRIC FRUSTUMS ONLY ( e.g. created by gluPerspective or glm::createPerspective )
 vec3 calcEyeFromDepth( float depth )
@@ -68,8 +81,8 @@ vec3 calcEyeFromDepth( float depth )
 
 	// TODO: research what is going on here
 	eye.z = Camera.nearFar.x * Camera.nearFar.y / ( ( depth * ( Camera.nearFar.y - Camera.nearFar.x ) ) - Camera.nearFar.y );
- 	eye.x = ( -ex_ndc.x * eye.z ) * ( Camera.frustum.x / Camera.nearFar.x );
-	eye.y = ( -ex_ndc.y * eye.z ) * ( Camera.frustum.y / Camera.nearFar.x );
+ 	eye.x = ( -VS_TO_FS.ndc.x * eye.z ) * ( Camera.frustum.x / Camera.nearFar.x );
+	eye.y = ( -VS_TO_FS.ndc.y * eye.z ) * ( Camera.frustum.y / Camera.nearFar.x );
  
 	return eye;
 }
@@ -105,7 +118,7 @@ float shadowLookupProj( vec4 shadowCoord, vec2 offset )
 	// IMPORTANT: because we installed a compare-function on this shadow-sampler
 	// we don't need to compare it anymore to the z-value of the shadow-coord
 
-	return textureProj( ShadowPlanarMap, shadowCoord + vec4( offset.x * 1.0 / Light.shadowResolution.x * shadowCoord.w, offset.y * 1.0 / Light.shadowResolution.y * shadowCoord.w, 0.0, 0.0 ) );
+	return textureProj( ShadowPlanarMap, shadowCoord + vec4( offset.x * 1.0 / Light.shadowRes.x * shadowCoord.w, offset.y * 1.0 / Light.shadowRes.y * shadowCoord.w, 0.0, 0.0 ) );
 }
 
 float
@@ -118,12 +131,17 @@ shadowLookup( vec3 shadowCoord, vec2 offset )
 	// IMPORTANT: because we installed a compare-function on this shadow-sampler
 	// we don't need to compare it anymore to the z-value of the shadow-coord
 
-	return texture( ShadowPlanarMap, shadowCoord + vec3( offset.x * 1.0 / Light.shadowResolution.x, offset.y * 1.0 / Light.shadowResolution.y, 0.0 )  );
+	return texture( ShadowPlanarMap, shadowCoord + vec3( offset.x * 1.0 / Light.shadowRes.x, offset.y * 1.0 / Light.shadowRes.y, 0.0 )  );
 }
 ///////////////////////////////////////////////////////////////////////////
 
 // Shadow-calculations
+// apply shadow-filtering: shadow is in the range of 0.0 and 1.0
+// 0.0 applies to 'totally shadowed'
+// 1.0 applies to 'totally in light'
+// all between means partly shadowed, so this will lead to soft-shadows
 subroutine float shadowFunction( vec3 fragPosEC );
+subroutine uniform shadowFunction shadowFunctionSelection;
 
 subroutine ( shadowFunction ) float directionalShadow( vec3 fragPosEC )
 {
@@ -239,10 +257,10 @@ subroutine ( shadowFunction ) float noShadow( vec3 fragPosEC )
 {
 	return 1.0;
 }
-
-subroutine uniform shadowFunction shadowFunctionSelection;
 ///////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////
+// Material-Calculations
 vec3 calculateLambertianMaterial( vec3 baseColor, vec3 normalEC, vec3 lightDirEC )
 {
 	// diffuse (lambert) factor
@@ -260,7 +278,7 @@ vec3 calculatePhongMaterial( vec3 baseColor, vec3 fragPosEC, vec3 normalEC, vec3
 
 	// diffuse (lambert) factor
 	float diffuseFactor = max( 0.0, dot( normalEC, lightDirEC ) );
-	// OPTIMIZE: calculate only when diffuse > 0
+	// specular factor
 	float specularFactor = pow( max( 0.0, dot( normalEC, halfVector ) ), Light.specular.x ); // directional light doesn't apply strength at specular factor but at reflected light calculation
 
 	vec3 scatteredLight = diffuseFactor * Light.color;		// no ambient light for now 
@@ -271,8 +289,8 @@ vec3 calculatePhongMaterial( vec3 baseColor, vec3 fragPosEC, vec3 normalEC, vec3
 
 vec3 calculateDoom3Material( vec3 baseColor, vec3 fragPosEC, vec3 normalTS, vec3 lightDirEC, vec2 genericChannels )
 {
-	vec4 tangentIn = texture( TangentMap, ex_screen_texture_coord );
-	vec4 biTangentIn = texture( BiTangentMap, ex_screen_texture_coord );
+	vec4 tangentIn = texture( TangentMap, VS_TO_FS.screenTexCoord );
+	vec4 biTangentIn = texture( BiTangentMap, VS_TO_FS.screenTexCoord );
 	vec3 specularMaterial = vec3( genericChannels.r, tangentIn.b, biTangentIn.b );
 
 	// camera is always at origin 0/0/0 and points into the negative z-achsis so the direction is the negated fragment position in view-space 
@@ -346,11 +364,11 @@ vec3 calculateMaterialAlbedo( vec4 baseColor, vec3 fragPosEC, vec3 normalEC, vec
 	// unknown material, just pass through base-color
 	return baseColor.rgb;
 }
+///////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////
 // lighting-functions for all three light-types (directional, spot, point)
 subroutine vec3 lightingFunction( vec4 baseColor, vec3 fragPosEC, vec3 normalEC, vec2 genericChannels );
-
 subroutine uniform lightingFunction lightingFunctionSelection;
 
 subroutine ( lightingFunction ) vec3 directionalLight( vec4 baseColor, vec3 fragPosEC, vec3 normalEC, vec2 genericChannels )
@@ -362,21 +380,9 @@ subroutine ( lightingFunction ) vec3 directionalLight( vec4 baseColor, vec3 frag
 	{
 		return vec3( 0.0 );
 	}
-
-	// need light-position and direction in view-space: multiply model-matrix of light with cameras view-matrix
-	// OPTIMIZE: premultiply on CPU and pass in through Light.modelViewMatrix
-	mat4 lightMVMatrix = Camera.viewMatrix * Light.modelMatrix;
-	vec3 lightDirEC = lightMVMatrix[ 2 ].xyz;
 	
-	vec3 materialAlbedo = calculateMaterialAlbedo( baseColor, fragPosEC, normalEC, lightDirEC, genericChannels );
-
-	// apply shadow-filtering: shadow is in the range of 0.0 and 1.0
-	// 0.0 applies to 'totally shadowed'
-	// 1.0 applies to 'totally in light'
-	// all between means partly shadowed, so this will lead to soft-shadows
-	materialAlbedo *= shadowFactor;
-
-	return materialAlbedo;
+	// light-direction in EC is the 3rd (index 2) vector of the model-view matrix of the light
+	return calculateMaterialAlbedo( baseColor, fragPosEC, normalEC, Light.modelViewMatrix[ 2 ].xyz, genericChannels ) * shadowFactor;
 }
 
 subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec3 fragPosEC, vec3 normalEC, vec2 genericChannels )
@@ -389,24 +395,20 @@ subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec3 fragPosEC, 
 		return vec3( 0.0 );
 	}
 
-	// need light-position and direction in view-space: multiply model-matrix of light with cameras view-matrix
-	// OPTIMIZE: premultiply on CPU and pass in through Light.modelViewMatrix
-	mat4 lightMVMatrix = Camera.viewMatrix * Light.modelMatrix;
-
-	vec3 lightPosViewSpace = lightMVMatrix[ 3 ].xyz;
-	vec3 lightDirEC = lightPosViewSpace - fragPosEC;
+	// light-position in EC is the 4th (index 3) column of the model-view matrix
+	vec3 lightDirEC = Light.modelViewMatrix[ 3 ].xyz - fragPosEC;
 	// need distance in view-space for falloff
-    float lightDistanceViewSpace = length( lightDirEC );
+    float lightDistanceEC = length( lightDirEC );
 
 	// normalize light direction
-	lightDirEC /= lightDistanceViewSpace;
+	lightDirEC /= lightDistanceEC;
 
 	float attenuation = 1.0 / ( Light.attenuation.x +		// constant attenuation
-		Light.attenuation.y * lightDistanceViewSpace +		// linear attenuation
-		Light.attenuation.z * lightDistanceViewSpace * lightDistanceViewSpace );	// quadratic attenuation
+		Light.attenuation.y * lightDistanceEC +		// linear attenuation
+		Light.attenuation.z * lightDistanceEC * lightDistanceEC );	// quadratic attenuation
 
 	// calculate the cosine between the direction of the light-direction the the fragment and the direction of the light itself which is stored in the model-view matrix z-achsis
-	float spotCos = dot( lightDirEC, lightMVMatrix[ 2 ].xyz );
+	float spotCos = dot( lightDirEC, Light.modelViewMatrix[ 2 ].xyz );
 	// attenuation would be 0 so no contribution, return black
 	// when angle of the half of the spot is larger than the maximum angle of the half of the spot then no contribution of this light
 	if ( spotCos < Light.spot.x )
@@ -419,17 +421,7 @@ subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec3 fragPosEC, 
 		attenuation *= pow( spotCos, 7.0 );
 	}
 
-	vec3 materialAlbedo = calculateMaterialAlbedo( baseColor, fragPosEC, normalEC, lightDirEC, genericChannels );
-
-	materialAlbedo *= attenuation; // apply spot-light's attenuation
-
-	// apply shadow-filtering: shadow is in the range of 0.0 and 1.0
-	// 0.0 applies to 'totally shadowed'
-	// 1.0 applies to 'totally in light'
-	// all between means partly shadowed, so this will lead to soft-shadows
-	materialAlbedo *= shadowFactor;
-
-	return materialAlbedo;
+	return calculateMaterialAlbedo( baseColor, fragPosEC, normalEC, lightDirEC, genericChannels ) * attenuation * shadowFactor;
 }
 
 subroutine ( lightingFunction ) vec3 pointLight( vec4 baseColor, vec3 fragPosEC, vec3 normalEC, vec2 genericChannels )
@@ -442,41 +434,27 @@ subroutine ( lightingFunction ) vec3 pointLight( vec4 baseColor, vec3 fragPosEC,
 		return vec3( 0.0 );
 	}
 
-	// need light-position and direction in view-space: multiply model-matrix of light with cameras view-matrix
-	// OPTIMIZE: premultiply on CPU and pass in through Light.modelViewMatrix
-	mat4 lightMVMatrix = Camera.viewMatrix * Light.modelMatrix;
-
-	vec3 lightPosViewSpace = lightMVMatrix[ 3 ].xyz;
-	vec3 lightDirEC = lightPosViewSpace - fragPosEC;
+	// light-position in EC is the 4th (index 3) column of the model-view matrix
+	vec3 lightDirEC = Light.modelViewMatrix[ 3 ].xyz - fragPosEC;
 	// need distance in view-space for falloff
-    float lightDistanceViewSpace = length( lightDirEC );
+    float lightDistanceEC = length( lightDirEC );
 
 	// normalize light direction
-	lightDirEC /= lightDistanceViewSpace;
+	lightDirEC /= lightDistanceEC;
 
 	float attenuation = 1.0 / ( Light.attenuation.x +		// constant attenuation
-		Light.attenuation.y * lightDistanceViewSpace +		// linaer attenuation
-		Light.attenuation.z * lightDistanceViewSpace * lightDistanceViewSpace );	// quadratic attenuation
+		Light.attenuation.y * lightDistanceEC +		// linaer attenuation
+		Light.attenuation.z * lightDistanceEC * lightDistanceEC );	// quadratic attenuation
 
-	vec3 materialAlbedo = calculateMaterialAlbedo( baseColor, fragPosEC, normalEC, lightDirEC, genericChannels );
-
-	materialAlbedo *= attenuation; // apply point-light's attenuation
-
-	// apply shadow-filtering: shadow is in the range of 0.0 and 1.0
-	// 0.0 applies to 'totally shadowed'
-	// 1.0 applies to 'totally in light'
-	// all between means partly shadowed, so this will lead to soft-shadows
-	materialAlbedo *= shadowFactor;
-
-	return materialAlbedo;
+	return calculateMaterialAlbedo( baseColor, fragPosEC, normalEC, lightDirEC, genericChannels ) * attenuation * shadowFactor;
 }
 ///////////////////////////////////////////////////////////////////////////
 
 void main()
 {
-	float depth = texture( DepthMap, ex_screen_texture_coord );
-	vec4 baseColor = texture( DiffuseMap, ex_screen_texture_coord );
-	vec4 normalPacked = texture( NormalMap, ex_screen_texture_coord );
+	float depth = texture( DepthMap, VS_TO_FS.screenTexCoord );
+	vec4 baseColor = texture( DiffuseMap, VS_TO_FS.screenTexCoord );
+	vec4 normalPacked = texture( NormalMap, VS_TO_FS.screenTexCoord );
 
 	// reconstruct eye-position (fragments-position in view-space) from depth
 	vec3 fragPosEC = calcEyeFromDepth( depth );

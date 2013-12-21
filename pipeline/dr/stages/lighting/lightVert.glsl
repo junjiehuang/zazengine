@@ -3,10 +3,14 @@
 // light-boundary has only vertex-positions
 layout( location = 0 ) in vec3 in_vertPos;
 
-// the screen-coordinate interpolated for each fragment - is used to do the texture-fetches of the MRTs
-out vec2 ex_screen_texture_coord;
-// the normalized-device-coordinates
-out vec3 ex_ndc;
+// defines the output-interface block to the fragment-shader
+out VS_TO_FS_OUT
+{
+	// the screen-coordinate interpolated for each fragment - is used to do the texture-fetches of the MRTs
+	vec2 screenTexCoord;
+	// the normalized-device-coordinates
+	vec3 ndc;
+} VS_TO_FS;
 
 // TRANSFORMATIONS OF THE BOUNDARY OF THE CURRENT LIGHT
 layout( shared ) uniform ScreenRenderingBoundaryUniforms
@@ -21,8 +25,7 @@ void main()
 	gl_Position = ScreenRenderingBoundary.projectionMatrix * vec4( in_vertPos, 1.0 );
 
 	// perform perspective divison by w => clip-space
-	ex_ndc = gl_Position.xyz / gl_Position.w;
-
+	VS_TO_FS.ndc = gl_Position.xyz / gl_Position.w;
 	// need to transform from clip-space which is in range [-1, 1] to texture-space [0, 1]
-	ex_screen_texture_coord = ( ex_ndc.xy + 1.0 ) * 0.5;
+	VS_TO_FS.screenTexCoord = ( VS_TO_FS.ndc.xy + 1.0 ) * 0.5;
 }

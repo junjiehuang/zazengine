@@ -113,7 +113,7 @@ class DRRenderer
 		bool renderMeshNode( MeshNode*, const glm::mat4&, const glm::mat4&, const glm::mat4& );
 
 		bool updateCameraBlock( Viewer* );
-		bool updateLightBlock( Light* );
+		bool updateLightBlock( Light*, Viewer* );
 		bool updateScreenRenderingBlock( const glm::mat4& );
 
 		static bool depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b );

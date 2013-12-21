@@ -11,9 +11,6 @@ For Lighting-Stage
 		-> reconstructing eye coord
 		-> encoding/decoding normals
 
-	-> refactor light-shader
-	-> point- & spot-light do nearly the same work
-	-> function-parameteres different
 	-> shadow map sampling: cube-map artifacts?
 
 For Transparency-Stage
@@ -21,10 +18,10 @@ For Transparency-Stage
 	-> articfacts in shadow during transparency rendering?
 
 For Software-Architecture in Renderer
+	-> draw-calls are very expensive in my current architecture
 	-> split into frontend & backend
 		-> issue commands: static objects, no new -> stateless
 		-> issuing commands is api independent but api must have a corresponding functionality
-
 
 Console
 	-> implement console for input of text and commands
