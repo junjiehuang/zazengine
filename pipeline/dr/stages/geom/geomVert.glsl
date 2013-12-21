@@ -46,7 +46,7 @@ subroutine uniform processInputs processInputsSelection;
 // skinning is performed
 subroutine ( processInputs ) vec4 processInputsAnimated()
 {
-	vec4 position = vec4( 0.0 );
+	vec4 position;
 
 	for ( uint i = 0u; i < in_bone_count; i++ )
 	{
@@ -67,6 +67,8 @@ subroutine ( processInputs ) vec4 processInputsStatic()
 {
 	VS_TO_FS.normal = vec4( in_vertNorm, 0.0 );
 	VS_TO_FS.tangent = vec4( in_tangent, 0.0 );
+
+	// just pass through vertex-position
 	return vec4( in_vertPos, 1.0 );
 }
 
@@ -78,9 +80,8 @@ void main()
 	// no transform for texture-coords, just interpolated accross vertices
 	VS_TO_FS.texCoord = in_texCoord;
 
-	// non-uniform scaling is forbidden in this engine therefore we can use the normal modelViewMatrix
+	// non-uniform scaling is forbidden in this engine therefore we can use modelViewMatrix for all directions
 	VS_TO_FS.normal = Transforms.modelViewMatrix * VS_TO_FS.normal; 
-	// non-uniform scaling is forbidden in this engine therefore we can use the normal modelViewMatrix
 	VS_TO_FS.tangent = Transforms.modelViewMatrix * VS_TO_FS.tangent;
 	// construct bi-tangent from normal and tangent using the cross-product
 	VS_TO_FS.biTangent = vec4( cross( VS_TO_FS.normal.xyz, VS_TO_FS.tangent.xyz ), 0.0 ); 

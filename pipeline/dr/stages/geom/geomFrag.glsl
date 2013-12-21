@@ -57,9 +57,13 @@ subroutine ( storeMaterialProperties ) void classicMaterial()
 	// encode normal
 	out_normal.rg = encodeDirection( VS_TO_FS.normal.xyz );
 
-	// RFU
+	// RFU - no need to set it to 0.0 but here for explicit clarity
 	out_normal.b = 0.0;
 	out_normal.a = 0.0;
+	out_tangent.b = 0.0;
+	out_tangent.a = 0.0;
+	out_biTangent.b = 0.0;
+	out_biTangent.a = 0.0;
 }
 
 // LAMBERT & PHONG Material-Types
@@ -89,25 +93,23 @@ subroutine ( storeMaterialProperties ) void doom3Material()
 
 	// fetch specular and store it in alpha-channels of directions
 	vec3 specular = texture( SpecularTexture, VS_TO_FS.texCoord ).rgb;
-	// store specular material in the 3 unused alpha-channels
-	out_normal.a = specular.r;
-	out_tangent.a = specular.g;
-	out_biTangent.a = specular.b;
+	// store specular material in the 3 unused b-channels
+	out_normal.b = specular.r;
+	out_tangent.b = specular.g;
+	out_biTangent.b = specular.b;
 
-	// RFU
-	out_normal.b = 0.0;
+	// RFU - no need to set it to 0.0 but here for explicit clarity
+	out_normal.a = 0.0;
+	out_tangent.a = 0.0;
+	out_biTangent.a = 0.0;
 }
 
 void main()
 {
 	// encode both tangent and bi-tanget to save one channel each
 	// works the same way as normals because tangent&bitangent are directions
-	out_tangent.xy = encodeDirection( VS_TO_FS.tangent.xyz );
-	out_biTangent.xy = encodeDirection( VS_TO_FS.biTangent.xyz );
-
-	// RFU
-	out_tangent.z = 0.0;
-	out_biTangent.z = 0.0;
+	out_tangent.rg = encodeDirection( VS_TO_FS.tangent.xyz );
+	out_biTangent.rg = encodeDirection( VS_TO_FS.biTangent.xyz );
 
 	// subroutine-call based on the selection from application
 	storeMaterialPropertiesSelection();
