@@ -534,12 +534,7 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 		}
 	}
 	
-	// check once per frame for ALL errors regardless if we are in _DEBUG or not
-	if ( GL_PEEK_ERRORS )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderFrame: pending OpenGL-Errors - run the DEBUG-build to narrow and determine the call responsible for the error - exit" );
-		return false;
-	}
+	// NOTE: in release-build gl-errors are detected through GL ARB debug output, see RenderingContext
 
 	return true;
 }
@@ -1412,7 +1407,7 @@ DRRenderer::updateLightBlock( Light* light, Viewer* camera )
 		return false;
 	}
 
-	this->m_lightBlock->updateField( "LightUniforms.shadowResolution", shadowResolution );
+	this->m_lightBlock->updateField( "LightUniforms.shadowRes", shadowResolution );
 	this->m_lightBlock->updateField( "LightUniforms.color", color );
 	this->m_lightBlock->updateField( "LightUniforms.specular", specular );
 	this->m_lightBlock->updateField( "LightUniforms.modelViewMatrix", lightMVMatrix );

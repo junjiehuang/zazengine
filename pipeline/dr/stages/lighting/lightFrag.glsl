@@ -36,10 +36,10 @@ layout( shared ) uniform LightUniforms
 {
 	// color of the light
 	vec3 color;
-	// specular attributes: x = shininess, y = strength
-	vec2 specular; 
 	// attenuation attributes: x = constant, y = linear, z = quadratic
 	vec3 attenuation; 
+	// specular attributes: x = shininess, y = strength
+	vec2 specular; 
 	// spot attributes: x = spot cut-off, y = spot exponent
 	vec2 spot; 
 

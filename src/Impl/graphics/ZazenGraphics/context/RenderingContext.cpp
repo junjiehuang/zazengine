@@ -35,14 +35,14 @@ RenderingContext::initialize( const std::string& title, int width, int height, b
 		RenderingContext::shutdown();
         return false;
 	}
-	
-#ifdef _DEBUG
+
+	// always enable debugging, this is the way to detect errors in release-build
+	// calling glGetError every frame is too costly (about 33us)
 	if ( false == RenderingContext::initDebugging() )
 	{
 		RenderingContext::shutdown();
         return false;
 	}
-#endif
 
 	return true;
 }
@@ -111,7 +111,7 @@ RenderingContext::initGlew()
 bool
 RenderingContext::initDebugging()
 {
-	glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
+	glEnable( GL_DEBUG_OUTPUT );
 	glDebugMessageControlARB( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE );
 	glDebugMessageCallbackARB( &RenderingContext::debugOutput, NULL );
 

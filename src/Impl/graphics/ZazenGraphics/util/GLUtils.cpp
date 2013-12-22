@@ -41,7 +41,7 @@ GLUtils::peekErrors( const std::string& locationInfo )
 		// is null when not a known error
 		if ( NULL == errorStrGlu )
 		{
-			errorString = "unknown glu-error";
+			errorString = "unknown gl-error";
 		}
 		else
 		{
