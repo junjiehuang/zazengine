@@ -36,10 +36,17 @@
     </shaders>
   </program>
 
+  <program name="LightingStageStencilVolumeProgramm">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/lighting/stencilVolume/lightStencilVolVert.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/nullFrag.glsl"/>
+    </shaders>
+  </program>
+
   <program name="ShadowingStagePlanarProgramm">
     <shaders>
       <shader type="VERTEX" file="dr/stages/shadowing/planar/shadowPlanarVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/shadowing/planar/shadowPlanarFrag.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/nullFrag.glsl"/>
     </shaders>
   </program>
 

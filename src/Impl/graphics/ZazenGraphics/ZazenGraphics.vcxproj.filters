@@ -130,6 +130,9 @@
     <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\MultiPass">
       <UniqueIdentifier>{83d64cc0-4051-4cdc-a815-4a4b2bbc8867}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting\Stencil">
+      <UniqueIdentifier>{87c9640d-ccc6-44d5-b0a6-556822c2bb55}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -376,9 +379,6 @@
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Planar</Filter>
-    </None>
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Planar</Filter>
     </None>
@@ -396,6 +396,12 @@
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\MultiPass</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\nullFrag.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\stencil\lightStencilVolVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting\Stencil</Filter>
     </None>
   </ItemGroup>
 </Project>

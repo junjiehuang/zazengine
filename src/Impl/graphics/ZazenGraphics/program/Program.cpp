@@ -293,6 +293,21 @@ Program::setUniformInt( const std::string& name, int value )
 }
 
 bool
+Program::setUniformMatrix( const std::string& name, const glm::mat4& matrix )
+{
+	UniformField* field = this->getUniformField( name );
+	if ( NULL == field )
+	{
+		return false;
+	}
+
+	glUniformMatrix4fv( field->m_location, 1, GL_FALSE, glm::value_ptr( matrix ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	return true;
+}
+
+bool
 Program::setUniformMatrices( const std::string& name, const std::vector<glm::mat4>& matrices )
 {
 	UniformField* field = this->getUniformField( name );

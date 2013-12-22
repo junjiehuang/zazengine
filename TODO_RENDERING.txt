@@ -1,11 +1,9 @@
-For Geometry-Stage
-	-> update blog
-		-> describe materials of renderer
-		-> describe methods to encode directions
-		-> http://aras-p.info/texts/CompactNormalStorage.html
-		-> https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
-
 For Lighting-Stage
+	-> enhance: sphere bounding-mesh for point/spot light - create sphere in code
+	-> enhance: only 1 fbo necessary
+	
+	-> write blog
+		-> https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
 	-> understand math behind
 		-> normal mapping
 		-> reconstructing eye coord
@@ -16,6 +14,54 @@ For Lighting-Stage
 For Transparency-Stage
 	-> fix it, refraction is broken!
 	-> articfacts in shadow during transparency rendering?
+	-> need to be able to render from an aribtrary view point into aribtrary 2d target with different resolution
+		-> need 2 render-targets: planar & environmental (cube)
+	-> environment dynamic cube-mapping
+		-> need very generic renderFrame-method which allows to be called recursively
+			-> need for every recursion level one CubeMap-FBO
+			-> need to generify much of the code of the renderer-loop
+			-> pass in some render-Context struct 
+				-> holds recursion-level
+				-> holds render-target where to render or null when to default framebuffer
+				-> holds flag if shadow-rendering in environment-rendering
+				-> holds flag if transparency-rendering in environment-rendering
+				-> holds flag if interreflection-rendering in environment-rendering
+				-> holds max recursion depth
+		-> can be done directly with deferred renderning, no need for fallback to forward-rendering
+			-> but need additional environment-rendering fbo
+				-> render 6 faces of a cubemap, each with deferred rendering => fucking huge impact on bandwith and performance
+					-> dramatic reduced resolution of cube-map sides e.g. 512x512
+		-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
+		-> use geometry-shader to render to cube-map layers ?
+		-> can to do refraction & reflection
+		-> simulate chromatic abberration (see Orange Book)
+			-> need to simulate different wavelengths for red, green and blue channels
+		-> different texture-binding because material could or could not use binding points
+			-> general texture binding-point management
+				-> giving next free n slots
+				-> call to bind of texture, will return binding-point or -1 if fails
+				-> but need to release texture to keep track of usage
+				-> keep track for all texture-types (2d & cube so far)
+					-> every binding-point can have each type active
+				-> keep track of max_texture_units
+		-> more flexible renderInstances: need finer control over which materials to draw
+		-> new material-type:
+			<material name="Glass">
+				<type id="ENVIRONMENTAL">
+				  <reflection>
+					... params
+				  </reflection>
+
+				  <refraction>
+					... params
+				  </refraction>
+      
+				  <diffuseColor file="cross_diffuse.jpg"/>
+				  <color r="0.54" g="0.89" b="0.63"/>
+				</type>
+			  </material>
+		-> material subclasses
+			-> environment holds cube-map and params for shaders. it knows how often update cube-map per second
 
 For Software-Architecture in Renderer
 	-> draw-calls are very expensive in my current architecture
@@ -117,52 +163,6 @@ Need generic effect/material functionality
 		-> microfacet
 
 Reflections
-	-> environment (cube-mapping)
-		-> need very generic renderFrame-method which allows to be called recursively
-			-> need for every recursion level one CubeMap-FBO
-			-> need to generify much of the code of the renderer-loop
-			-> pass in some render-Context struct 
-				-> holds recursion-level
-				-> holds render-target where to render or null when to default framebuffer
-				-> holds flag if shadow-rendering in environment-rendering
-				-> holds flag if transparency-rendering in environment-rendering
-				-> holds flag if interreflection-rendering in environment-rendering
-				-> holds max recursion depth
-		-> can be done directly with deferred renderning, no need for fallback to forward-rendering
-			-> but need additional environment-rendering fbo
-				-> render 6 faces of a cubemap, each with deferred rendering => fucking huge impact on bandwith and performance
-					-> dramatic reduced resolution of cube-map sides e.g. 512x512
-		-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
-		-> use geometry-shader to render to cube-map layers ?
-		-> can to do refraction & reflection
-		-> simulate chromatic abberration (see Orange Book)
-			-> need to simulate different wavelengths for red, green and blue channels
-		-> different texture-binding because material could or could not use binding points
-			-> general texture binding-point management
-				-> giving next free n slots
-				-> call to bind of texture, will return binding-point or -1 if fails
-				-> but need to release texture to keep track of usage
-				-> keep track for all texture-types (2d & cube so far)
-					-> every binding-point can have each type active
-				-> keep track of max_texture_units
-		-> more flexible renderInstances: need finer control over which materials to draw
-		-> new material-type:
-			<material name="Glass">
-				<type id="ENVIRONMENTAL">
-				  <reflection>
-					... params
-				  </reflection>
-
-				  <refraction>
-					... params
-				  </refraction>
-      
-				  <diffuseColor file="cross_diffuse.jpg"/>
-				  <color r="0.54" g="0.89" b="0.63"/>
-				</type>
-			  </material>
-		-> material subclasses
-			-> environment holds cube-map and params for shaders. it knows how often update cube-map per second
 	-> planar
 		-> render mirror-plane as usual with stencil enabled
 		-> render world mirrored by this plane as usual

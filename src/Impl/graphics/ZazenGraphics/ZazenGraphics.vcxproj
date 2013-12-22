@@ -161,12 +161,13 @@
     <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\stencil\lightStencilVolVert.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\nullFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeGeom.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\blendTranspFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\blendTranspVert.glsl" />

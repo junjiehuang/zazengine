@@ -9,9 +9,13 @@
 #include <assimp/postprocess.h>
 
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 using namespace boost;
+
+#define M_PI       3.14159265f
+#define M_PI_2     1.57079632f
 
 #define BUFFER_OFFSET( i ) ( ( char* ) NULL + ( i ) )
 
@@ -206,6 +210,8 @@ GeometryFactory::createQuad( float width, float height )
 Mesh*
 GeometryFactory::createUnitCube()
 {
+	// TODO: check existing cubes and return if match instead of creating 
+
 	GLuint vao = 0;
 	GLuint dataVBO = 0;
 	GLuint indexVBO = 0;
@@ -287,6 +293,96 @@ GeometryFactory::createUnitCube()
 
 	return meshUnitCube;
 }
+
+Mesh*
+GeometryFactory::createSphere( float radius, unsigned int rings, unsigned int sectors )
+{
+	// TODO: check existing spheres for same radius, rings & sectors and return instead of creating
+
+	GLuint vao = 0;
+	GLuint dataVBO = 0;
+	GLuint indexVBO = 0;
+
+	unsigned int vertexIndex = 0;
+	unsigned int indexIndex = 0;
+
+	// code from http://stackoverflow.com/questions/5988686/creating-a-3d-sphere-in-opengl-using-visual-c/5989676#5989676
+	std::vector<GLfloat> sphereVertices;
+    std::vector<GLuint> sphereIndices;
+
+	sphereVertices.resize( rings * sectors * 3 );
+	sphereIndices.resize( rings * sectors * 3 * 2 );
+
+	float const R = 1.0f / ( float ) ( rings - 1 );
+    float const S = 1.0f / ( float ) ( sectors - 1 );
+
+    for( unsigned int r = 0; r < rings; ++r )
+	{
+        for( unsigned int s = 0; s < sectors; ++s )
+		{
+            float const y = sin( -M_PI_2 + M_PI * r * R );
+            float const x = cos( 2 * M_PI * s * S ) * sin( M_PI * r * R );
+            float const z = sin( 2 * M_PI * s * S ) * sin( M_PI * r * R );
+			int curRow = r * sectors;
+			int nextRow = ( r + 1 ) * sectors;
+
+            sphereVertices[ vertexIndex++ ] = x * radius;
+			sphereVertices[ vertexIndex++ ] = y * radius;
+			sphereVertices[ vertexIndex++ ] = z * radius;
+
+			sphereIndices[ indexIndex++ ] = curRow + s;
+			sphereIndices[ indexIndex++ ] = nextRow + s;
+			sphereIndices[ indexIndex++ ] = nextRow + ( s + 1 );
+
+			sphereIndices[ indexIndex++ ] = curRow + s;
+			sphereIndices[ indexIndex++ ] = nextRow + ( s + 1 );
+			sphereIndices[ indexIndex++ ] = curRow + ( s + 1 );
+        }
+    }
+
+	// NOTE: the VAO encapuslates ALL of the subsequent buffers and states of the buffers 
+	glGenVertexArrays( 1, &vao ); 
+	glBindVertexArray( vao );
+
+	glGenBuffers( 1, &dataVBO );
+	GL_PEEK_ERRORS_AT
+
+	glBindBuffer( GL_ARRAY_BUFFER, dataVBO );
+	GL_PEEK_ERRORS_AT
+
+	glEnableVertexAttribArray( 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	glBufferData( GL_ARRAY_BUFFER, sizeof( GLfloat ) * sphereVertices.size(), &sphereVertices[ 0 ], GL_STATIC_DRAW );
+	GL_PEEK_ERRORS_AT
+
+	glGenBuffers( 1, &indexVBO );
+	GL_PEEK_ERRORS_AT
+	
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexVBO );
+	GL_PEEK_ERRORS_AT
+	
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( GLuint ) * sphereIndices.size(), &sphereIndices[ 0 ], GL_STATIC_DRAW );
+	GL_PEEK_ERRORS_AT
+	
+	glBindVertexArray( 0 );
+
+	Mesh* meshSphere = new Mesh( vao, dataVBO, indexVBO, sphereIndices.size() );
+	meshSphere->m_vertexData = NULL;	// no dynamic memory for small mesh 
+	meshSphere->m_indexData = NULL;	// no dynamic memory for small mesh 
+
+	// put into map => will be cleaned up
+	MeshNode* containerNode = new MeshNode( "SPHERE_MESH" + this->m_allMeshes.size() );
+	containerNode->m_meshes.push_back( meshSphere );
+
+	this->m_allMeshes[ containerNode->getName() ] = containerNode;
+
+	return meshSphere;
+}
+
 
 MeshNode*
 GeometryFactory::loadFolder( const filesystem::path& folderPath )

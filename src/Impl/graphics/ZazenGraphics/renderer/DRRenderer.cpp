@@ -28,6 +28,7 @@ DRRenderer::DRRenderer()
 	this->m_progGeomStage = NULL;
 	this->m_progSkyBox = NULL;
 	this->m_progLightingStage = NULL;
+	this->m_progLightingStageStencilVolume = NULL;
 	this->m_progShadowMappingPlanar = NULL;
 	this->m_progShadowMappingCubeSinglePass = NULL;
 	this->m_progShadowMappingCubeMultiPass = NULL;
@@ -37,9 +38,9 @@ DRRenderer::DRRenderer()
 	this->m_transformsBlock = NULL;
 	this->m_cameraBlock = NULL;
 	this->m_lightBlock = NULL;
+	this->m_lightBoundingMeshBlock = NULL;
 	this->m_materialBlock = NULL;
 	this->m_transparentMaterialBlock = NULL;
-	this->m_screenRenderingBoundaryBlock = NULL;
 
 	this->m_fsq = NULL;
 
@@ -296,7 +297,14 @@ DRRenderer::initLightingStage()
 	this->m_progLightingStage = ProgramManagement::get( "LightingStageProgramm" );
 	if ( 0 == this->m_progLightingStage )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: coulnd't create program - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: coulnd't create lighting-stage program - exit" );
+		return false;
+	}
+
+	this->m_progLightingStageStencilVolume = ProgramManagement::get( "LightingStageStencilVolumeProgramm" );
+	if ( 0 == this->m_progLightingStageStencilVolume )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: coulnd't create lighting-stage stencil volume program - exit" );
 		return false;
 	}
 
@@ -385,6 +393,13 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
+	this->m_lightBoundingMeshBlock = UniformManagement::getBlock( "LightBoundingMeshUniforms" );
+	if ( 0 == this->m_lightBoundingMeshBlock )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find light bounding-mesh uniform-block - exit" );
+		return false;
+	}
+
 	this->m_materialBlock = UniformManagement::getBlock( "MaterialUniforms" );
 	if ( 0 == this->m_materialBlock )
 	{
@@ -396,13 +411,6 @@ DRRenderer::initUniformBlocks()
 	if ( 0 == this->m_transparentMaterialBlock )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find transparent material uniform-block - exit" );
-		return false;
-	}
-
-	this->m_screenRenderingBoundaryBlock = UniformManagement::getBlock( "ScreenRenderingBoundaryUniforms" );
-	if ( 0 == this->m_screenRenderingBoundaryBlock )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find screen-rendering boundary uniform-block - exit" );
 		return false;
 	}
 
@@ -439,6 +447,12 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
+	if ( false == this->m_lightBoundingMeshBlock->bindBase() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding light bounding-mesh uniform-block failed - exit" );
+		return false;
+	}
+
 	if ( false == this->m_materialBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding material uniform-block failed - exit" );
@@ -448,12 +462,6 @@ DRRenderer::initUniformBlocks()
 	if ( false == this->m_transparentMaterialBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding transparent material uniform-block failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_screenRenderingBoundaryBlock->bindBase() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding screen-rendering boundary uniform-block failed - exit" );
 		return false;
 	}
 
@@ -682,7 +690,7 @@ DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 		Light* light = entiy->getLight();
 		if ( light )
 		{
-			if ( false == this->renderLight( entities, light ) )
+			if ( false == this->processLight( entities, light ) )
 			{
 				return false;
 			}
@@ -693,25 +701,52 @@ DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 }
 
 bool
-DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+DRRenderer::processLight( std::list<ZazenGraphicsEntity*>& entities, Light* light )
 {
-	// light is shadow-caster: render shadow map for this light
-	if ( light->isShadowCaster() )
+	// render the shadow-map of the light (if it is a shadow-caster)
+	if ( false == this->renderShadowMap( entities, light ) )
 	{
-		NVTX_RANGE_PUSH( "ShadowMapping" )
-		if ( false == this->renderShadowMap( entities, light ) )
-		{
-			return false;
-		}
-		NVTX_RANGE_POP
-
-		// switch back to g-buffer because was switched to intermediateFB during shadow-map rendering
-		if ( false == this->m_fbo->bind() )
-		{
-			return false;
-		}
+		return false;
 	}
-	
+		
+	// IMPORTANT: need to re-set the viewport, could have changed due to shadow-map rendering happend before
+	this->m_mainCamera->restoreViewport();
+
+	// update the orientation of the light bounding-mesh in the world
+	if ( false == this->updateLightBoundingMeshBlock( light ) )
+	{
+		return false;
+	}
+
+	// light uses stencil-test to discard pixels
+	glEnable( GL_STENCIL_TEST );
+	// disable writing to depth: light-boundaries should not update depth
+	// we also need to READ from depth so no update 
+	glDepthMask( GL_FALSE );
+
+	// mark all pixels inside the light-volume
+	if ( false == this->markLightVolume( light ) )
+	{
+		return false;
+	}
+
+	// finally render the light
+	if ( false == this->renderLight( light ) )
+	{
+		return false;
+	}
+
+	// disable stencil test for next step in pipeline
+	glDisable( GL_STENCIL_TEST );
+	// enable depth-testing for next step in pipeline
+	glDepthMask( GL_TRUE );
+
+	return true;
+}
+
+bool
+DRRenderer::renderLight( Light* light )
+{
 	// render to target 4 which gathers the final result before post-processing
 	if ( false == this->m_fbo->drawBuffer( 4 ) )
 	{
@@ -721,10 +756,6 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 	// check status of FBO, IMPORANT: not before, would have failed
 	CHECK_FRAMEBUFFER_DEBUG
 
-	// IMPORTANT: need to re-set the viewport for each FBO
-	// could have changed due to shadow-map or other rendering happend in the frame before
-	this->m_mainCamera->restoreViewport();
-
 	// activate lighting-stage shader
 	if ( false == this->m_progLightingStage->use() )
 	{
@@ -732,7 +763,7 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		return false;
 	}
 
-	// OPTIMIZE: no need to do for every light!
+	// OPTIMIZE: no need to do for every light! try it
 	// lighting stage program need all buffers of g-buffer bound as textures
 	if ( false == this->m_fbo->bindTargets( this->m_gBufferBindTargetIndices ) )
 	{
@@ -817,39 +848,33 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 		return false;
 	}
 
-	// OPTIMIZE: store in light once, and only update when change
-	glm::mat4 orthoMat = this->m_mainCamera->createOrthoProj( true, true );
-	if ( false == this->updateScreenRenderingBlock( orthoMat ) )
-	{
-		return false;
-	}
-	
 	// blend lighting-results, defaults to GL_FUNC_ADD, exactly what we need
 	glEnable( GL_BLEND );
 	// the source (from lighting-shader) is weighted by the alpha-value (constant 1.0 for now)
 	// the destination is weighted by the inverse of the source-color which creates a saturation effect with multiple lights
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
 
-	// disable writing to depth: light-boundaries should not update depth
-	// we also need to READ from depth so no update 
-	glDepthMask( GL_FALSE );
-
-	// enable stencil-test to mask out all non-mesh pixels (background)
-	glEnable( GL_STENCIL_TEST );
-	// stencil-test will pass only when a 1 is found in stencil-buffer
-	glStencilFunc( GL_EQUAL, 0x1, 0x1 );
+	// stencil-test will pass only when stencil-buffer contains >= 2 which means the pixel is a mesh affected by at least this light-volume
+	glStencilFunc( GL_LEQUAL, 0x2, 0xFF );
 	// don't touch the stencil-buffer, keep it for all fail-scenarios the same
 	glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
 
-	// render light boundary (for now only full screen-quad)
-	light->getBoundingMesh()->render();
+	// bind light uniform-block to update data
+	if ( false == this->m_lightBoundingMeshBlock->bindBuffer() )
+	{
+		return false;
+	}
+
+	glm::mat4 lightBoundingMeshMVP = this->m_mainCamera->createOrthoProj( true, true );
+	this->m_lightBoundingMeshBlock->updateField( "LightBoundingMeshUniforms.mvp", lightBoundingMeshMVP );
+
+	// now render the FSQ
+	// NOTE: we don't render the light bounding-mesh because for two reasons
+	// 1. the mesh could have quite high complexity 
+	// 2. with the FSQ we don't have to distinguish if we are inside the light bounding-mesh or outside
+	//		based upon this we would have to change glCullFace to FRONT or BACK
+	this->m_fsq->render();
 	
-	// disable stencil-test for next light
-	glDisable( GL_STENCIL_TEST );
-
-	// enable depth-writing again
-	glDepthMask( GL_TRUE );
-
 	// turn off blending otherwise would lead to artifacts because everything would be blended (depth maps,...)
 	glDisable( GL_BLEND );
 
@@ -857,8 +882,48 @@ DRRenderer::renderLight( std::list<ZazenGraphicsEntity*>& entities, Light* light
 }
 
 bool
+DRRenderer::markLightVolume( Light* light )
+{
+	// only update stencil-buffer => glDrawBuffer( GL_NONE )
+	this->m_fbo->drawNone();
+
+	// check status of FBO, IMPORANT: not before, would have failed
+	CHECK_FRAMEBUFFER_DEBUG
+
+	if ( false == this->m_progLightingStageStencilVolume->use() )
+	{
+		return false;
+	}
+
+	// no culling of faces because we need to mark the volume by 
+	// incrementing/decrementing the stencil-values when entering/exiting
+	glDisable( GL_CULL_FACE );
+
+	// We need the stencil test to be enabled but we want it to succeed always. Only the depth test matters.
+    glStencilFunc( GL_ALWAYS, 0, 0 );
+
+    glStencilOpSeparate( GL_BACK, GL_KEEP, GL_INCR, GL_KEEP );
+    glStencilOpSeparate( GL_FRONT, GL_KEEP, GL_DECR, GL_KEEP );
+
+	light->getBoundingMesh()->render();
+
+	// enable culling of faces again
+	glEnable( GL_CULL_FACE );
+
+	return true;
+}
+
+bool
 DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* light )
 {
+	// check if this light is a shadow-caster
+	if ( false == light->isShadowCaster() )
+	{
+		return true;
+	}
+
+	NVTX_RANGE_PUSH( "ShadowMapping" )
+
 	// update the camera for rendering the shadow-cube - the light is the camera because we render the scene from the perspective of the camera
 	this->updateCameraBlock( light );
 
@@ -884,6 +949,13 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 			return false;
 		}
 	}
+
+	if ( false == this->m_fbo->bind() )
+	{
+		return false;
+	}
+
+	NVTX_RANGE_POP
 
 	return true;
 }
@@ -1158,13 +1230,7 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 
 	this->m_progBlendTransparency->setUniformInt( "Background", 2 );
 	this->m_progBlendTransparency->setUniformInt( "Transparent", 0 );
-	
-	// OPTIMIZE: store in light once, and only update when change
-	glm::mat4 orthoMat = this->m_mainCamera->createOrthoProj( true, true );
-	if ( false == this->updateScreenRenderingBlock( orthoMat ) )
-	{
-		return false;
-	}
+	this->m_progBlendTransparency->setUniformMatrix( "projectionMatrix", this->m_mainCamera->createOrthoProj( true, true ) );
 
 	// disable writing to depth when not last instance because would destroy our depth-buffer
 	// when last instance it doesnt matter because we render to screen-buffer
@@ -1451,14 +1517,27 @@ DRRenderer::updateLightBlock( Light* light, Viewer* camera )
 }
 
 bool
-DRRenderer::updateScreenRenderingBlock( const glm::mat4& projection )
+DRRenderer::updateLightBoundingMeshBlock( Light* light )
 {
-	if ( false == this->m_screenRenderingBoundaryBlock->bindBuffer() )
+	// bind light uniform-block to update data
+	if ( false == this->m_lightBoundingMeshBlock->bindBuffer() )
 	{
 		return false;
 	}
 
-	this->m_screenRenderingBoundaryBlock->updateField( "ScreenRenderingBoundaryUniforms.projectionMatrix", projection );
+	glm::mat4 lightBoundingMeshMVP;
+
+	if ( Light::DIRECTIONAL == light->getType() )
+	{
+		lightBoundingMeshMVP = this->m_mainCamera->createOrthoProj( true, false );
+	}
+	else if ( Light::SPOT == light->getType() || Light::POINT == light->getType() )
+	{
+		// TODO apply scaling based upon falloff and distance
+		lightBoundingMeshMVP = this->m_mainCamera->getVPMatrix() * light->getModelMatrix() * glm::scale( glm::vec3( 100.0, 100.0, 100.0 ) );
+	}
+	
+	this->m_lightBoundingMeshBlock->updateField( "LightBoundingMeshUniforms.mvp", lightBoundingMeshMVP );
 
 	return true;
 }

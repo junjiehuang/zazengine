@@ -12,18 +12,20 @@ out VS_TO_FS_OUT
 	vec3 ndc;
 } VS_TO_FS;
 
-// TRANSFORMATIONS OF THE BOUNDARY OF THE CURRENT LIGHT
-layout( shared ) uniform ScreenRenderingBoundaryUniforms
+// THE CONFIGURATION FOR THE CURRENT LIGHT BOUNDING-MESH
+layout( shared ) uniform LightBoundingMeshUniforms
 {
-	// the projection-matrix of the current light-boundary
-	mat4 projectionMatrix;
-} ScreenRenderingBoundary;
+	// the mvp-matrix of the current light-bounding mesh
+	// in the case of a directional light which has a FSQ this is the plain identity matrix
+	// in the other case of point/spot it is a normal mvp-matrix and projects the bounding mesh into the world
+	mat4 mvp;
+} LightBoundingMesh;
 
 void main()
 {
-	// HINT: only apply projection-matrix because we do orthogonal quad rendering and apply no modeling
-	gl_Position = ScreenRenderingBoundary.projectionMatrix * vec4( in_vertPos, 1.0 );
+	gl_Position = LightBoundingMesh.mvp * vec4( in_vertPos, 1.0 );
 
+	// works only for orthographic projection: perspective projection seems not to interpolate linearly!! => need to find a way to linearize
 	// perform perspective divison by w => clip-space
 	VS_TO_FS.ndc = gl_Position.xyz / gl_Position.w;
 	// need to transform from clip-space which is in range [-1, 1] to texture-space [0, 1]

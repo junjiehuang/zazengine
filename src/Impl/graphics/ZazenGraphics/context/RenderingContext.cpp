@@ -13,7 +13,7 @@ using namespace std;
 using namespace boost::filesystem;
 
 #define REQUIRED_MAJOR_OPENGL_VER 4
-#define REQUIRED_MINOR_OPENGL_VER 0
+#define REQUIRED_MINOR_OPENGL_VER 2
 
 #define WINDOW_BITS_PER_PIXEL 32
 
@@ -111,7 +111,7 @@ RenderingContext::initGlew()
 bool
 RenderingContext::initDebugging()
 {
-	glEnable( GL_DEBUG_OUTPUT );
+	glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB );
 	glDebugMessageControlARB( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE );
 	glDebugMessageCallbackARB( &RenderingContext::debugOutput, NULL );
 

@@ -22,6 +22,7 @@ class GeometryFactory
 		MeshNode* getMesh( const std::string& fileName );
 		Mesh* createQuad( float width, float height );
 		Mesh* createUnitCube();
+		Mesh* createSphere( float radius, unsigned int rings, unsigned int sectors );
 
 		void free( Mesh* );
 

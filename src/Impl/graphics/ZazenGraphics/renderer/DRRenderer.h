@@ -40,6 +40,7 @@ class DRRenderer
 
 		// Program and shaders for lighting-stage with shadowing
 		Program* m_progLightingStage;
+		Program* m_progLightingStageStencilVolume;
 		////////////////////////////////////////
 
 		Program* m_progTransparency;
@@ -54,8 +55,8 @@ class DRRenderer
 		// Uniform-Blocks
 		UniformBlock* m_cameraBlock;
 		UniformBlock* m_transformsBlock;
-		UniformBlock* m_screenRenderingBoundaryBlock;
 		UniformBlock* m_lightBlock;
+		UniformBlock* m_lightBoundingMeshBlock;
 		UniformBlock* m_materialBlock;
 		UniformBlock* m_transparentMaterialBlock;
 		////////////////////////////////////////
@@ -98,7 +99,10 @@ class DRRenderer
 		bool renderSkyBox();
 		bool renderGeometry( std::list<ZazenGraphicsEntity*>&, Program* );
 
-		bool renderLight( std::list<ZazenGraphicsEntity*>&, Light* );
+		bool processLight( std::list<ZazenGraphicsEntity*>&, Light* );
+		bool markLightVolume( Light* );
+		bool renderLight( Light* );
+
 		bool renderShadowMap( std::list<ZazenGraphicsEntity*>&, Light* );
 		bool renderShadowPlanar( std::list<ZazenGraphicsEntity*>&, Light* );
 		bool renderShadowCube( std::list<ZazenGraphicsEntity*>&, Light* );
@@ -114,7 +118,7 @@ class DRRenderer
 
 		bool updateCameraBlock( Viewer* );
 		bool updateLightBlock( Light*, Viewer* );
-		bool updateScreenRenderingBlock( const glm::mat4& );
+		bool updateLightBoundingMeshBlock( Light* );
 
 		static bool depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b );
 

@@ -31,6 +31,7 @@ class Program
 		bool activateSubroutine( const std::string&, Shader::ShaderType );
 
 		bool setUniformInt( const std::string& name, int );
+		bool setUniformMatrix( const std::string& name, const glm::mat4& );
 		bool setUniformMatrices( const std::string& name, const std::vector<glm::mat4>& );
 
 		bool bindUniformBlock( UniformBlock* );

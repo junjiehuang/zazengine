@@ -436,15 +436,18 @@ ZazenGraphics::parseLight( TiXmlElement* objectNode, ZazenGraphicsEntity* entity
 	else if ( lightType == "POINT" )
 	{
 		light = Light::createPoint( shadowMapResX, castShadow );
-		// TODO load correct bounding-geometry
-		boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+		//boundingMesh = GeometryFactory::getRef().createSphere( 10.0, 10, 10 );
+		MeshNode* node = GeometryFactory::getRef().getMesh( "light_bounding.obj" );
+		boundingMesh = node->getMeshes()[ 0 ];
+		
 	}
 	// default is spot
 	else
 	{
 		light = Light::createSpot( fov, shadowMapResX, shadowMapResY, castShadow );
-		// TODO load correct bounding-geometry
-		boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+		//boundingMesh = GeometryFactory::getRef().createSphere( 1.0, 10, 10 );
+		MeshNode* node = GeometryFactory::getRef().getMesh( "light_bounding.obj" );
+		boundingMesh = node->getMeshes()[ 0 ];
 	}
 
 	light->m_boundingMesh = boundingMesh;
