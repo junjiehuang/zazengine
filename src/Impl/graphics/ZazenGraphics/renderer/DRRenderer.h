@@ -26,7 +26,7 @@ class DRRenderer
 	private:
 		// Multiple-Render-Targes & Framebuffer for Deferred Rendering
 		FrameBufferObject* m_fbo;
-		FrameBufferObject* m_intermediateDepthFB;
+		FrameBufferObject* m_helperFbo;
 		////////////////////////////////////////
 
 		// full-screen-quad (FSQ) needed to perform final lighting- and post-processing passes 
@@ -53,6 +53,10 @@ class DRRenderer
 		Program* m_progTransparency;
 		////////////////////////////////////////
 
+		// Programs for environmental rendering
+		Program* m_progCubeEnv;
+		////////////////////////////////////////
+
 		// Uniform-Blocks
 		UniformBlock* m_cameraBlock;
 		UniformBlock* m_transformsBlock;
@@ -68,6 +72,10 @@ class DRRenderer
 		// helper rendering-targets
 		RenderTarget* m_planarHelperTarget;
 		RenderTarget* m_environmentHelperTarget;
+		////////////////////////////////////////
+
+		// all entities for the current frame
+		std::list<ZazenGraphicsEntity*>* m_currentEntities;
 		////////////////////////////////////////
 
 		// static data which will not change every frame
@@ -95,32 +103,32 @@ class DRRenderer
 
 		bool createMrtBuffer( RenderTarget::RenderTargetType, FrameBufferObject* );
 
-		bool renderInternalFrame( Viewer*, std::list<ZazenGraphicsEntity*>& );
+		bool renderInternalFrame( Viewer* );
 
-		void preProcessTransparency( std::list<ZazenGraphicsEntity*>& );
-		bool doGeometryStage( std::list<ZazenGraphicsEntity*>& );
-		bool doLightingStage( std::list<ZazenGraphicsEntity*>& );
-		bool doPostProcessing( std::list<ZazenGraphicsEntity*>& );
-		bool doTransparencyStage( std::list<ZazenGraphicsEntity*>& );
+		void preProcessTransparency();
+		bool doGeometryStage();
+		bool doLightingStage();
+		bool doPostProcessing();
+		bool doTransparencyStage();
 
 		bool renderSkyBox();
 		bool renderGeometry( std::list<ZazenGraphicsEntity*>&, Program* );
 
-		bool processLight( std::list<ZazenGraphicsEntity*>&, Light*, unsigned int );
+		bool processLight( Light*, unsigned int );
 		bool markLightVolume( Light*, unsigned int );
 		bool renderLight( Light*, unsigned int );
 
-		bool renderShadowMap( std::list<ZazenGraphicsEntity*>&, Light* );
-		bool renderShadowPlanar( std::list<ZazenGraphicsEntity*>&, Light* );
-		bool renderShadowCube( std::list<ZazenGraphicsEntity*>&, Light* );
-		bool renderShadowCubeSinglePass( std::list<ZazenGraphicsEntity*>&, Light* );
-		bool renderShadowCubeMultiPass( std::list<ZazenGraphicsEntity*>&, Light* );
-		bool renderShadowPass( std::list<ZazenGraphicsEntity*>&, Light*, Program* );
+		bool renderShadowMap( Light* );
+		bool renderShadowPlanar( Light* );
+		bool renderShadowCube( Light* );
+		bool renderShadowCubeSinglePass( Light* );
+		bool renderShadowCubeMultiPass( Light* );
+		bool renderShadowPass( Light*, Program* );
 
-		void filterTransparentEntities( std::list<ZazenGraphicsEntity*>&, std::vector<ZazenGraphicsEntity*>& );
+		void filterTransparentEntities( std::vector<ZazenGraphicsEntity*>& );
 		bool processTransparentEntities( std::vector<ZazenGraphicsEntity*>&, unsigned int& );
 		bool renderTransparentInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
-		bool renderEnvironmentalInstance( ZazenGraphicsEntity*, unsigned int );
+		bool renderEnvironmentalInstance( ZazenGraphicsEntity* );
 		bool renderTransparentEntity( Viewer*, ZazenGraphicsEntity*, Program* );
 		
 		bool renderEntities( Viewer*, std::list<ZazenGraphicsEntity*>&, Program*, bool, bool );

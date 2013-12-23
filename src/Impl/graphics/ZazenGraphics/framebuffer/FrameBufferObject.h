@@ -24,8 +24,14 @@ class FrameBufferObject
 		GLuint getId() const { return this->m_id; };
 
 		bool attachTarget( RenderTarget* );
-		bool attachTargetTemp( RenderTarget* );
-		bool attachTargetTempCubeFace( RenderTarget*, unsigned int );
+		
+		bool attachDepthTargetTemp( RenderTarget* );
+		bool attachColorTargetTemp( RenderTarget*, unsigned int );
+		bool detachColorTargetTemp( RenderTarget*, unsigned int );
+
+		bool attachDepthTargetTempCubeFace( RenderTarget*, unsigned int );
+		bool attachColorTargetTempCubeFace( RenderTarget*, unsigned int, unsigned int );
+
 		bool restoreDepthTarget();
 
 		bool drawAllBuffers();
@@ -35,7 +41,9 @@ class FrameBufferObject
 
 		bool copyDepthToTarget( RenderTarget* );
 
-		bool blitToSystemFB( unsigned int );
+		bool blitColorToSystemFB( unsigned int );
+		bool blitColorToFBO( RenderTarget*, unsigned int, unsigned int, FrameBufferObject* );
+
 		bool blitDepthToFBO( FrameBufferObject* );
 		bool blitColorFromTo( unsigned int, unsigned int );
 

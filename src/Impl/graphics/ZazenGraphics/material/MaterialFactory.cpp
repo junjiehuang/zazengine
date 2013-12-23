@@ -97,6 +97,10 @@ MaterialFactory::init( const filesystem::path& path )
 			{
 				material = MaterialFactory::createTransparentMaterial( name, materialTypeNode );
 			}
+			else if ( "ENVIRONMENTAL" == typeID )
+			{
+				material = MaterialFactory::createEnvironmentalMaterial( name, materialTypeNode );
+			}
 
 			if ( NULL != material )
 			{

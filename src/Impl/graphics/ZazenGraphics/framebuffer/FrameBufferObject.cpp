@@ -71,22 +71,28 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 		}
 	}
 
-	if ( false == this->attachTargetTemp( renderTarget ) )
-	{
-		return false;
-	}
-
 	// any depth-target is regarded as depth-buffer
 	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_DEPTH_STENCIL == renderTarget->getType() ||
 		 RenderTarget::RT_SHADOW_PLANAR == renderTarget->getType() || RenderTarget::RT_SHADOW_CUBE == renderTarget->getType() )
 	{
 		this->m_depthBuffer = renderTarget->getId();
 		this->m_depthTarget = renderTarget;
+	
+		if ( false == this->attachDepthTargetTemp( renderTarget ) )
+		{
+			return false;
+		}
+
 	}
 	else if ( RenderTarget::RT_COLOR == renderTarget->getType() )
 	{
 		GLuint id = renderTarget->getId();
 		GLenum colorAttachment = GL_COLOR_ATTACHMENT0 + this->m_colorBufferTargets.size();
+
+		if ( false == this->attachColorTargetTemp( renderTarget, this->m_colorBufferTargets.size() ) )
+		{
+			return false;
+		}
 
 		this->m_colorBufferTargets.push_back( colorAttachment );
 	}
@@ -97,7 +103,7 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 }
 
 bool
-FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
+FrameBufferObject::attachDepthTargetTemp( RenderTarget* renderTarget )
 {
 	if ( RenderTarget::RT_DEPTH == renderTarget->getType() || RenderTarget::RT_SHADOW_PLANAR == renderTarget->getType() || RenderTarget::RT_SHADOW_CUBE == renderTarget->getType() )
 	{
@@ -111,12 +117,16 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 		glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, renderTarget->getId(), 0 );
 		GL_PEEK_ERRORS_AT_DEBUG
 	}
-	else if ( RenderTarget::RT_COLOR == renderTarget->getType() )
-	{
-		GLuint id = renderTarget->getId();
-		GLenum colorAttachment = GL_COLOR_ATTACHMENT0 + this->m_colorBufferTargets.size();
+	
+	return true;
+}
 
-		glFramebufferTexture2D( GL_FRAMEBUFFER, colorAttachment, GL_TEXTURE_2D, id, 0 );
+bool
+FrameBufferObject::attachColorTargetTemp( RenderTarget* renderTarget, unsigned int colorAttachmentIndex )
+{
+	if ( RenderTarget::RT_COLOR == renderTarget->getType() )
+	{
+		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachmentIndex, GL_TEXTURE_2D, renderTarget->getId(), 0 );
 		GL_PEEK_ERRORS_AT_DEBUG
 	}
 
@@ -124,7 +134,19 @@ FrameBufferObject::attachTargetTemp( RenderTarget* renderTarget )
 }
 
 bool
-FrameBufferObject::attachTargetTempCubeFace( RenderTarget* renderTarget, unsigned int face )
+FrameBufferObject::detachColorTargetTemp( RenderTarget* renderTarget, unsigned int colorAttachmentIndex )
+{
+	if ( RenderTarget::RT_COLOR == renderTarget->getType() )
+	{
+		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachmentIndex, GL_TEXTURE_2D, 0, 0 );
+		GL_PEEK_ERRORS_AT_DEBUG
+	}
+
+	return true;
+}
+
+bool
+FrameBufferObject::attachDepthTargetTempCubeFace( RenderTarget* renderTarget, unsigned int face )
 {
 	if ( RenderTarget::RT_SHADOW_CUBE == renderTarget->getType() )
 	{
@@ -138,11 +160,23 @@ FrameBufferObject::attachTargetTempCubeFace( RenderTarget* renderTarget, unsigne
 }
 
 bool
+FrameBufferObject::attachColorTargetTempCubeFace( RenderTarget* renderTarget, unsigned int face, unsigned int colorAttachmentIndex )
+{
+	if ( RenderTarget::RT_COLOR_CUBE == renderTarget->getType() )
+	{
+		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachmentIndex, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, renderTarget->getId(), 0 );
+		GL_PEEK_ERRORS_AT_DEBUG
+	}
+
+	return true;
+}
+
+bool
 FrameBufferObject::restoreDepthTarget()
 {
 	if ( this->m_depthTarget )
 	{
-		return this->attachTargetTemp( this->m_depthTarget );
+		return this->attachDepthTargetTemp( this->m_depthTarget );
 	}
 
 	return false;
@@ -159,16 +193,16 @@ FrameBufferObject::bind()
 }
 
 bool
-FrameBufferObject::blitToSystemFB( unsigned int targetIndex )
+FrameBufferObject::blitColorToSystemFB( unsigned int targetIndex )
 {
 	RenderTarget* target = this->m_attachedTargets[ targetIndex ];
 
-	// specify this render-target as the read-target
-	glReadBuffer( this->m_colorBufferTargets[ targetIndex ] );
-	GL_PEEK_ERRORS_AT_DEBUG
-
 	// specify this FBO as the read-fbo
 	glBindFramebuffer( GL_READ_FRAMEBUFFER, this->m_id );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify this render-target as the read-target
+	glReadBuffer( this->m_colorBufferTargets[ targetIndex ] );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	// specify the system framebuffer as draw-fbo
@@ -187,26 +221,61 @@ FrameBufferObject::blitToSystemFB( unsigned int targetIndex )
 }
 
 bool
+FrameBufferObject::blitColorToFBO( RenderTarget* target, unsigned int srcIndex, unsigned int dstIndex, FrameBufferObject* targetFbo )
+{
+	// specify this FBO as the read-fbo
+	glBindFramebuffer( GL_READ_FRAMEBUFFER, this->m_id );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify this render-target as the read-target
+	glReadBuffer( GL_COLOR_ATTACHMENT0 + srcIndex);
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	CHECK_FRAMEBUFFER_DEBUG
+
+	// specify the system framebuffer as draw-fbo
+	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, targetFbo->getId() );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify this render-target as the draw-target
+	glDrawBuffer( GL_COLOR_ATTACHMENT0 + dstIndex );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	CHECK_FRAMEBUFFER_DEBUG
+
+	// perform the blit-operation
+	glBlitFramebuffer( 0, 0, target->getWidth(), target->getHeight(), 0, 0, target->getWidth(), target->getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST );
+	GL_PEEK_ERRORS_AT_DEBUG
+		
+	// bind this FBO again as read&draw framebuffer (as it was before)
+	glBindFramebuffer( GL_FRAMEBUFFER, this->m_id );
+	GL_PEEK_ERRORS_AT_DEBUG 
+
+	return true;
+}
+
+
+bool
 FrameBufferObject::blitDepthToFBO( FrameBufferObject* targetFbo )
 {
 	RenderTarget* target = this->m_depthTarget;
-
-	// specify this render-target as the read-target
-	glReadBuffer( GL_NONE );
-	GL_PEEK_ERRORS_AT_DEBUG
 
 	// specify this FBO as the read-fbo
 	glBindFramebuffer( GL_READ_FRAMEBUFFER, this->m_id );
 	GL_PEEK_ERRORS_AT_DEBUG
 
-	CHECK_FRAMEBUFFER_DEBUG
-	
 	// specify this render-target as the read-target
-	glDrawBuffer( GL_NONE );
+	glReadBuffer( GL_NONE );
 	GL_PEEK_ERRORS_AT_DEBUG
 
+	CHECK_FRAMEBUFFER_DEBUG
+	
 	// specify the system framebuffer as draw-fbo
 	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, targetFbo->getId() );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify this render-target as the read-target
+	glDrawBuffer( GL_NONE );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	CHECK_FRAMEBUFFER_DEBUG

@@ -141,6 +141,36 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 
 		renderTarget = new RenderTarget( id, width, height, targetType, Texture::TEXTURE_CUBE );
 	}
+	else if ( RenderTarget::RT_COLOR_CUBE == targetType )
+	{
+		glBindTexture( GL_TEXTURE_CUBE_MAP, id );
+		GL_PEEK_ERRORS_AT
+
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		GL_PEEK_ERRORS_AT
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		GL_PEEK_ERRORS_AT
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		GL_PEEK_ERRORS_AT
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0 ); 
+		GL_PEEK_ERRORS_AT
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 10 ); 
+		GL_PEEK_ERRORS_AT
+		glTexParameterf( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f ); 
+		GL_PEEK_ERRORS_AT
+		
+		for ( int i = 0; i < 6; i++ )
+		{
+			glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+			GL_PEEK_ERRORS_AT
+		}
+
+		renderTarget = new RenderTarget( id, width, height, targetType, Texture::TEXTURE_CUBE );
+	}
 	else
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "RenderTarget::create: unsupported RenderTarget-Type - exit" );

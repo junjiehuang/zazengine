@@ -23,7 +23,7 @@ using namespace std;
 DRRenderer::DRRenderer()
 {
 	this->m_fbo = NULL;
-	this->m_intermediateDepthFB = NULL;
+	this->m_helperFbo = NULL;
 
 	this->m_fsq = NULL;
 
@@ -43,6 +43,7 @@ DRRenderer::DRRenderer()
 	this->m_transparentMaterialBlock = NULL;
 
 	this->m_currentCamera = NULL;
+	this->m_currentEntities = NULL;
 }
 
 DRRenderer::~DRRenderer()
@@ -103,7 +104,7 @@ DRRenderer::shutdown()
 
 	Program::unuse();
 
-	FrameBufferObject::destroy( this->m_intermediateDepthFB );
+	FrameBufferObject::destroy( this->m_helperFbo );
 
 	// cleaning up framebuffer
 	FrameBufferObject::destroy( this->m_fbo );
@@ -209,14 +210,14 @@ bool
 DRRenderer::initIntermediateDepthBuffer()
 {
 	// shadow-mapping is done by rendering the depth of the current processing light into an own FBO
-	this->m_intermediateDepthFB = FrameBufferObject::create();
-	if ( NULL == this->m_intermediateDepthFB )
+	this->m_helperFbo = FrameBufferObject::create();
+	if ( NULL == this->m_helperFbo )
 	{
 		return false;
 	}
 
 	// bind the shadow FBO to init stuff
-	if ( false == this->m_intermediateDepthFB->bind() )
+	if ( false == this->m_helperFbo->bind() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initIntermediateDepthBuffer: coulnd't bind shadow FBO - exit" );
 		return false;
@@ -224,16 +225,16 @@ DRRenderer::initIntermediateDepthBuffer()
 
 	// IMPORTANT: disable drawing&reading from this fbo is important, otherwise will fail as incomplete with depth-only attachment
 	// no drawing & reading in shadow-fbo, set initial, fbo will keep this state, no need to set it every bind
-	this->m_intermediateDepthFB->drawNone();
+	this->m_helperFbo->drawNone();
 
 	// must be a shadow-planar because it has to support depth-comparison for use the transparency-stage
-	if ( false == this->createMrtBuffer( RenderTarget::RT_SHADOW_PLANAR, this->m_intermediateDepthFB ) )		
+	if ( false == this->createMrtBuffer( RenderTarget::RT_SHADOW_PLANAR, this->m_helperFbo ) )		
 	{
 		return false;
 	}
 
 	// back to default frame-buffer
-	if ( false == this->m_intermediateDepthFB->unbind() )
+	if ( false == this->m_helperFbo->unbind() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initIntermediateDepthBuffer: coulnd't unbind shadow FBO - exit" );
 		return false;
@@ -302,6 +303,13 @@ DRRenderer::initLightingStage()
 		return false;
 	}
 
+	this->m_fsq = GeometryFactory::getRef().getNDCQuad();
+	if ( NULL == this->m_fsq )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initLightingStage: coulnd't create FSQ - exit" );
+		return false;
+	}
+
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Lighting-Stage finished" );
 
 	return true;
@@ -344,10 +352,18 @@ DRRenderer::initTransparency()
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initTransparency: coulnd't create program - exit" );
 		return false;
 	}
-	
-	this->m_fsq = GeometryFactory::getRef().getNDCQuad();
-	if ( NULL == this->m_fsq )
+
+	this->m_environmentHelperTarget = RenderTarget::create( 512, 512, RenderTarget::RT_COLOR_CUBE );
+	if ( NULL == this->m_environmentHelperTarget )
 	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initTransparency: coulnd't create environmental render-target - exit" );
+		return false;
+	}
+
+	this->m_planarHelperTarget = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), RenderTarget::RT_COLOR );
+	if ( NULL == this->m_planarHelperTarget )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initTransparency: coulnd't create planar render-target - exit" );
 		return false;
 	}
 
@@ -489,15 +505,17 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 		{
 			// culling is done outside renderer in special visibility-detection, renderer just issues commands to GPU
 
+			this->m_currentEntities = &entities;
+
 			NVTX_RANGE_PUSH( "Main Frame" );
 
-			if ( false == renderInternalFrame( entity->getCamera(), entities ) )
+			if ( false == renderInternalFrame( entity->getCamera() ) )
 			{
 				return false;
 			}
 
 			NVTX_RANGE_PUSH( "T-Stage" )
-			if ( false == this->doTransparencyStage( entities ) )
+			if ( false == this->doTransparencyStage() )
 			{
 				return false;
 			}
@@ -515,26 +533,26 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 }
 
 bool
-DRRenderer::renderInternalFrame( Viewer* viewer, std::list<ZazenGraphicsEntity*>& entities )
+DRRenderer::renderInternalFrame( Viewer* viewer )
 {
 	this->m_currentCamera = viewer;
 
 	NVTX_RANGE_PUSH( "G-Stage" )
-	if ( false == this->doGeometryStage( entities ) )
+	if ( false == this->doGeometryStage() )
 	{
 		return false;
 	}
 	NVTX_RANGE_POP
 
 	NVTX_RANGE_PUSH( "L-Stage" )
-	if ( false == this->doLightingStage( entities ) )
+	if ( false == this->doLightingStage() )
 	{
 		return false;
 	}
 	NVTX_RANGE_POP
 
 	NVTX_RANGE_PUSH( "PP-Stage" )
-	if ( false == this->doPostProcessing( entities ) )
+	if ( false == this->doPostProcessing() )
 	{
 		return false;
 	}
@@ -546,7 +564,7 @@ DRRenderer::renderInternalFrame( Viewer* viewer, std::list<ZazenGraphicsEntity*>
 }
 
 bool
-DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
+DRRenderer::doGeometryStage()
 {
 	// render to g-buffer FBO
 	if ( false == this->m_fbo->bind() )
@@ -591,7 +609,7 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 	glStencilOp( GL_REPLACE, GL_REPLACE, GL_REPLACE );
 
 	// draw all geometry from cameras viewpoint AND apply materials but ignore transparent material
-	if ( false == this->renderEntities( this->m_currentCamera, entities, this->m_progGeomStage, true, false ) )
+	if ( false == this->renderEntities( this->m_currentCamera, *this->m_currentEntities, this->m_progGeomStage, true, false ) )
 	{
 		return false;
 	}
@@ -652,20 +670,20 @@ DRRenderer::renderSkyBox()
 }
 
 bool
-DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
+DRRenderer::doLightingStage()
 {
 	// start light marker with 2 because meshes increased the stencil-buffer already to 1
 	unsigned int lightMarker = 2;
 
 	// render the contribution of each light-entiy to the scene
-	std::list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
-	while ( iter != entities.end() )
+	std::list<ZazenGraphicsEntity*>::iterator iter = this->m_currentEntities->begin();
+	while ( iter != this->m_currentEntities->end() )
 	{
 		ZazenGraphicsEntity* entiy = *iter++;
 		Light* light = entiy->getLight();
 		if ( light )
 		{
-			if ( false == this->processLight( entities, light, lightMarker ) )
+			if ( false == this->processLight( light, lightMarker ) )
 			{
 				return false;
 			}
@@ -678,10 +696,10 @@ DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 }
 
 bool
-DRRenderer::processLight( std::list<ZazenGraphicsEntity*>& entities, Light* light, unsigned int lightMarker )
+DRRenderer::processLight( Light* light, unsigned int lightMarker )
 {
 	// render the shadow-map of the light (if it is a shadow-caster)
-	if ( false == this->renderShadowMap( entities, light ) )
+	if ( false == this->renderShadowMap( light ) )
 	{
 		return false;
 	}
@@ -908,7 +926,7 @@ DRRenderer::renderLight( Light* light, unsigned int lightMarker )
 }
 
 bool
-DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+DRRenderer::renderShadowMap( Light* light )
 {
 	// check if this light is a shadow-caster
 	if ( false == light->isShadowCaster() )
@@ -922,7 +940,7 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	this->updateCameraBlock( light );
 
 	// use shadow-mapping fbo to render depth of light view-point to
-	if ( false == this->m_intermediateDepthFB->bind() )
+	if ( false == this->m_helperFbo->bind() )
 	{
 		return false;
 	}
@@ -930,7 +948,7 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	// point-light has a cube-shadowmap
 	if ( Light::LightType::POINT == light->getType() )
 	{
-		if ( false == this->renderShadowCube( entities, light ) )
+		if ( false == this->renderShadowCube( light ) )
 		{
 			return false;
 		}
@@ -938,7 +956,7 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 	// directional- and spot-light have a planar (2D) shadow-map 
 	else
 	{
-		if ( false == this->renderShadowPlanar( entities, light ) )
+		if ( false == this->renderShadowPlanar( light ) )
 		{
 			return false;
 		}
@@ -955,9 +973,9 @@ DRRenderer::renderShadowMap( std::list<ZazenGraphicsEntity*>& entities, Light* l
 }
 
 bool
-DRRenderer::renderShadowPlanar( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+DRRenderer::renderShadowPlanar( Light* light )
 {
-	if ( false == this->m_intermediateDepthFB->attachTargetTemp( light->getShadowMap() ) )
+	if ( false == this->m_helperFbo->attachDepthTargetTemp( light->getShadowMap() ) )
 	{
 		return false;
 	}
@@ -968,7 +986,7 @@ DRRenderer::renderShadowPlanar( std::list<ZazenGraphicsEntity*>& entities, Light
 		return false;
 	}
 
-	if ( false == this->renderShadowPass( entities, light, this->m_progShadowMappingPlanar ) )
+	if ( false == this->renderShadowPass( light, this->m_progShadowMappingPlanar ) )
 	{
 		return false;
 	}
@@ -977,13 +995,13 @@ DRRenderer::renderShadowPlanar( std::list<ZazenGraphicsEntity*>& entities, Light
 }
 
 bool
-DRRenderer::renderShadowCube( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+DRRenderer::renderShadowCube( Light* light )
 {
 	// single-pass program for shadow-mapping is in use
 	// uses geometry-shader to render to layers of the cube-map
 	if ( this->m_progShadowMappingCubeSinglePass )
 	{
-		if ( false == this->renderShadowCubeSinglePass( entities, light ) )
+		if ( false == this->renderShadowCubeSinglePass( light ) )
 		{
 			return false;
 		}
@@ -992,7 +1010,7 @@ DRRenderer::renderShadowCube( std::list<ZazenGraphicsEntity*>& entities, Light* 
 	// do a pass for each cube-layer
 	else
 	{
-		if ( false == this->renderShadowCubeMultiPass( entities, light ) )
+		if ( false == this->renderShadowCubeMultiPass( light ) )
 		{
 			return false;
 		}
@@ -1002,7 +1020,7 @@ DRRenderer::renderShadowCube( std::list<ZazenGraphicsEntity*>& entities, Light* 
 }
 
 bool
-DRRenderer::renderShadowCubeSinglePass( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+DRRenderer::renderShadowCubeSinglePass( Light* light )
 {
 	std::vector<glm::mat4> cubeMVPTransforms( 6 );
 	glm::vec3 lightPosWorld = light->getPosition();
@@ -1024,13 +1042,13 @@ DRRenderer::renderShadowCubeSinglePass( std::list<ZazenGraphicsEntity*>& entitie
 	this->m_progShadowMappingCubeSinglePass->setUniformMatrices( "u_cubeMVPTransforms[0]", cubeMVPTransforms );
 
 	// attach cube-map faces to frame-buffer object
-	if ( false == this->m_intermediateDepthFB->attachTargetTemp( light->getShadowMap() ) )
+	if ( false == this->m_helperFbo->attachDepthTargetTemp( light->getShadowMap() ) )
 	{
 		return false;
 	}
 
 	// do single shadow-pass - geometry-shader will render to each layer of the cube-map
-	if ( false == this->renderShadowPass( entities, light, this->m_progShadowMappingCubeSinglePass ) )
+	if ( false == this->renderShadowPass( light, this->m_progShadowMappingCubeSinglePass ) )
 	{
 		return false;
 	}
@@ -1039,7 +1057,7 @@ DRRenderer::renderShadowCubeSinglePass( std::list<ZazenGraphicsEntity*>& entitie
 }
 
 bool
-DRRenderer::renderShadowCubeMultiPass( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+DRRenderer::renderShadowCubeMultiPass( Light* light )
 {
 	std::vector<glm::mat4> cubeViewTransforms( 6 );
 	glm::vec3 lightPosWorld = light->getPosition();
@@ -1069,12 +1087,12 @@ DRRenderer::renderShadowCubeMultiPass( std::list<ZazenGraphicsEntity*>& entities
 		this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", cubeViewTransforms[ face ] );
 
 		// attach cube-map faces to frame-buffer object
-		if ( false == this->m_intermediateDepthFB->attachTargetTempCubeFace( light->getShadowMap(), face ) )
+		if ( false == this->m_helperFbo->attachDepthTargetTempCubeFace( light->getShadowMap(), face ) )
 		{
 			return false;
 		}
 
-		if ( false == this->renderShadowPass( entities, light, this->m_progShadowMappingCubeMultiPass ) )
+		if ( false == this->renderShadowPass( light, this->m_progShadowMappingCubeMultiPass ) )
 		{
 			return false;
 		}
@@ -1084,26 +1102,26 @@ DRRenderer::renderShadowCubeMultiPass( std::list<ZazenGraphicsEntity*>& entities
 }
 
 bool
-DRRenderer::renderShadowPass( list<ZazenGraphicsEntity*>& entities, Light* light, Program* currentShadowProgram )
+DRRenderer::renderShadowPass( Light* light, Program* currentShadowProgram )
 {
 	// check status now
 	// IMPORANT: don't check too early
 	CHECK_FRAMEBUFFER_DEBUG
 
-	// clear bound buffer
-	glClear( GL_DEPTH_BUFFER_BIT );
-
 	// IMPORTANT: need to set the viewport for each shadow-map, because resolution can be different for each
 	light->restoreViewport();
 
+	// clear bound buffer
+	glClear( GL_DEPTH_BUFFER_BIT );
+
 	// render scene from view of camera - don't apply material, we need only depth, render transparent materials
-	if ( false == this->renderEntities( light, entities, currentShadowProgram, false, true ) )
+	if ( false == this->renderEntities( light, *this->m_currentEntities, currentShadowProgram, false, true ) )
 	{
 		return false;
 	}
 
 	// render scene from view of camera - don't apply material, we need only depth, render opaque materials
-	if ( false == this->renderEntities( light, entities, currentShadowProgram, false, false ) )
+	if ( false == this->renderEntities( light, *this->m_currentEntities, currentShadowProgram, false, false ) )
 	{
 		return false;
 	}
@@ -1112,7 +1130,7 @@ DRRenderer::renderShadowPass( list<ZazenGraphicsEntity*>& entities, Light* light
 }
 
 bool
-DRRenderer::doPostProcessing( std::list<ZazenGraphicsEntity*>& entities )
+DRRenderer::doPostProcessing()
 {
 	// NO POST-PROCESSING IMPLEMENTED FOR NOW
 
@@ -1120,12 +1138,12 @@ DRRenderer::doPostProcessing( std::list<ZazenGraphicsEntity*>& entities )
 }
 
 bool
-DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
+DRRenderer::doTransparencyStage()
 {
 	unsigned int finalBlitFromTarget = 4;
 	std::vector<ZazenGraphicsEntity*> transparentEntities;
 
-	this->filterTransparentEntities( entities, transparentEntities );
+	this->filterTransparentEntities( transparentEntities );
 	
 	if ( false == this->processTransparentEntities( transparentEntities, finalBlitFromTarget ) )
 	{
@@ -1134,17 +1152,17 @@ DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 	
 	NVTX_RANGE_PUSH( "Final Blit" );
 	// blit the result to the system framebuffer
-	this->m_fbo->blitToSystemFB( finalBlitFromTarget );
+	this->m_fbo->blitColorToSystemFB( finalBlitFromTarget );
 	NVTX_RANGE_POP
 
 	return true;
 }
 
 void
-DRRenderer::filterTransparentEntities( std::list<ZazenGraphicsEntity*>& entities, std::vector<ZazenGraphicsEntity*>& transparentEntities )
+DRRenderer::filterTransparentEntities( std::vector<ZazenGraphicsEntity*>& transparentEntities )
 {
-	list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
-	while ( iter != entities.end() )
+	list<ZazenGraphicsEntity*>::iterator iter = this->m_currentEntities->begin();
+	while ( iter != this->m_currentEntities->end() )
 	{
 		ZazenGraphicsEntity* entity = *iter++;
 
@@ -1172,13 +1190,11 @@ DRRenderer::processTransparentEntities( std::vector<ZazenGraphicsEntity*>& trans
 		unsigned int combinationTarget = 1;
 		unsigned int backgroundIndex = 4;
 
-		this->m_intermediateDepthFB->bind();
+		this->m_helperFbo->bind();
 		// could have been changed bevore during shadow-map rendering
-		this->m_intermediateDepthFB->restoreDepthTarget();
+		this->m_helperFbo->restoreDepthTarget();
 
 		CHECK_FRAMEBUFFER_DEBUG
-
-		this->m_fbo->bind();
 
 		for ( unsigned int i = 0; i < transparentEntities.size(); i++ )
 		{
@@ -1186,12 +1202,14 @@ DRRenderer::processTransparentEntities( std::vector<ZazenGraphicsEntity*>& trans
 
 			if ( Material::MATERIAL_TRANSPARENT_ENVIRONMENT == entity->getMaterial()->getType() )
 			{
-				if ( false == this->renderEnvironmentalInstance( entity, backgroundIndex ) )
+				if ( false == this->renderEnvironmentalInstance( entity ) )
 				{
 					return false;
 				}
 			}
 		}
+
+		this->m_fbo->bind();
 
 		// render normal transparent objects last because they need all others already rendered for refraction
 		for ( unsigned int i = 0; i < transparentEntities.size(); i++ )
@@ -1229,14 +1247,14 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	// bind background to index 2 because DiffuseColor of Material is at index 0 and NormalMap of Material is at index 1
 	this->m_fbo->getAttachedTargets()[ backgroundIndex ]->bind( 2 );
 	// bind depth of intermediate depth-FBO to target 3 - will act as background-depth
-	this->m_intermediateDepthFB->getAttachedDepthTarget()->bind( 3 );
+	this->m_helperFbo->getAttachedDepthTarget()->bind( 3 );
 
 	this->m_progTransparency->setUniformInt( "Background", 2 );
 	this->m_progTransparency->setUniformInt( "BackgroundDepth", 3 );
 	
 	// copy depth of g-buffer to intermediate depth-fbo, because we need to access the depth in transparency-rendering
 	// to prevent artifacts. at the same time we write depth when rendering transparency so we cannot bind the g-buffer depth => need to copy
-	this->m_fbo->blitDepthToFBO( this->m_intermediateDepthFB );
+	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
 	// copy background-color to combination-target => spare one whole FSQ blending pass
 	this->m_fbo->blitColorFromTo( backgroundIndex, combinationTarget );
 
@@ -1261,15 +1279,67 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 }
 
 bool
-DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity, unsigned int backgroundIndex )
+DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
 {
 	NVTX_RANGE_PUSH( "Env Render" );
 
+	this->m_helperFbo->bind();
+	this->m_helperFbo->attachColorTargetTemp( this->m_planarHelperTarget, 0 );
+	
+	this->m_fbo->bind();
+	this->m_fbo->blitColorToFBO( this->m_fbo->getAttachedTargets()[ 4 ], 4, 0, this->m_helperFbo );
+	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
+
+	/*
+	std::vector<glm::mat4> cubeMVPTransforms( 6 );
+	glm::vec3 lightPosWorld = entity->getPosition();
+	glm::mat4 invLightPosTransf = glm::translate( lightPosWorld );
+
+	Viewer v( 512, 512 );
+	v.setFov( 90.0 );
+	v.setupPerspective();
+	
+	std::vector<glm::mat4> cubeViewDirections;
+
+	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 1, 0, 0 ), glm::vec3( 0, -1, 0 ) ) );		// POS X
+	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( -1, 0, 0 ), glm::vec3( 0, -1, 0 ) ) );	// NEG X
+	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, -1, 0 ), glm::vec3( 0, 0, -1 ) ) );	// POS Y
+	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 1, 0 ), glm::vec3( 0, 0, 1 ) ) ); 		// NEG Y
+	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, 1 ), glm::vec3( 0, -1, 0 ) ) );		// POS Z 
+	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, -1 ),glm::vec3( 0, -1, 0 ) ) );		// NEG Z
+
+	for ( unsigned int face = 0; face < 6; ++face )
+	{
+		this->m_fbo->attachColorTargetTempCubeFace( this->m_environmentHelperTarget, face, 4 );
+
+		CHECK_FRAMEBUFFER_DEBUG
+			
+		v.setModelMatrix( cubeViewDirections[ face ] * invLightPosTransf );
+
+		NVTX_RANGE_PUSH( "Internal Frame " + face );
+		if ( false == this->renderInternalFrame( &v ) )
+		{
+			return false;
+		}
+		NVTX_RANGE_POP
+	}
+	*/
+
+	this->m_helperFbo->bind();
+	this->m_helperFbo->blitColorToFBO( this->m_planarHelperTarget, 0, 4, this->m_fbo );
+	this->m_helperFbo->blitDepthToFBO( this->m_fbo );
+	this->m_helperFbo->detachColorTargetTemp( this->m_planarHelperTarget, 0 );
+	this->m_helperFbo->drawNone();
+
+	// TODO: render to background-index 4
+	// TODO: now render object using the dynamically created environment map
+
+	// copy background-color to combination-target => spare one whole FSQ blending pass
+	
 	NVTX_RANGE_POP
 
 	return true;
 }
-
 
 bool
 DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities, Program* currentProgramm, bool applyMaterial, bool renderTransparency )
@@ -1306,8 +1376,8 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 
 		if ( material )
 		{
-			if ( ( Material::MATERIAL_TRANSPARENT == material->getType() && ! renderTransparency ) ||
-				( Material::MATERIAL_TRANSPARENT != material->getType() && renderTransparency ) )
+			if ( ( Material::MATERIAL_TRANSPARENT <= material->getType() && ! renderTransparency ) ||
+				( Material::MATERIAL_TRANSPARENT > material->getType() && renderTransparency ) )
 			{
 				continue;
 			}

@@ -5,6 +5,7 @@ Refactor remaining shaders
 		-> is always constant anyway => can set it compile-time constan in shaders!
 	-> naming conventions
 		-> read OpenGL Insights Chapter 2
+	-> check if this bool-for-every method makes really sense 
 
 For Lighting-Stage
 	-> get rid of immediate-depth buffer usage until post-processing stage!

@@ -13,6 +13,7 @@ class RenderTarget : public Texture
 		enum RenderTargetType
 		{
 			RT_COLOR = 0,
+			RT_COLOR_CUBE,
 			RT_DEPTH,
 			RT_DEPTH_STENCIL,
 			RT_SHADOW_PLANAR,
