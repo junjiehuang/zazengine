@@ -750,8 +750,8 @@ DRRenderer::markLightVolume( Light* light, unsigned int lightMarker )
 		return false;
 	}
 
-	// TODO apply scaling based upon falloff and distance
-	glm::mat4 lightBoundingMeshMVP = this->m_mainCamera->getVPMatrix() * light->getModelMatrix() * glm::scale( glm::vec3( 250, 250, 250 ) );
+	float scaleRadius = light->getAttenuation().x;
+	glm::mat4 lightBoundingMeshMVP = this->m_mainCamera->getVPMatrix() * light->getModelMatrix() * glm::scale( glm::vec3( scaleRadius, scaleRadius, scaleRadius ) );
 	this->m_progLightingStageStencilVolume->setUniformMatrix( "LightBoundingMeshMVP", lightBoundingMeshMVP );
 
 	// no culling of faces because we need to mark the volume by 
@@ -1504,9 +1504,7 @@ DRRenderer::updateLightBlock( Light* light, Viewer* camera )
 		{
 			glm::vec2 spot( 1.0 );
 			spot.x = ( float ) cos( light->getFov() / 2.0 );
-			spot.y = 60.0;
-
-			// TODO: make spot-exponent configurable
+			spot.y = light->getAttenuation().z;
 
 			this->m_lightBlock->updateField( "LightUniforms.attenuation", attenuation );
 			this->m_lightBlock->updateField( "LightUniforms.spot", spot );

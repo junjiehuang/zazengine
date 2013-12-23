@@ -1,8 +1,5 @@
 For Lighting-Stage
-	-> calculate scale-factor of light bounding-sphere
-	-> make falloff-equations work right
 	-> enhance: only 1 fbo necessary
-	-> sky-box: use NDC, no need to project?
 
 	-> write blog
 		-> https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
@@ -18,8 +15,26 @@ For Transparency-Stage
 	-> in transparency blend use same texture-coord generation teqchnique as in light-stage vert
 	-> articfacts in shadow during transparency rendering?
 	-> need to be able to render from an aribtrary view point into aribtrary 2d target with different resolution
-		-> need 2 render-targets: planar & environmental (cube)
-	-> environment dynamic cube-mapping
+		-> need 2 render-targets: planar & environmental (cube): renderFrameInternal( Viewer* viewer, RenderTarget* gatherTarget );
+			-> will attach the gatherTarget to color-attachment 4
+			-> when return color-attachment 4 will hold the rendered scene from this point of view
+			-> take care not to render the viewer itself too (artifacts)
+		-> then implementing planar-reflections & refractions like water or dynamic environmental mapping with reflection & refraction is no problem anymore
+			-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
+				-> simulate chromatic abberration (see Orange Book)
+				-> need to simulate different wavelengths for red, green and blue channels
+			-> for planar reflections&refractions:
+				1. blit rendered scene to intermediate fb and system fb
+				2. call renderFrameInternal with the correct viewing set-up
+				3. then bind the gather-target
+				4. run shader to do reflection & refraction using the original scene for refraction and the 2nd view-rendered scene for reflections and render to system framebuffer
+			-> for cube environmental  reflections&refractions:
+				1. blit rendered scene to system FB
+				2. for each cube-face call renderFrameInternal with the correct viewing and the cube-map face
+				3. bind the cube-map
+				4. run shader to do reflection & refraction using the cube-map and render to system framebuffer
+
+	-> OLD: environment dynamic cube-mapping
 		-> need very generic renderFrame-method which allows to be called recursively
 			-> need for every recursion level one CubeMap-FBO
 			-> need to generify much of the code of the renderer-loop
@@ -30,24 +45,6 @@ For Transparency-Stage
 				-> holds flag if transparency-rendering in environment-rendering
 				-> holds flag if interreflection-rendering in environment-rendering
 				-> holds max recursion depth
-		-> can be done directly with deferred renderning, no need for fallback to forward-rendering
-			-> but need additional environment-rendering fbo
-				-> render 6 faces of a cubemap, each with deferred rendering => fucking huge impact on bandwith and performance
-					-> dramatic reduced resolution of cube-map sides e.g. 512x512
-		-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
-		-> use geometry-shader to render to cube-map layers ?
-		-> can to do refraction & reflection
-		-> simulate chromatic abberration (see Orange Book)
-			-> need to simulate different wavelengths for red, green and blue channels
-		-> different texture-binding because material could or could not use binding points
-			-> general texture binding-point management
-				-> giving next free n slots
-				-> call to bind of texture, will return binding-point or -1 if fails
-				-> but need to release texture to keep track of usage
-				-> keep track for all texture-types (2d & cube so far)
-					-> every binding-point can have each type active
-				-> keep track of max_texture_units
-		-> more flexible renderInstances: need finer control over which materials to draw
 		-> new material-type:
 			<material name="Glass">
 				<type id="ENVIRONMENTAL">

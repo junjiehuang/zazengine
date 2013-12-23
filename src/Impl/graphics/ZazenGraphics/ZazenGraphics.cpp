@@ -340,7 +340,8 @@ ZazenGraphics::parseLight( TiXmlElement* objectNode, ZazenGraphicsEntity* entity
 	int shadowMapResX = 512;
 	int shadowMapResY = 512;
 	glm::vec3 lightColor( 1.0 );
-	glm::vec3 attenuation( 1.0 );
+	// x = radius of falloff, y = 1/x, z = spot-exponent of spot-lights
+	glm::vec3 attenuation( 100.0, 0.001, 5.0 );
 	glm::vec2 specular( 1.0 );
 	Mesh* boundingMesh = NULL;
 
@@ -369,19 +370,16 @@ ZazenGraphics::parseLight( TiXmlElement* objectNode, ZazenGraphicsEntity* entity
 	TiXmlElement* attenuationNode = lightNode->FirstChildElement( "attenuation" );
 	if ( attenuationNode )
 	{
-		str = attenuationNode->Attribute( "constant" );
+		str = attenuationNode->Attribute( "radius" );
 		if ( 0 != str )
 		{
+			// store radius in attenuation.x
 			attenuation.x = ( float ) atof( str );
+			// y holds reciprocal of radius to save a divide 
+			attenuation.y = 1.0f / attenuation.x;
 		}
 
-		str = attenuationNode->Attribute( "linear" );
-		if ( 0 != str )
-		{
-			attenuation.y = ( float ) atof( str );
-		}
-
-		str = attenuationNode->Attribute( "quadratic" );
+		str = attenuationNode->Attribute( "spotExp" );
 		if ( 0 != str )
 		{
 			attenuation.z = ( float ) atof( str );

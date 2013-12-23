@@ -36,7 +36,7 @@ layout( shared ) uniform LightUniforms
 {
 	// color of the light
 	vec3 color;
-	// attenuation attributes: x = constant, y = linear, z = quadratic
+	// attenuation attributes: x = radius, y = 1 / radius
 	vec3 attenuation; 
 	// specular attributes: x = shininess, y = strength
 	vec2 specular; 
@@ -405,9 +405,8 @@ subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec3 fragPosEC, 
 	// normalize light direction
 	lightDirEC /= lightDistanceEC;
 
-	float attenuation = 1.0 / ( Light.attenuation.x +		// constant attenuation
-		Light.attenuation.y * lightDistanceEC +		// linear attenuation
-		Light.attenuation.z * lightDistanceEC * lightDistanceEC );	// quadratic attenuation
+	// calculate the distance-falloff to the radius will be 1.0 at center and falloff linear with 0.0 beyond the radius
+	float attenuation = clamp( 1.0 - ( lightDistanceEC * Light.attenuation.y ), 0.0, 1.0 );
 
 	// calculate the cosine between the direction of the light-direction the the fragment and the direction of the light itself which is stored in the model-view matrix z-achsis
 	float spotCos = dot( lightDirEC, Light.modelViewMatrix[ 2 ].xyz );
@@ -419,8 +418,8 @@ subroutine ( lightingFunction ) vec3 spotLight( vec4 baseColor, vec3 fragPosEC, 
 	}
 	else
 	{
-		// TODO: make configurable
-		attenuation *= pow( spotCos, 7.0 );
+		// simulate smooth falloff to the edges
+		attenuation *= pow( spotCos, Light.spot.y );
 	}
 
 	return calculateMaterialAlbedo( baseColor, fragPosEC, normalEC, lightDirEC, genericChannels ) * attenuation * shadowFactor;
@@ -444,9 +443,8 @@ subroutine ( lightingFunction ) vec3 pointLight( vec4 baseColor, vec3 fragPosEC,
 	// normalize light direction
 	lightDirEC /= lightDistanceEC;
 
-	float attenuation = 1.0 / ( Light.attenuation.x +		// constant attenuation
-		Light.attenuation.y * lightDistanceEC +		// linaer attenuation
-		Light.attenuation.z * lightDistanceEC * lightDistanceEC );	// quadratic attenuation
+	// calculate the distance-falloff to the radius will be 1.0 at center and falloff linear with 0.0 beyond the radius
+	float attenuation = clamp( 1.0 - ( lightDistanceEC * Light.attenuation.y ), 0.0, 1.0 );
 
 	return calculateMaterialAlbedo( baseColor, fragPosEC, normalEC, lightDirEC, genericChannels ) * attenuation * shadowFactor;
 }
