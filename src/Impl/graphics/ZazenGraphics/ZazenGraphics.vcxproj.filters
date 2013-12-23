@@ -133,6 +133,12 @@
     <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting\Stencil">
       <UniqueIdentifier>{87c9640d-ccc6-44d5-b0a6-556822c2bb55}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Environmental">
+      <UniqueIdentifier>{8fba2b9f-77d0-4e9b-9672-32ab81d9b797}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Environmental\Cube">
+      <UniqueIdentifier>{74f8fed0-95c5-442e-9eba-c43b6da03791}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -402,6 +408,12 @@
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\lighting\stencilVolume\lightStencilVolVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting\Stencil</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\environmental\cube\envCubeFrag.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Environmental\Cube</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\environmental\cube\envCubeVert.glsl">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Environmental\Cube</Filter>
     </None>
   </ItemGroup>
 </Project>

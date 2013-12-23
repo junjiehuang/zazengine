@@ -12,13 +12,13 @@ class Material
 	public:
 		enum MaterialType
 		{
-			// NOTE: start with 1, material 0 is reserved for sky-box/background
 			MATERIAL_LAMBERTIAN = 1,
 			MATERIAL_PHONG,
 			MATERIAL_DOOM3,
-			MATERIAL_TRANSPARENT = 100,
-			MATERIAL_TRANSPARENT_PLANAR,
-			MATERIAL_TRANSPARENT_ENVIRONMENT
+			MATERIAL_POST_PROCESS = 100, // all materials beyond this marker will be processed in post-process
+			MATERIAL_TRANSPARENT,
+			MATERIAL_ENVIRONMENTAL_CUBE,
+			MATERIAL_ENVIRONMENT_PLANAR
 		};
 
 		Material( const std::string&, MaterialType );

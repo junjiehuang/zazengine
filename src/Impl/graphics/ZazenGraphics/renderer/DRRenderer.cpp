@@ -7,6 +7,7 @@
 #include "../Geometry/GeometryFactory.h"
 #include "../Program/ProgramManagement.h"
 #include "../Program/UniformManagement.h"
+#include "../Texture/TextureFactory.h"
 
 #include "../context/RenderingContext.h"
 
@@ -35,6 +36,8 @@ DRRenderer::DRRenderer()
 	this->m_progShadowMappingCubeSinglePass = NULL;
 	this->m_progShadowMappingCubeMultiPass = NULL;
 	this->m_progTransparency = NULL;
+	this->m_progCubeEnv = NULL;
+	this->m_cubeEnvMap = NULL;
 
 	this->m_transformsBlock = NULL;
 	this->m_cameraBlock = NULL;
@@ -44,6 +47,9 @@ DRRenderer::DRRenderer()
 
 	this->m_currentCamera = NULL;
 	this->m_currentEntities = NULL;
+
+	this->m_planarHelperTarget = NULL;
+	this->m_environmentHelperTarget = NULL;
 }
 
 DRRenderer::~DRRenderer()
@@ -80,7 +86,7 @@ DRRenderer::initialize()
 		return false;
 	}
 
-	if ( false == this->initTransparency() )
+	if ( false == this->initPostProcessing() )
 	{
 		return false;
 	}
@@ -342,32 +348,47 @@ DRRenderer::initShadowMapping()
 }
 
 bool
-DRRenderer::initTransparency()
+DRRenderer::initPostProcessing()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Transparency-Stage..." );
 
 	this->m_progTransparency = ProgramManagement::get( "TransparencyProgram" );
 	if ( 0 == this->m_progTransparency )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initTransparency: coulnd't create program - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: coulnd't create program - exit" );
+		return false;
+	}
+
+	this->m_progCubeEnv = ProgramManagement::get( "EnvironmentalCubeProgram" );
+	if ( 0 == this->m_progCubeEnv )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: coulnd't create cube-environment program - exit" );
 		return false;
 	}
 
 	this->m_environmentHelperTarget = RenderTarget::create( 512, 512, RenderTarget::RT_COLOR_CUBE );
 	if ( NULL == this->m_environmentHelperTarget )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initTransparency: coulnd't create environmental render-target - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: coulnd't create environmental render-target - exit" );
 		return false;
 	}
 
 	this->m_planarHelperTarget = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), RenderTarget::RT_COLOR );
 	if ( NULL == this->m_planarHelperTarget )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initTransparency: coulnd't create planar render-target - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: coulnd't create planar render-target - exit" );
 		return false;
 	}
 
-	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Transparency-Stage finished" );
+	this->m_cubeEnvMap = TextureFactory::getCube( "SkyBoxes/Heaven", "png" );
+	if ( NULL == this->m_cubeEnvMap )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: couldn't create cube-map" );
+		return false;
+
+	}
+
+	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering PostProcessing-Stage finished" );
 
 	return true;
 }
@@ -509,13 +530,13 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 
 			NVTX_RANGE_PUSH( "Main Frame" );
 
-			if ( false == renderInternalFrame( entity->getCamera() ) )
+			if ( false == this->renderInternalFrame( entity->getCamera() ) )
 			{
 				return false;
 			}
 
-			NVTX_RANGE_PUSH( "T-Stage" )
-			if ( false == this->doTransparencyStage() )
+			NVTX_RANGE_PUSH( "PP-Stage" )
+			if ( false == this->doPostProcessing() )
 			{
 				return false;
 			}
@@ -551,14 +572,14 @@ DRRenderer::renderInternalFrame( Viewer* viewer )
 	}
 	NVTX_RANGE_POP
 
-	NVTX_RANGE_PUSH( "PP-Stage" )
-	if ( false == this->doPostProcessing() )
+	NVTX_RANGE_PUSH( "Screen-Space-Stage" )
+	if ( false == this->doScreenSpaceStage() )
 	{
 		return false;
 	}
 	NVTX_RANGE_POP
 
-	// NOTE: no call to doTransparencyStage as we don't render recursive transparency
+	// NOTE: no call to doPostProcessing as we don't render recursive transparency
 
 	return true;
 }
@@ -1130,62 +1151,24 @@ DRRenderer::renderShadowPass( Light* light, Program* currentShadowProgram )
 }
 
 bool
+DRRenderer::doScreenSpaceStage()
+{
+	// NO SCREEN-SPACE OPS IMPLEMENTED FOR NOW
+	// BLUR/HDR/DEPTH OF FIELD WILL GO HERE
+
+	return true;
+}
+
+bool
 DRRenderer::doPostProcessing()
 {
-	// NO POST-PROCESSING IMPLEMENTED FOR NOW
+	unsigned int finalBlitSource = 4;
+	std::vector<ZazenGraphicsEntity*> postProcessEntities;
 
-	return true;
-}
-
-bool
-DRRenderer::doTransparencyStage()
-{
-	unsigned int finalBlitFromTarget = 4;
-	std::vector<ZazenGraphicsEntity*> transparentEntities;
-
-	this->filterTransparentEntities( transparentEntities );
+	this->filterPostProcessEntities( postProcessEntities );
 	
-	if ( false == this->processTransparentEntities( transparentEntities, finalBlitFromTarget ) )
-	{
-		return false;
-	}
-	
-	NVTX_RANGE_PUSH( "Final Blit" );
-	// blit the result to the system framebuffer
-	this->m_fbo->blitColorToSystemFB( finalBlitFromTarget );
-	NVTX_RANGE_POP
-
-	return true;
-}
-
-void
-DRRenderer::filterTransparentEntities( std::vector<ZazenGraphicsEntity*>& transparentEntities )
-{
-	list<ZazenGraphicsEntity*>::iterator iter = this->m_currentEntities->begin();
-	while ( iter != this->m_currentEntities->end() )
-	{
-		ZazenGraphicsEntity* entity = *iter++;
-
-		if ( entity->getMaterial() )
-		{
-			if ( Material::MATERIAL_TRANSPARENT <= entity->getMaterial()->getType() )
-			{
-				// need to relcalculate distance from viewer for depth-sorting
-				entity->recalculateDistance( this->m_currentCamera->getViewMatrix() );
-				transparentEntities.push_back( entity );
-			}
-		}
-	}
-
-	// do depth-sorting
-	std::sort( transparentEntities.begin(), transparentEntities.end(), DRRenderer::depthSortingFunc );
-}
-
-bool
-DRRenderer::processTransparentEntities( std::vector<ZazenGraphicsEntity*>& transparentEntities, unsigned int& finalBlitSource )
-{
-	// if transparent entities present, ping-pong render them
-	if ( transparentEntities.size() )
+	// if post-process entities present, render them accordingly to their type
+	if ( postProcessEntities.size() )
 	{
 		unsigned int combinationTarget = 1;
 		unsigned int backgroundIndex = 4;
@@ -1196,11 +1179,12 @@ DRRenderer::processTransparentEntities( std::vector<ZazenGraphicsEntity*>& trans
 
 		CHECK_FRAMEBUFFER_DEBUG
 
-		for ( unsigned int i = 0; i < transparentEntities.size(); i++ )
+		// dynamic environment material first
+		for ( unsigned int i = 0; i < postProcessEntities.size(); i++ )
 		{
-			ZazenGraphicsEntity* entity = transparentEntities[ i ];
+			ZazenGraphicsEntity* entity = postProcessEntities[ i ];
 
-			if ( Material::MATERIAL_TRANSPARENT_ENVIRONMENT == entity->getMaterial()->getType() )
+			if ( Material::MATERIAL_ENVIRONMENTAL_CUBE == entity->getMaterial()->getType() )
 			{
 				if ( false == this->renderEnvironmentalInstance( entity ) )
 				{
@@ -1212,13 +1196,13 @@ DRRenderer::processTransparentEntities( std::vector<ZazenGraphicsEntity*>& trans
 		this->m_fbo->bind();
 
 		// render normal transparent objects last because they need all others already rendered for refraction
-		for ( unsigned int i = 0; i < transparentEntities.size(); i++ )
+		for ( unsigned int i = 0; i < postProcessEntities.size(); i++ )
 		{
-			ZazenGraphicsEntity* entity = transparentEntities[ i ];
+			ZazenGraphicsEntity* entity = postProcessEntities[ i ];
 
 			if ( Material::MATERIAL_TRANSPARENT == entity->getMaterial()->getType() )
 			{
-				if ( false == this->renderTransparentInstance( entity, backgroundIndex, combinationTarget, i == transparentEntities.size() - 1 ) )
+				if ( false == this->renderTransparentInstance( entity, backgroundIndex, combinationTarget, i == postProcessEntities.size() - 1 ) )
 				{
 					return false;
 				}
@@ -1230,8 +1214,36 @@ DRRenderer::processTransparentEntities( std::vector<ZazenGraphicsEntity*>& trans
 		// note: it is not combination target because it was swaped to backgroundindex at the end of the loop
 		finalBlitSource = backgroundIndex;
 	}
+	
+	NVTX_RANGE_PUSH( "Final Blit" );
+	// blit the result to the system framebuffer
+	this->m_fbo->blitColorToSystemFB( finalBlitSource );
+	NVTX_RANGE_POP
 
 	return true;
+}
+
+void
+DRRenderer::filterPostProcessEntities( std::vector<ZazenGraphicsEntity*>& postProcessEntities )
+{
+	list<ZazenGraphicsEntity*>::iterator iter = this->m_currentEntities->begin();
+	while ( iter != this->m_currentEntities->end() )
+	{
+		ZazenGraphicsEntity* entity = *iter++;
+
+		if ( entity->getMaterial() )
+		{
+			if ( Material::MATERIAL_POST_PROCESS < entity->getMaterial()->getType() )
+			{
+				// need to relcalculate distance from viewer for depth-sorting
+				entity->recalculateDistance( this->m_currentCamera->getViewMatrix() );
+				postProcessEntities.push_back( entity );
+			}
+		}
+	}
+
+	// do depth-sorting
+	std::sort( postProcessEntities.begin(), postProcessEntities.end(), DRRenderer::depthSortingFunc );
 }
 
 bool
@@ -1268,7 +1280,7 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 		return false;
 	}
 
-	if ( false == this->renderTransparentEntity( this->m_currentCamera, entity, this->m_progTransparency ) )
+	if ( false == this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progTransparency ) )
 	{
 		return false;
 	}
@@ -1282,6 +1294,8 @@ bool
 DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
 {
 	NVTX_RANGE_PUSH( "Env Render" );
+
+	Viewer* currentCameraBackup = this->m_currentCamera;
 
 	this->m_helperFbo->bind();
 	this->m_helperFbo->attachColorTargetTemp( this->m_planarHelperTarget, 0 );
@@ -1331,11 +1345,38 @@ DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
 	this->m_helperFbo->detachColorTargetTemp( this->m_planarHelperTarget, 0 );
 	this->m_helperFbo->drawNone();
 
-	// TODO: render to background-index 4
-	// TODO: now render object using the dynamically created environment map
+	this->m_currentCamera = currentCameraBackup;
 
-	// copy background-color to combination-target => spare one whole FSQ blending pass
-	
+	// need to re-set the configuration of the camera uniform-block to the main-camera because need the information within the lighting-shader
+	if ( false == this->updateCameraBlock( this->m_currentCamera ) )
+	{
+		return false;
+	}
+
+	this->m_fbo->bind();
+
+	// render to target 4 which gathers the final result
+	if ( false == this->m_fbo->drawBuffer( 4 ) )
+	{
+		return false;
+	}
+
+	// check status of FBO, IMPORANT: not before, would have failed
+	CHECK_FRAMEBUFFER_DEBUG
+
+	// activate lighting-stage shader
+	if ( false == this->m_progCubeEnv->use() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderEnvironmentalInstance: using program failed - exit" );
+		return false;
+	}
+
+	this->m_cubeEnvMap->bind( Texture::CUBE_RANGE_START );
+
+	this->m_progCubeEnv->setUniformInt( "EnvironmentMap", Texture::CUBE_RANGE_START );
+
+	this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progCubeEnv );
+
 	NVTX_RANGE_POP
 
 	return true;
@@ -1376,8 +1417,8 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 
 		if ( material )
 		{
-			if ( ( Material::MATERIAL_TRANSPARENT <= material->getType() && ! renderTransparency ) ||
-				( Material::MATERIAL_TRANSPARENT > material->getType() && renderTransparency ) )
+			if ( ( Material::MATERIAL_POST_PROCESS < material->getType() && ! renderTransparency ) ||
+				( Material::MATERIAL_POST_PROCESS > material->getType() && renderTransparency ) )
 			{
 				continue;
 			}
@@ -1414,7 +1455,7 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 }
 
 bool
-DRRenderer::renderTransparentEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* currentProgramm )
+DRRenderer::renderPostProcessEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* currentProgramm )
 {
 	// activate transparent material, is always not null
 	if ( false == entity->getMaterial()->activate( currentProgramm ) )

@@ -55,6 +55,7 @@ class DRRenderer
 
 		// Programs for environmental rendering
 		Program* m_progCubeEnv;
+		Texture* m_cubeEnvMap;
 		////////////////////////////////////////
 
 		// Uniform-Blocks
@@ -96,7 +97,7 @@ class DRRenderer
 		bool initGeomStage();
 		bool initLightingStage();
 		bool initShadowMapping();
-		bool initTransparency();
+		bool initPostProcessing();
 		bool initUniformBlocks();
 
 		void initializeStaticData();
@@ -108,8 +109,9 @@ class DRRenderer
 		void preProcessTransparency();
 		bool doGeometryStage();
 		bool doLightingStage();
+		bool doScreenSpaceStage();
+
 		bool doPostProcessing();
-		bool doTransparencyStage();
 
 		bool renderSkyBox();
 		bool renderGeometry( std::list<ZazenGraphicsEntity*>&, Program* );
@@ -125,11 +127,12 @@ class DRRenderer
 		bool renderShadowCubeMultiPass( Light* );
 		bool renderShadowPass( Light*, Program* );
 
-		void filterTransparentEntities( std::vector<ZazenGraphicsEntity*>& );
+		void filterPostProcessEntities( std::vector<ZazenGraphicsEntity*>& );
+
 		bool processTransparentEntities( std::vector<ZazenGraphicsEntity*>&, unsigned int& );
 		bool renderTransparentInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
 		bool renderEnvironmentalInstance( ZazenGraphicsEntity* );
-		bool renderTransparentEntity( Viewer*, ZazenGraphicsEntity*, Program* );
+		bool renderPostProcessEntity( Viewer*, ZazenGraphicsEntity*, Program* );
 		
 		bool renderEntities( Viewer*, std::list<ZazenGraphicsEntity*>&, Program*, bool, bool );
 		bool renderMeshNode( MeshNode*, const glm::mat4&, const glm::mat4&, const glm::mat4& );

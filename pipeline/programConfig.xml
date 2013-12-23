@@ -15,6 +15,13 @@
     </shaders>
   </program>
 
+  <program name="EnvironmentalCubeProgram">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/environmental/cube/envCubeVert.glsl"/>
+      <shader type="FRAGMENT" file="dr/stages/environmental/cube/envCubeFrag.glsl"/>
+    </shaders>
+  </program>
+
   <program name="SkyBoxProgram">
     <shaders>
       <shader type="VERTEX" file="dr/stages/geom/skyBoxVert.glsl"/>
