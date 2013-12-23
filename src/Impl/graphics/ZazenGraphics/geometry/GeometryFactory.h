@@ -20,9 +20,9 @@ class GeometryFactory
 		static GeometryFactory& getRef() { return *GeometryFactory::instance; };
 
 		MeshNode* getMesh( const std::string& fileName );
-		Mesh* createQuad( float width, float height );
-		Mesh* createUnitCube();
-		Mesh* createSphere( float radius, unsigned int rings, unsigned int sectors );
+		Mesh* getNDCQuad();
+		Mesh* getNDCCube();
+		Mesh* getUnitSphere();
 
 		void free( Mesh* );
 
@@ -65,6 +65,10 @@ class GeometryFactory
 		};
 
 		static GeometryFactory* instance;
+
+		Mesh* m_ndcCube;
+		Mesh* m_ndcQuad;
+		Mesh* m_unitSphere;
 
 		boost::filesystem::path m_modelDataPath;
 		std::map<std::string, MeshNode*> m_allMeshes;

@@ -400,7 +400,7 @@
     <None Include="..\..\..\..\pipeline\dr\stages\nullFrag.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\stencil\lightStencilVolVert.glsl">
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\stencilVolume\lightStencilVolVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting\Stencil</Filter>
     </None>
   </ItemGroup>

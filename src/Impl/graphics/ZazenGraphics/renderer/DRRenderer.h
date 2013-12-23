@@ -29,7 +29,7 @@ class DRRenderer
 		FrameBufferObject* m_intermediateDepthFB;
 		////////////////////////////////////////
 
-		// full-screen-quad (FSQ) needed to perform lighting- and post-processing passes 
+		// full-screen-quad (FSQ) needed to perform final lighting- and post-processing passes 
 		Mesh* m_fsq;
 		////////////////////////////////////////
 
@@ -56,7 +56,6 @@ class DRRenderer
 		UniformBlock* m_cameraBlock;
 		UniformBlock* m_transformsBlock;
 		UniformBlock* m_lightBlock;
-		UniformBlock* m_lightBoundingMeshBlock;
 		UniformBlock* m_materialBlock;
 		UniformBlock* m_transparentMaterialBlock;
 		////////////////////////////////////////
@@ -99,9 +98,9 @@ class DRRenderer
 		bool renderSkyBox();
 		bool renderGeometry( std::list<ZazenGraphicsEntity*>&, Program* );
 
-		bool processLight( std::list<ZazenGraphicsEntity*>&, Light* );
-		bool markLightVolume( Light* );
-		bool renderLight( Light* );
+		bool processLight( std::list<ZazenGraphicsEntity*>&, Light*, unsigned int );
+		bool markLightVolume( Light*, unsigned int );
+		bool renderLight( Light*, unsigned int );
 
 		bool renderShadowMap( std::list<ZazenGraphicsEntity*>&, Light* );
 		bool renderShadowPlanar( std::list<ZazenGraphicsEntity*>&, Light* );
@@ -118,7 +117,6 @@ class DRRenderer
 
 		bool updateCameraBlock( Viewer* );
 		bool updateLightBlock( Light*, Viewer* );
-		bool updateLightBoundingMeshBlock( Light* );
 
 		static bool depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b );
 

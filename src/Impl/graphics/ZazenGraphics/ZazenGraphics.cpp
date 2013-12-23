@@ -431,23 +431,23 @@ ZazenGraphics::parseLight( TiXmlElement* objectNode, ZazenGraphicsEntity* entity
 	if ( lightType == "DIRECTIONAL" )
 	{
 		light = Light::createDirectional( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), castShadow );
-		boundingMesh = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+		boundingMesh = GeometryFactory::getRef().getNDCQuad();
 	}
 	else if ( lightType == "POINT" )
 	{
 		light = Light::createPoint( shadowMapResX, castShadow );
-		//boundingMesh = GeometryFactory::getRef().createSphere( 10.0, 10, 10 );
-		MeshNode* node = GeometryFactory::getRef().getMesh( "light_bounding.obj" );
-		boundingMesh = node->getMeshes()[ 0 ];
+		boundingMesh = GeometryFactory::getRef().getUnitSphere();
+		//MeshNode* node = GeometryFactory::getRef().getMesh( "light_bounding.obj" );
+		//boundingMesh = node->getMeshes()[ 0 ];
 		
 	}
 	// default is spot
 	else
 	{
 		light = Light::createSpot( fov, shadowMapResX, shadowMapResY, castShadow );
-		//boundingMesh = GeometryFactory::getRef().createSphere( 1.0, 10, 10 );
-		MeshNode* node = GeometryFactory::getRef().getMesh( "light_bounding.obj" );
-		boundingMesh = node->getMeshes()[ 0 ];
+		boundingMesh = GeometryFactory::getRef().getUnitSphere();
+		//MeshNode* node = GeometryFactory::getRef().getMesh( "light_bounding.obj" );
+		//boundingMesh = node->getMeshes()[ 0 ];
 	}
 
 	light->m_boundingMesh = boundingMesh;

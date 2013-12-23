@@ -43,8 +43,12 @@ GeometryFactory::GeometryFactory( const boost::filesystem::path& modelDataPath )
 	: m_modelDataPath( modelDataPath )
 {
 	GeometryFactory::instance = this;
-	
+
 	this->m_currentScene = NULL;
+
+	this->m_ndcCube = NULL;
+	this->m_ndcQuad = NULL;
+	this->m_unitSphere = NULL;
 }
 
 GeometryFactory::~GeometryFactory()
@@ -96,12 +100,17 @@ GeometryFactory::getMesh( const std::string& fileName )
 }
 
 Mesh*
-GeometryFactory::createQuad( float width, float height )
+GeometryFactory::getNDCQuad()
 {
-	// TODO: check existing quads for same width and height and return if match instead of creating 
+	// already instantiated, hand out the ptr to it
+	if ( this->m_ndcQuad )
+	{
+		return this->m_ndcQuad;
+	}
 
-	float halfWidth = width / 2;
-	float halfHeight = height / 2;
+	// not yet instantiated, lazy load...
+	
+	// TODO: remove tex-coords when finished with transparency-stage
 
 	// indexbuffer for faces
 	GLuint indexData[ 6 ];
@@ -112,29 +121,29 @@ GeometryFactory::createQuad( float width, float height )
 	memset( vertexData, 0, 4 * sizeof( QuadVertexData ) );
 
 	// top left vertex
-	vertexData[ 0 ].position[ 0 ] = -halfWidth;
-	vertexData[ 0 ].position[ 1 ] = halfHeight;
+	vertexData[ 0 ].position[ 0 ] = -1.0;
+	vertexData[ 0 ].position[ 1 ] = 1.0;
 	vertexData[ 0 ].position[ 2 ] = 0.0f;
 	vertexData[ 0 ].texCoord[ 0 ] = 0.0f;
 	vertexData[ 0 ].texCoord[ 1 ] = 1.0f;
 
 	// bottom left vertex
-	vertexData[ 1 ].position[ 0 ] = -halfWidth;
-	vertexData[ 1 ].position[ 1 ] = -halfHeight;
+	vertexData[ 1 ].position[ 0 ] = -1.0;
+	vertexData[ 1 ].position[ 1 ] = -1.0;
 	vertexData[ 1 ].position[ 2 ] = 0.0f;
 	vertexData[ 1 ].texCoord[ 0 ] = 0.0f;
 	vertexData[ 1 ].texCoord[ 1 ] = 0.0f;
 
 	// bottom right vertex
-	vertexData[ 2 ].position[ 0 ] = halfWidth;
-	vertexData[ 2 ].position[ 1 ] = -halfHeight;
+	vertexData[ 2 ].position[ 0 ] = 1.0;
+	vertexData[ 2 ].position[ 1 ] = -1.0;
 	vertexData[ 2 ].position[ 2 ] = 0.0f;
 	vertexData[ 2 ].texCoord[ 0 ] = 1.0f;
 	vertexData[ 2 ].texCoord[ 1 ] = 0.0f;
 
 	// top right vertex
-	vertexData[ 3 ].position[ 0 ] = halfWidth;
-	vertexData[ 3 ].position[ 1 ] = halfHeight;
+	vertexData[ 3 ].position[ 0 ] = 1.0;
+	vertexData[ 3 ].position[ 1 ] = 1.0;
 	vertexData[ 3 ].position[ 2 ] = 0.0f;
 	vertexData[ 3 ].texCoord[ 0 ] = 1.0f;
 	vertexData[ 3 ].texCoord[ 1 ] = 1.0f;
@@ -194,24 +203,30 @@ GeometryFactory::createQuad( float width, float height )
 
 	glBindVertexArray( 0 );
 
-	Mesh* meshQuad = new Mesh( vao, dataVBO, indexVBO, 6 );
-	meshQuad->m_vertexData = NULL;	// no dynamic memory for small mesh 
-	meshQuad->m_indexData = NULL;	// no dynamic memory for small mesh 
+	this->m_ndcQuad = new Mesh( vao, dataVBO, indexVBO, 6 );
+	this->m_ndcQuad->m_vertexData = NULL;	// no dynamic memory for small mesh 
+	this->m_ndcQuad->m_indexData = NULL;	// no dynamic memory for small mesh 
 
 	// put into map => will be cleaned up
-	MeshNode* containerNode = new MeshNode( "QUAD_MESH" + this->m_allMeshes.size() );
-	containerNode->m_meshes.push_back( meshQuad );
+	MeshNode* containerNode = new MeshNode( "NDC_QUAD" );
+	containerNode->m_meshes.push_back( this->m_ndcQuad );
 
 	this->m_allMeshes[ containerNode->getName() ] = containerNode;
 
-	return meshQuad;
+	return this->m_ndcQuad;
 }
 
 Mesh*
-GeometryFactory::createUnitCube()
+GeometryFactory::getNDCCube()
 {
-	// TODO: check existing cubes and return if match instead of creating 
+	// already instantiated, hand out the ptr to it
+	if ( this->m_ndcCube )
+	{
+		return this->m_ndcCube;
+	}
 
+	// not yet instantiated, lazy load...
+	
 	GLuint vao = 0;
 	GLuint dataVBO = 0;
 	GLuint indexVBO = 0;
@@ -281,23 +296,27 @@ GeometryFactory::createUnitCube()
 	
 	glBindVertexArray( 0 );
 
-	Mesh* meshUnitCube = new Mesh( vao, dataVBO, indexVBO, 36 );
-	meshUnitCube->m_vertexData = NULL;	// no dynamic memory for small mesh 
-	meshUnitCube->m_indexData = NULL;	// no dynamic memory for small mesh 
+	this->m_ndcCube = new Mesh( vao, dataVBO, indexVBO, 36 );
+	this->m_ndcCube->m_vertexData = NULL;	// no dynamic memory for small mesh 
+	this->m_ndcCube->m_indexData = NULL;	// no dynamic memory for small mesh 
 
 	// put into map => will be cleaned up
-	MeshNode* containerNode = new MeshNode( "CUBE_MESH" + this->m_allMeshes.size() );
-	containerNode->m_meshes.push_back( meshUnitCube );
+	MeshNode* containerNode = new MeshNode( "NDC_CUBE" );
+	containerNode->m_meshes.push_back( this->m_ndcCube );
 
 	this->m_allMeshes[ containerNode->getName() ] = containerNode;
 
-	return meshUnitCube;
+	return this->m_ndcCube;
 }
 
 Mesh*
-GeometryFactory::createSphere( float radius, unsigned int rings, unsigned int sectors )
+GeometryFactory::getUnitSphere()
 {
-	// TODO: check existing spheres for same radius, rings & sectors and return instead of creating
+	// already instantiated, hand out the ptr to it
+	if ( this->m_unitSphere )
+	{
+		return this->m_unitSphere;
+	}
 
 	GLuint vao = 0;
 	GLuint dataVBO = 0;
@@ -305,6 +324,10 @@ GeometryFactory::createSphere( float radius, unsigned int rings, unsigned int se
 
 	unsigned int vertexIndex = 0;
 	unsigned int indexIndex = 0;
+
+	float radius = 1.0;
+	unsigned int rings = 20;
+	unsigned int sectors = 20;
 
 	// code from http://stackoverflow.com/questions/5988686/creating-a-3d-sphere-in-opengl-using-visual-c/5989676#5989676
 	std::vector<GLfloat> sphereVertices;
@@ -370,17 +393,17 @@ GeometryFactory::createSphere( float radius, unsigned int rings, unsigned int se
 	
 	glBindVertexArray( 0 );
 
-	Mesh* meshSphere = new Mesh( vao, dataVBO, indexVBO, sphereIndices.size() );
-	meshSphere->m_vertexData = NULL;	// no dynamic memory for small mesh 
-	meshSphere->m_indexData = NULL;	// no dynamic memory for small mesh 
+	this->m_unitSphere = new Mesh( vao, dataVBO, indexVBO, sphereIndices.size() );
+	this->m_unitSphere->m_vertexData = NULL;	// no dynamic memory for small mesh 
+	this->m_unitSphere->m_indexData = NULL;		// no dynamic memory for small mesh 
 
 	// put into map => will be cleaned up
-	MeshNode* containerNode = new MeshNode( "SPHERE_MESH" + this->m_allMeshes.size() );
-	containerNode->m_meshes.push_back( meshSphere );
+	MeshNode* containerNode = new MeshNode( "UNIT_SPHERE" );
+	containerNode->m_meshes.push_back( this->m_unitSphere );
 
 	this->m_allMeshes[ containerNode->getName() ] = containerNode;
 
-	return meshSphere;
+	return this->m_unitSphere;
 }
 
 
@@ -717,6 +740,7 @@ GeometryFactory::processMeshBoned( const struct aiMesh* assImpMesh )
 	glBindVertexArray( 0 );
 
 	Mesh* meshBoned = new Mesh( vao, dataVBO, indexVBO, assImpMesh->mNumFaces * 3 );
+	// TODO: no need to store the vertex- & index-data as it is hold by OpenGL, can be deleted
 	meshBoned->m_vertexData = vertexData;
 	meshBoned->m_indexData = indexData;
 
@@ -874,6 +898,7 @@ GeometryFactory::processMeshStatic( const struct aiMesh* assImpMesh )
 	glBindVertexArray( 0 );
 
 	Mesh* meshStatic = new Mesh( vao, dataVBO, indexVBO, assImpMesh->mNumFaces * 3 );
+	// TODO: no need to store the vertex- & index-data as it is hold by OpenGL, can be deleted
 	meshStatic->m_vertexData = vertexData;
 	meshStatic->m_indexData = indexData;
 

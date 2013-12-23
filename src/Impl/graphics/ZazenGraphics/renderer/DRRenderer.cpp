@@ -38,7 +38,6 @@ DRRenderer::DRRenderer()
 	this->m_transformsBlock = NULL;
 	this->m_cameraBlock = NULL;
 	this->m_lightBlock = NULL;
-	this->m_lightBoundingMeshBlock = NULL;
 	this->m_materialBlock = NULL;
 	this->m_transparentMaterialBlock = NULL;
 
@@ -358,7 +357,7 @@ DRRenderer::initTransparency()
 		return false;
 	}
 	
-	this->m_fsq = GeometryFactory::getRef().createQuad( ( float ) RenderingContext::getRef().getWidth(), ( float ) RenderingContext::getRef().getHeight() );
+	this->m_fsq = GeometryFactory::getRef().getNDCQuad();
 	if ( NULL == this->m_fsq )
 	{
 		return false;
@@ -390,13 +389,6 @@ DRRenderer::initUniformBlocks()
 	if ( 0 == this->m_lightBlock )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find light uniform-block - exit" );
-		return false;
-	}
-
-	this->m_lightBoundingMeshBlock = UniformManagement::getBlock( "LightBoundingMeshUniforms" );
-	if ( 0 == this->m_lightBoundingMeshBlock )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find light bounding-mesh uniform-block - exit" );
 		return false;
 	}
 
@@ -444,12 +436,6 @@ DRRenderer::initUniformBlocks()
 	if ( false == this->m_lightBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding light uniform-block failed - exit" );
-		return false;
-	}
-
-	if ( false == this->m_lightBoundingMeshBlock->bindBase() )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding light bounding-mesh uniform-block failed - exit" );
 		return false;
 	}
 
@@ -682,6 +668,9 @@ DRRenderer::renderSkyBox()
 bool
 DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 {
+	// start light marker with 2 because meshes increased the stencil-buffer already to 1
+	unsigned int lightMarker = 2;
+
 	// render the contribution of each light-entiy to the scene
 	std::list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
 	while ( iter != entities.end() )
@@ -690,10 +679,12 @@ DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 		Light* light = entiy->getLight();
 		if ( light )
 		{
-			if ( false == this->processLight( entities, light ) )
+			if ( false == this->processLight( entities, light, lightMarker ) )
 			{
 				return false;
 			}
+
+			lightMarker++;
 		}
 	}
 
@@ -701,7 +692,7 @@ DRRenderer::doLightingStage( std::list<ZazenGraphicsEntity*>& entities )
 }
 
 bool
-DRRenderer::processLight( std::list<ZazenGraphicsEntity*>& entities, Light* light )
+DRRenderer::processLight( std::list<ZazenGraphicsEntity*>& entities, Light* light, unsigned int lightMarker )
 {
 	// render the shadow-map of the light (if it is a shadow-caster)
 	if ( false == this->renderShadowMap( entities, light ) )
@@ -712,26 +703,20 @@ DRRenderer::processLight( std::list<ZazenGraphicsEntity*>& entities, Light* ligh
 	// IMPORTANT: need to re-set the viewport, could have changed due to shadow-map rendering happend before
 	this->m_mainCamera->restoreViewport();
 
-	// update the orientation of the light bounding-mesh in the world
-	if ( false == this->updateLightBoundingMeshBlock( light ) )
-	{
-		return false;
-	}
-
 	// light uses stencil-test to discard pixels
 	glEnable( GL_STENCIL_TEST );
 	// disable writing to depth: light-boundaries should not update depth
 	// we also need to READ from depth so no update 
 	glDepthMask( GL_FALSE );
 
-	// mark all pixels inside the light-volume
-	if ( false == this->markLightVolume( light ) )
+	// mark all pixels inside the light-volume of spot- and point-lights
+	if ( false == this->markLightVolume( light, lightMarker ) )
 	{
 		return false;
 	}
 
 	// finally render the light
-	if ( false == this->renderLight( light ) )
+	if ( false == this->renderLight( light, lightMarker ) )
 	{
 		return false;
 	}
@@ -745,7 +730,55 @@ DRRenderer::processLight( std::list<ZazenGraphicsEntity*>& entities, Light* ligh
 }
 
 bool
-DRRenderer::renderLight( Light* light )
+DRRenderer::markLightVolume( Light* light, unsigned int lightMarker )
+{
+	// NOTE: won't process directional-lights with this as they do a full-screen pass anway
+	// thus it would be a waste of this stencil pass
+	if ( Light::DIRECTIONAL == light->getType() ) 
+	{
+		return true;
+	}
+
+	// only update stencil-buffer => glDrawBuffer( GL_NONE )
+	this->m_fbo->drawNone();
+
+	// check status of FBO, IMPORANT: not before, would have failed
+	CHECK_FRAMEBUFFER_DEBUG
+
+	if ( false == this->m_progLightingStageStencilVolume->use() )
+	{
+		return false;
+	}
+
+	// TODO apply scaling based upon falloff and distance
+	glm::mat4 lightBoundingMeshMVP = this->m_mainCamera->getVPMatrix() * light->getModelMatrix() * glm::scale( glm::vec3( 250, 250, 250 ) );
+	this->m_progLightingStageStencilVolume->setUniformMatrix( "LightBoundingMeshMVP", lightBoundingMeshMVP );
+
+	// no culling of faces because we need to mark the volume by 
+	// incrementing/decrementing the stencil-values when entering/exiting
+	glDisable( GL_CULL_FACE );
+
+	// set ref to the current lightMarker
+    glStencilFuncSeparate( GL_BACK, GL_ALWAYS, lightMarker, 0 );
+	// when back-face depth-test fails (e.g. something is in front of the back-face) then this pixel is inside the volume
+	// mark this pixel with the current lightmarker
+    glStencilOpSeparate( GL_BACK, GL_KEEP, GL_REPLACE, GL_KEEP );
+	// set ref to 1 - mesh
+	glStencilFuncSeparate( GL_FRONT, GL_ALWAYS, 1, 0 );
+	// front-face depth-test failed, the pixel is not inside the volume, mark as normal mesh
+    glStencilOpSeparate( GL_FRONT, GL_KEEP, GL_REPLACE, GL_KEEP );
+
+	// render the bounding-mesh of the light
+	light->getBoundingMesh()->render();
+
+	// enable culling of faces again
+	glEnable( GL_CULL_FACE );
+
+	return true;
+}
+
+bool
+DRRenderer::renderLight( Light* light, unsigned int lightMarker )
 {
 	// render to target 4 which gathers the final result before post-processing
 	if ( false == this->m_fbo->drawBuffer( 4 ) )
@@ -854,19 +887,26 @@ DRRenderer::renderLight( Light* light )
 	// the destination is weighted by the inverse of the source-color which creates a saturation effect with multiple lights
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
 
-	// stencil-test will pass only when stencil-buffer contains >= 2 which means the pixel is a mesh affected by at least this light-volume
-	glStencilFunc( GL_LEQUAL, 0x2, 0xFF );
-	// don't touch the stencil-buffer, keep it for all fail-scenarios the same
-	glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
-
-	// bind light uniform-block to update data
-	if ( false == this->m_lightBoundingMeshBlock->bindBuffer() )
+	// need a different stencil-func for directional-lights because we don't render their light-volume as a FSQ doesn't have
+	// one and it would make no sense as they reach every mesh anyway thus it would be a waste
+	if ( Light::DIRECTIONAL == light->getType() ) 
 	{
-		return false;
+		// stencil-test will pass if stencil value is not 0 => directional light affects all mesh-pixels regardless if they
+		// are affected by other lights already or not
+		glStencilFunc( GL_NOTEQUAL, 0, 0xFF );
+	}
+	// point- and spot-lights render their light-volume and will write the lightMarker to the stencil-buffer
+	// this is necessary because in the final light-pass we render a FSQ (see below)
+	else
+	{
+		// pass only for pixels marked with the lightMarker value, which stays constant for one light and gets incremented
+		// thus each light has a unique lightmarker. this is necessary because otherwise the FSQ pass would affect
+		// pixels which belong to other lights too which would waste part of the optimization 
+		glStencilFunc( GL_LEQUAL, lightMarker, 0xFF );
 	}
 
-	glm::mat4 lightBoundingMeshMVP = this->m_mainCamera->createOrthoProj( true, true );
-	this->m_lightBoundingMeshBlock->updateField( "LightBoundingMeshUniforms.mvp", lightBoundingMeshMVP );
+	// don't touch the stencil-buffer, keep it for all fail-scenarios the same
+	glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
 
 	// now render the FSQ
 	// NOTE: we don't render the light bounding-mesh because for two reasons
@@ -877,38 +917,6 @@ DRRenderer::renderLight( Light* light )
 	
 	// turn off blending otherwise would lead to artifacts because everything would be blended (depth maps,...)
 	glDisable( GL_BLEND );
-
-	return true;
-}
-
-bool
-DRRenderer::markLightVolume( Light* light )
-{
-	// only update stencil-buffer => glDrawBuffer( GL_NONE )
-	this->m_fbo->drawNone();
-
-	// check status of FBO, IMPORANT: not before, would have failed
-	CHECK_FRAMEBUFFER_DEBUG
-
-	if ( false == this->m_progLightingStageStencilVolume->use() )
-	{
-		return false;
-	}
-
-	// no culling of faces because we need to mark the volume by 
-	// incrementing/decrementing the stencil-values when entering/exiting
-	glDisable( GL_CULL_FACE );
-
-	// We need the stencil test to be enabled but we want it to succeed always. Only the depth test matters.
-    glStencilFunc( GL_ALWAYS, 0, 0 );
-
-    glStencilOpSeparate( GL_BACK, GL_KEEP, GL_INCR, GL_KEEP );
-    glStencilOpSeparate( GL_FRONT, GL_KEEP, GL_DECR, GL_KEEP );
-
-	light->getBoundingMesh()->render();
-
-	// enable culling of faces again
-	glEnable( GL_CULL_FACE );
 
 	return true;
 }
@@ -1512,32 +1520,6 @@ DRRenderer::updateLightBlock( Light* light, Viewer* camera )
 			this->m_lightBlock->updateField( "LightUniforms.spaceUniformMatrix", lightSpaceUnit );
 		}
 	}
-
-	return true;
-}
-
-bool
-DRRenderer::updateLightBoundingMeshBlock( Light* light )
-{
-	// bind light uniform-block to update data
-	if ( false == this->m_lightBoundingMeshBlock->bindBuffer() )
-	{
-		return false;
-	}
-
-	glm::mat4 lightBoundingMeshMVP;
-
-	if ( Light::DIRECTIONAL == light->getType() )
-	{
-		lightBoundingMeshMVP = this->m_mainCamera->createOrthoProj( true, false );
-	}
-	else if ( Light::SPOT == light->getType() || Light::POINT == light->getType() )
-	{
-		// TODO apply scaling based upon falloff and distance
-		lightBoundingMeshMVP = this->m_mainCamera->getVPMatrix() * light->getModelMatrix() * glm::scale( glm::vec3( 100.0, 100.0, 100.0 ) );
-	}
-	
-	this->m_lightBoundingMeshBlock->updateField( "LightBoundingMeshUniforms.mvp", lightBoundingMeshMVP );
 
 	return true;
 }

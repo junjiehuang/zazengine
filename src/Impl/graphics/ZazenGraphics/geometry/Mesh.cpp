@@ -11,6 +11,7 @@ Mesh::Mesh( GLuint vao, GLuint dataVBO, GLuint indexVBO, int indicesCount )
 	m_indicesCount( indicesCount )
 {
 	// will be set by geometry-factory
+	// TODO: no need to store the vertex- & index-data as it is hold by OpenGL, can be deleted
 	this->m_vertexData = NULL;
 	this->m_indexData = NULL;
 }

@@ -35,7 +35,7 @@ SkyBox::initialize( const boost::filesystem::path& textureFolder, const std::str
 			return false;
 		}
 
-		SkyBox::instance->m_cubeMesh = GeometryFactory::getRef().createUnitCube();
+		SkyBox::instance->m_cubeMesh = GeometryFactory::getRef().getNDCCube();
 		if ( NULL == SkyBox::instance->m_cubeMesh )
 		{
 			ZazenGraphics::getInstance().getLogger().logError( "SkyBox::initialize: couldn't create cube-mesh" );

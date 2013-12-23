@@ -1,7 +1,9 @@
 For Lighting-Stage
-	-> enhance: sphere bounding-mesh for point/spot light - create sphere in code
+	-> calculate scale-factor of light bounding-sphere
+	-> make falloff-equations work right
 	-> enhance: only 1 fbo necessary
-	
+	-> sky-box: use NDC, no need to project?
+
 	-> write blog
 		-> https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
 	-> understand math behind
@@ -13,6 +15,7 @@ For Lighting-Stage
 
 For Transparency-Stage
 	-> fix it, refraction is broken!
+	-> in transparency blend use same texture-coord generation teqchnique as in light-stage vert
 	-> articfacts in shadow during transparency rendering?
 	-> need to be able to render from an aribtrary view point into aribtrary 2d target with different resolution
 		-> need 2 render-targets: planar & environmental (cube)
