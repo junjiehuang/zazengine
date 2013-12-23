@@ -1184,12 +1184,29 @@ DRRenderer::processTransparentEntities( std::vector<ZazenGraphicsEntity*>& trans
 		{
 			ZazenGraphicsEntity* entity = transparentEntities[ i ];
 
-			if ( false == this->renderTransparentInstance( entity, backgroundIndex, combinationTarget, i == transparentEntities.size() - 1 ) )
+			if ( Material::MATERIAL_TRANSPARENT_ENVIRONMENT == entity->getMaterial()->getType() )
 			{
-				return false;
+				if ( false == this->renderEnvironmentalInstance( entity, backgroundIndex ) )
+				{
+					return false;
+				}
 			}
+		}
 
-			std::swap( combinationTarget, backgroundIndex );
+		// render normal transparent objects last because they need all others already rendered for refraction
+		for ( unsigned int i = 0; i < transparentEntities.size(); i++ )
+		{
+			ZazenGraphicsEntity* entity = transparentEntities[ i ];
+
+			if ( Material::MATERIAL_TRANSPARENT == entity->getMaterial()->getType() )
+			{
+				if ( false == this->renderTransparentInstance( entity, backgroundIndex, combinationTarget, i == transparentEntities.size() - 1 ) )
+				{
+					return false;
+				}
+
+				std::swap( combinationTarget, backgroundIndex );
+			}
 		}
 
 		// note: it is not combination target because it was swaped to backgroundindex at the end of the loop
@@ -1242,6 +1259,17 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 
 	return true;
 }
+
+bool
+DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity, unsigned int backgroundIndex )
+{
+	NVTX_RANGE_PUSH( "Env Render" );
+
+	NVTX_RANGE_POP
+
+	return true;
+}
+
 
 bool
 DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities, Program* currentProgramm, bool applyMaterial, bool renderTransparency )

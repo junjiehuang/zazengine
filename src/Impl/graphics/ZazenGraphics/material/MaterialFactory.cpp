@@ -3,6 +3,7 @@
 #include "MaterialClassic.h"
 #include "MaterialDoom3.h"
 #include "MaterialTransparent.h"
+#include "MaterialEnvironmental.h"
 
 #include "../ZazenGraphics.h"
 
@@ -309,6 +310,25 @@ MaterialFactory::createTransparentMaterial( const std::string& name, TiXmlElemen
 				material->m_refractionFactor = ( float ) atof( str );
 			}
 		}
+	}
+
+	return material;
+}
+
+Material*
+MaterialFactory::createEnvironmentalMaterial( const std::string& name, TiXmlElement* materialTypeNode )
+{
+	MaterialEnvironmental* material = new MaterialEnvironmental( name );
+
+	for (TiXmlElement* materialCfgNode = materialTypeNode->FirstChildElement(); materialCfgNode != 0; materialCfgNode = materialCfgNode->NextSiblingElement())
+	{
+		const char* str = materialCfgNode->Value();
+		if ( NULL == str )
+		{
+			continue;
+		}
+
+		// TODO: when parameters are clear then make configurable here
 	}
 
 	return material;

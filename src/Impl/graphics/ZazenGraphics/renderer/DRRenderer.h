@@ -120,6 +120,7 @@ class DRRenderer
 		void filterTransparentEntities( std::list<ZazenGraphicsEntity*>&, std::vector<ZazenGraphicsEntity*>& );
 		bool processTransparentEntities( std::vector<ZazenGraphicsEntity*>&, unsigned int& );
 		bool renderTransparentInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
+		bool renderEnvironmentalInstance( ZazenGraphicsEntity*, unsigned int );
 		bool renderTransparentEntity( Viewer*, ZazenGraphicsEntity*, Program* );
 		
 		bool renderEntities( Viewer*, std::list<ZazenGraphicsEntity*>&, Program*, bool, bool );

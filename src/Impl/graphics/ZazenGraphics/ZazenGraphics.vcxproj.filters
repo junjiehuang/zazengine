@@ -234,6 +234,9 @@
     <ClCompile Include="geometry\MeshNode.cpp">
       <Filter>Quelldateien\geometry</Filter>
     </ClCompile>
+    <ClCompile Include="material\MaterialEnvironmental.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ZazenGraphics.h">
@@ -340,6 +343,9 @@
     </ClInclude>
     <ClInclude Include="geometry\MeshNode.h">
       <Filter>Headerdateien\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="material\MaterialEnvironmental.h">
+      <Filter>Headerdateien\material</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
