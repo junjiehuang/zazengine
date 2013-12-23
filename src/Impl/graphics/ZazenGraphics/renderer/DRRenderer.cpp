@@ -25,6 +25,8 @@ DRRenderer::DRRenderer()
 	this->m_fbo = NULL;
 	this->m_intermediateDepthFB = NULL;
 
+	this->m_fsq = NULL;
+
 	this->m_progGeomStage = NULL;
 	this->m_progSkyBox = NULL;
 	this->m_progLightingStage = NULL;
@@ -40,14 +42,7 @@ DRRenderer::DRRenderer()
 	this->m_materialBlock = NULL;
 	this->m_transparentMaterialBlock = NULL;
 
-	this->m_fsq = NULL;
-
-	this->m_unitCubeMatrix = glm::mat4(
-		0.5, 0.0, 0.0, 0.0, 
-		0.0, 0.5, 0.0, 0.0,
-		0.0, 0.0, 0.5, 0.0,
-		0.5, 0.5, 0.5, 1.0
-	);
+	this->m_currentCamera = NULL;
 }
 
 DRRenderer::~DRRenderer()
@@ -472,6 +467,13 @@ DRRenderer::initializeStaticData()
 	this->m_gBufferBindTargetIndices.push_back( 3 );	// bi-tangents
 	this->m_gBufferBindTargetIndices.push_back( 5 );	// depth-map
 
+	// transforms into planar shadow-map texture coordinates
+	this->m_unitCubeMatrix = glm::mat4(
+		0.5, 0.0, 0.0, 0.0, 
+		0.0, 0.5, 0.0, 0.0,
+		0.0, 0.0, 0.5, 0.0,
+		0.5, 0.5, 0.5, 1.0
+	);
 }
 
 bool
@@ -485,28 +487,14 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 
 		if ( entity->getCamera() )
 		{
-			this->m_mainCamera = entity->getCamera();
-			
 			// culling is done outside renderer in special visibility-detection, renderer just issues commands to GPU
 
-			NVTX_RANGE_PUSH( "Frame" );
+			NVTX_RANGE_PUSH( "Main Frame" );
 
-			// NOTE: there is no GPU work going on thus no RANGE_PUSH
-			this->preProcessTransparency( entities );
-
-			NVTX_RANGE_PUSH( "G-Stage" )
-			if ( false == this->doGeometryStage( entities ) )
+			if ( false == renderInternalFrame( entity->getCamera(), entities ) )
 			{
 				return false;
 			}
-			NVTX_RANGE_POP
-
-			NVTX_RANGE_PUSH( "L-Stage" )
-			if ( false == this->doLightingStage( entities ) )
-			{
-				return false;
-			}
-			NVTX_RANGE_POP
 
 			NVTX_RANGE_PUSH( "T-Stage" )
 			if ( false == this->doTransparencyStage( entities ) )
@@ -526,30 +514,35 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 	return true;
 }
 
-void
-DRRenderer::preProcessTransparency( std::list<ZazenGraphicsEntity*>& entities )
+bool
+DRRenderer::renderInternalFrame( Viewer* viewer, std::list<ZazenGraphicsEntity*>& entities )
 {
-	this->m_transparentEntities.clear();
+	this->m_currentCamera = viewer;
 
-	list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
-	while ( iter != entities.end() )
+	NVTX_RANGE_PUSH( "G-Stage" )
+	if ( false == this->doGeometryStage( entities ) )
 	{
-		ZazenGraphicsEntity* entity = *iter++;
-
-		if ( entity->getMaterial() )
-		{
-			if ( Material::MATERIAL_TRANSPARENT == entity->getMaterial()->getType() )
-			{
-				// need to relcalculate distance from viewer for depth-sorting
-				entity->recalculateDistance( this->m_mainCamera->getViewMatrix() );
-
-				this->m_transparentEntities.push_back( entity );
-			}
-		}
+		return false;
 	}
+	NVTX_RANGE_POP
 
-	// do depth-sorting
-	std::sort( this->m_transparentEntities.begin(), this->m_transparentEntities.end(), DRRenderer::depthSortingFunc );
+	NVTX_RANGE_PUSH( "L-Stage" )
+	if ( false == this->doLightingStage( entities ) )
+	{
+		return false;
+	}
+	NVTX_RANGE_POP
+
+	NVTX_RANGE_PUSH( "PP-Stage" )
+	if ( false == this->doPostProcessing( entities ) )
+	{
+		return false;
+	}
+	NVTX_RANGE_POP
+
+	// NOTE: no call to doTransparencyStage as we don't render recursive transparency
+
+	return true;
 }
 
 bool
@@ -563,7 +556,7 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 
 	// IMPORTANT: need to re-set the viewport for each FBO
 	// could have changed due to shadow-map or other rendering happend in the frame before
-	this->m_mainCamera->restoreViewport();
+	this->m_currentCamera->restoreViewport();
 
 	// clear all targets for the new frame
 	if ( false == this->m_fbo->clearAll() )
@@ -588,7 +581,7 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 	CHECK_FRAMEBUFFER_DEBUG
 
 	// update all parameters of the camera to render geometry-stage
-	this->updateCameraBlock( this->m_mainCamera );
+	this->updateCameraBlock( this->m_currentCamera );
 
 	// enable stencil-test to mark geometry-pixels to distinguish them from background and thus prevent the lighting-shader to run on them
 	glEnable( GL_STENCIL_TEST );
@@ -598,7 +591,7 @@ DRRenderer::doGeometryStage( std::list<ZazenGraphicsEntity*>& entities )
 	glStencilOp( GL_REPLACE, GL_REPLACE, GL_REPLACE );
 
 	// draw all geometry from cameras viewpoint AND apply materials but ignore transparent material
-	if ( false == this->renderEntities( this->m_mainCamera, entities, this->m_progGeomStage, true, false ) )
+	if ( false == this->renderEntities( this->m_currentCamera, entities, this->m_progGeomStage, true, false ) )
 	{
 		return false;
 	}
@@ -653,7 +646,7 @@ DRRenderer::renderSkyBox()
 	glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
 
 	// render the geometry
-	SkyBox::getRef().render( *this->m_mainCamera, this->m_cameraBlock, this->m_transformsBlock );
+	SkyBox::getRef().render( *this->m_currentCamera, this->m_cameraBlock, this->m_transformsBlock );
 
 	return true;
 }
@@ -694,7 +687,7 @@ DRRenderer::processLight( std::list<ZazenGraphicsEntity*>& entities, Light* ligh
 	}
 		
 	// IMPORTANT: need to re-set the viewport, could have changed due to shadow-map rendering happend before
-	this->m_mainCamera->restoreViewport();
+	this->m_currentCamera->restoreViewport();
 
 	// light uses stencil-test to discard pixels
 	glEnable( GL_STENCIL_TEST );
@@ -744,7 +737,7 @@ DRRenderer::markLightVolume( Light* light, unsigned int lightMarker )
 	}
 
 	float scaleRadius = light->getAttenuation().x;
-	glm::mat4 lightBoundingMeshMVP = this->m_mainCamera->getVPMatrix() * light->getModelMatrix() * glm::scale( glm::vec3( scaleRadius, scaleRadius, scaleRadius ) );
+	glm::mat4 lightBoundingMeshMVP = this->m_currentCamera->getVPMatrix() * light->getModelMatrix() * glm::scale( glm::vec3( scaleRadius, scaleRadius, scaleRadius ) );
 	this->m_progLightingStageStencilVolume->setUniformMatrix( "LightBoundingMeshMVP", lightBoundingMeshMVP );
 
 	// no culling of faces because we need to mark the volume by 
@@ -863,13 +856,13 @@ DRRenderer::renderLight( Light* light, unsigned int lightMarker )
 	}
 
 	// update configuration of the current light to its uniform-block
-	if ( false == this->updateLightBlock( light, this->m_mainCamera ) )
+	if ( false == this->updateLightBlock( light, this->m_currentCamera ) )
 	{
 		return false;
 	}
 
 	// need to re-set the configuration of the camera uniform-block to the main-camera because need the information within the lighting-shader
-	if ( false == this->updateCameraBlock( this->m_mainCamera ) )
+	if ( false == this->updateCameraBlock( this->m_currentCamera ) )
 	{
 		return false;
 	}
@@ -1119,12 +1112,62 @@ DRRenderer::renderShadowPass( list<ZazenGraphicsEntity*>& entities, Light* light
 }
 
 bool
+DRRenderer::doPostProcessing( std::list<ZazenGraphicsEntity*>& entities )
+{
+	// NO POST-PROCESSING IMPLEMENTED FOR NOW
+
+	return true;
+}
+
+bool
 DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 {
 	unsigned int finalBlitFromTarget = 4;
+	std::vector<ZazenGraphicsEntity*> transparentEntities;
 
+	this->filterTransparentEntities( entities, transparentEntities );
+	
+	if ( false == this->processTransparentEntities( transparentEntities, finalBlitFromTarget ) )
+	{
+		return false;
+	}
+	
+	NVTX_RANGE_PUSH( "Final Blit" );
+	// blit the result to the system framebuffer
+	this->m_fbo->blitToSystemFB( finalBlitFromTarget );
+	NVTX_RANGE_POP
+
+	return true;
+}
+
+void
+DRRenderer::filterTransparentEntities( std::list<ZazenGraphicsEntity*>& entities, std::vector<ZazenGraphicsEntity*>& transparentEntities )
+{
+	list<ZazenGraphicsEntity*>::iterator iter = entities.begin();
+	while ( iter != entities.end() )
+	{
+		ZazenGraphicsEntity* entity = *iter++;
+
+		if ( entity->getMaterial() )
+		{
+			if ( Material::MATERIAL_TRANSPARENT <= entity->getMaterial()->getType() )
+			{
+				// need to relcalculate distance from viewer for depth-sorting
+				entity->recalculateDistance( this->m_currentCamera->getViewMatrix() );
+				transparentEntities.push_back( entity );
+			}
+		}
+	}
+
+	// do depth-sorting
+	std::sort( transparentEntities.begin(), transparentEntities.end(), DRRenderer::depthSortingFunc );
+}
+
+bool
+DRRenderer::processTransparentEntities( std::vector<ZazenGraphicsEntity*>& transparentEntities, unsigned int& finalBlitSource )
+{
 	// if transparent entities present, ping-pong render them
-	if ( this->m_transparentEntities.size() )
+	if ( transparentEntities.size() )
 	{
 		unsigned int combinationTarget = 1;
 		unsigned int backgroundIndex = 4;
@@ -1137,12 +1180,11 @@ DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 
 		this->m_fbo->bind();
 
-		for ( unsigned int i = 0; i < this->m_transparentEntities.size(); i++ )
+		for ( unsigned int i = 0; i < transparentEntities.size(); i++ )
 		{
-			ZazenGraphicsEntity* entity = this->m_transparentEntities[ i ];
+			ZazenGraphicsEntity* entity = transparentEntities[ i ];
 
-			if ( false == this->renderTransparentInstance( entity, backgroundIndex, combinationTarget,
-				i == this->m_transparentEntities.size() - 1 ) )
+			if ( false == this->renderTransparentInstance( entity, backgroundIndex, combinationTarget, i == transparentEntities.size() - 1 ) )
 			{
 				return false;
 			}
@@ -1151,15 +1193,8 @@ DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 		}
 
 		// note: it is not combination target because it was swaped to backgroundindex at the end of the loop
-		finalBlitFromTarget = backgroundIndex;
+		finalBlitSource = backgroundIndex;
 	}
-
-	NVTX_RANGE_PUSH( "Final Blit" );
-
-	// blit the result to the system framebuffer
-	this->m_fbo->blitToSystemFB( finalBlitFromTarget );
-
-	NVTX_RANGE_POP
 
 	return true;
 }
@@ -1193,12 +1228,12 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 
 	CHECK_FRAMEBUFFER_DEBUG
 
-	if ( false == this->updateCameraBlock( this->m_mainCamera ) )
+	if ( false == this->updateCameraBlock( this->m_currentCamera ) )
 	{
 		return false;
 	}
 
-	if ( false == this->renderTransparentEntity( this->m_mainCamera, entity, this->m_progTransparency ) )
+	if ( false == this->renderTransparentEntity( this->m_currentCamera, entity, this->m_progTransparency ) )
 	{
 		return false;
 	}

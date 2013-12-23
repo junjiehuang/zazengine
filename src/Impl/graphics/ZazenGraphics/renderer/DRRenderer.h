@@ -33,22 +33,24 @@ class DRRenderer
 		Mesh* m_fsq;
 		////////////////////////////////////////
 
-		// Program and shaders for geometry-stage
+		// Programs for geometry-stage
 		Program* m_progGeomStage;
 		Program* m_progSkyBox;
 		////////////////////////////////////////
 
-		// Program and shaders for lighting-stage with shadowing
+		// Programs for lighting-stage with shadowing
 		Program* m_progLightingStage;
 		Program* m_progLightingStageStencilVolume;
 		////////////////////////////////////////
 
-		Program* m_progTransparency;
-
-		// Program and shaders for shadow-mapping
+		// Programs for shadow-mapping
 		Program* m_progShadowMappingPlanar;
 		Program* m_progShadowMappingCubeSinglePass;
 		Program* m_progShadowMappingCubeMultiPass;
+		////////////////////////////////////////
+
+		// Programs for transparency rendering
+		Program* m_progTransparency;
 		////////////////////////////////////////
 
 		// Uniform-Blocks
@@ -57,6 +59,15 @@ class DRRenderer
 		UniformBlock* m_lightBlock;
 		UniformBlock* m_materialBlock;
 		UniformBlock* m_transparentMaterialBlock;
+		////////////////////////////////////////
+
+		// the camera for the current frame 
+		Viewer* m_currentCamera;
+		////////////////////////////////////////
+
+		// helper rendering-targets
+		RenderTarget* m_planarHelperTarget;
+		RenderTarget* m_environmentHelperTarget;
 		////////////////////////////////////////
 
 		// static data which will not change every frame
@@ -69,10 +80,6 @@ class DRRenderer
 		// the indices of the g-buffer targets to be bound during lighting-stage
 		std::vector<unsigned int> m_gBufferBindTargetIndices;
 		////////////////////////////////////////
-
-		Viewer* m_mainCamera;
-		std::vector<ZazenGraphicsEntity*> m_transparentEntities;
-		std::vector<ZazenGraphicsEntity*> m_lightEntities;
 
 		bool initFBOs();
 		bool initGBuffer();
@@ -88,10 +95,12 @@ class DRRenderer
 
 		bool createMrtBuffer( RenderTarget::RenderTargetType, FrameBufferObject* );
 
-		bool separateEntities( std::list<ZazenGraphicsEntity*>& );
+		bool renderInternalFrame( Viewer*, std::list<ZazenGraphicsEntity*>& );
+
 		void preProcessTransparency( std::list<ZazenGraphicsEntity*>& );
 		bool doGeometryStage( std::list<ZazenGraphicsEntity*>& );
 		bool doLightingStage( std::list<ZazenGraphicsEntity*>& );
+		bool doPostProcessing( std::list<ZazenGraphicsEntity*>& );
 		bool doTransparencyStage( std::list<ZazenGraphicsEntity*>& );
 
 		bool renderSkyBox();
@@ -108,6 +117,8 @@ class DRRenderer
 		bool renderShadowCubeMultiPass( std::list<ZazenGraphicsEntity*>&, Light* );
 		bool renderShadowPass( std::list<ZazenGraphicsEntity*>&, Light*, Program* );
 
+		void filterTransparentEntities( std::list<ZazenGraphicsEntity*>&, std::vector<ZazenGraphicsEntity*>& );
+		bool processTransparentEntities( std::vector<ZazenGraphicsEntity*>&, unsigned int& );
 		bool renderTransparentInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
 		bool renderTransparentEntity( Viewer*, ZazenGraphicsEntity*, Program* );
 		

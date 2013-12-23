@@ -21,7 +21,7 @@ For Lighting-Stage
 	-> shadow map sampling: cube-map artifacts?
 
 For Transparency-Stage
-	-> need to be able to render from an aribtrary view point into aribtrary 2d target with different resolution
+	-> need to be able to render from an aribtrary view point into aribtrary 2d target with different resolution: warning the projection matrix & viewport must match
 		-> need 2 render-targets: planar & environmental (cube): renderFrameInternal( Viewer* viewer, RenderTarget* gatherTarget );
 			-> will attach the gatherTarget to color-attachment 4
 			-> when return color-attachment 4 will hold the rendered scene from this point of view
