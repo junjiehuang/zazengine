@@ -33,15 +33,12 @@ FrameBufferObject::destroy( FrameBufferObject* frameBufferObject )
 		return true;
 	}
 
-	for ( unsigned int i = 0; i < frameBufferObject->m_attachedTargets.size(); i++ )
-	{
-		RenderTarget::destroy( frameBufferObject->m_attachedTargets[ i ] );
-	}
-
 	glDeleteFramebuffers( 1, &frameBufferObject->m_id );
 	GL_PEEK_ERRORS_AT_DEBUG
 
 	delete frameBufferObject;
+
+	// NOTE: render-targets are owned by RenderTarget-class because matching depth/shadow targets are shared
 
 	return true;
 }
@@ -218,9 +215,29 @@ FrameBufferObject::blitDepthToFBO( FrameBufferObject* targetFbo )
 	glBlitFramebuffer( 0, 0, target->getWidth(), target->getHeight(), 0, 0, target->getWidth(), target->getHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST );
 	GL_PEEK_ERRORS_AT_DEBUG
 
-	// unbind this FBO as read-target
+	// bind this FBO again as read&draw framebuffer (as it was before)
 	glBindFramebuffer( GL_FRAMEBUFFER, this->m_id );
 	GL_PEEK_ERRORS_AT_DEBUG 
+
+	return true;
+}
+
+bool
+FrameBufferObject::blitColorFromTo( unsigned int srcTargetIndex, unsigned int dstTargetIndex )
+{
+	RenderTarget* srcTarget = this->m_attachedTargets[ srcTargetIndex ];
+	RenderTarget* dstTarget = this->m_attachedTargets[ dstTargetIndex ];
+
+	glReadBuffer( this->m_colorBufferTargets[ srcTargetIndex ] );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// specify this render-target as the read-target
+	glDrawBuffer( this->m_colorBufferTargets[ dstTargetIndex ] );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	// perform the blit-operation
+	glBlitFramebuffer( 0, 0, srcTarget->getWidth(), srcTarget->getHeight(), 0, 0, dstTarget->getWidth(), dstTarget->getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST );
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }

@@ -15,13 +15,6 @@
     </shaders>
   </program>
 
-  <program name="BlendTransparencyProgram">
-    <shaders>
-      <shader type="VERTEX" file="dr/stages/transparency/blendTranspVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/transparency/blendTranspFrag.glsl"/>
-    </shaders>
-  </program>
-
   <program name="SkyBoxProgram">
     <shaders>
       <shader type="VERTEX" file="dr/stages/geom/skyBoxVert.glsl"/>

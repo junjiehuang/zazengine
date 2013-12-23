@@ -44,7 +44,6 @@ class DRRenderer
 		////////////////////////////////////////
 
 		Program* m_progTransparency;
-		Program* m_progBlendTransparency;
 
 		// Program and shaders for shadow-mapping
 		Program* m_progShadowMappingPlanar;

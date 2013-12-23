@@ -1,19 +1,26 @@
+Refactor remaining shaders
+	-> get rid of todos
+	-> clear in-out interface-blocks
+	-> use layout(binding=0) on uniform samplers
+		-> is always constant anyway => can set it compile-time constan in shaders!
+	-> naming conventions
+		-> read OpenGL Insights Chapter 2
+
 For Lighting-Stage
-	-> enhance: only 1 fbo necessary
+	-> get rid of immediate-depth buffer usage until post-processing stage!
 
 	-> write blog
 		-> https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
+
 	-> understand math behind
 		-> normal mapping
 		-> reconstructing eye coord
 		-> encoding/decoding normals
 
+	-> directional-light shadow-artifacts?
 	-> shadow map sampling: cube-map artifacts?
 
 For Transparency-Stage
-	-> fix it, refraction is broken!
-	-> in transparency blend use same texture-coord generation teqchnique as in light-stage vert
-	-> articfacts in shadow during transparency rendering?
 	-> need to be able to render from an aribtrary view point into aribtrary 2d target with different resolution
 		-> need 2 render-targets: planar & environmental (cube): renderFrameInternal( Viewer* viewer, RenderTarget* gatherTarget );
 			-> will attach the gatherTarget to color-attachment 4
@@ -69,24 +76,6 @@ For Software-Architecture in Renderer
 		-> issue commands: static objects, no new -> stateless
 		-> issuing commands is api independent but api must have a corresponding functionality
 
-Console
-	-> implement console for input of text and commands
-
-Menu-selection
-	-> implement menu
-
-Explore Bindless G-Buffer also called layered rendering
-	-> more cleaner solution
-	-> can be extended more easily
-	-> faster
-	-> order indipendent transparency (OIT) in deferred rendering!!!
-	-> http://openglinsights.com/bendingthepipeline.html#EfficientLayeredFragmentBufferTechniques
-
-Materials after new g-buffer rendering-system
-	-> microfacet
-	-> anisotrophic material
-	-> cook-torrance
-
 Msaa
 	-> do sampling in geometry fragment-shader (centroid)
 	-> dual source blending?
@@ -125,11 +114,22 @@ Particle System
 Text-rendering
 	-> use OGLFT
 
+Console
+	-> implement console for input of text and commands
+
+Menu-selection
+	-> implement menu
+
+Explore Bindless G-Buffer also called layered rendering
+	-> more cleaner solution
+	-> can be extended more easily
+	-> faster
+	-> order indipendent transparency (OIT) in deferred rendering!!!
+	-> http://openglinsights.com/bendingthepipeline.html#EfficientLayeredFragmentBufferTechniques
+
 Lighting
 	-> make z-bias configurable/light - directional lights need a higher bias
 	-> make filter-width of PCF configurable and filtering on/off possible
-	-> add projective textures for the lightsources
-		-> cube-map is invariant => vertex must be transformed to view-space and then lookup vector calcualted
 
 Need generic effect/material functionality
 	-> no need to set input or output indices in shaders, can be done with layout ( location = ... )
@@ -160,15 +160,6 @@ Need generic effect/material functionality
 				-> 4. transform depth of light to distanceo to light
 			-> or use fake hack: http://machinesdontcare.wordpress.com/2008/10/29/subsurface-scatter-shader/ 
 
-		-> microfacet
-
-Reflections
-	-> planar
-		-> render mirror-plane as usual with stencil enabled
-		-> render world mirrored by this plane as usual
-			-> stencil will remove all pixels not affected by this plane
-			-> use according blending-function to create mirror-effect
-
 Transparency-Rendering (see GPU Gems 2 Page 295)
 	-> Differentiate between normal transparency and refractive transparency
 		-> normal transparency can be rendered at the very last using normal opengl blending
@@ -197,19 +188,6 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 	-> use copies of uniform buffers e.g. for each light a buffer
 		-> this reduces the update just to binding the buffer ot the shader and not uploading values to fields every frame
 		-> No more bindbufferbase of uniformblocks in renderer - do it after programs are linked in uniformmanagement
-	-> Lighting
-		-> use stencil buffer to reduce lighting to geometry only
-			-> use only for point- & spotlight because directional light will affect sky-box and ambient too
-		->  bounding geometry for light
-			-> point-light: sphere with radius 1 and then scale according to light distance & some epsilon
-				-> low-poly count
-			-> spot-light: ?
-			-> Solve Problem of Ambient + Sky-Box Lighting
-				-> when no directional light in scene
-					-> render full-screen quad and apply ambient-term to non-sky-box material and diffuse-only to sky-box material => need new program
-					-> other lights accumulate by blending
-				-> when directional light in scene
-					-> include ambient-term in non-sky-box material and diffuse-only to sky-box material 
 	-> Culling
 		-> View-space culling using camera
 		-> implement CHC++
@@ -226,30 +204,9 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 		-> View-Frustum
 		-> Occlusion Culling using queries (like CHC++) 
 		-> Culling library (Umbra 3) ?
-	-> pre multiply matrices in CPU instead of doing in shaders
-	-> reduce branching in shaders (need different shader-architecture, see below)
-	-> check if all glClear-commands are necessary
-		-> g-buffer color-targets will be overwritten anyway
-		-> use invalidate on FBO, check if this will improve performance
 	-> Experiment with different render-target formats for performance
 	-> really all calls necessary e.g. always bindBuffer, ... ? are some states stored in buffers?
-	-> render SKYBOX AFTER other geometry and utilize stencil-buffer to mask fragments occluding the sky-box
 	-> opengl 4.3 allows for READ & WRITE of textures (images) at the same time
 		-> use for rendering transparent-glass
 	-> do depth-sorting for ALL objects in scene
 		-> calculate model-view once and then reuse in geometry-rendering
-	-> no need to do depth copy during transparent-glass rendering: WARNING DO IN-DEPTH PROFILING!
-		-> render transparent object without write do depth
-			-> can bind g-buffer depth as texture
-		-> then when object was not last one, render it again but only depth
-	-> non-overlapping transparent objects can be drawn in same batch => reduce copy and combine-overhead
-		-> transform bbMin, bbMax and center of all transp. instances to view-coordinates by multiplying with MV-Matrix of viewer
-		-> calculate AABB: aabbMinX = min( bbMin.x, bbMax.x ), aabbMaxX = max( bbMin.x, bbMax.x ), aabbMinY = max( bbMin.y, bbMax.y ), aabbMaxY = max( bbMin.y, bbMax.y )
-		-> calculate overlapping for all transp. instances using the AABB
-			-> for each instance create a list which contains the overlapping instances
-		-> all instances with empty list go direct to batch-level 0 because they don't overlap with any other instance
-		-> all instances with non-empty list need further investigation
-		
-Switch all to OpenGL 4.3 with new System (NVidia!)
-	-> extension ARB_program_interface_query
-	

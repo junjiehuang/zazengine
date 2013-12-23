@@ -13,8 +13,8 @@ layout( location = 6 ) in vec4 in_bone_weights;
 // THIS CORRESPONDS TO THE CAMERA USED FOR RENDERING THE SHADOW-MAP IN THE CASE OF SHADOW-RENDERING IT IS THE LIGHT ITSELF
 layout( shared ) uniform CameraUniforms
 {
-	// the width (x) and height (y) of the camera-window in pixels ( the resolution )
-	vec2 window;	
+	// the width (x) and height (y) of the camera-window in pixels ( the resolution ), z&w are the reciprocal values
+	vec4 window;	
 	// the near- (x) and far-plane distances (y)
 	vec2 nearFar;
 	// the symetric frustum: right (left=-right) and top (bottom=-top)

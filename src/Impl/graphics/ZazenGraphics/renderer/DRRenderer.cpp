@@ -33,7 +33,6 @@ DRRenderer::DRRenderer()
 	this->m_progShadowMappingCubeSinglePass = NULL;
 	this->m_progShadowMappingCubeMultiPass = NULL;
 	this->m_progTransparency = NULL;
-	this->m_progBlendTransparency = NULL;
 
 	this->m_transformsBlock = NULL;
 	this->m_cameraBlock = NULL;
@@ -232,7 +231,8 @@ DRRenderer::initIntermediateDepthBuffer()
 	// no drawing & reading in shadow-fbo, set initial, fbo will keep this state, no need to set it every bind
 	this->m_intermediateDepthFB->drawNone();
 
-	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH, this->m_intermediateDepthFB ) )		
+	// must be a shadow-planar because it has to support depth-comparison for use the transparency-stage
+	if ( false == this->createMrtBuffer( RenderTarget::RT_SHADOW_PLANAR, this->m_intermediateDepthFB ) )		
 	{
 		return false;
 	}
@@ -345,13 +345,6 @@ DRRenderer::initTransparency()
 
 	this->m_progTransparency = ProgramManagement::get( "TransparencyProgram" );
 	if ( 0 == this->m_progTransparency )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initTransparency: coulnd't create program - exit" );
-		return false;
-	}
-
-	this->m_progBlendTransparency = ProgramManagement::get( "BlendTransparencyProgram" );
-	if ( 0 == this->m_progBlendTransparency )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initTransparency: coulnd't create program - exit" );
 		return false;
@@ -655,7 +648,7 @@ DRRenderer::renderSkyBox()
 	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", Texture::CUBE_RANGE_START );
 
 	// stencil-test will pass only when a 0 is found in stencil-buffer - mesh-fragments were marked with 1 in geometry-stage
-	glStencilFunc( GL_NOTEQUAL, 0x1, 0x1 );
+	glStencilFunc( GL_EQUAL, 0, 0xFF );
 	// don't touch the stencil-buffer, keep it for all fail-scenarios the same
 	glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
 
@@ -1128,14 +1121,10 @@ DRRenderer::renderShadowPass( list<ZazenGraphicsEntity*>& entities, Light* light
 bool
 DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 {
-	// when no transparent entities are present, just blit the final gathering to the system framebuffer
-	if ( 0 == this->m_transparentEntities.size() )
-	{
-		// final light-gather is accumulated in render-target with index 4
-		this->m_fbo->blitToSystemFB( 4 );
-	}
+	unsigned int finalBlitFromTarget = 4;
+
 	// if transparent entities present, ping-pong render them
-	else
+	if ( this->m_transparentEntities.size() )
 	{
 		unsigned int combinationTarget = 1;
 		unsigned int backgroundIndex = 4;
@@ -1160,7 +1149,17 @@ DRRenderer::doTransparencyStage( std::list<ZazenGraphicsEntity*>& entities )
 
 			std::swap( combinationTarget, backgroundIndex );
 		}
+
+		// note: it is not combination target because it was swaped to backgroundindex at the end of the loop
+		finalBlitFromTarget = backgroundIndex;
 	}
+
+	NVTX_RANGE_PUSH( "Final Blit" );
+
+	// blit the result to the system framebuffer
+	this->m_fbo->blitToSystemFB( finalBlitFromTarget );
+
+	NVTX_RANGE_POP
 
 	return true;
 }
@@ -1186,15 +1185,13 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	// copy depth of g-buffer to intermediate depth-fbo, because we need to access the depth in transparency-rendering
 	// to prevent artifacts. at the same time we write depth when rendering transparency so we cannot bind the g-buffer depth => need to copy
 	this->m_fbo->blitDepthToFBO( this->m_intermediateDepthFB );
+	// copy background-color to combination-target => spare one whole FSQ blending pass
+	this->m_fbo->blitColorFromTo( backgroundIndex, combinationTarget );
 
 	// transparent objects are always rendered intermediate to g-buffer color target 0
-	this->m_fbo->drawBuffer( 0 );
+	this->m_fbo->drawBuffer( combinationTarget );
 
-	// clear buffer
-	// need to set alpha-clearing to 1.0 because was set to 0.0 during geometry-stage to mark bits as background/sky-box material (alpha-channel of diffuse-texture stores material-id)
-	// need to set alpha-channel to 1.0 now because will mark the background-pixels
-	glClearColor( 0.0, 0.0, 0.0, 1.0 );
-	glClear( GL_COLOR_BUFFER_BIT );
+	CHECK_FRAMEBUFFER_DEBUG
 
 	if ( false == this->updateCameraBlock( this->m_mainCamera ) )
 	{
@@ -1204,55 +1201,6 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 	if ( false == this->renderTransparentEntity( this->m_mainCamera, entity, this->m_progTransparency ) )
 	{
 		return false;
-	}
-
-	NVTX_RANGE_POP
-
-	NVTX_RANGE_PUSH( "T Blend" );
-
-	// after rendering last instance we will combine to default-framebuffer for final result
-	if ( lastInstance )
-	{
-		// back to default-framebuffer
-		this->m_fbo->unbind();
-
-		// clear default-framebuffer color & depth
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	}
-	else 
-	{
-		// draw combination to new target (ping-pong rendering)
-		this->m_fbo->drawBuffer( combinationTarget );
-
-		glClear( GL_COLOR_BUFFER_BIT );
-	}
-
-
-	if ( false == this->m_progBlendTransparency->use() )
-	{
-		return false;
-	}
-
-	// transparent object was rendered to g-buffer color target 0
-	this->m_fbo->getAttachedTargets()[ 0 ]->bind( 0 );
-
-	this->m_progBlendTransparency->setUniformInt( "Background", 2 );
-	this->m_progBlendTransparency->setUniformInt( "Transparent", 0 );
-	this->m_progBlendTransparency->setUniformMatrix( "projectionMatrix", this->m_mainCamera->createOrthoProj( true, true ) );
-
-	// disable writing to depth when not last instance because would destroy our depth-buffer
-	// when last instance it doesnt matter because we render to screen-buffer
-	if ( ! lastInstance )
-	{
-		glDepthMask( GL_FALSE );
-	}
-
-	this->m_fsq->render();
-
-	// enable depth-writing again
-	if ( ! lastInstance )
-	{
-		glDepthMask( GL_TRUE );
 	}
 
 	NVTX_RANGE_POP
@@ -1335,7 +1283,7 @@ DRRenderer::renderEntities( Viewer* viewer, list<ZazenGraphicsEntity*>& entities
 bool
 DRRenderer::renderTransparentEntity( Viewer* viewer, ZazenGraphicsEntity* entity, Program* currentProgramm )
 {
-	// activate material
+	// activate transparent material, is always not null
 	if ( false == entity->getMaterial()->activate( currentProgramm ) )
 	{
 		return false;
@@ -1426,12 +1374,14 @@ DRRenderer::depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b )
 bool
 DRRenderer::updateCameraBlock( Viewer* viewer )
 {
-	glm::vec2 cameraRectangle;
+	glm::vec4 cameraWindow;
 	glm::vec2 cameraNearFar;
 	glm::vec2 cameraFrustum;
 
-	cameraRectangle[ 0 ] = ( float ) viewer->getWidth();
-	cameraRectangle[ 1 ] = ( float ) viewer->getHeight();
+	cameraWindow[ 0 ] = ( float ) viewer->getWidth();
+	cameraWindow[ 1 ] = ( float ) viewer->getHeight();
+	cameraWindow[ 2 ] = 1.0f / ( float ) viewer->getWidth();
+	cameraWindow[ 3 ] = 1.0f / ( float ) viewer->getHeight();
 
 	cameraNearFar[ 0 ] = viewer->getNear();
 	cameraNearFar[ 1 ] = viewer->getFar();
@@ -1446,7 +1396,7 @@ DRRenderer::updateCameraBlock( Viewer* viewer )
 	}
 
 	// upload cameras window size
-	this->m_cameraBlock->updateField( "CameraUniforms.window", cameraRectangle );
+	this->m_cameraBlock->updateField( "CameraUniforms.window", cameraWindow );
 	// upload cameras near and far distances
 	this->m_cameraBlock->updateField( "CameraUniforms.nearFar", cameraNearFar );
 	// upload cameras right and top frustum (symetric!)

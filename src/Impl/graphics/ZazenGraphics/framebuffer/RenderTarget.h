@@ -37,7 +37,7 @@ class RenderTarget : public Texture
 
 		RenderTargetType m_targetType;
 
-		static std::vector<RenderTarget*> m_shadowMapPool;
+		static std::vector<RenderTarget*> m_allTargets;
 
 		static RenderTarget* findShadowMapInPool( RenderTargetType, GLsizei, GLsizei );
 };

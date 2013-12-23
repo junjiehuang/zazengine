@@ -37,6 +37,7 @@ class FrameBufferObject
 
 		bool blitToSystemFB( unsigned int );
 		bool blitDepthToFBO( FrameBufferObject* );
+		bool blitColorFromTo( unsigned int, unsigned int );
 
 		bool bind();
 		bool unbind();

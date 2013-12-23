@@ -370,12 +370,6 @@
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpFrag.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\transparency\blendTranspFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\transparency\blendTranspVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
-    </None>
     <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
     </None>

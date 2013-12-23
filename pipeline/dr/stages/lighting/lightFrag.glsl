@@ -16,8 +16,8 @@ layout( location = 0 ) out vec4 final_color;
 // NOTE: THIS HAS TO BE THE CAMERA THE GEOMETRY-STAGE WAS RENDERED WITH
 layout( shared ) uniform CameraUniforms
 {
-	// the width (x) and height (y) of the camera-window in pixels ( the resolution )
-	vec2 window;	
+	// the width (x) and height (y) of the camera-window in pixels ( the resolution ), z&w are the reciprocal values
+	vec4 window;	
 	// the near- (x) and far-plane distances (y)
 	vec2 nearFar;
 	// the symetric frustum: right (left=-right) and top (bottom=-top)

@@ -169,8 +169,6 @@
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeGeom.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\transparency\blendTranspFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\transparency\blendTranspVert.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpFrag.glsl" />
     <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpVert.glsl" />
     <None Include="..\..\..\..\pipeline\programConfig.xml">

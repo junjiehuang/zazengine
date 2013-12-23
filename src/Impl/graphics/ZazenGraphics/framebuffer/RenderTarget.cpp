@@ -8,7 +8,7 @@
 using namespace std;
 
 vector<RenderTarget*>
-RenderTarget::m_shadowMapPool;
+RenderTarget::m_allTargets;
 
 RenderTarget*
 RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType )
@@ -102,7 +102,6 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		GL_PEEK_ERRORS_AT
 
 		renderTarget = new RenderTarget( id, width, height, targetType, Texture::TEXTURE_2D );
-		RenderTarget::m_shadowMapPool.push_back( renderTarget );
 	}
 	else if ( RenderTarget::RT_SHADOW_CUBE == targetType )
 	{
@@ -141,7 +140,6 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		}
 
 		renderTarget = new RenderTarget( id, width, height, targetType, Texture::TEXTURE_CUBE );
-		RenderTarget::m_shadowMapPool.push_back( renderTarget );
 	}
 	else
 	{
@@ -149,15 +147,19 @@ RenderTarget::create( GLsizei width, GLsizei height, RenderTargetType targetType
 		return NULL;
 	}
 
+	RenderTarget::m_allTargets.push_back( renderTarget );
+
 	return renderTarget;
 }
 
 RenderTarget*
 RenderTarget::findShadowMapInPool( RenderTargetType targetType, GLsizei width, GLsizei height )
 {
-	for ( unsigned int i = 0; i < RenderTarget::m_shadowMapPool.size(); i++ )
+	// NOTE: only shadow&depth targets can be shared
+
+	for ( unsigned int i = 0; i < RenderTarget::m_allTargets.size(); i++ )
 	{
-		RenderTarget* shadowMap = RenderTarget::m_shadowMapPool[ i ];
+		RenderTarget* shadowMap = RenderTarget::m_allTargets[ i ];
 		if ( targetType == shadowMap->getType() )
 		{
 			if ( shadowMap->getWidth() == width && shadowMap->getHeight() == height )
@@ -186,13 +188,13 @@ RenderTarget::destroy( RenderTarget* renderTarget )
 void
 RenderTarget::cleanup()
 {
-	for ( unsigned int i = 0; i < RenderTarget::m_shadowMapPool.size(); i++ )
+	for ( unsigned int i = 0; i < RenderTarget::m_allTargets.size(); i++ )
 	{
-		RenderTarget* shadowMap = RenderTarget::m_shadowMapPool[ i ];
+		RenderTarget* shadowMap = RenderTarget::m_allTargets[ i ];
 		RenderTarget::destroy( shadowMap );
 	}
 
-	RenderTarget::m_shadowMapPool.clear();
+	RenderTarget::m_allTargets.clear();
 }
 
 RenderTarget::RenderTarget( GLuint id, GLsizei width, GLsizei height, RenderTargetType targetType, TextureType textureType )
