@@ -1,14 +1,32 @@
 Refactor remaining shaders
 	-> get rid of todos
 	-> clear in-out interface-blocks
+		-> for all shaders
+		-> better names?
 	-> use layout(binding=0) on uniform samplers
 		-> is always constant anyway => can set it compile-time constan in shaders!
 	-> naming conventions
-		-> read OpenGL Insights Chapter 2
+		-> use corresponding file-extensions for shaders
+			-> .vert
+			-> .frag
+			-> .geom
+			-> .tcs
+			-> .tes
+			-> .comp
+	-> opengl insights
+		-> chapter 5 shader interfaces
+		-> chapter 14 layered textures rendering pipeline
+		-> chapter 19 massive shadow-casting ... layered rendering
+		-> chapter 20 efficient layered fragment buffer techniques
+		-> chapter 21 programmable vertex pulling
+		-> chapter 23 performance tuning tile-based architectures
+		-> chapter 25 performance reducing driver-calls
 	-> check if this bool-for-every method makes really sense 
 
 For Lighting-Stage
 	-> get rid of immediate-depth buffer usage until post-processing stage!
+		-> it seems we cannot get rid of it without attaching/detaching targets all the time
+		-> FrameBuffer-Class is a mess... refactor it when environmental cube & planar is finished
 
 	-> write blog
 		-> https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
@@ -22,6 +40,12 @@ For Lighting-Stage
 	-> shadow map sampling: cube-map artifacts?
 
 For Transparency-Stage
+	-> there is no need to render the shadow-maps multiple times because it won't change => keep all shadow-maps in memory but then no sharing can be used
+	-> scaled objects seem to be fucked up
+	-> FrameBuffer-Class is a mess... refactor it when environmental cube & planar is finished
+	-> shadows of environment transparents ??
+		-> no need if they are transparent
+		-> material-type should return true/false if transparent
 	-> need to be able to render from an aribtrary view point into aribtrary 2d target with different resolution: warning the projection matrix & viewport must match
 		-> need 2 render-targets: planar & environmental (cube): renderFrameInternal( Viewer* viewer, RenderTarget* gatherTarget );
 			-> will attach the gatherTarget to color-attachment 4
@@ -31,45 +55,6 @@ For Transparency-Stage
 			-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
 				-> simulate chromatic abberration (see Orange Book)
 				-> need to simulate different wavelengths for red, green and blue channels
-			-> for planar reflections&refractions:
-				1. blit rendered scene to intermediate fb and system fb
-				2. call renderFrameInternal with the correct viewing set-up
-				3. then bind the gather-target
-				4. run shader to do reflection & refraction using the original scene for refraction and the 2nd view-rendered scene for reflections and render to system framebuffer
-			-> for cube environmental  reflections&refractions:
-				1. blit rendered scene to system FB
-				2. for each cube-face call renderFrameInternal with the correct viewing and the cube-map face
-				3. bind the cube-map
-				4. run shader to do reflection & refraction using the cube-map and render to system framebuffer
-
-	-> OLD: environment dynamic cube-mapping
-		-> need very generic renderFrame-method which allows to be called recursively
-			-> need for every recursion level one CubeMap-FBO
-			-> need to generify much of the code of the renderer-loop
-			-> pass in some render-Context struct 
-				-> holds recursion-level
-				-> holds render-target where to render or null when to default framebuffer
-				-> holds flag if shadow-rendering in environment-rendering
-				-> holds flag if transparency-rendering in environment-rendering
-				-> holds flag if interreflection-rendering in environment-rendering
-				-> holds max recursion depth
-		-> new material-type:
-			<material name="Glass">
-				<type id="ENVIRONMENTAL">
-				  <reflection>
-					... params
-				  </reflection>
-
-				  <refraction>
-					... params
-				  </refraction>
-      
-				  <diffuseColor file="cross_diffuse.jpg"/>
-				  <color r="0.54" g="0.89" b="0.63"/>
-				</type>
-			  </material>
-		-> material subclasses
-			-> environment holds cube-map and params for shaders. it knows how often update cube-map per second
 
 For Software-Architecture in Renderer
 	-> draw-calls are very expensive in my current architecture

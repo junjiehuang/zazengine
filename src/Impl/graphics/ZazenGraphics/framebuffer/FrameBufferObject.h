@@ -32,6 +32,7 @@ class FrameBufferObject
 		bool attachDepthTargetTempCubeFace( RenderTarget*, unsigned int );
 		bool attachColorTargetTempCubeFace( RenderTarget*, unsigned int, unsigned int );
 
+		bool restoreColorTarget( unsigned int );
 		bool restoreDepthTarget();
 
 		bool drawAllBuffers();

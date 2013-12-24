@@ -79,11 +79,13 @@ Light::createShadowMap()
 		if ( LightType::POINT == this->m_type )
 		{
 			// point-lights need a cube shadow-map
-			shadowMap = RenderTarget::create( this->getWidth(), this->getHeight(), RenderTarget::RT_SHADOW_CUBE );
+			// IMPORTANT: shadow-maps of lights are shared
+			shadowMap = RenderTarget::create( this->getWidth(), this->getHeight(), RenderTarget::RT_SHADOW_CUBE, true );
 		}
 		else
 		{
-			shadowMap = RenderTarget::create( this->getWidth(), this->getHeight(), RenderTarget::RT_SHADOW_PLANAR );
+			// IMPORTANT: shadow-maps of lights are shared
+			shadowMap = RenderTarget::create( this->getWidth(), this->getHeight(), RenderTarget::RT_SHADOW_PLANAR, true );
 		}
 
 		if ( NULL == shadowMap )

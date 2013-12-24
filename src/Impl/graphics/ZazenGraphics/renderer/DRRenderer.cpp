@@ -7,7 +7,6 @@
 #include "../Geometry/GeometryFactory.h"
 #include "../Program/ProgramManagement.h"
 #include "../Program/UniformManagement.h"
-#include "../Texture/TextureFactory.h"
 
 #include "../context/RenderingContext.h"
 
@@ -37,7 +36,6 @@ DRRenderer::DRRenderer()
 	this->m_progShadowMappingCubeMultiPass = NULL;
 	this->m_progTransparency = NULL;
 	this->m_progCubeEnv = NULL;
-	this->m_cubeEnvMap = NULL;
 
 	this->m_transformsBlock = NULL;
 	this->m_cameraBlock = NULL;
@@ -252,7 +250,8 @@ DRRenderer::initIntermediateDepthBuffer()
 bool
 DRRenderer::createMrtBuffer( RenderTarget::RenderTargetType targetType, FrameBufferObject* fbo )
 {
-	RenderTarget* renderTarget = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), targetType );
+	// MRT-targets are never shared
+	RenderTarget* renderTarget = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), targetType, false );
 	if ( NULL == renderTarget )
 	{
 		return false;
@@ -366,26 +365,20 @@ DRRenderer::initPostProcessing()
 		return false;
 	}
 
-	this->m_environmentHelperTarget = RenderTarget::create( 512, 512, RenderTarget::RT_COLOR_CUBE );
+	// IMPORTANT: don't share
+	this->m_environmentHelperTarget = RenderTarget::create( 512, 512, RenderTarget::RT_COLOR_CUBE, false );
 	if ( NULL == this->m_environmentHelperTarget )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: coulnd't create environmental render-target - exit" );
 		return false;
 	}
 
-	this->m_planarHelperTarget = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), RenderTarget::RT_COLOR );
+	// IMPORTANT: don't share
+	this->m_planarHelperTarget = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), RenderTarget::RT_COLOR, false );
 	if ( NULL == this->m_planarHelperTarget )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: coulnd't create planar render-target - exit" );
 		return false;
-	}
-
-	this->m_cubeEnvMap = TextureFactory::getCube( "SkyBoxes/Heaven", "png" );
-	if ( NULL == this->m_cubeEnvMap )
-	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: couldn't create cube-map" );
-		return false;
-
 	}
 
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering PostProcessing-Stage finished" );
@@ -530,7 +523,7 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 
 			NVTX_RANGE_PUSH( "Main Frame" );
 
-			if ( false == this->renderInternalFrame( entity->getCamera() ) )
+			if ( false == this->renderFrameInternal( entity->getCamera() ) )
 			{
 				return false;
 			}
@@ -554,7 +547,7 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 }
 
 bool
-DRRenderer::renderInternalFrame( Viewer* viewer )
+DRRenderer::renderFrameInternal( Viewer* viewer )
 {
 	this->m_currentCamera = viewer;
 
@@ -1304,7 +1297,6 @@ DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
 	this->m_fbo->blitColorToFBO( this->m_fbo->getAttachedTargets()[ 4 ], 4, 0, this->m_helperFbo );
 	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
 
-	/*
 	std::vector<glm::mat4> cubeMVPTransforms( 6 );
 	glm::vec3 lightPosWorld = entity->getPosition();
 	glm::mat4 invLightPosTransf = glm::translate( lightPosWorld );
@@ -1315,43 +1307,57 @@ DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
 	
 	std::vector<glm::mat4> cubeViewDirections;
 
+	// TODO: correct viewing matrices
 	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 1, 0, 0 ), glm::vec3( 0, -1, 0 ) ) );		// POS X
 	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( -1, 0, 0 ), glm::vec3( 0, -1, 0 ) ) );	// NEG X
-	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, -1, 0 ), glm::vec3( 0, 0, -1 ) ) );	// POS Y
-	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 1, 0 ), glm::vec3( 0, 0, 1 ) ) ); 		// NEG Y
+	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 1, 0 ), glm::vec3( 0, 0, 1 ) ) );	// POS Y
+	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, -1, 0 ), glm::vec3( 0, 0, -1 ) ) ); 		// NEG Y
 	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, 1 ), glm::vec3( 0, -1, 0 ) ) );		// POS Z 
 	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, -1 ),glm::vec3( 0, -1, 0 ) ) );		// NEG Z
 
+	// TODO: optimize: only render it every 2nd frame
+	// TODO: optimize: no need to re-render all shadow-maps again
+
 	for ( unsigned int face = 0; face < 6; ++face )
 	{
+		this->m_fbo->bind();
 		this->m_fbo->attachColorTargetTempCubeFace( this->m_environmentHelperTarget, face, 4 );
 
 		CHECK_FRAMEBUFFER_DEBUG
 			
-		v.setModelMatrix( cubeViewDirections[ face ] * invLightPosTransf );
+		v.setModelMatrix( invLightPosTransf );
 
+		// TODO: correct number-string
 		NVTX_RANGE_PUSH( "Internal Frame " + face );
-		if ( false == this->renderInternalFrame( &v ) )
+		if ( false == this->renderFrameInternal( &v ) )
 		{
 			return false;
 		}
 		NVTX_RANGE_POP
 	}
-	*/
-
-	this->m_helperFbo->bind();
-	this->m_helperFbo->blitColorToFBO( this->m_planarHelperTarget, 0, 4, this->m_fbo );
-	this->m_helperFbo->blitDepthToFBO( this->m_fbo );
-	this->m_helperFbo->detachColorTargetTemp( this->m_planarHelperTarget, 0 );
-	this->m_helperFbo->drawNone();
 
 	this->m_currentCamera = currentCameraBackup;
+	this->m_currentCamera->restoreViewport();
 
 	// need to re-set the configuration of the camera uniform-block to the main-camera because need the information within the lighting-shader
 	if ( false == this->updateCameraBlock( this->m_currentCamera ) )
 	{
 		return false;
 	}
+
+	this->m_fbo->bind();
+	this->m_fbo->detachColorTargetTemp( this->m_environmentHelperTarget, 4 );
+	this->m_fbo->restoreColorTarget( 4 );
+
+	this->m_helperFbo->bind();
+	this->m_helperFbo->blitColorToFBO( this->m_planarHelperTarget, 0, 4, this->m_fbo );
+	this->m_helperFbo->detachColorTargetTemp( this->m_planarHelperTarget, 0 );
+
+	this->m_helperFbo->restoreDepthTarget();
+	this->m_helperFbo->blitDepthToFBO( this->m_fbo );
+	this->m_helperFbo->drawNone();
+
+	NVTX_RANGE_PUSH( "Render Obj" );
 
 	this->m_fbo->bind();
 
@@ -1371,11 +1377,14 @@ DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
 		return false;
 	}
 
-	this->m_cubeEnvMap->bind( Texture::CUBE_RANGE_START );
-
+	this->m_environmentHelperTarget->bind( Texture::CUBE_RANGE_START );
+	// NOTE: this dynamically rendered cube-map has linear filtering and won't use mipmaps as creating them would suck really much power
+	// and won't increase quality so much compared to the resolution of the cube-map
 	this->m_progCubeEnv->setUniformInt( "EnvironmentMap", Texture::CUBE_RANGE_START );
 
 	this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progCubeEnv );
+
+	NVTX_RANGE_POP
 
 	NVTX_RANGE_POP
 
@@ -1548,14 +1557,14 @@ DRRenderer::depthSortingFunc( ZazenGraphicsEntity* a, ZazenGraphicsEntity* b )
 bool
 DRRenderer::updateCameraBlock( Viewer* viewer )
 {
-	glm::vec4 cameraWindow;
+	glm::vec4 cameraViewport;
 	glm::vec2 cameraNearFar;
 	glm::vec2 cameraFrustum;
 
-	cameraWindow[ 0 ] = ( float ) viewer->getWidth();
-	cameraWindow[ 1 ] = ( float ) viewer->getHeight();
-	cameraWindow[ 2 ] = 1.0f / ( float ) viewer->getWidth();
-	cameraWindow[ 3 ] = 1.0f / ( float ) viewer->getHeight();
+	cameraViewport[ 0 ] = ( float ) viewer->getWidth();
+	cameraViewport[ 1 ] = ( float ) viewer->getHeight();
+	cameraViewport[ 2 ] = 1.0f / ( float ) viewer->getWidth();
+	cameraViewport[ 3 ] = 1.0f / ( float ) viewer->getHeight();
 
 	cameraNearFar[ 0 ] = viewer->getNear();
 	cameraNearFar[ 1 ] = viewer->getFar();
@@ -1570,7 +1579,7 @@ DRRenderer::updateCameraBlock( Viewer* viewer )
 	}
 
 	// upload cameras window size
-	this->m_cameraBlock->updateField( "CameraUniforms.window", cameraWindow );
+	this->m_cameraBlock->updateField( "CameraUniforms.viewport", cameraViewport );
 	// upload cameras near and far distances
 	this->m_cameraBlock->updateField( "CameraUniforms.nearFar", cameraNearFar );
 	// upload cameras right and top frustum (symetric!)

@@ -55,7 +55,6 @@ class DRRenderer
 
 		// Programs for environmental rendering
 		Program* m_progCubeEnv;
-		Texture* m_cubeEnvMap;
 		////////////////////////////////////////
 
 		// Uniform-Blocks
@@ -104,9 +103,7 @@ class DRRenderer
 
 		bool createMrtBuffer( RenderTarget::RenderTargetType, FrameBufferObject* );
 
-		bool renderInternalFrame( Viewer* );
-
-		void preProcessTransparency();
+		bool renderFrameInternal( Viewer* );
 		bool doGeometryStage();
 		bool doLightingStage();
 		bool doScreenSpaceStage();

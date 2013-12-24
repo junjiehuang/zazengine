@@ -20,8 +20,8 @@ layout( shared ) uniform TransparentMaterialUniforms
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 layout( shared ) uniform CameraUniforms
 {
-	// the width (x) and height (y) of the camera-window in pixels ( the resolution ), z&w are the reciprocal values
-	vec4 window;	
+	// the resolution of the viewport, z&w are the reciprocal values
+	vec4 viewport;	
 	// the near- (x) and far-plane distances (y)
 	vec2 nearFar;
 	// the symetric frustum: right (left=-right) and top (bottom=-top)
@@ -44,7 +44,7 @@ void main()
 	vec4 refractNormal = 2.0 * texture( NormalTexture, ex_texCoord ) - 1.0;
 
 	// calculate texture-coordinates in screen-space
-	vec2 screenTexCoord = vec2( gl_FragCoord.x * Camera.window.z, gl_FragCoord.y * Camera.window.w );
+	vec2 screenTexCoord = vec2( gl_FragCoord.x * Camera.viewport.z, gl_FragCoord.y * Camera.viewport.w );
 	// pertube the normal in the given direction and scale by a factor
 	vec2 refractTexCoord = screenTexCoord + refractNormal.xy * TransparentMaterial.config.y;
 

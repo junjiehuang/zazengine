@@ -271,9 +271,10 @@ TextureFactory::createCubeTexture( const std::vector<std::string>& fileNames )
 			goto cleanupExit;
 		}
 		
+		ILint internalFormat = ilGetInteger( IL_IMAGE_FORMAT );
 		glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,	// face
 						0,									// level
-						ilGetInteger( IL_IMAGE_FORMAT ),	// internal format
+						internalFormat,	// internal format
 						ilGetInteger( IL_IMAGE_WIDTH ),		// width of face
 						ilGetInteger( IL_IMAGE_HEIGHT ),	// height of face
 						0,									// border

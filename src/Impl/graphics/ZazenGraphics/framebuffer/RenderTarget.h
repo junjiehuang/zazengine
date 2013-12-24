@@ -20,7 +20,7 @@ class RenderTarget : public Texture
 			RT_SHADOW_CUBE
 		};
 
-		static RenderTarget* create( GLsizei, GLsizei, RenderTargetType );
+		static RenderTarget* create( GLsizei, GLsizei, RenderTargetType, bool );
 		static bool destroy( RenderTarget* );
 		static void cleanup();
 
@@ -39,8 +39,9 @@ class RenderTarget : public Texture
 		RenderTargetType m_targetType;
 
 		static std::vector<RenderTarget*> m_allTargets;
+		static std::vector<RenderTarget*> m_sharedPool;
 
-		static RenderTarget* findShadowMapInPool( RenderTargetType, GLsizei, GLsizei );
+		static RenderTarget* findTargetInSharedPool( RenderTargetType, GLsizei, GLsizei );
 };
 
 #endif /* _RENDERTARGET_H_ */

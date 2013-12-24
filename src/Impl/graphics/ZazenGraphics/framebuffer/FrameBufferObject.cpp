@@ -136,11 +136,8 @@ FrameBufferObject::attachColorTargetTemp( RenderTarget* renderTarget, unsigned i
 bool
 FrameBufferObject::detachColorTargetTemp( RenderTarget* renderTarget, unsigned int colorAttachmentIndex )
 {
-	if ( RenderTarget::RT_COLOR == renderTarget->getType() )
-	{
-		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachmentIndex, GL_TEXTURE_2D, 0, 0 );
-		GL_PEEK_ERRORS_AT_DEBUG
-	}
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachmentIndex, GL_TEXTURE_2D, 0, 0 );
+	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
@@ -180,6 +177,14 @@ FrameBufferObject::restoreDepthTarget()
 	}
 
 	return false;
+}
+
+bool
+FrameBufferObject::restoreColorTarget( unsigned int targetIndex )
+{
+	RenderTarget* colorTarget = this->m_attachedTargets[ targetIndex ];
+
+	return this->attachColorTargetTemp( colorTarget, targetIndex );
 }
 
 bool

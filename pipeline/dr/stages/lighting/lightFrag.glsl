@@ -16,8 +16,8 @@ layout( location = 0 ) out vec4 final_color;
 // NOTE: THIS HAS TO BE THE CAMERA THE GEOMETRY-STAGE WAS RENDERED WITH
 layout( shared ) uniform CameraUniforms
 {
-	// the width (x) and height (y) of the camera-window in pixels ( the resolution ), z&w are the reciprocal values
-	vec4 window;	
+	// the resolution of the viewport, z&w are the reciprocal values
+	vec4 viewport;	
 	// the near- (x) and far-plane distances (y)
 	vec2 nearFar;
 	// the symetric frustum: right (left=-right) and top (bottom=-top)
@@ -80,7 +80,7 @@ vec3 calcEyeFromDepth( float depth )
 	vec3 eye;
 
 	// THE NDC-INTERPOLATION WORKS ONLY IN CASE OF A FULL SCREEN QUAD
-
+	
 	// TODO: research what is going on here
 	eye.z = Camera.nearFar.x * Camera.nearFar.y / ( ( depth * ( Camera.nearFar.y - Camera.nearFar.x ) ) - Camera.nearFar.y );
  	eye.x = ( -VS_TO_FS.ndc.x * eye.z ) * ( Camera.frustum.x / Camera.nearFar.x );
