@@ -23,7 +23,7 @@
 
 #else
 
-#define NVTX_RANGE_PUSH( str ) 
+#define NVTX_RANGE_PUSH( str )
 #define NVTX_RANGE_POP
 
 #endif

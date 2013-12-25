@@ -35,6 +35,8 @@ void main()
 
     vec3 reflectColor = texture(EnvironmentMap, reflectDir).rgb;
 
+	// TODO: something is still wrong when objects are scaled
+
 	out_color.rgb = mix(refractColor, reflectColor, ratio);
     out_color.a = 0.0;
 }

@@ -168,7 +168,14 @@ ZazenGraphicsEntity::sendEvent( Event& e )
 void
 ZazenGraphicsEntity::setOrientation( const float* pos, const float* rot )
 {
-	this->m_camera->setRaw( rot, pos );
+	if ( this->m_camera )
+	{
+		this->m_camera->setRaw( rot, pos );
+	}
+	else
+	{
+		this->setRaw( rot, pos );
+	}
 }
 
 void

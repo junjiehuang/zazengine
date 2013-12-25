@@ -477,12 +477,23 @@ DRRenderer::initializeStaticData()
 {
 	// insertion-order is very important: first x, then y and last z
 	this->m_cubeViewDirections.clear();
-	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 1, 0, 0 ), glm::vec3( 0, -1, 0 ) ) );		// POS X
-	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( -1, 0, 0 ), glm::vec3( 0, -1, 0 ) ) );	// NEG X
-	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 1, 0 ), glm::vec3( 0, 0, 1 ) ) );		// POS Y
-	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, -1, 0 ), glm::vec3( 0, 0, -1 ) ) ); 	// NEG Y
-	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, 1 ), glm::vec3( 0, -1, 0 ) ) );		// POS Z 
-	this->m_cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, -1 ),glm::vec3( 0, -1, 0 ) ) );		// NEG Z
+	// NOTE: these are VIEWING-matrices!
+	this->m_cubeViewDirections.push_back( glm::mat4( glm::vec4( 0.0, 0.0, -1.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( -1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, 0.0, 1.0 ) ) );	// POS X
+	this->m_cubeViewDirections.push_back( glm::mat4( glm::vec4( 0.0, 0.0, 1.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( 1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, 0.0, 1.0 ) ) );	// NEG X
+	this->m_cubeViewDirections.push_back( glm::mat4( glm::vec4( 1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, -1.0, 0.0 ), glm::vec4( 0.0, 1.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, 0.0, 1.0 ) ) );	// POS Y
+	this->m_cubeViewDirections.push_back( glm::mat4( glm::vec4( 1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, 1.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, 0.0, 1.0 ) ) );	// NEG Y
+	this->m_cubeViewDirections.push_back( glm::mat4( glm::vec4( 1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, -1.0, 0.0 ), glm::vec4 (0.0, 0.0, 0.0, 1.0 ) ) );	// POS Z
+	this->m_cubeViewDirections.push_back( glm::mat4( glm::vec4( -1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, 1.0, 0.0 ), glm::vec4( 0.0, 0.0, 0.0, 1.0 ) ) );	// NEG Z 
+	
+	// insertion-order is very important: first x, then y and last z
+	this->m_viewerModelMatrices.clear();
+	// NOTE: these are MODEL-matrices!
+	this->m_viewerModelMatrices.push_back( glm::mat4( glm::vec4( 0.0, 0.0, -1.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( -1.0, 0.0, 0.0, 0.0 ), glm::vec4( 1.0 ) ) );	// POS X
+	this->m_viewerModelMatrices.push_back( glm::mat4( glm::vec4( 0.0, 0.0, 1.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( 1.0, 0.0, 0.0, 0.0 ), glm::vec4( 1.0 ) ) );		// NEG X
+	this->m_viewerModelMatrices.push_back( glm::mat4( glm::vec4( 1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, 1.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( 1.0 ) ) );		// POS Y
+	this->m_viewerModelMatrices.push_back( glm::mat4( glm::vec4( 1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, -1.0, 0.0 ), glm::vec4( 0.0, 1.0, 0.0, 0.0 ), glm::vec4( 1.0 ) ) );		// NEG Y
+	this->m_viewerModelMatrices.push_back( glm::mat4( glm::vec4( 1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, -1.0, 0.0 ), glm::vec4( 1.0 ) ) );	// POS Z
+	this->m_viewerModelMatrices.push_back( glm::mat4( glm::vec4( -1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, 1.0, 0.0 ), glm::vec4( 1.0 ) ) );	// NEG Z 
 
 	this->m_gBufferDrawBufferIndices.clear();
 	this->m_gBufferDrawBufferIndices.push_back( 0 );	// diffuse
@@ -1037,9 +1048,8 @@ bool
 DRRenderer::renderShadowCubeSinglePass( Light* light )
 {
 	std::vector<glm::mat4> cubeMVPTransforms( 6 );
-	glm::vec3 lightPosWorld = light->getPosition();
-	glm::mat4 invLightPosTransf = glm::translate( -lightPosWorld );
-		
+	glm::mat4 invLightPosTransf = glm::translate( -light->getPosition() );
+
 	// calculate model-view-projection matrices for each cube-face
 	for ( unsigned int i = 0; i < 6; ++i )
 	{
@@ -1074,8 +1084,7 @@ bool
 DRRenderer::renderShadowCubeMultiPass( Light* light )
 {
 	std::vector<glm::mat4> cubeViewTransforms( 6 );
-	glm::vec3 lightPosWorld = light->getPosition();
-	glm::mat4 invLightPosTransf = glm::translate( -lightPosWorld );
+	glm::mat4 invLightPosTransf = glm::translate( -light->getPosition() );
 		
 	// calculate model-view matrices for each cube-face - leave out projection, will be applied in shader!
 	for ( unsigned int i = 0; i < 6; ++i )
@@ -1097,6 +1106,7 @@ DRRenderer::renderShadowCubeMultiPass( Light* light )
 			return false;
 		}
 
+		this->m_cubeViewDirections[ face ][ 3 ] = glm::vec4( light->getPosition(), 1.0 );
 		// update viewing-matrix for the according cube-face
 		this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", cubeViewTransforms[ face ] );
 
@@ -1297,26 +1307,16 @@ DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
 	this->m_fbo->blitColorToFBO( this->m_fbo->getAttachedTargets()[ 4 ], 4, 0, this->m_helperFbo );
 	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
 
-	std::vector<glm::mat4> cubeMVPTransforms( 6 );
-	glm::vec3 lightPosWorld = entity->getPosition();
-	glm::mat4 invLightPosTransf = glm::translate( lightPosWorld );
-
 	Viewer v( 512, 512 );
 	v.setFov( 90.0 );
 	v.setupPerspective();
 	
-	std::vector<glm::mat4> cubeViewDirections;
-
-	// TODO: correct viewing matrices
-	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 1, 0, 0 ), glm::vec3( 0, -1, 0 ) ) );		// POS X
-	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( -1, 0, 0 ), glm::vec3( 0, -1, 0 ) ) );	// NEG X
-	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 1, 0 ), glm::vec3( 0, 0, 1 ) ) );	// POS Y
-	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, -1, 0 ), glm::vec3( 0, 0, -1 ) ) ); 		// NEG Y
-	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, 1 ), glm::vec3( 0, -1, 0 ) ) );		// POS Z 
-	cubeViewDirections.push_back( glm::lookAt( glm::vec3( 0 ), glm::vec3( 0, 0, -1 ),glm::vec3( 0, -1, 0 ) ) );		// NEG Z
+	glm::vec4 entityPos = glm::vec4( entity->getPosition(), 1.0 );
 
 	// TODO: optimize: only render it every 2nd frame
 	// TODO: optimize: no need to re-render all shadow-maps again
+
+	// TODO: fix - there is a problem when using point-light with shadow: seems to lead to incomplete framebuffer
 
 	for ( unsigned int face = 0; face < 6; ++face )
 	{
@@ -1325,7 +1325,8 @@ DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
 
 		CHECK_FRAMEBUFFER_DEBUG
 			
-		v.setModelMatrix( invLightPosTransf );
+		this->m_viewerModelMatrices[ face ][ 3 ] = entityPos;
+		v.setModelMatrix( this->m_viewerModelMatrices[ face ] );
 
 		// TODO: correct number-string
 		NVTX_RANGE_PUSH( "Internal Frame " + face );

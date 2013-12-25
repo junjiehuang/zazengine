@@ -23,6 +23,12 @@ Refactor remaining shaders
 		-> chapter 25 performance reducing driver-calls
 	-> check if this bool-for-every method makes really sense 
 
+For Geometry-Stage
+	-> blog: subsection: animations
+
+Debugging
+	-> blog: unbind textures after creating them, otherwise very likely that you end up with invalid_operation
+
 For Lighting-Stage
 	-> get rid of immediate-depth buffer usage until post-processing stage!
 		-> it seems we cannot get rid of it without attaching/detaching targets all the time
@@ -34,12 +40,12 @@ For Lighting-Stage
 	-> understand math behind
 		-> normal mapping
 		-> reconstructing eye coord
-		-> encoding/decoding normals
 
 	-> directional-light shadow-artifacts?
-	-> shadow map sampling: cube-map artifacts?
+	-> point-light shadow-artifacts?
 
 For Transparency-Stage
+	-> pull configuration-parameters in the material-class and make it configurable through xml-config
 	-> there is no need to render the shadow-maps multiple times because it won't change => keep all shadow-maps in memory but then no sharing can be used
 	-> scaled objects seem to be fucked up
 	-> FrameBuffer-Class is a mess... refactor it when environmental cube & planar is finished
