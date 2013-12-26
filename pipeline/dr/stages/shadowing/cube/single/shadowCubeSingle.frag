@@ -1,5 +1,11 @@
 #version 430 core
 
+// defines the input-interface block from the geometry-shader
+in IN_OUT_BLOCK
+{
+	vec4 posWorld;
+} IN_OUT;
+
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 // THIS CORRESPONDS TO THE CAMERA USED FOR RENDERING THE SHADOW-MAP IN THE CASE OF SHADOW-RENDERING IT IS THE LIGHT ITSELF
 layout( shared ) uniform CameraUniforms
@@ -19,13 +25,11 @@ layout( shared ) uniform CameraUniforms
 	mat4 projectionMatrix;
 } Camera;
 
-in vec4 out_position_world;
-
 void main()
 {
 	// the Camera IS the Light, so take the translation-vector of the modelmatrix to obtain world-space position of light
 	vec3 lightPosWorld = Camera.modelMatrix[ 3 ].xyz;
-	vec3 lightDirWorld = out_position_world.xyz - lightPosWorld;
+	vec3 lightDirWorld = IN_OUT.posWorld.xyz - lightPosWorld;
 
 	// calculate distance 
 	float ws_dist = length( lightDirWorld ); 

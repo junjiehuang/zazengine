@@ -9,6 +9,12 @@ layout( location = 4 ) in uint in_bone_count;
 layout( location = 5 ) in uvec4 in_bone_indices;
 layout( location = 6 ) in vec4 in_bone_weights;
 
+// defines the output-interface block to the fragment-shader
+out IN_OUT_BLOCK
+{
+	vec3 lightDirWorld;
+} IN_OUT;
+
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 // THIS CORRESPONDS TO THE CAMERA USED FOR RENDERING THE SHADOW-MAP IN THE CASE OF SHADOW-RENDERING IT IS THE LIGHT ITSELF
 layout( shared ) uniform CameraUniforms
@@ -38,9 +44,6 @@ layout( shared ) uniform TransformUniforms
 	// the model-view-projection matrix of the current rendered mesh - the view-projection-matrix is the one of the Camera
 	mat4 modelViewProjMatrix;
 } Transforms;
-
-// WILL BE INTERPOLATED ACROSS VERTICES
-out vec3 out_lightDir_world;
 
 uniform mat4 u_bones[ MAX_BONES_PER_MESH ];
 
@@ -76,7 +79,8 @@ void main()
 	// the Camera IS the Light, so take the translation-vector of the modelmatrix to obtain world-space position of light
 	vec3 lightPosWorld = Camera.modelMatrix[ 3 ].xyz;
 	// calculate light-direction in vertex-shader - will be interpolated across vertices, so no need to calculate it in fragment-shader
-	out_lightDir_world = vertexPositionWorld.xyz - lightPosWorld;
+	IN_OUT.lightDirWorld = vertexPositionWorld.xyz - lightPosWorld;
 
+	// TODO: upload MV-matrix
 	gl_Position = Camera.projectionMatrix * Camera.viewMatrix * vertexPositionWorld;
 }

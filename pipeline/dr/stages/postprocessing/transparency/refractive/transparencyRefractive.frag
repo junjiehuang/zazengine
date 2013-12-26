@@ -1,6 +1,10 @@
 #version 430 core
 
-in vec2 ex_texCoord;
+// defines the input-interface block from the vertex-shader
+in IN_OUT_BLOCK
+{
+	vec2 texCoord;
+} IN_OUT;
 
 layout( location = 0 ) out vec4 out_color;
 
@@ -30,19 +34,19 @@ layout( shared ) uniform CameraUniforms
 } Camera;
 
 // diffuse color of the transparent object
-layout( location = 0 ) uniform sampler2D DiffuseTexture;
+layout( binding = 0 ) uniform sampler2D DiffuseTexture;
 // normal-map of the transparent object - will be used for refraction
-layout( location = 1 ) uniform sampler2D NormalTexture;
+layout( binding = 1 ) uniform sampler2D NormalTexture;
 
 // the background-color behind the object to simulate transparency
-layout( location = 2 ) uniform sampler2D Background;
+layout( binding = 2 ) uniform sampler2D Background;
 // need background-depth to prevent "bleeding" objects infront into the refractive one
-layout( location = 3 ) uniform sampler2DShadow BackgroundDepth;
+layout( binding = 3 ) uniform sampler2DShadow BackgroundDepth;
 
 void main()
 {
 	// transform normal from texture-space [0.0, 1.0] into tangent-space [-1.0, 1.0]
-	vec4 refractNormal = 2.0 * texture( NormalTexture, ex_texCoord ) - 1.0;
+	vec4 refractNormal = 2.0 * texture( NormalTexture, IN_OUT.texCoord ) - 1.0;
 
 	// calculate texture-coordinates in screen-space
 	vec2 screenTexCoord = vec2( gl_FragCoord.x * Camera.viewport.z, gl_FragCoord.y * Camera.viewport.w );
@@ -55,7 +59,7 @@ void main()
 	// lookup the background-color
 	vec4 bgColorScreen = texture( Background, screenTexCoord );
 	// lookup the material-color
-    vec4 materialColor = texture( DiffuseTexture, ex_texCoord );
+    vec4 materialColor = texture( DiffuseTexture, IN_OUT.texCoord );
 	
 	vec3 depthTexCoord = vec3( refractTexCoord, gl_FragCoord.z );
 	float refractFragDepthComparison = texture( BackgroundDepth, depthTexCoord );

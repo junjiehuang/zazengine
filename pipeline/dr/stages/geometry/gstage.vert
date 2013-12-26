@@ -13,13 +13,13 @@ layout( location = 5 ) in uvec4 in_bone_indices;
 layout( location = 6 ) in vec4 in_bone_weights;
 
 // defines the output-interface block to the fragment-shader
-out VS_TO_FS_OUT
+out IN_OUT_BLOCK
 {
 	vec4 normal;
 	vec2 texCoord;
 	vec4 tangent;
 	vec4 biTangent;
-} VS_TO_FS;
+} IN_OUT;
 
 // THE TRANSFORMATIONS FOR THE CURRENT MESH/VERTEX-STREAM
 layout( shared ) uniform TransformUniforms
@@ -35,7 +35,7 @@ layout( shared ) uniform TransformUniforms
 // the bones for skinning
 uniform mat4 u_bones[ MAX_BONES_PER_MESH ];
 
-// the prototype of the input-processing subroutines - all implementing subroutines copy the corresponding data into the VS_TO_FS block and returns the position
+// the prototype of the input-processing subroutines - all implementing subroutines copy the corresponding data into the IN_OUT block and returns the position
 // application will select according whether a mesh is animated or not
 // NOTE: directions have to be filled up with 0.0 as w because have no length
 // NOTE: positions have to be filled up with 1.0 because have a length 
@@ -55,8 +55,8 @@ subroutine ( processInputs ) vec4 processInputsAnimated()
 		float boneWeight = in_bone_weights[ i ];
 
 		position += boneWeight * ( bone * vec4( in_vertPos, 1.0 ) );
-		VS_TO_FS.normal += boneWeight * ( bone * vec4( in_vertNorm, 0.0 ) );
-		VS_TO_FS.tangent += boneWeight * ( bone * vec4( in_tangent, 0.0 ) );
+		IN_OUT.normal += boneWeight * ( bone * vec4( in_vertNorm, 0.0 ) );
+		IN_OUT.tangent += boneWeight * ( bone * vec4( in_tangent, 0.0 ) );
 	}
 
 	return position;
@@ -65,8 +65,8 @@ subroutine ( processInputs ) vec4 processInputsAnimated()
 // no animation performed, just copy
 subroutine ( processInputs ) vec4 processInputsStatic()
 {
-	VS_TO_FS.normal = vec4( in_vertNorm, 0.0 );
-	VS_TO_FS.tangent = vec4( in_tangent, 0.0 );
+	IN_OUT.normal = vec4( in_vertNorm, 0.0 );
+	IN_OUT.tangent = vec4( in_tangent, 0.0 );
 
 	// just pass through vertex-position
 	return vec4( in_vertPos, 1.0 );
@@ -78,13 +78,13 @@ void main()
 	vec4 position = processInputsSelection();
 
 	// no transform for texture-coords, just interpolated accross vertices
-	VS_TO_FS.texCoord = in_texCoord;
+	IN_OUT.texCoord = in_texCoord;
 
 	// non-uniform scaling is forbidden in this engine therefore we can use modelViewMatrix for all directions
-	VS_TO_FS.normal = Transforms.modelViewMatrix * VS_TO_FS.normal; 
-	VS_TO_FS.tangent = Transforms.modelViewMatrix * VS_TO_FS.tangent;
+	IN_OUT.normal = Transforms.modelViewMatrix * IN_OUT.normal; 
+	IN_OUT.tangent = Transforms.modelViewMatrix * IN_OUT.tangent;
 	// construct bi-tangent from normal and tangent using the cross-product
-	VS_TO_FS.biTangent = vec4( cross( VS_TO_FS.normal.xyz, VS_TO_FS.tangent.xyz ), 0.0 ); 
+	IN_OUT.biTangent = vec4( cross( IN_OUT.normal.xyz, IN_OUT.tangent.xyz ), 0.0 ); 
 	 
 	gl_Position = Transforms.modelViewProjMatrix * position;
 }

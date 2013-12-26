@@ -1,13 +1,13 @@
 #version 430 core
 
 // defines the output-interface block to the fragment-shader
-in VS_TO_FS_OUT
+in IN_OUT_BLOCK
 {
 	// the screen-coordinate interpolated for each fragment - is used to do the texture-fetches of the MRTs
 	vec2 screenTexCoord;
 	// the normalized-device-coordinates
 	vec3 ndc;
-} VS_TO_FS;
+} IN_OUT;
 
 // final color output
 layout( location = 0 ) out vec4 final_color;
@@ -85,10 +85,10 @@ vec3 calcEyeFromDepth( float depth )
 	eye.z = Camera.nearFar.x * Camera.nearFar.y / ( ( depth * ( Camera.nearFar.y - Camera.nearFar.x ) ) - Camera.nearFar.y );
 	// solve equations for right frustum plane to get the the EC x-coord
 	// NOTE: this works only in case of a symetric frustum, in other case it would be more complex
- 	eye.x = ( -VS_TO_FS.ndc.x * eye.z ) * ( Camera.frustum.x / Camera.nearFar.x );
+ 	eye.x = ( -IN_OUT.ndc.x * eye.z ) * ( Camera.frustum.x / Camera.nearFar.x );
 	// solve equations for top frustum plane to get the the EC y-coord
 	// NOTE: this works only in case of a symetric frustum, in other case it would be more complex
-	eye.y = ( -VS_TO_FS.ndc.y * eye.z ) * ( Camera.frustum.y / Camera.nearFar.x );
+	eye.y = ( -IN_OUT.ndc.y * eye.z ) * ( Camera.frustum.y / Camera.nearFar.x );
  
 	return eye;
 }
@@ -293,8 +293,8 @@ vec3 calculatePhongMaterial( vec3 baseColor, vec3 fragPosEC, vec3 normalEC, vec3
 
 vec3 calculateDoom3Material( vec3 baseColor, vec3 fragPosEC, vec3 normalTS, vec3 lightDirEC, vec2 genericChannels )
 {
-	vec4 tangentIn = texture( TangentMap, VS_TO_FS.screenTexCoord );
-	vec4 biTangentIn = texture( BiTangentMap, VS_TO_FS.screenTexCoord );
+	vec4 tangentIn = texture( TangentMap, IN_OUT.screenTexCoord );
+	vec4 biTangentIn = texture( BiTangentMap, IN_OUT.screenTexCoord );
 	vec3 specularMaterial = vec3( genericChannels.r, tangentIn.b, biTangentIn.b );
 
 	// camera is always at origin 0/0/0 and points into the negative z-achsis so the direction is the negated fragment position in view-space 
@@ -450,9 +450,9 @@ subroutine ( lightingFunction ) vec3 pointLight( vec4 baseColor, vec3 fragPosEC,
 
 void main()
 {
-	float depth = texture( DepthMap, VS_TO_FS.screenTexCoord );
-	vec4 baseColor = texture( DiffuseMap, VS_TO_FS.screenTexCoord );
-	vec4 normalPacked = texture( NormalMap, VS_TO_FS.screenTexCoord );
+	float depth = texture( DepthMap, IN_OUT.screenTexCoord );
+	vec4 baseColor = texture( DiffuseMap, IN_OUT.screenTexCoord );
+	vec4 normalPacked = texture( NormalMap, IN_OUT.screenTexCoord );
 
 	// reconstruct eye-position (fragments-position in view-space) from depth
 	vec3 fragPosEC = calcEyeFromDepth( depth );

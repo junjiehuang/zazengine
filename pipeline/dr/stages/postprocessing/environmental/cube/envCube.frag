@@ -1,15 +1,15 @@
 #version 430 core
 
-// defines the output-interface block to the fragment-shader
-in VS_TO_FS_OUT
+// defines the input-interface block from the vertex-shader
+in IN_OUT_BLOCK
 {
 	vec3 normal;
 	vec3 incident;
-} VS_TO_FS;
+} IN_OUT;
 
 layout( location = 0 ) out vec4 out_color;
 
-layout( location = 20 ) uniform samplerCube EnvironmentMap;
+layout( binding = 20 ) uniform samplerCube EnvironmentMap;
 
 // TODO: make configurable
 const float etaR = 1.14;
@@ -20,13 +20,13 @@ const float F = ( ( 1.0 - etaG ) * ( 1.0 - etaG ) ) / ( ( 1.0 + etaG ) * ( 1.0 +
 
 void main()
 {
-    float ratio = F + ( 1.0 - F ) * pow( 1.0 - dot( -VS_TO_FS.incident, VS_TO_FS.normal ), fresnelPower );
+    float ratio = F + ( 1.0 - F ) * pow( 1.0 - dot( -IN_OUT.incident, IN_OUT.normal ), fresnelPower );
 
-    vec3 refractR = vec3( refract( VS_TO_FS.incident, VS_TO_FS.normal, etaR ) );
-    vec3 refractG = vec3( refract( VS_TO_FS.incident, VS_TO_FS.normal, etaG) );
-    vec3 refractB = vec3( refract( VS_TO_FS.incident, VS_TO_FS.normal, etaB ) );
+    vec3 refractR = vec3( refract( IN_OUT.incident, IN_OUT.normal, etaR ) );
+    vec3 refractG = vec3( refract( IN_OUT.incident, IN_OUT.normal, etaG) );
+    vec3 refractB = vec3( refract( IN_OUT.incident, IN_OUT.normal, etaB ) );
 
-    vec3 reflectDir = vec3( reflect( VS_TO_FS.incident, VS_TO_FS.normal ) );
+    vec3 reflectDir = vec3( reflect( IN_OUT.incident, IN_OUT.normal ) );
 
     vec3 refractColor;
     refractColor.r = texture( EnvironmentMap, refractR ).r;

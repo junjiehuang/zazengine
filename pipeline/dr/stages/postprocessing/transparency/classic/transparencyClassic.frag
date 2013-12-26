@@ -1,11 +1,5 @@
 #version 430 core
 
-uniform sampler2D DiffuseTexture;
-uniform sampler2D NormalTexture;
-
-uniform sampler2D Background;
-uniform sampler2DShadow BackgroundDepth;
-
 in vec2 ex_texCoord;
 
 layout( location = 0 ) out vec4 out_color;
@@ -35,8 +29,15 @@ layout( shared ) uniform CameraUniforms
 	mat4 projectionMatrix;
 } Camera;
 
-const float blendingFactor = 0.5; // TransparentMaterial.config.x
-const float refractFactor = 0.05; // TransparentMaterial.config.y
+// diffuse color of the transparent object
+layout( binding = 0 ) uniform sampler2D DiffuseTexture;
+// normal-map of the transparent object - will be used for refraction
+layout( binding = 1 ) uniform sampler2D NormalTexture;
+
+// the background-color behind the object to simulate transparency
+layout( binding = 2 ) uniform sampler2D Background;
+// need background-depth to prevent "bleeding" objects infront into the refractive one
+layout( binding = 3 ) uniform sampler2DShadow BackgroundDepth;
 
 void main()
 {

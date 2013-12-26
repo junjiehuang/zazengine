@@ -4,11 +4,11 @@ layout( location = 0 ) in vec3 in_vertPos;
 layout( location = 1 ) in vec3 in_vertNorm;
 
 // defines the output-interface block to the fragment-shader
-out VS_TO_FS_OUT
+out IN_OUT_BLOCK
 {
 	vec3 normal;
 	vec3 incident;
-} VS_TO_FS;
+} IN_OUT;
 
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 // NOTE: THIS HAS TO BE THE CAMERA THE GEOMETRY-STAGE WAS RENDERED WITH
@@ -44,8 +44,8 @@ void main()
 {
 	vec3 vertPosWS = vec4( Transforms.modelMatrix * vec4( in_vertPos, 1.0 ) ).xyz;
 
-	VS_TO_FS.incident = normalize( vertPosWS - Camera.modelMatrix[ 3 ].xyz );
-	VS_TO_FS.normal = vec4( Transforms.modelMatrix * vec4( in_vertNorm, 0.0 ) ).xyz;
+	IN_OUT.incident = normalize( vertPosWS - Camera.modelMatrix[ 3 ].xyz );
+	IN_OUT.normal = vec4( Transforms.modelMatrix * vec4( in_vertNorm, 0.0 ) ).xyz;
 
 	gl_Position = Transforms.modelViewProjMatrix * vec4( in_vertPos, 1.0 );
 }
