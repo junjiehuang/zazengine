@@ -10,13 +10,11 @@ MaterialTransparent::activate( Program* currentProgramm )
 	if ( this->m_diffuseTexture )
 	{
 		this->m_diffuseTexture->bind( 0 );
-		currentProgramm->setUniformInt( "DiffuseTexture", 0 );
 	}
 
 	if ( this->m_normalTexture )
 	{
 		this->m_normalTexture->bind( 1 );
-		currentProgramm->setUniformInt( "NormalTexture", 1 );
 	}
 
 	glm::vec4 materialCfg;

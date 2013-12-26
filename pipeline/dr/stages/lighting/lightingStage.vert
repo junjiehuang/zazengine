@@ -1,4 +1,4 @@
-#version 400 core
+#version 430 core
 
 // final light-pass mesh has only vertex-positions which are already in NDC
 layout( location = 0 ) in vec3 in_vertPos;
@@ -32,7 +32,7 @@ layout( shared ) uniform CameraUniforms
 } Camera;
 
 // need to get the texturesize for calculating relative screen-texture coords
-uniform sampler2D DepthMap;
+layout( binding = 0 ) uniform sampler2D DiffuseMap;
 
 void main()
 {
@@ -45,7 +45,7 @@ void main()
 	// need to transform from NDC which is in range [-1, 1] to texture-space [0, 1]
 	vec2 viewportTextureSpace = ( VS_TO_FS.ndc.xy + 1.0 ) * 0.5;
 	// need to know texture-size of the MRT textures which should match, just take DepthMap as reference
-	ivec2 textureDimensions = textureSize( DepthMap, 0 );
+	ivec2 textureDimensions = textureSize( DiffuseMap, 0 );
 	// calculate the relative screen-texture coordinates
 	// this is necessary because in dynamic environmental mapping the viewport-size can be smaller than the resolution of the MRT
 	// thus only a part of the MRTs is rendered to and thus we need to adjust the texture-coordinates accordingly

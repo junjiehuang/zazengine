@@ -1,84 +1,73 @@
 Refactor remaining shaders
-	-> get rid of todos
 	-> clear in-out interface-blocks
 		-> for all shaders
 		-> better names?
-	-> use layout(binding=0) on uniform samplers
-		-> is always constant anyway => can set it compile-time constan in shaders!
-	-> naming conventions
-		-> use corresponding file-extensions for shaders
-			-> .vert
-			-> .frag
-			-> .geom
-			-> .tcs
-			-> .tes
-			-> .comp
+
+Read
 	-> opengl insights
+		Best Practices, Current Knowledge & Optimization
 		-> chapter 5 shader interfaces
+		-> chapter 25 performance reducing driver-calls
+
+		Future Tech
 		-> chapter 14 layered textures rendering pipeline
 		-> chapter 19 massive shadow-casting ... layered rendering
 		-> chapter 20 efficient layered fragment buffer techniques
 		-> chapter 21 programmable vertex pulling
 		-> chapter 23 performance tuning tile-based architectures
-		-> chapter 25 performance reducing driver-calls
-	-> check if this bool-for-every method makes really sense 
 
-For Geometry-Stage
-	-> blog: subsection: animations
-
-Debugging
-	-> blog: unbind textures after creating them, otherwise very likely that you end up with invalid_operation
-
-For Lighting-Stage
-	-> get rid of immediate-depth buffer usage until post-processing stage!
-		-> it seems we cannot get rid of it without attaching/detaching targets all the time
-		-> FrameBuffer-Class is a mess... refactor it when environmental cube & planar is finished
-
-	-> write blog
-		-> https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
-
-	-> understand math behind
-		-> normal mapping
-		-> reconstructing eye coord
-
-	-> directional-light shadow-artifacts?
-	-> point-light shadow-artifacts?
-
-For Transparency-Stage
+Transparency-Stage
+	-> rename materialtransparency to materialtransparencyrefractive/materialtransparencyclassic
 	-> pull configuration-parameters in the material-class and make it configurable through xml-config
 	-> there is no need to render the shadow-maps multiple times because it won't change => keep all shadow-maps in memory but then no sharing can be used
 	-> scaled objects seem to be fucked up
 	-> FrameBuffer-Class is a mess... refactor it when environmental cube & planar is finished
 	-> shadows of environment transparents ??
-		-> no need if they are transparent
-		-> material-type should return true/false if transparent
-	-> need to be able to render from an aribtrary view point into aribtrary 2d target with different resolution: warning the projection matrix & viewport must match
-		-> need 2 render-targets: planar & environmental (cube): renderFrameInternal( Viewer* viewer, RenderTarget* gatherTarget );
-			-> will attach the gatherTarget to color-attachment 4
-			-> when return color-attachment 4 will hold the rendered scene from this point of view
-			-> take care not to render the viewer itself too (artifacts)
-		-> then implementing planar-reflections & refractions like water or dynamic environmental mapping with reflection & refraction is no problem anymore
-			-> http://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
-				-> simulate chromatic abberration (see Orange Book)
-				-> need to simulate different wavelengths for red, green and blue channels
+	-> make flag: for all objects if they cast a shadow or not
+		-> then a shadow-map could have no affecting objects => no need for shadowing => don't render => leave for further implementations 
+	-> implement planar reflection/refraction: find viewing direction!
+		-> waves
+			-> tesselation
+			-> geometry-shader
+		-> fresnel
+		-> refraction
+		-> reflections
+	-> Differentiate between normal transparency and refractive transparency
+		-> normal transparency can be rendered at the very last using normal opengl blending
+			-> no overhead of copying depth, reading background and combining results into new background
+		-> split into two types: TRANSPARENT_BLENDING & TRANSPARENT_REFRACTION
+	-> Do Colored Shadow-Rendering for Transparent objects
+		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
+			-> optimization: when material is transparent write to 1.0 to alpha-channel, else 0.0
+			=> need additional render-target in shadow-fbo: shadow-color target
+		-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
+			-> optimization: only do additional lookup when alpha-channel is 1.0
+		-> for better quality: do multisampling texture lookups
 
-For Software-Architecture in Renderer
-	-> draw-calls are very expensive in my current architecture
-	-> split into frontend & backend
-		-> issue commands: static objects, no new -> stateless
-		-> issuing commands is api independent but api must have a corresponding functionality
+Blog
+	-> write lighting-stage draft https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
+
+Lighting-Stage
+	-> get rid of immediate-depth buffer usage until post-processing stage!
+		-> it seems we cannot get rid of it without attaching/detaching targets all the time
+		-> FrameBuffer-Class is a mess... refactor it when environmental cube & planar is finished
+
+	-> understand math behind
+		-> normal mapping
+			1: why do we need to perform lighting in tangent-space? Could we not transform the local normal-vector in the geometry-stage to view-space?
+			2. what are we actually doing here with those dot-products?
+			3. what is the math behind normal-mapping?
+		-> reconstructing eye coord
+
+	-> directional-light shadow-artifacts?
+	-> point-light shadow-artifacts?	
+		
+Material
+	-> implement Depth-Map SSS
 
 Msaa
 	-> do sampling in geometry fragment-shader (centroid)
 	-> dual source blending?
-	
-Water-Rendering
-	-> waves
-		-> tesselation
-		-> geometry-shader
-	-> fresnel
-	-> refraction
-	-> reflections
 
 Post-Processing in Screen-Space
 	-> HDR
@@ -103,6 +92,10 @@ Particle System
 	-> no poing-lights
 		-> don't illuminate scene
 	
+Lighting
+	-> make z-bias configurable/light - directional lights need a higher bias
+	-> make filter-width of PCF configurable and filtering on/off possible
+
 Text-rendering
 	-> use OGLFT
 
@@ -112,17 +105,20 @@ Console
 Menu-selection
 	-> implement menu
 
-Explore Bindless G-Buffer also called layered rendering
-	-> more cleaner solution
-	-> can be extended more easily
-	-> faster
-	-> order indipendent transparency (OIT) in deferred rendering!!!
-	-> http://openglinsights.com/bendingthepipeline.html#EfficientLayeredFragmentBufferTechniques
+For Software-Architecture in Renderer
+	-> check if this bool-for-every method makes really sense 
+	-> draw-calls are very expensive in my current architecture
+	-> split into frontend & backend
+		-> issue commands: static objects, no new -> stateless
+		-> issuing commands is api independent but api must have a corresponding functionality
+	-> GLFW Context
+		-> Allow Toggle fullscreen
+			-> reinit window & render-context!
+				=> need to reinig glew, programs, textures,... (?)
+				=> lot of work to do, because everything needs to be re-init-able
+			-> for this to work we need to split creation of objects which interact with opengl and the initialization of those object with opengl-state
 
-Lighting
-	-> make z-bias configurable/light - directional lights need a higher bias
-	-> make filter-width of PCF configurable and filtering on/off possible
-
+				-> initialization must happen in a specific order. faster buffers need to be created first,... 
 Need generic effect/material functionality
 	-> no need to set input or output indices in shaders, can be done with layout ( location = ... )
 		-> remove glGetFragDataLocation, glBindFragDataLocation, glGetAttribLocation, glBindAttribLocation
@@ -152,28 +148,6 @@ Need generic effect/material functionality
 				-> 4. transform depth of light to distanceo to light
 			-> or use fake hack: http://machinesdontcare.wordpress.com/2008/10/29/subsurface-scatter-shader/ 
 
-Transparency-Rendering (see GPU Gems 2 Page 295)
-	-> Differentiate between normal transparency and refractive transparency
-		-> normal transparency can be rendered at the very last using normal opengl blending
-			-> no overhead of copying depth, reading background and combining results into new background
-		-> split into two types: TRANSPARENT_BLENDING & TRANSPARENT_REFRACTION
-	
-	-> Do Colored Shadow-Rendering for Transparent objects
-		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
-			-> optimization: when material is transparent write to 1.0 to alpha-channel, else 0.0
-			=> need additional render-target in shadow-fbo: shadow-color target
-		-> during light-rendering: when fragment in shadow do an additional lookup into the shadow-color texture to get the shadow-color for this fragment
-			-> optimization: only do additional lookup when alpha-channel is 1.0
-		-> for better quality: do multisampling texture lookups
-
-GLFW Context
-	-> Allow Toggle fullscreen
-		-> reinit window & render-context!
-			=> need to reinig glew, programs, textures,... (?)
-			=> lot of work to do, because everything needs to be re-init-able
-		-> for this to work we need to split creation of objects which interact with opengl and the initialization of those object with opengl-state
-			-> initialization must happen in a specific order. faster buffers need to be created first,... 
-
 Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 	-> instanced rendering
 	-> texture-compression
@@ -196,7 +170,6 @@ Optimization WHEN RENDERER HAS FINISHED, NOT BEFORE!!!
 		-> View-Frustum
 		-> Occlusion Culling using queries (like CHC++) 
 		-> Culling library (Umbra 3) ?
-	-> Experiment with different render-target formats for performance
 	-> really all calls necessary e.g. always bindBuffer, ... ? are some states stored in buffers?
 	-> opengl 4.3 allows for READ & WRITE of textures (images) at the same time
 		-> use for rendering transparent-glass

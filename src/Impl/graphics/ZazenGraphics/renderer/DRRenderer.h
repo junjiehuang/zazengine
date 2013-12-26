@@ -49,11 +49,10 @@ class DRRenderer
 		Program* m_progShadowMappingCubeMultiPass;
 		////////////////////////////////////////
 
-		// Programs for transparency rendering
-		Program* m_progTransparency;
-		////////////////////////////////////////
-
-		// Programs for environmental rendering
+		// Programs for Post-Processing
+		// Program for refractive-transparency rendering
+		Program* m_progTranspRefract;
+		// Program for environmental rendering
 		Program* m_progCubeEnv;
 		////////////////////////////////////////
 

@@ -10,19 +10,16 @@ MaterialDoom3::activate( Program* currentProgramm )
 	if ( this->m_diffuseTexture )
 	{
 		this->m_diffuseTexture->bind( 0 );
-		currentProgramm->setUniformInt( "DiffuseTexture", 0 );
 	}
 
 	if ( this->m_specularTexture )
 	{
 		this->m_specularTexture->bind( 1 );
-		currentProgramm->setUniformInt( "SpecularTexture", 1 );
 	}
 
 	if ( this->m_normalMap )
 	{
 		this->m_normalMap->bind( 2 );
-		currentProgramm->setUniformInt( "NormalMap", 2 );
 	}
 
 	currentProgramm->activateSubroutine( "doom3Material", Shader::FRAGMENT_SHADER );

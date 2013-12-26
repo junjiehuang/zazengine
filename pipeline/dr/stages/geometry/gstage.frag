@@ -1,4 +1,4 @@
-#version 400 core
+#version 430 core
 
 // defines the input-interface block from the vertex-shader
 in VS_TO_FS_OUT
@@ -25,9 +25,9 @@ layout( shared ) uniform MaterialUniforms
 } Material;
 
 // the textures necessary to realize all materials
-uniform sampler2D DiffuseTexture;
-uniform sampler2D SpecularTexture;
-uniform sampler2D NormalMap;
+layout( binding = 0 ) uniform sampler2D DiffuseTexture;
+layout( binding = 1 ) uniform sampler2D SpecularTexture;
+layout( binding = 2 ) uniform sampler2D NormalMap;
 
 // prototype of material-subroutine - application will select according to material-type
 subroutine void storeMaterialProperties();

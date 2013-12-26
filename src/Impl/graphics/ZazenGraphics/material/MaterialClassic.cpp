@@ -10,8 +10,6 @@ MaterialClassic::activate( Program* currentProgramm )
 	if ( this->m_diffuseTexture )
 	{
 		this->m_diffuseTexture->bind( 0 );
-
-		currentProgramm->setUniformInt( "DiffuseTexture", 0 );
 		currentProgramm->activateSubroutine( "classicMaterialTextured", Shader::FRAGMENT_SHADER );
 	}
 	else

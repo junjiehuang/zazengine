@@ -29,12 +29,14 @@ DRRenderer::DRRenderer()
 
 	this->m_progGeomStage = NULL;
 	this->m_progSkyBox = NULL;
+
 	this->m_progLightingStage = NULL;
 	this->m_progLightingStageStencilVolume = NULL;
 	this->m_progShadowMappingPlanar = NULL;
 	this->m_progShadowMappingCubeSinglePass = NULL;
 	this->m_progShadowMappingCubeMultiPass = NULL;
-	this->m_progTransparency = NULL;
+
+	this->m_progTranspRefract = NULL;
 	this->m_progCubeEnv = NULL;
 
 	this->m_transformsBlock = NULL;
@@ -351,8 +353,8 @@ DRRenderer::initPostProcessing()
 {
 	ZazenGraphics::getInstance().getLogger().logInfo( "Initializing Deferred Rendering Transparency-Stage..." );
 
-	this->m_progTransparency = ProgramManagement::get( "TransparencyProgram" );
-	if ( 0 == this->m_progTransparency )
+	this->m_progTranspRefract = ProgramManagement::get( "TransparencyRefractiveProgram" );
+	if ( 0 == this->m_progTranspRefract )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: coulnd't create program - exit" );
 		return false;
@@ -410,6 +412,7 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
+	// TODO: move to material-classic
 	this->m_materialBlock = UniformManagement::getBlock( "MaterialUniforms" );
 	if ( 0 == this->m_materialBlock )
 	{
@@ -457,6 +460,7 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
+	// TODO: move to material-classic
 	if ( false == this->m_materialBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding material uniform-block failed - exit" );
@@ -678,11 +682,6 @@ DRRenderer::renderSkyBox()
 		return false;
 	}
 
-	// TODO move into skybox
-	// NOTE: need to bind cube-map to unit at Texture::CUBE_RANGE_START because unit 0 is already occupied by 2D-textures during light-rendering - 
-	// it is not allowed to bind different types of textures to the same unit
-	this->m_progSkyBox->setUniformInt( "SkyBoxCubeMap", Texture::CUBE_RANGE_START );
-
 	// stencil-test will pass only when a 0 is found in stencil-buffer - mesh-fragments were marked with 1 in geometry-stage
 	glStencilFunc( GL_EQUAL, 0, 0xFF );
 	// don't touch the stencil-buffer, keep it for all fail-scenarios the same
@@ -832,17 +831,6 @@ DRRenderer::renderLight( Light* light, unsigned int lightMarker )
 		return false;
 	}
 
-	// tell lighting program that diffusemap is bound to texture-unit 0
-	this->m_progLightingStage->setUniformInt( "DiffuseMap", 0 );
-	// tell lighting program that normalmap is bound to texture-unit 1
-	this->m_progLightingStage->setUniformInt( "NormalMap", 1 );
-	// tell lighting program that tangents-map of scene is bound to texture-unit 2
-	this->m_progLightingStage->setUniformInt( "TangentMap", 2 );
-	// tell lighting program that bi-tangents-map of scene is bound to texture-unit 3 
-	this->m_progLightingStage->setUniformInt( "BiTangentMap", 3 );
-	// tell lighting program that depth-map of scene is bound to texture-unit 4 
-	this->m_progLightingStage->setUniformInt( "DepthMap", 4 );
-
 	// activate the corresponding subroutines for the light-type
 	if ( Light::LightType::DIRECTIONAL == light->getType() )
 	{
@@ -866,26 +854,18 @@ DRRenderer::renderLight( Light* light, unsigned int lightMarker )
 
 		if ( Light::LightType::POINT == light->getType() )
 		{
+			// need a different texture-unit for the shadow-cube map because can't bind different texture-types to same unit
 			textureUnit = Texture::CUBE_RANGE_START;
-
-			// tell program that the shadowmap of point-light will be available at texture unit Texture::CUBE_RANGE_START
-			this->m_progLightingStage->setUniformInt( "ShadowCubeMap", textureUnit );
 
 			this->m_progLightingStage->activateSubroutine( "cubeShadow", Shader::FRAGMENT_SHADER );
 		}
-		else
+		else if ( Light::LightType::DIRECTIONAL == light->getType() )
 		{
-			// tell program that the shadowmap of spot/directional-light will be available at texture unit 7
-			this->m_progLightingStage->setUniformInt( "ShadowPlanarMap", textureUnit );
-
-			if ( Light::LightType::DIRECTIONAL == light->getType() )
-			{
-				this->m_progLightingStage->activateSubroutine( "directionalShadow", Shader::FRAGMENT_SHADER );
-			}
-			else if ( Light::LightType::SPOT == light->getType() )
-			{
-				this->m_progLightingStage->activateSubroutine( "projectiveShadow", Shader::FRAGMENT_SHADER );
-			}
+			this->m_progLightingStage->activateSubroutine( "directionalShadow", Shader::FRAGMENT_SHADER );
+		}
+		else if ( Light::LightType::SPOT == light->getType() )
+		{
+			this->m_progLightingStage->activateSubroutine( "projectiveShadow", Shader::FRAGMENT_SHADER );
 		}
 
 		if ( false == light->getShadowMap()->bind( textureUnit ) )
@@ -1254,18 +1234,20 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 {
 	NVTX_RANGE_PUSH( "T Render" );
 
-	if ( false == this->m_progTransparency->use() )
+	if ( false == this->m_progTranspRefract->use() )
 	{
 		return false;
 	}
+
+	// TODO: can't we achieve transparency also only be using blending? => what do we save?
 
 	// bind background to index 2 because DiffuseColor of Material is at index 0 and NormalMap of Material is at index 1
 	this->m_fbo->getAttachedTargets()[ backgroundIndex ]->bind( 2 );
 	// bind depth of intermediate depth-FBO to target 3 - will act as background-depth
 	this->m_helperFbo->getAttachedDepthTarget()->bind( 3 );
 
-	this->m_progTransparency->setUniformInt( "Background", 2 );
-	this->m_progTransparency->setUniformInt( "BackgroundDepth", 3 );
+	//this->m_progTranspRefract->setUniformInt( "Background", 2 );
+	//this->m_progTranspRefract->setUniformInt( "BackgroundDepth", 3 );
 	
 	// copy depth of g-buffer to intermediate depth-fbo, because we need to access the depth in transparency-rendering
 	// to prevent artifacts. at the same time we write depth when rendering transparency so we cannot bind the g-buffer depth => need to copy
@@ -1283,7 +1265,7 @@ DRRenderer::renderTransparentInstance( ZazenGraphicsEntity* entity, unsigned int
 		return false;
 	}
 
-	if ( false == this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progTransparency ) )
+	if ( false == this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progTranspRefract ) )
 	{
 		return false;
 	}

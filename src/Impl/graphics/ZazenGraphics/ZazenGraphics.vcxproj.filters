@@ -67,14 +67,8 @@
     <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting">
       <UniqueIdentifier>{a1091841-2dba-4d21-9be3-7e30aa13eccb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency">
-      <UniqueIdentifier>{ec99c432-f94e-4bcc-a47b-58564f3e6fa1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Ressourcendateien\Config">
       <UniqueIdentifier>{cdb83d25-5d08-471f-86de-93e1c461edd0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox">
-      <UniqueIdentifier>{6686c2b0-0501-479f-a163-8715083f5f8c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Quelldateien\program">
       <UniqueIdentifier>{cfe55065-216c-45f2-8a6f-a6bbea6ef799}</UniqueIdentifier>
@@ -133,11 +127,26 @@
     <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting\Stencil">
       <UniqueIdentifier>{87c9640d-ccc6-44d5-b0a6-556822c2bb55}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Environmental">
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing">
+      <UniqueIdentifier>{e486db53-17f0-4867-9652-8e8dc0a23b96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox">
+      <UniqueIdentifier>{6686c2b0-0501-479f-a163-8715083f5f8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Environmental">
       <UniqueIdentifier>{8fba2b9f-77d0-4e9b-9672-32ab81d9b797}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\Environmental\Cube">
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Environmental\Cube">
       <UniqueIdentifier>{74f8fed0-95c5-442e-9eba-c43b6da03791}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Transparency">
+      <UniqueIdentifier>{ec99c432-f94e-4bcc-a47b-58564f3e6fa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Transparency\Classic">
+      <UniqueIdentifier>{a3e76eaf-07d4-43ff-814b-519111950da8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Transparency\Refractive">
+      <UniqueIdentifier>{14998e3c-b8fc-4718-8104-a61f05a37d54}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -355,65 +364,71 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
-    </None>
     <None Include="..\..\..\..\config\graphics\config.xml">
       <Filter>Ressourcendateien\Config</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox</Filter>
     </None>
     <None Include="..\..\..\..\pipeline\programConfig.xml">
       <Filter>Ressourcendateien\Pipeline</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Transparency</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Planar</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\SinglePass</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeGeom.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\SinglePass</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\SinglePass</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\MultiPass</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\MultiPass</Filter>
-    </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\nullFrag.glsl">
+    <None Include="..\..\..\..\pipeline\dr\stages\nullShader.frag">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\stencilVolume\lightStencilVolVert.glsl">
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\environmental\cube\envCube.frag">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Environmental\Cube</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\environmental\cube\envCube.vert">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Environmental\Cube</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeMulti.frag">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\MultiPass</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeMulti.vert">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\MultiPass</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeSingle.frag">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\SinglePass</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeSingle.geom">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\SinglePass</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeSingle.vert">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Cube\SinglePass</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanar.vert">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Shadowing\Planar</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\skybox\skyBox.frag">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\skybox\skyBox.vert">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\SkyBox</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightingStage.frag">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightingStage.vert">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\stencilVolume\lightStencilVolume.vert">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Lighting\Stencil</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\environmental\cube\envCubeFrag.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Environmental\Cube</Filter>
+    <None Include="..\..\..\..\pipeline\dr\stages\geometry\gstage.frag">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\environmental\cube\envCubeVert.glsl">
-      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Environmental\Cube</Filter>
+    <None Include="..\..\..\..\pipeline\dr\stages\geometry\gstage.vert">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\Geometry</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\refractive\transparencyRefractive.frag">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Transparency\Refractive</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\refractive\transparencyRefractive.vert">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Transparency\Refractive</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\classic\transparencyClassic.frag">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Transparency\Classic</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\classic\transparencyClassic.vert">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Transparency\Classic</Filter>
     </None>
   </ItemGroup>
 </Project>

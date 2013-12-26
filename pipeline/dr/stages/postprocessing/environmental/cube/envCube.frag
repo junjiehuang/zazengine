@@ -1,6 +1,4 @@
-#version 400 core
-
-uniform samplerCube EnvironmentMap;
+#version 430 core
 
 // defines the output-interface block to the fragment-shader
 in VS_TO_FS_OUT
@@ -10,6 +8,8 @@ in VS_TO_FS_OUT
 } VS_TO_FS;
 
 layout( location = 0 ) out vec4 out_color;
+
+layout( location = 20 ) uniform samplerCube EnvironmentMap;
 
 // TODO: make configurable
 const float etaR = 1.14;

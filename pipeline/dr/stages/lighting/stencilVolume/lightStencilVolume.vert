@@ -1,4 +1,4 @@
-#version 400 core
+#version 430 core
 
 // light-boundary has only vertex-positions
 layout( location = 0 ) in vec3 in_vertPos;

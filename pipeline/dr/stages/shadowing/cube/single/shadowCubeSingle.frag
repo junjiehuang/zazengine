@@ -1,11 +1,11 @@
-#version 400 core
+#version 430 core
 
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 // THIS CORRESPONDS TO THE CAMERA USED FOR RENDERING THE SHADOW-MAP IN THE CASE OF SHADOW-RENDERING IT IS THE LIGHT ITSELF
 layout( shared ) uniform CameraUniforms
 {
 	// the resolution of the viewport, z&w are the reciprocal values
-	vec4 viewport;	
+	vec4 viewport;		
 	// the near- (x) and far-plane distances (y)
 	vec2 nearFar;
 	// the symetric frustum: right (left=-right) and top (bottom=-top)
@@ -19,13 +19,16 @@ layout( shared ) uniform CameraUniforms
 	mat4 projectionMatrix;
 } Camera;
 
-// passed in interpolated from vertex-shader
-in vec3 out_lightDir_world;
+in vec4 out_position_world;
 
 void main()
 {
+	// the Camera IS the Light, so take the translation-vector of the modelmatrix to obtain world-space position of light
+	vec3 lightPosWorld = Camera.modelMatrix[ 3 ].xyz;
+	vec3 lightDirWorld = out_position_world.xyz - lightPosWorld;
+
 	// calculate distance 
-	float ws_dist = length( out_lightDir_world ); 
+	float ws_dist = length( lightDirWorld ); 
  
 	// map value to [0;1] by dividing by far plane distance 
 	float ws_dist_normalized = ws_dist / Camera.nearFar.y; 

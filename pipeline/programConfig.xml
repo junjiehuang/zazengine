@@ -1,67 +1,81 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <programs>
+  <!-- GEOMETRY-STAGE PROGRAMS -->
   <program name="GeometryStageProgramm">
     <shaders>
-      <shader type="VERTEX" file="dr/stages/geom/geomVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/geom/geomFrag.glsl"/>
-    </shaders>
-  </program>
-
-  <program name="TransparencyProgram">
-    <shaders>
-      <shader type="VERTEX" file="dr/stages/transparency/transpVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/transparency/transpFrag.glsl"/>
-    </shaders>
-  </program>
-
-  <program name="EnvironmentalCubeProgram">
-    <shaders>
-      <shader type="VERTEX" file="dr/stages/environmental/cube/envCubeVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/environmental/cube/envCubeFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/geometry/gstage.vert"/>
+      <shader type="FRAGMENT" file="dr/stages/geometry/gstage.frag"/>
     </shaders>
   </program>
 
   <program name="SkyBoxProgram">
     <shaders>
-      <shader type="VERTEX" file="dr/stages/geom/skyBoxVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/geom/skyBoxFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/skybox/skyBox.vert"/>
+      <shader type="FRAGMENT" file="dr/stages/skybox/skyBox.frag"/>
     </shaders>
   </program>
+  <!-- //////////////////////////////////////////////////////////////////////////////////// -->
 
+  <!-- LIGHTING-STAGE PROGRAMS -->
   <program name="LightingStageProgramm">
     <shaders>
-      <shader type="VERTEX" file="dr/stages/lighting/lightVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/lighting/lightFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/lighting/lightingStage.vert"/>
+      <shader type="FRAGMENT" file="dr/stages/lighting/lightingStage.frag"/>
     </shaders>
   </program>
 
   <program name="LightingStageStencilVolumeProgramm">
     <shaders>
-      <shader type="VERTEX" file="dr/stages/lighting/stencilVolume/lightStencilVolVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/nullFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/lighting/stencilVolume/lightStencilVolume.vert"/>
+      <shader type="FRAGMENT" file="dr/stages/nullShader.frag"/>
     </shaders>
   </program>
-
+  
   <program name="ShadowingStagePlanarProgramm">
     <shaders>
-      <shader type="VERTEX" file="dr/stages/shadowing/planar/shadowPlanarVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/nullFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/shadowing/planar/shadowPlanar.vert"/>
+      <shader type="FRAGMENT" file="dr/stages/nullShader.frag"/>
     </shaders>
   </program>
 
   <program name="ShadowingStageCubeMultiPassProgramm_NA">
     <shaders>
-      <shader type="VERTEX" file="dr/stages/shadowing/cube/multi/shadowCubeVert.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/shadowing/cube/multi/shadowCubeFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/shadowing/cube/multi/shadowCubeMulti.vert"/>
+      <shader type="FRAGMENT" file="dr/stages/shadowing/cube/multi/shadowCubeMulti.frag"/>
     </shaders>
   </program>
 
   <program name="ShadowingStageCubeSinglePassProgramm">
     <shaders>
-      <shader type="VERTEX" file="dr/stages/shadowing/cube/single/shadowCubeVert.glsl"/>
-      <shader type="GEOMETRY" file="dr/stages/shadowing/cube/single/shadowCubeGeom.glsl"/>
-      <shader type="FRAGMENT" file="dr/stages/shadowing/cube/single/shadowCubeFrag.glsl"/>
+      <shader type="VERTEX" file="dr/stages/shadowing/cube/single/shadowCubeSingle.vert"/>
+      <shader type="GEOMETRY" file="dr/stages/shadowing/cube/single/shadowCubeSingle.geom"/>
+      <shader type="FRAGMENT" file="dr/stages/shadowing/cube/single/shadowCubeSingle.frag"/>
     </shaders>
   </program>
+  <!-- //////////////////////////////////////////////////////////////////////////////////// -->
+
+  <!-- POST-PROCESSING-STAGE PROGRAMS -->
+  <program name="TransparencyRefractiveProgram">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/postprocessing/transparency/refractive/transparencyRefractive.vert"/>
+      <shader type="FRAGMENT" file="dr/stages/postprocessing/transparency/refractive/transparencyRefractive.frag"/>
+    </shaders>
+  </program>
+
+  <program name="TransparencyClassicProgram">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/postprocessing/transparency/classic/transparencyClassic.vert"/>
+      <shader type="FRAGMENT" file="dr/stages/postprocessing/transparency/classic/transparencyClassic.frag"/>
+    </shaders>
+  </program>
+
+  <program name="EnvironmentalCubeProgram">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/postprocessing/environmental/cube/envCube.vert"/>
+      <shader type="FRAGMENT" file="dr/stages/postprocessing/environmental/cube/envCube.frag"/>
+    </shaders>
+  </program>
+  <!-- //////////////////////////////////////////////////////////////////////////////////// -->
+
 </programs>

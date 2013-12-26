@@ -1,4 +1,4 @@
-#version 400 core
+#version 430 core
 
 // defines the output-interface block to the fragment-shader
 in VS_TO_FS_OUT
@@ -57,15 +57,15 @@ layout( shared ) uniform LightUniforms
 } Light;
 
 // the render-targets of the g-buffer bound as samplers
-uniform sampler2D DiffuseMap;
-uniform sampler2D NormalMap;
-uniform sampler2D TangentMap;
-uniform sampler2D BiTangentMap;
-uniform sampler2D DepthMap;
+layout( binding = 0 ) uniform sampler2D DiffuseMap;
+layout( binding = 1 ) uniform sampler2D NormalMap;
+layout( binding = 2 ) uniform sampler2D TangentMap;
+layout( binding = 3 ) uniform sampler2D BiTangentMap;
+layout( binding = 4 ) uniform sampler2D DepthMap;
 
 // the shadow-maps - bound depending on light-type
-uniform sampler2DShadow ShadowPlanarMap;
-uniform samplerCube ShadowCubeMap;
+layout( binding = 7 ) uniform sampler2DShadow ShadowPlanarMap;
+layout( binding = 20 ) uniform samplerCube ShadowCubeMap;
 
 const float shadow_bias = 0.001;
 ///////////////////////////////////////////////////////////////////////////
@@ -81,9 +81,13 @@ vec3 calcEyeFromDepth( float depth )
 
 	// THE NDC-INTERPOLATION WORKS ONLY IN CASE OF A FULL SCREEN QUAD
 	
-	// TODO: research what is going on here
+	// calculate EC z-coord but because depth is not stored linearly we need to calculate it normalized
 	eye.z = Camera.nearFar.x * Camera.nearFar.y / ( ( depth * ( Camera.nearFar.y - Camera.nearFar.x ) ) - Camera.nearFar.y );
+	// solve equations for right frustum plane to get the the EC x-coord
+	// NOTE: this works only in case of a symetric frustum, in other case it would be more complex
  	eye.x = ( -VS_TO_FS.ndc.x * eye.z ) * ( Camera.frustum.x / Camera.nearFar.x );
+	// solve equations for top frustum plane to get the the EC y-coord
+	// NOTE: this works only in case of a symetric frustum, in other case it would be more complex
 	eye.y = ( -VS_TO_FS.ndc.y * eye.z ) * ( Camera.frustum.y / Camera.nearFar.x );
  
 	return eye;
@@ -164,7 +168,6 @@ subroutine ( shadowFunction ) float directionalShadow( vec3 fragPosEC )
 	// doing soft-shadows using 'percentage-closer filtering' (see GPU Gems 1)
 	shadowCoord.z -= shadow_bias;
 
-	// TODO: make samples-count configurable by light
 	float x,y;
 	for ( y = -1.5 ; y <= 1.5; y += 1.0 )
 		for ( x = -1.5 ; x <= 1.5 ; x += 1.0 )
@@ -195,7 +198,6 @@ subroutine ( shadowFunction ) float projectiveShadow( vec3 fragPosEC )
 	shadowCoord.z -= shadow_bias;
 
 	// doing soft-shadows using 'percentage-closer filtering' (see GPU Gems 1)
-	// TODO: make samples-count configurable by light
 	float x,y;
 	for ( y = -1.5 ; y <= 1.5; y += 1.0 )
 		for ( x = -1.5 ; x <= 1.5 ; x += 1.0 )
@@ -230,7 +232,6 @@ subroutine ( shadowFunction ) float cubeShadow( vec3 fragPosEC )
 	// the distance from the light to the current fragment in world-coordinates
 	float fragDistToLight = length( lightDirWS );
 
-	// TODO: make samples-count configurable by light
 	float x,y;
 	for ( y = -0.5 ; y <= 0.5; y += 0.1 )
 	{
@@ -250,6 +251,7 @@ subroutine ( shadowFunction ) float cubeShadow( vec3 fragPosEC )
 	}
 
 	// our filter-kernel has 110 elements => divide with 110
+	// NOTE: this is VERY VERY high but it just works for now and creates very nice soft-shadows
 	shadow /= 110.0;
 
 	return shadow;
@@ -307,10 +309,6 @@ vec3 calculateDoom3Material( vec3 baseColor, vec3 fragPosEC, vec3 normalTS, vec3
 	nTangent = nTangent;
 
 	// transform into tangent-space
-	// TODO answer and research questions
-	// 1: why do we need to perform lighting in tangent-space? Could we not transform the local normal-vector in the geometry-stage to view-space?
-	// 2. what are we actually doing here with those dot-products?
-	// 3. what is the math behind normal-mapping?
 	vec3 eyeVec;
 	eyeVec.x = dot( eyeDirToFragEC, t );
 	eyeVec.y = dot( eyeDirToFragEC, b );

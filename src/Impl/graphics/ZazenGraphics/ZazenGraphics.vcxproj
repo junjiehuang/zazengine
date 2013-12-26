@@ -157,24 +157,26 @@
     <None Include="..\..\..\..\config\graphics\config.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="..\..\..\..\pipeline\dr\stages\environmental\cube\envCubeFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\environmental\cube\envCubeVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\geomVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\geom\skyBoxVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\lighting\stencilVolume\lightStencilVolVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\nullFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeGeom.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanarVert.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpFrag.glsl" />
-    <None Include="..\..\..\..\pipeline\dr\stages\transparency\transpVert.glsl" />
+    <None Include="..\..\..\..\pipeline\dr\stages\geometry\gstage.frag" />
+    <None Include="..\..\..\..\pipeline\dr\stages\geometry\gstage.vert" />
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightingStage.frag" />
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\lightingStage.vert" />
+    <None Include="..\..\..\..\pipeline\dr\stages\lighting\stencilVolume\lightStencilVolume.vert" />
+    <None Include="..\..\..\..\pipeline\dr\stages\nullShader.frag" />
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\environmental\cube\envCube.frag" />
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\environmental\cube\envCube.vert" />
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\classic\transparencyClassic.frag" />
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\classic\transparencyClassic.vert" />
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\refractive\transparencyRefractive.frag" />
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\refractive\transparencyRefractive.vert" />
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeMulti.frag" />
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\multi\shadowCubeMulti.vert" />
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeSingle.frag" />
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeSingle.geom" />
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\cube\single\shadowCubeSingle.vert" />
+    <None Include="..\..\..\..\pipeline\dr\stages\shadowing\planar\shadowPlanar.vert" />
+    <None Include="..\..\..\..\pipeline\dr\stages\skybox\skyBox.frag" />
+    <None Include="..\..\..\..\pipeline\dr\stages\skybox\skyBox.vert" />
     <None Include="..\..\..\..\pipeline\programConfig.xml">
       <SubType>Designer</SubType>
     </None>

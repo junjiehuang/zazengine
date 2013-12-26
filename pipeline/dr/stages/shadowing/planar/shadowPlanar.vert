@@ -1,4 +1,4 @@
-#version 400 core
+#version 430 core
 
 #define MAX_BONES_PER_MESH 128
 
@@ -49,6 +49,5 @@ subroutine uniform processInputs processInputsSelection;
 
 void main()
 {
-	// transform vertex into world-space
-	gl_Position = Transforms.modelMatrix * processInputsSelection();
+	gl_Position = Transforms.modelViewProjMatrix * processInputsSelection();
 }

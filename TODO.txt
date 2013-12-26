@@ -1,5 +1,9 @@
 Scenes
 
+Selection Menu
+	For the sake of usability and easy selection there is the need of a selection menu to select.
+	Shows the ability of the game-engine to load/unload scenes and features and a scripted menu-system.
+
 Monsters Ball - Animations, physical particles & scripting
 	-> doom3 models roaming around
 	-> imp firing fireball
@@ -26,6 +30,8 @@ Model gallery - Material-system, shadow & lighting
 	-> Thai Statue
 
 Chess - transparency rendering, scripting
+	Replays a famous 'immortal' chess game where the pieces move around by themselves. Different materials for black & white where white is transparent and black has subsurface scattering. Board is reflective.
+	Shows off the scripting-strengths, very advanced material BRDFs (subsurface scattering & transparency) and planar reflections.
 	-> pieces move around by themselves
 	-> fixed rotating camera
 	-> show the chess-board 
@@ -34,12 +40,10 @@ Chess - transparency rendering, scripting
 	-> white transparent
 	-> black subsurface scattering brdf
 	-> instanced rendering of pawns
-
-Rotating hyperdrive - interesting shadow & lighting situation
-	-> point light in center
-	-> interesting shadow situation
 	
-At the sea - water rendering
+Seaside - water rendering
+	Shows a nice auto-generated island surrounded by the ocean. Sun follows a fast-forward 24 hour cycle from dusk till dawn.
+	Shows off the strength of the game-engine to render tesselated water with refractions and reflections using FFT together with a high dynamic range lighting scenario.
 	-> reflective
 	-> refractive
 	-> fourier-transformated waves

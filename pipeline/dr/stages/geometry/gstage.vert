@@ -1,4 +1,4 @@
-#version 400 core
+#version 430 core
 
 // restrict to max of 128 bones per mesh
 #define MAX_BONES_PER_MESH 128
