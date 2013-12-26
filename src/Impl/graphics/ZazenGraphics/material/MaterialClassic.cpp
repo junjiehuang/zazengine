@@ -21,8 +21,8 @@ MaterialClassic::activate( Program* currentProgramm )
 	materialCfg[ 0 ] = ( float ) this->getType();
 
 	this->m_materialConfig->bindBuffer();
-	this->m_materialConfig->updateField( "MaterialUniforms.config", materialCfg );
-	this->m_materialConfig->updateField( "MaterialUniforms.color", this->m_color );
+	this->m_materialConfig->updateField( "GStageMaterialUniforms.config", materialCfg );
+	this->m_materialConfig->updateField( "GStageMaterialUniforms.color", this->m_color );
 
 	return true;
 }
@@ -32,7 +32,7 @@ MaterialClassic::MaterialClassic( const std::string& name, MaterialType type )
 {
 	this->m_diffuseTexture = NULL;
 
-	this->m_materialConfig = UniformManagement::getBlock( "MaterialUniforms" );
+	this->m_materialConfig = UniformManagement::getBlock( "GStageMaterialUniforms" );
 }
 
 MaterialClassic::~MaterialClassic()

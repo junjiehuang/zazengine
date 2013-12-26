@@ -1,12 +1,13 @@
 #version 430 core
 
 layout( location = 0 ) in vec3 in_vertPos;
-layout( location = 1 ) in vec3 in_vertNorm;
 layout( location = 2 ) in vec2 in_texCoord;
 
-// the screen-coordinate interpolated for each fragment - is used to do the texture-fetches of the MRTs
-out vec2 ex_screen_texture_coord;
-out vec2 ex_texCoord;
+// defines the output-interface block to the fragment-shader
+out IN_OUT_BLOCK
+{
+	vec2 texCoord;
+} IN_OUT;
 
 // TRANSFORMATIONS FOR THE CURRENT MESH/VERTEX-STREAM
 layout( shared ) uniform TransformUniforms
@@ -21,7 +22,8 @@ layout( shared ) uniform TransformUniforms
 
 void main()
 {
-	ex_texCoord = in_texCoord;
+	// just write-through texture-coordinates
+	IN_OUT.texCoord = in_texCoord;
 
 	gl_Position = Transforms.modelViewProjMatrix * vec4( in_vertPos, 1.0 );
 }

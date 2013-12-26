@@ -8,12 +8,12 @@ in IN_OUT_BLOCK
 
 layout( location = 0 ) out vec4 out_color;
 
-// THE CONFIGURATION OF THE CURRENTLY TRANSPARENTY MATERIAL
-layout( shared ) uniform TransparentMaterialUniforms
+// THE CONFIGURATION OF THE CURRENTLY TRANSPARENTY REFRACTIVE MATERIAL
+layout( shared ) uniform TransparentRefractiveMaterialUniforms
 {
-	// TODO: document components
-	vec4 config;
-} TransparentMaterial;
+	// the configuration of the material. x = blending-factor, y = refraction-factor
+	vec2 params;
+} TransparentRefractiveMaterial;
 
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 layout( shared ) uniform CameraUniforms
@@ -52,7 +52,7 @@ void main()
 	vec2 screenTexCoord = vec2( gl_FragCoord.x * Camera.viewport.z, gl_FragCoord.y * Camera.viewport.w );
 	// pertube the normal in the given direction and scale by a factor
 	// TODO: scale refractNormal.xy by texture-size
-	vec2 refractTexCoord = screenTexCoord + refractNormal.xy * TransparentMaterial.config.y;
+	vec2 refractTexCoord = screenTexCoord + refractNormal.xy * TransparentRefractiveMaterial.params.y;
 
 	// lookup the refraction-color
 	vec4 bgColorRefract = texture( Background, refractTexCoord );
@@ -65,11 +65,11 @@ void main()
 	float refractFragDepthComparison = texture( BackgroundDepth, depthTexCoord );
 
 	// material-color percentage + refraction-color percentage + transparent background-color percentage
-	out_color.rgb = materialColor.rgb * TransparentMaterial.config.x + 
+	out_color.rgb = materialColor.rgb * TransparentRefractiveMaterial.params.x + 
 		// will be canceled out if the refracted pixel is occluded by an object nearer => refractFragDepthComparison is 0.0 => removes "bleeding"
-		( bgColorRefract.rgb * ( 1.0 - TransparentMaterial.config.x ) ) * refractFragDepthComparison + 
+		( bgColorRefract.rgb * ( 1.0 - TransparentRefractiveMaterial.params.x ) ) * refractFragDepthComparison + 
 		// if refraction-color is not canceled out, cancel this one out otherwise we would add too much color => too bright 
-		( bgColorScreen.rgb * ( 1.0 - TransparentMaterial.config.x ) ) * ( 1.0 - refractFragDepthComparison );
+		( bgColorScreen.rgb * ( 1.0 - TransparentRefractiveMaterial.params.x ) ) * ( 1.0 - refractFragDepthComparison );
 
     out_color.a = 0.0;
 }

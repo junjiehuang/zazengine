@@ -98,7 +98,8 @@
     <ClCompile Include="material\MaterialDoom3.cpp" />
     <ClCompile Include="material\MaterialEnvironmental.cpp" />
     <ClCompile Include="material\MaterialFactory.cpp" />
-    <ClCompile Include="material\MaterialTransparent.cpp" />
+    <ClCompile Include="material\MaterialTransparentClassic.cpp" />
+    <ClCompile Include="material\MaterialTransparentRefractive.cpp" />
     <ClCompile Include="orientation\Orientation.cpp" />
     <ClCompile Include="program\Program.cpp" />
     <ClCompile Include="program\ProgramManagement.cpp" />
@@ -136,7 +137,8 @@
     <ClInclude Include="material\MaterialDoom3.h" />
     <ClInclude Include="material\MaterialEnvironmental.h" />
     <ClInclude Include="material\MaterialFactory.h" />
-    <ClInclude Include="material\MaterialTransparent.h" />
+    <ClInclude Include="material\MaterialTransparentClassic.h" />
+    <ClInclude Include="material\MaterialTransparentRefractive.h" />
     <ClInclude Include="orientation\Orientation.h" />
     <ClInclude Include="program\Program.h" />
     <ClInclude Include="program\ProgramManagement.h" />

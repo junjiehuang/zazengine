@@ -2,7 +2,8 @@
 
 #include "MaterialClassic.h"
 #include "MaterialDoom3.h"
-#include "MaterialTransparent.h"
+#include "MaterialTransparentClassic.h"
+#include "MaterialTransparentRefractive.h"
 #include "MaterialEnvironmental.h"
 
 #include "../ZazenGraphics.h"
@@ -47,7 +48,7 @@ MaterialFactory::init( const filesystem::path& path )
 		if ( 0 == strcmp(str, "material") )
 		{
 			std::string name;
-			std::string typeID;
+			std::string typeId;
 			Material::MaterialType materialType = Material::MATERIAL_LAMBERTIAN;
 
 			str = materialNode->Attribute( "name" );
@@ -76,30 +77,39 @@ MaterialFactory::init( const filesystem::path& path )
 			}
 			else
 			{
-				typeID = str;
+				typeId = str;
 			}
 
 			Material* material = NULL;
 
-			if ( "LAMBERTIAN" == typeID )
+			if ( "LAMBERTIAN" == typeId )
 			{
 				material = MaterialFactory::createClassicMaterial( name, Material::MATERIAL_LAMBERTIAN, materialTypeNode );
 			}
-			else if ( "PHONG" == typeID )
+			else if ( "PHONG" == typeId )
 			{
 				material = MaterialFactory::createClassicMaterial( name, Material::MATERIAL_PHONG, materialTypeNode );
 			}
-			else if ( "DOOM3" == typeID )
+			else if ( "DOOM3" == typeId )
 			{
 				material = MaterialFactory::createDoom3Material( name, materialTypeNode );
 			}
-			else if ( "TRANSPARENT" == typeID )
+			else if ( "TRANSPARENT_CLASSIC" == typeId )
 			{
-				material = MaterialFactory::createTransparentMaterial( name, materialTypeNode );
+				material = MaterialFactory::createTransparentClassicMaterial( name, materialTypeNode );
 			}
-			else if ( "ENVIRONMENTAL" == typeID )
+			else if ( "TRANSPARENT_REFRACTIVE" == typeId )
+			{
+				material = MaterialFactory::createTransparentRefractiveMaterial( name, materialTypeNode );
+			}
+			else if ( "ENVIRONMENTAL" == typeId )
 			{
 				material = MaterialFactory::createEnvironmentalMaterial( name, materialTypeNode );
+			}
+			else
+			{
+				ZazenGraphics::getInstance().getLogger().logWarning( "Unknown material-type \'" + typeId + "\'" );
+				continue;
 			}
 
 			if ( NULL != material )
@@ -258,9 +268,9 @@ MaterialFactory::createDoom3Material( const std::string& name, TiXmlElement* mat
 }
 
 Material*
-MaterialFactory::createTransparentMaterial( const std::string& name, TiXmlElement* materialTypeNode )
+MaterialFactory::createTransparentRefractiveMaterial( const std::string& name, TiXmlElement* materialTypeNode )
 {
-	MaterialTransparent* material = new MaterialTransparent( name );
+	MaterialTransparentRefractive* material = new MaterialTransparentRefractive( name );
 
 	for (TiXmlElement* materialCfgNode = materialTypeNode->FirstChildElement(); materialCfgNode != 0; materialCfgNode = materialCfgNode->NextSiblingElement())
 	{
@@ -302,16 +312,16 @@ MaterialFactory::createTransparentMaterial( const std::string& name, TiXmlElemen
 		}
 		else if ( 0 == strcmp( str, "params" ) )
 		{
-			str = materialCfgNode->Attribute( "blendingFactor" );
+			str = materialCfgNode->Attribute( "opacity" );
 			if ( 0 != str )
 			{
-				material->m_blendingFactor = ( float ) atof( str );
+				material->m_materialParams[ 0 ] = ( float ) atof( str );
 			}
 
 			str = materialCfgNode->Attribute( "refractionFator" );
 			if ( 0 != str )
 			{
-				material->m_refractionFactor = ( float ) atof( str );
+				material->m_materialParams[ 1 ] = ( float ) atof( str );
 			}
 		}
 	}
@@ -319,6 +329,46 @@ MaterialFactory::createTransparentMaterial( const std::string& name, TiXmlElemen
 	return material;
 }
 
+Material*
+MaterialFactory::createTransparentClassicMaterial( const std::string& name, TiXmlElement* materialTypeNode )
+{
+	MaterialTransparentClassic* material = new MaterialTransparentClassic( name );
+
+	for (TiXmlElement* materialCfgNode = materialTypeNode->FirstChildElement(); materialCfgNode != 0; materialCfgNode = materialCfgNode->NextSiblingElement())
+	{
+		const char* str = materialCfgNode->Value();
+		if ( NULL == str )
+		{
+			continue;
+		}
+
+		if ( 0 == strcmp( str, "diffuseColor" ) )
+		{
+			if ( 0 == material->m_diffuseTexture )
+			{
+				str = materialCfgNode->Attribute( "file" );
+				if ( 0 != str )
+				{
+					Texture* texture = TextureFactory::get( str );
+					if ( texture )
+					{
+						material->m_diffuseTexture = texture;
+					}
+				}
+			}
+		}
+		else if ( 0 == strcmp( str, "params" ) )
+		{
+			str = materialCfgNode->Attribute( "opacity" );
+			if ( 0 != str )
+			{
+				material->m_materialParams[ 0 ] = ( float ) atof( str );
+			}
+		}
+	}
+
+	return material;
+}
 Material*
 MaterialFactory::createEnvironmentalMaterial( const std::string& name, TiXmlElement* materialTypeNode )
 {

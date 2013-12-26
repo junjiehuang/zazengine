@@ -16,13 +16,13 @@ layout( location = 2 ) out vec4 out_tangent;
 layout( location = 3 ) out vec4 out_biTangent;
 
 // THE MATERIAL-CONFIGURATION OF THE MATERIAL OF THE CURRENT MESH
-layout( shared ) uniform MaterialUniforms
+layout( shared ) uniform GStageMaterialUniforms
 {
 	// x holds material-type (1.0 lambert, 2.0 phong, 3.0 doom3)
 	vec2 config;
 	// base-color of material
 	vec4 color;		
-} Material;
+} GStageMaterial;
 
 // the textures necessary to realize all materials
 layout( binding = 0 ) uniform sampler2D DiffuseTexture;
@@ -50,10 +50,10 @@ vec2 encodeDirection( vec3 dir )
 subroutine ( storeMaterialProperties ) void classicMaterial()
 {
 	// store materialtype in diffuse-component alpha-channel
-	out_diffuse.a = Material.config.x;
+	out_diffuse.a = GStageMaterial.config.x;
 
 	// store base-color of material
-	out_diffuse.rgb = Material.color.rgb;
+	out_diffuse.rgb = GStageMaterial.color.rgb;
 	// encode normal
 	out_normal.rg = encodeDirection( IN_OUT.normal.xyz );
 

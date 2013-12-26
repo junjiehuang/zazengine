@@ -11,6 +11,13 @@ layout( location = 0 ) out vec4 out_color;
 
 layout( binding = 20 ) uniform samplerCube EnvironmentMap;
 
+// THE CONFIGURATION OF THE CURRENTLY ENVIRONMENTAL CUBE MATERIAL
+layout( shared ) uniform EnvironmentalCubeMaterialUniforms
+{
+	// the configuration of the material. x = blending-factor, y = refraction-factor
+	vec2 params;
+} EnvironmentalCubeMaterial;
+
 // TODO: make configurable
 const float etaR = 1.14;
 const float etaG = 1.12;

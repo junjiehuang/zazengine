@@ -216,9 +216,6 @@
     <ClCompile Include="util\GLUtils.cpp">
       <Filter>Quelldateien\util</Filter>
     </ClCompile>
-    <ClCompile Include="material\MaterialTransparent.cpp">
-      <Filter>Quelldateien\material</Filter>
-    </ClCompile>
     <ClCompile Include="material\MaterialFactory.cpp">
       <Filter>Quelldateien\material</Filter>
     </ClCompile>
@@ -250,6 +247,12 @@
       <Filter>Quelldateien\geometry</Filter>
     </ClCompile>
     <ClCompile Include="material\MaterialEnvironmental.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
+    <ClCompile Include="material\MaterialTransparentClassic.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
+    <ClCompile Include="material\MaterialTransparentRefractive.cpp">
       <Filter>Quelldateien\material</Filter>
     </ClCompile>
   </ItemGroup>
@@ -326,9 +329,6 @@
     <ClInclude Include="util\GLUtils.h">
       <Filter>Headerdateien\util</Filter>
     </ClInclude>
-    <ClInclude Include="material\MaterialTransparent.h">
-      <Filter>Headerdateien\material</Filter>
-    </ClInclude>
     <ClInclude Include="material\MaterialFactory.h">
       <Filter>Headerdateien\material</Filter>
     </ClInclude>
@@ -360,6 +360,12 @@
       <Filter>Headerdateien\geometry</Filter>
     </ClInclude>
     <ClInclude Include="material\MaterialEnvironmental.h">
+      <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="material\MaterialTransparentClassic.h">
+      <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="material\MaterialTransparentRefractive.h">
       <Filter>Headerdateien\material</Filter>
     </ClInclude>
   </ItemGroup>

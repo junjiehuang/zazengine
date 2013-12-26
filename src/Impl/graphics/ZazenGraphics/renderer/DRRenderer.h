@@ -52,6 +52,8 @@ class DRRenderer
 		// Programs for Post-Processing
 		// Program for refractive-transparency rendering
 		Program* m_progTranspRefract;
+		// Program for classic-transparency rendering
+		Program* m_progTranspClassic;
 		// Program for environmental rendering
 		Program* m_progCubeEnv;
 		////////////////////////////////////////
@@ -60,8 +62,11 @@ class DRRenderer
 		UniformBlock* m_cameraBlock;
 		UniformBlock* m_transformsBlock;
 		UniformBlock* m_lightBlock;
-		UniformBlock* m_materialBlock;
-		UniformBlock* m_transparentMaterialBlock;
+		UniformBlock* m_gStageMaterialBlock;
+
+		UniformBlock* m_materialTransparentClassicBlock;
+		UniformBlock* m_materialTransparentRefractiveBlock;
+		UniformBlock* m_materialEnvironmentalCubeBlock;
 		////////////////////////////////////////
 
 		// the camera for the current frame 
@@ -128,7 +133,8 @@ class DRRenderer
 		void filterPostProcessEntities( std::vector<ZazenGraphicsEntity*>& );
 
 		bool processTransparentEntities( std::vector<ZazenGraphicsEntity*>&, unsigned int& );
-		bool renderTransparentInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
+		bool renderTransparentClassicInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
+		bool renderTransparentRefractiveInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
 		bool renderEnvironmentalInstance( ZazenGraphicsEntity* );
 		bool renderPostProcessEntity( Viewer*, ZazenGraphicsEntity*, Program* );
 		
