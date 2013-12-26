@@ -1220,7 +1220,7 @@ DRRenderer::doPostProcessing()
 
 			if ( Material::MATERIAL_TRANSPARENT_CLASSIC == entity->getMaterial()->getType() )
 			{
-				if ( false == this->renderTransparentClassicInstance( entity, combinationTarget ) )
+				if ( false == this->renderTransparentClassicInstance( entity, backgroundIndex ) )
 				{
 					return false;
 				}
