@@ -1220,22 +1220,13 @@ DRRenderer::doPostProcessing()
 
 			if ( Material::MATERIAL_TRANSPARENT_CLASSIC == entity->getMaterial()->getType() )
 			{
-				if ( false == this->renderTransparentClassicInstance( entity, backgroundIndex, combinationTarget, i == postProcessEntities.size() - 1 ) )
+				if ( false == this->renderTransparentClassicInstance( entity, combinationTarget ) )
 				{
 					return false;
 				}
 
-				std::swap( combinationTarget, backgroundIndex );
 			}
-		}
-
-
-		// render normal transparent objects last because they need all others already rendered for refraction
-		for ( unsigned int i = 0; i < postProcessEntities.size(); i++ )
-		{
-			ZazenGraphicsEntity* entity = postProcessEntities[ i ];
-
-			if ( Material::MATERIAL_TRANSPARENT_REFRACTIVE == entity->getMaterial()->getType() )
+			else if ( Material::MATERIAL_TRANSPARENT_REFRACTIVE == entity->getMaterial()->getType() )
 			{
 				if ( false == this->renderTransparentRefractiveInstance( entity, backgroundIndex, combinationTarget, i == postProcessEntities.size() - 1 ) )
 				{
@@ -1282,45 +1273,31 @@ DRRenderer::filterPostProcessEntities( std::vector<ZazenGraphicsEntity*>& postPr
 }
 
 bool
-DRRenderer::renderTransparentClassicInstance( ZazenGraphicsEntity* entity, unsigned int backgroundIndex, unsigned int combinationTarget, bool lastInstance )
+DRRenderer::renderTransparentClassicInstance( ZazenGraphicsEntity* entity, unsigned int combinationTarget )
 {
 	NVTX_RANGE_PUSH( "Transp Classic Render" );
 
-	if ( false == this->m_progTranspRefract->use() )
+	if ( false == this->m_progTranspClassic->use() )
 	{
 		return false;
 	}
 
-	// TODO: can't we achieve transparency also only be using blending? => what do we save?
-
-	// bind background to index 2 because DiffuseColor of Material is at index 0 and NormalMap of Material is at index 1
-	this->m_fbo->getAttachedTargets()[ backgroundIndex ]->bind( 2 );
-	// bind depth of intermediate depth-FBO to target 3 - will act as background-depth
-	this->m_helperFbo->getAttachedDepthTarget()->bind( 3 );
-
-	//this->m_progTranspRefract->setUniformInt( "Background", 2 );
-	//this->m_progTranspRefract->setUniformInt( "BackgroundDepth", 3 );
-	
-	// copy depth of g-buffer to intermediate depth-fbo, because we need to access the depth in transparency-rendering
-	// to prevent artifacts. at the same time we write depth when rendering transparency so we cannot bind the g-buffer depth => need to copy
-	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
-	// copy background-color to combination-target => spare one whole FSQ blending pass
-	this->m_fbo->blitColorFromTo( backgroundIndex, combinationTarget );
-
-	// transparent objects are always rendered intermediate to g-buffer color target 0
+	// transparent objects are always rendered intermediate to g-buffer color target 
 	this->m_fbo->drawBuffer( combinationTarget );
 
 	CHECK_FRAMEBUFFER_DEBUG
 
-	if ( false == this->updateCameraBlock( this->m_currentCamera ) )
+	// TODO: enable/disable outside and not for each separately
+	glEnable( GL_BLEND );
+
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+	if ( false == this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progTranspClassic ) )
 	{
 		return false;
 	}
 
-	if ( false == this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progTranspRefract ) )
-	{
-		return false;
-	}
+	glDisable( GL_BLEND );
 
 	NVTX_RANGE_POP
 
@@ -1343,9 +1320,6 @@ DRRenderer::renderTransparentRefractiveInstance( ZazenGraphicsEntity* entity, un
 	this->m_fbo->getAttachedTargets()[ backgroundIndex ]->bind( 2 );
 	// bind depth of intermediate depth-FBO to target 3 - will act as background-depth
 	this->m_helperFbo->getAttachedDepthTarget()->bind( 3 );
-
-	//this->m_progTranspRefract->setUniformInt( "Background", 2 );
-	//this->m_progTranspRefract->setUniformInt( "BackgroundDepth", 3 );
 	
 	// copy depth of g-buffer to intermediate depth-fbo, because we need to access the depth in transparency-rendering
 	// to prevent artifacts. at the same time we write depth when rendering transparency so we cannot bind the g-buffer depth => need to copy
@@ -1458,11 +1432,10 @@ DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
 		return false;
 	}
 
-	this->m_environmentHelperTarget->bind( Texture::CUBE_RANGE_START );
 	// NOTE: this dynamically rendered cube-map has linear filtering and won't use mipmaps as creating them would suck really much power
 	// and won't increase quality so much compared to the resolution of the cube-map
-	this->m_progCubeEnv->setUniformInt( "EnvironmentMap", Texture::CUBE_RANGE_START );
-
+	this->m_environmentHelperTarget->bind( Texture::CUBE_RANGE_START );
+	
 	this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progCubeEnv );
 
 	NVTX_RANGE_POP

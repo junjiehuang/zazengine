@@ -51,7 +51,6 @@ void main()
 	// calculate texture-coordinates in screen-space
 	vec2 screenTexCoord = vec2( gl_FragCoord.x * Camera.viewport.z, gl_FragCoord.y * Camera.viewport.w );
 	// pertube the normal in the given direction and scale by a factor
-	// TODO: scale refractNormal.xy by texture-size
 	vec2 refractTexCoord = screenTexCoord + refractNormal.xy * TransparentRefractiveMaterial.params.y;
 
 	// lookup the refraction-color
@@ -71,5 +70,5 @@ void main()
 		// if refraction-color is not canceled out, cancel this one out otherwise we would add too much color => too bright 
 		( bgColorScreen.rgb * ( 1.0 - TransparentRefractiveMaterial.params.x ) ) * ( 1.0 - refractFragDepthComparison );
 
-    out_color.a = 0.0;
+    out_color.a = TransparentRefractiveMaterial.params.x;
 }

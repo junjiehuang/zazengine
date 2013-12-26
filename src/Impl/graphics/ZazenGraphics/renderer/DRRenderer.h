@@ -132,8 +132,7 @@ class DRRenderer
 
 		void filterPostProcessEntities( std::vector<ZazenGraphicsEntity*>& );
 
-		bool processTransparentEntities( std::vector<ZazenGraphicsEntity*>&, unsigned int& );
-		bool renderTransparentClassicInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
+		bool renderTransparentClassicInstance( ZazenGraphicsEntity*, unsigned int );
 		bool renderTransparentRefractiveInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
 		bool renderEnvironmentalInstance( ZazenGraphicsEntity* );
 		bool renderPostProcessEntity( Viewer*, ZazenGraphicsEntity*, Program* );
