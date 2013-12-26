@@ -4,7 +4,8 @@
 #include "MaterialDoom3.h"
 #include "MaterialTransparentClassic.h"
 #include "MaterialTransparentRefractive.h"
-#include "MaterialEnvironmental.h"
+#include "MaterialEnvironmentCube.h"
+#include "MaterialEnvironmentPlanar.h"
 
 #include "../ZazenGraphics.h"
 
@@ -102,9 +103,13 @@ MaterialFactory::init( const filesystem::path& path )
 			{
 				material = MaterialFactory::createTransparentRefractiveMaterial( name, materialTypeNode );
 			}
-			else if ( "ENVIRONMENTAL" == typeId )
+			else if ( "ENVIRONMENT_CUBE" == typeId )
 			{
-				material = MaterialFactory::createEnvironmentalMaterial( name, materialTypeNode );
+				material = MaterialFactory::createEnvironmentCubeMaterial( name, materialTypeNode );
+			}
+			else if ( "ENVIRONMENT_PLANAR" == typeId )
+			{
+				material = MaterialFactory::createEnvironmentPlanarMaterial( name, materialTypeNode );
 			}
 			else
 			{
@@ -369,10 +374,30 @@ MaterialFactory::createTransparentClassicMaterial( const std::string& name, TiXm
 
 	return material;
 }
+
 Material*
-MaterialFactory::createEnvironmentalMaterial( const std::string& name, TiXmlElement* materialTypeNode )
+MaterialFactory::createEnvironmentCubeMaterial( const std::string& name, TiXmlElement* materialTypeNode )
 {
-	MaterialEnvironmental* material = new MaterialEnvironmental( name );
+	MaterialEnvironmentCube* material = new MaterialEnvironmentCube( name );
+
+	for (TiXmlElement* materialCfgNode = materialTypeNode->FirstChildElement(); materialCfgNode != 0; materialCfgNode = materialCfgNode->NextSiblingElement())
+	{
+		const char* str = materialCfgNode->Value();
+		if ( NULL == str )
+		{
+			continue;
+		}
+
+		// TODO: when parameters are clear then make configurable here
+	}
+
+	return material;
+}
+
+Material*
+MaterialFactory::createEnvironmentPlanarMaterial( const std::string& name, TiXmlElement* materialTypeNode )
+{
+	MaterialEnvironmentPlanar* material = new MaterialEnvironmentPlanar( name );
 
 	for (TiXmlElement* materialCfgNode = materialTypeNode->FirstChildElement(); materialCfgNode != 0; materialCfgNode = materialCfgNode->NextSiblingElement())
 	{

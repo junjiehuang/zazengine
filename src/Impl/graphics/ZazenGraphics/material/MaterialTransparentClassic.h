@@ -24,4 +24,4 @@ class MaterialTransparentClassic : public Material
 
 };
 
-#endif /* _MATERIAL_TRANSPARENT_H_ */
+#endif /* _MATERIAL_TRANSPARENT_CLASSIC_H_ */

@@ -56,6 +56,13 @@
   <!-- //////////////////////////////////////////////////////////////////////////////////// -->
 
   <!-- POST-PROCESSING-STAGE PROGRAMS -->
+  <program name="TransparencyClassicProgram">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/postprocessing/transparency/classic/transparencyClassic.vert"/>
+      <shader type="FRAGMENT" file="dr/stages/postprocessing/transparency/classic/transparencyClassic.frag"/>
+    </shaders>
+  </program>
+  
   <program name="TransparencyRefractiveProgram">
     <shaders>
       <shader type="VERTEX" file="dr/stages/postprocessing/transparency/refractive/transparencyRefractive.vert"/>
@@ -63,17 +70,17 @@
     </shaders>
   </program>
 
-  <program name="TransparencyClassicProgram">
-    <shaders>
-      <shader type="VERTEX" file="dr/stages/postprocessing/transparency/classic/transparencyClassic.vert"/>
-      <shader type="FRAGMENT" file="dr/stages/postprocessing/transparency/classic/transparencyClassic.frag"/>
-    </shaders>
-  </program>
-
   <program name="EnvironmentalCubeProgram">
     <shaders>
       <shader type="VERTEX" file="dr/stages/postprocessing/environmental/cube/envCube.vert"/>
       <shader type="FRAGMENT" file="dr/stages/postprocessing/environmental/cube/envCube.frag"/>
+    </shaders>
+  </program>
+
+  <program name="EnvironmentalPlanarProgram">
+    <shaders>
+      <shader type="VERTEX" file="dr/stages/postprocessing/environmental/planar/envPlanar.vert"/>
+      <shader type="FRAGMENT" file="dr/stages/postprocessing/environmental/planar/envPlanar.frag"/>
     </shaders>
   </program>
   <!-- //////////////////////////////////////////////////////////////////////////////////// -->

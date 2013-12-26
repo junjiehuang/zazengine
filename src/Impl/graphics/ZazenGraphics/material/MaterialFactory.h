@@ -25,7 +25,8 @@ class MaterialFactory
 		static Material* createDoom3Material( const std::string&, TiXmlElement* );
 		static Material* createTransparentRefractiveMaterial( const std::string&, TiXmlElement* );
 		static Material* createTransparentClassicMaterial( const std::string&, TiXmlElement* );
-		static Material* createEnvironmentalMaterial( const std::string&, TiXmlElement* );
+		static Material* createEnvironmentCubeMaterial( const std::string&, TiXmlElement* );
+		static Material* createEnvironmentPlanarMaterial( const std::string&, TiXmlElement* );
 };
 
 #endif /* _MATERIAL_FACTORY_H_ */

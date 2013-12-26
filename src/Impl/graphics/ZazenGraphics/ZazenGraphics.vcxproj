@@ -96,7 +96,8 @@
     <ClCompile Include="material\Material.cpp" />
     <ClCompile Include="material\MaterialClassic.cpp" />
     <ClCompile Include="material\MaterialDoom3.cpp" />
-    <ClCompile Include="material\MaterialEnvironmental.cpp" />
+    <ClCompile Include="material\MaterialEnvironmentCube.cpp" />
+    <ClCompile Include="material\MaterialEnvironmentPlanar.cpp" />
     <ClCompile Include="material\MaterialFactory.cpp" />
     <ClCompile Include="material\MaterialTransparentClassic.cpp" />
     <ClCompile Include="material\MaterialTransparentRefractive.cpp" />
@@ -135,7 +136,8 @@
     <ClInclude Include="material\Material.h" />
     <ClInclude Include="material\MaterialClassic.h" />
     <ClInclude Include="material\MaterialDoom3.h" />
-    <ClInclude Include="material\MaterialEnvironmental.h" />
+    <ClInclude Include="material\MaterialEnvironmentCube.h" />
+    <ClInclude Include="material\MaterialEnvironmentPlanar.h" />
     <ClInclude Include="material\MaterialFactory.h" />
     <ClInclude Include="material\MaterialTransparentClassic.h" />
     <ClInclude Include="material\MaterialTransparentRefractive.h" />
@@ -167,6 +169,8 @@
     <None Include="..\..\..\..\pipeline\dr\stages\nullShader.frag" />
     <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\environmental\cube\envCube.frag" />
     <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\environmental\cube\envCube.vert" />
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\environmental\planar\envPlanar.frag" />
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\environmental\planar\envPlanar.vert" />
     <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\classic\transparencyClassic.frag" />
     <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\classic\transparencyClassic.vert" />
     <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\refractive\transparencyRefractive.frag" />

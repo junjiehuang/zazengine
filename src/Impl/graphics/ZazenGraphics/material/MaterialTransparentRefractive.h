@@ -24,4 +24,4 @@ class MaterialTransparentRefractive : public Material
 		Texture* m_normalTexture;
 };
 
-#endif /* _MATERIAL_TRANSPARENT_H_ */
+#endif /* _MATERIAL_TRANSPARENT_REFRACTIVE_H_ */

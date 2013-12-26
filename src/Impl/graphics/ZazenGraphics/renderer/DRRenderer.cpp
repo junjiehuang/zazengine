@@ -39,21 +39,23 @@ DRRenderer::DRRenderer()
 	this->m_progTranspRefract = NULL;
 	this->m_progTranspClassic = NULL;
 	this->m_progCubeEnv = NULL;
+	this->m_progPlanarEnv = NULL;
 
 	this->m_transformsBlock = NULL;
 	this->m_cameraBlock = NULL;
 	this->m_lightBlock = NULL;
 	this->m_gStageMaterialBlock = NULL;
 
-	this->m_materialTransparentClassicBlock = NULL;
-	this->m_materialTransparentRefractiveBlock = NULL;
-	this->m_materialEnvironmentalCubeBlock = NULL;
+	this->m_materialTranspClassicBlock = NULL;
+	this->m_materialTranspRefractBlock = NULL;
+	this->m_materialEnvCubeBlock = NULL;
+	this->m_materialEnvPlanarBlock = NULL;
 
 	this->m_currentCamera = NULL;
 	this->m_currentEntities = NULL;
 
-	this->m_planarHelperTarget = NULL;
-	this->m_environmentHelperTarget = NULL;
+	this->m_envPlanarTarget = NULL;
+	this->m_envCubeTarget = NULL;
 }
 
 DRRenderer::~DRRenderer()
@@ -186,14 +188,20 @@ DRRenderer::initGBuffer()
 		return false;
 	}
 
-	// render-target at index 4: intermediate lighting-result
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )		
+	// render-target at index 4: final gathering
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )
 	{
 		return false;
 	}
 
 	// render-target at index 5: depth-stencil-buffer
 	if ( false == this->createMrtBuffer( RenderTarget::RT_DEPTH_STENCIL, this->m_fbo ) )		
+	{
+		return false;
+	}
+
+	// render-target at index 6: copy-buffer for backing up the final gathering during environmental rendering
+	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )
 	{
 		return false;
 	}
@@ -378,17 +386,24 @@ DRRenderer::initPostProcessing()
 		return false;
 	}
 
-	// IMPORTANT: don't share
-	this->m_environmentHelperTarget = RenderTarget::create( 512, 512, RenderTarget::RT_COLOR_CUBE, false );
-	if ( NULL == this->m_environmentHelperTarget )
+	this->m_progPlanarEnv = ProgramManagement::get( "EnvironmentalPlanarProgram" );
+	if ( 0 == this->m_progPlanarEnv )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: coulnd't create environmental render-target - exit" );
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: coulnd't get planar environment program - exit" );
+		return false;
+	}
+	
+	// IMPORTANT: don't share
+	this->m_envCubeTarget = RenderTarget::create( 512, 512, RenderTarget::RT_COLOR_CUBE, false );
+	if ( NULL == this->m_envCubeTarget )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: coulnd't create environmental cube render-target - exit" );
 		return false;
 	}
 
 	// IMPORTANT: don't share
-	this->m_planarHelperTarget = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), RenderTarget::RT_COLOR, false );
-	if ( NULL == this->m_planarHelperTarget )
+	this->m_envPlanarTarget = RenderTarget::create( RenderingContext::getRef().getWidth(), RenderingContext::getRef().getHeight(), RenderTarget::RT_COLOR, false );
+	if ( NULL == this->m_envPlanarTarget )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initPostProcessing: coulnd't create planar render-target - exit" );
 		return false;
@@ -430,26 +445,34 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
-	this->m_materialTransparentClassicBlock = UniformManagement::getBlock( "TransparentClassicMaterialUniforms" );
-	if ( 0 == this->m_materialTransparentClassicBlock )
+	this->m_materialTranspClassicBlock = UniformManagement::getBlock( "TransparentClassicMaterialUniforms" );
+	if ( 0 == this->m_materialTranspClassicBlock )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find classic transparent material uniform-block - exit" );
 		return false;
 	}
 
-	this->m_materialTransparentRefractiveBlock = UniformManagement::getBlock( "TransparentRefractiveMaterialUniforms" );
-	if ( 0 == this->m_materialTransparentRefractiveBlock )
+	this->m_materialTranspRefractBlock = UniformManagement::getBlock( "TransparentRefractiveMaterialUniforms" );
+	if ( 0 == this->m_materialTranspRefractBlock )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find refractive transparent material uniform-block - exit" );
 		return false;
 	}
 
-	this->m_materialEnvironmentalCubeBlock = UniformManagement::getBlock( "EnvironmentalCubeMaterialUniforms" );
-	if ( 0 == this->m_materialEnvironmentalCubeBlock )
+	this->m_materialEnvCubeBlock = UniformManagement::getBlock( "EnvironmentCubeMaterialUniforms" );
+	if ( 0 == this->m_materialEnvCubeBlock )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find environmental cube material uniform-block - exit" );
 		return false;
 	}
+
+	this->m_materialEnvPlanarBlock = UniformManagement::getBlock( "EnvironmentPlanarMaterialUniforms" );
+	if ( 0 == this->m_materialEnvPlanarBlock )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: couldn't find environmental planar material uniform-block - exit" );
+		return false;
+	}
+	
 
 	/* IMPORTANT: found this in forums: 
 		On ATI hardware, you have to call
@@ -490,24 +513,30 @@ DRRenderer::initUniformBlocks()
 		return false;
 	}
 
-	if ( false == this->m_materialTransparentClassicBlock->bindBase() )
+	if ( false == this->m_materialTranspClassicBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding classic transparent material uniform-block failed - exit" );
 		return false;
 	}
 
-	if ( false == this->m_materialTransparentRefractiveBlock->bindBase() )
+	if ( false == this->m_materialTranspRefractBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding refractive transparent material uniform-block failed - exit" );
 		return false;
 	}
 
-	if ( false == this->m_materialEnvironmentalCubeBlock->bindBase() )
+	if ( false == this->m_materialEnvCubeBlock->bindBase() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding environment cube material uniform-block failed - exit" );
 		return false;
 	}
 
+	if ( false == this->m_materialEnvPlanarBlock->bindBase() )
+	{
+		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::initUniformBlocks: binding environment planar material uniform-block failed - exit" );
+		return false;
+	}
+	
 	return true;
 }
 
@@ -1202,9 +1231,9 @@ DRRenderer::doPostProcessing()
 		{
 			ZazenGraphicsEntity* entity = postProcessEntities[ i ];
 
-			if ( Material::MATERIAL_ENVIRONMENTAL_CUBE == entity->getMaterial()->getType() )
+			if ( Material::MATERIAL_ENVIRONMENT_CUBE == entity->getMaterial()->getType() || Material::MATERIAL_ENVIRONMENT_PLANAR == entity->getMaterial()->getType() )
 			{
-				if ( false == this->renderEnvironmentalInstance( entity ) )
+				if ( false == this->renderEnvironmentInstance( entity ) )
 				{
 					return false;
 				}
@@ -1348,49 +1377,71 @@ DRRenderer::renderTransparentRefractiveInstance( ZazenGraphicsEntity* entity, un
 }
 
 bool
-DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
+DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 {
 	NVTX_RANGE_PUSH( "Env Render" );
 
+	// need a 'backup' of our camera - it will be overwritten
 	Viewer* currentCameraBackup = this->m_currentCamera;
 
+	// attach the planar
+	/*
 	this->m_helperFbo->bind();
 	this->m_helperFbo->attachColorTargetTemp( this->m_planarHelperTarget, 0 );
 	
 	this->m_fbo->bind();
 	this->m_fbo->blitColorToFBO( this->m_fbo->getAttachedTargets()[ 4 ], 4, 0, this->m_helperFbo );
 	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
+	*/
 
-	Viewer v( 512, 512 );
-	v.setFov( 90.0 );
-	v.setupPerspective();
-	
-	glm::vec4 entityPos = glm::vec4( entity->getPosition(), 1.0 );
+	// TODO: try to get rid of this bind
+	this->m_fbo->bind();
+	this->m_fbo->blitColorFromTo( 4, 6 );
+	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
 
 	// TODO: optimize: only render it every 2nd frame
 	// TODO: optimize: no need to re-render all shadow-maps again
 
 	// TODO: fix - there is a problem when using point-light with shadow: seems to lead to incomplete framebuffer
 
-	for ( unsigned int face = 0; face < 6; ++face )
+	if ( Material::MATERIAL_ENVIRONMENT_CUBE == entity->getMaterial()->getType() )
 	{
-		this->m_fbo->bind();
-		this->m_fbo->attachColorTargetTempCubeFace( this->m_environmentHelperTarget, face, 4 );
+		Viewer v( 512, 512 );
+		v.setFov( 90.0 );
+		v.setupPerspective();
+	
+		glm::vec4 entityPos = glm::vec4( entity->getPosition(), 1.0 );
 
-		CHECK_FRAMEBUFFER_DEBUG
-			
-		this->m_viewerModelMatrices[ face ][ 3 ] = entityPos;
-		v.setModelMatrix( this->m_viewerModelMatrices[ face ] );
-
-		// TODO: correct number-string
-		NVTX_RANGE_PUSH( "Internal Frame " + face );
-		if ( false == this->renderFrameInternal( &v ) )
+		for ( unsigned int face = 0; face < 6; ++face )
 		{
-			return false;
+			this->m_fbo->bind();
+			this->m_fbo->attachColorTargetTempCubeFace( this->m_envCubeTarget, face, 4 );
+
+			CHECK_FRAMEBUFFER_DEBUG
+			
+			this->m_viewerModelMatrices[ face ][ 3 ] = entityPos;
+			v.setModelMatrix( this->m_viewerModelMatrices[ face ] );
+
+			NVTX_RANGE_PUSH( "Internal Frame" );
+			if ( false == this->renderFrameInternal( &v ) )
+			{
+				return false;
+			}
+			NVTX_RANGE_POP
 		}
-		NVTX_RANGE_POP
+
+		this->m_fbo->bind();
+		this->m_fbo->detachColorTargetTemp( this->m_envCubeTarget, 4 );
+	}
+	else
+	{
+		// TODO: flip the view-matrix
+
+		this->m_fbo->bind();
+		this->m_fbo->detachColorTargetTemp( this->m_envPlanarTarget, 4 );
 	}
 
+	// restore camera & viewport
 	this->m_currentCamera = currentCameraBackup;
 	this->m_currentCamera->restoreViewport();
 
@@ -1400,14 +1451,12 @@ DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
 		return false;
 	}
 
-	this->m_fbo->bind();
-	this->m_fbo->detachColorTargetTemp( this->m_environmentHelperTarget, 4 );
+	// bind the 'old' color-target again
 	this->m_fbo->restoreColorTarget( 4 );
+	this->m_fbo->blitColorFromTo( 6, 4 );
 
+	// copy 'backups' back to main fbo & reset state of helper-fbo to be able to render shadow-maps again
 	this->m_helperFbo->bind();
-	this->m_helperFbo->blitColorToFBO( this->m_planarHelperTarget, 0, 4, this->m_fbo );
-	this->m_helperFbo->detachColorTargetTemp( this->m_planarHelperTarget, 0 );
-
 	this->m_helperFbo->restoreDepthTarget();
 	this->m_helperFbo->blitDepthToFBO( this->m_fbo );
 	this->m_helperFbo->drawNone();
@@ -1425,23 +1474,43 @@ DRRenderer::renderEnvironmentalInstance( ZazenGraphicsEntity* entity )
 	// check status of FBO, IMPORANT: not before, would have failed
 	CHECK_FRAMEBUFFER_DEBUG
 
-	// activate lighting-stage shader
-	if ( false == this->m_progCubeEnv->use() )
+	if ( Material::MATERIAL_ENVIRONMENT_CUBE == entity->getMaterial()->getType() )
 	{
-		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderEnvironmentalInstance: using program failed - exit" );
-		return false;
+		// activate lighting-stage shader
+		if ( false == this->m_progCubeEnv->use() )
+		{
+			ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderEnvironmentalInstance: using program failed - exit" );
+			return false;
+		}
+
+		// NOTE: this dynamically rendered cube-map has linear filtering and won't use mipmaps as creating them would suck really much power
+		// and won't increase quality so much compared to the resolution of the cube-map
+		this->m_envCubeTarget->bind( Texture::CUBE_RANGE_START );
+	}
+	else
+	{
+		// activate lighting-stage shader
+		if ( false == this->m_progPlanarEnv->use() )
+		{
+			ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::renderEnvironmentalInstance: using program failed - exit" );
+			return false;
+		}
+
+		this->m_envPlanarTarget->bind( 1 );
 	}
 
-	// NOTE: this dynamically rendered cube-map has linear filtering and won't use mipmaps as creating them would suck really much power
-	// and won't increase quality so much compared to the resolution of the cube-map
-	this->m_environmentHelperTarget->bind( Texture::CUBE_RANGE_START );
-	
 	this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progCubeEnv );
 
 	NVTX_RANGE_POP
 
 	NVTX_RANGE_POP
 
+	return true;
+}
+
+bool
+DRRenderer::renderEnvironmentPlanarInstance( ZazenGraphicsEntity* entity )
+{
 	return true;
 }
 

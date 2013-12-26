@@ -190,6 +190,8 @@ FrameBufferObject::restoreColorTarget( unsigned int targetIndex )
 bool
 FrameBufferObject::bind()
 {
+	// TODO: implement a guard: if FBO already bound, don't call api
+
 	// bind the framebuffer of the geometry-stage
 	glBindFramebuffer( GL_FRAMEBUFFER, this->m_id );
 	GL_PEEK_ERRORS_AT_DEBUG

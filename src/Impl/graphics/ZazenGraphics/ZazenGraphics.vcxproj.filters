@@ -148,6 +148,9 @@
     <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Transparency\Refractive">
       <UniqueIdentifier>{14998e3c-b8fc-4718-8104-a61f05a37d54}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Environmental\Planar">
+      <UniqueIdentifier>{8cf484d4-3cb7-436e-9db9-8cdc2177c84a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZazenGraphics.cpp">
@@ -246,13 +249,16 @@
     <ClCompile Include="geometry\MeshNode.cpp">
       <Filter>Quelldateien\geometry</Filter>
     </ClCompile>
-    <ClCompile Include="material\MaterialEnvironmental.cpp">
-      <Filter>Quelldateien\material</Filter>
-    </ClCompile>
     <ClCompile Include="material\MaterialTransparentClassic.cpp">
       <Filter>Quelldateien\material</Filter>
     </ClCompile>
     <ClCompile Include="material\MaterialTransparentRefractive.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
+    <ClCompile Include="material\MaterialEnvironmentCube.cpp">
+      <Filter>Quelldateien\material</Filter>
+    </ClCompile>
+    <ClCompile Include="material\MaterialEnvironmentPlanar.cpp">
       <Filter>Quelldateien\material</Filter>
     </ClCompile>
   </ItemGroup>
@@ -359,13 +365,16 @@
     <ClInclude Include="geometry\MeshNode.h">
       <Filter>Headerdateien\geometry</Filter>
     </ClInclude>
-    <ClInclude Include="material\MaterialEnvironmental.h">
-      <Filter>Headerdateien\material</Filter>
-    </ClInclude>
     <ClInclude Include="material\MaterialTransparentClassic.h">
       <Filter>Headerdateien\material</Filter>
     </ClInclude>
     <ClInclude Include="material\MaterialTransparentRefractive.h">
+      <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="material\MaterialEnvironmentPlanar.h">
+      <Filter>Headerdateien\material</Filter>
+    </ClInclude>
+    <ClInclude Include="material\MaterialEnvironmentCube.h">
       <Filter>Headerdateien\material</Filter>
     </ClInclude>
   </ItemGroup>
@@ -435,6 +444,12 @@
     </None>
     <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\transparency\classic\transparencyClassic.vert">
       <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Transparency\Classic</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\environmental\planar\envPlanar.frag">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Environmental\Planar</Filter>
+    </None>
+    <None Include="..\..\..\..\pipeline\dr\stages\postprocessing\environmental\planar\envPlanar.vert">
+      <Filter>Ressourcendateien\Pipeline\DeferredRenderer\Stages\PostProcessing\Environmental\Planar</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -54,8 +54,10 @@ class DRRenderer
 		Program* m_progTranspRefract;
 		// Program for classic-transparency rendering
 		Program* m_progTranspClassic;
-		// Program for environmental rendering
+		// Program for cube-maped environmental rendering
 		Program* m_progCubeEnv;
+		// Program for planar environmental rendering
+		Program* m_progPlanarEnv;
 		////////////////////////////////////////
 
 		// Uniform-Blocks
@@ -64,9 +66,10 @@ class DRRenderer
 		UniformBlock* m_lightBlock;
 		UniformBlock* m_gStageMaterialBlock;
 
-		UniformBlock* m_materialTransparentClassicBlock;
-		UniformBlock* m_materialTransparentRefractiveBlock;
-		UniformBlock* m_materialEnvironmentalCubeBlock;
+		UniformBlock* m_materialTranspClassicBlock;
+		UniformBlock* m_materialTranspRefractBlock;
+		UniformBlock* m_materialEnvCubeBlock;
+		UniformBlock* m_materialEnvPlanarBlock;
 		////////////////////////////////////////
 
 		// the camera for the current frame 
@@ -74,8 +77,8 @@ class DRRenderer
 		////////////////////////////////////////
 
 		// helper rendering-targets
-		RenderTarget* m_planarHelperTarget;
-		RenderTarget* m_environmentHelperTarget;
+		RenderTarget* m_envPlanarTarget;
+		RenderTarget* m_envCubeTarget;
 		////////////////////////////////////////
 
 		// all entities for the current frame
@@ -134,7 +137,10 @@ class DRRenderer
 
 		bool renderTransparentClassicInstance( ZazenGraphicsEntity*, unsigned int );
 		bool renderTransparentRefractiveInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
-		bool renderEnvironmentalInstance( ZazenGraphicsEntity* );
+		bool renderEnvironmentCubeInstance( ZazenGraphicsEntity* );
+		bool renderEnvironmentPlanarInstance( ZazenGraphicsEntity* );
+		bool renderEnvironmentInstance( ZazenGraphicsEntity* );
+
 		bool renderPostProcessEntity( Viewer*, ZazenGraphicsEntity*, Program* );
 		
 		bool renderEntities( Viewer*, std::list<ZazenGraphicsEntity*>&, Program*, bool, bool );
