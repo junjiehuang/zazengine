@@ -200,12 +200,6 @@ DRRenderer::initGBuffer()
 		return false;
 	}
 
-	// render-target at index 6: copy-buffer for backing up the final gathering during environmental rendering
-	if ( false == this->createMrtBuffer( RenderTarget::RT_COLOR, this->m_fbo ) )
-	{
-		return false;
-	}
-
 	// IMPORTANT: don't check status until all necessary buffers are created
 	// and attached to the according fbo (e.g. after each attach) otherwise
 	// it will be incomplete at some point and will fail.
@@ -1384,20 +1378,12 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 	// need a 'backup' of our camera - it will be overwritten
 	Viewer* currentCameraBackup = this->m_currentCamera;
 
-	// attach the planar
-	/*
-	this->m_helperFbo->bind();
-	this->m_helperFbo->attachColorTargetTemp( this->m_planarHelperTarget, 0 );
-	
-	this->m_fbo->bind();
-	this->m_fbo->blitColorToFBO( this->m_fbo->getAttachedTargets()[ 4 ], 4, 0, this->m_helperFbo );
-	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
-	*/
-
 	// TODO: try to get rid of this bind
 	this->m_fbo->bind();
-	this->m_fbo->blitColorFromTo( 4, 6 );
 	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
+	// NOTE: we don't need to copy the final gather as we bind a helper-target to color-attachment 4
+	//		 this will receive the rendering while the original render-target will remain untouched
+
 
 	// TODO: optimize: only render it every 2nd frame
 	// TODO: optimize: no need to re-render all shadow-maps again
@@ -1435,9 +1421,26 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 	}
 	else
 	{
-		// TODO: flip the view-matrix
+		Viewer v( this->m_currentCamera->getWidth(), this->m_currentCamera->getHeight() );
+		v.setFov( this->m_currentCamera->getFov() );
+		v.setupPerspective();
 
-		this->m_fbo->bind();
+		// TODO: create a mirrored matrix
+		// mirrored around the position of the entity and its up-vector
+		v.setModelMatrix( this->m_currentCamera->getModelMatrix() );
+		v.changeRoll( 180.0 )
+
+		this->m_fbo->attachColorTargetTemp( this->m_envPlanarTarget, 4 );
+	
+		CHECK_FRAMEBUFFER_DEBUG
+		
+		NVTX_RANGE_PUSH( "Internal Frame" );
+		if ( false == this->renderFrameInternal( &v ) )
+		{
+			return false;
+		}
+		NVTX_RANGE_POP
+
 		this->m_fbo->detachColorTargetTemp( this->m_envPlanarTarget, 4 );
 	}
 
@@ -1451,11 +1454,10 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 		return false;
 	}
 
-	// bind the 'old' color-target again
+	// restore the 'original' color-target 4 again
 	this->m_fbo->restoreColorTarget( 4 );
-	this->m_fbo->blitColorFromTo( 6, 4 );
 
-	// copy 'backups' back to main fbo & reset state of helper-fbo to be able to render shadow-maps again
+	// copy backup of depth back to main fbo & reset state of helper-fbo to be able to render shadow-maps again
 	this->m_helperFbo->bind();
 	this->m_helperFbo->restoreDepthTarget();
 	this->m_helperFbo->blitDepthToFBO( this->m_fbo );
@@ -1486,6 +1488,8 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 		// NOTE: this dynamically rendered cube-map has linear filtering and won't use mipmaps as creating them would suck really much power
 		// and won't increase quality so much compared to the resolution of the cube-map
 		this->m_envCubeTarget->bind( Texture::CUBE_RANGE_START );
+		
+		this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progCubeEnv );
 	}
 	else
 	{
@@ -1497,20 +1501,14 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 		}
 
 		this->m_envPlanarTarget->bind( 1 );
+
+		this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progPlanarEnv );
 	}
 
-	this->renderPostProcessEntity( this->m_currentCamera, entity, this->m_progCubeEnv );
-
 	NVTX_RANGE_POP
 
 	NVTX_RANGE_POP
 
-	return true;
-}
-
-bool
-DRRenderer::renderEnvironmentPlanarInstance( ZazenGraphicsEntity* entity )
-{
 	return true;
 }
 

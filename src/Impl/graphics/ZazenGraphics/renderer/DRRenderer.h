@@ -137,8 +137,6 @@ class DRRenderer
 
 		bool renderTransparentClassicInstance( ZazenGraphicsEntity*, unsigned int );
 		bool renderTransparentRefractiveInstance( ZazenGraphicsEntity*, unsigned int, unsigned int, bool );
-		bool renderEnvironmentCubeInstance( ZazenGraphicsEntity* );
-		bool renderEnvironmentPlanarInstance( ZazenGraphicsEntity* );
 		bool renderEnvironmentInstance( ZazenGraphicsEntity* );
 
 		bool renderPostProcessEntity( Viewer*, ZazenGraphicsEntity*, Program* );

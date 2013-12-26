@@ -4,12 +4,11 @@
 in IN_OUT_BLOCK
 {
 	vec3 normal;
-	vec3 incident;
 } IN_OUT;
 
 layout( location = 0 ) out vec4 out_color;
 
-layout( binding = 20 ) uniform samplerCube EnvironmentMap;
+layout( binding = 1 ) uniform sampler2D PlanarEnvMap;
 
 // THE CONFIGURATION OF THE CURRENTLY ENVIRONMENTAL CUBE MATERIAL
 layout( shared ) uniform EnvironmentPlanarMaterialUniforms
@@ -18,32 +17,33 @@ layout( shared ) uniform EnvironmentPlanarMaterialUniforms
 	vec2 params;
 } EnvironmentPlanarCubeMaterial;
 
-// TODO: make configurable
-const float etaR = 1.14;
-const float etaG = 1.12;
-const float etaB = 1.10;
-const float fresnelPower = 2.0;
-const float F = ( ( 1.0 - etaG ) * ( 1.0 - etaG ) ) / ( ( 1.0 + etaG ) * ( 1.0 + etaG ) );
+// THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
+// NOTE: THIS HAS TO BE THE CAMERA THE GEOMETRY-STAGE WAS RENDERED WITH
+layout( shared ) uniform CameraUniforms
+{
+	// the resolution of the viewport, z&w are the reciprocal values
+	vec4 viewport;	
+	// the near- (x) and far-plane distances (y)
+	vec2 nearFar;
+	// the symetric frustum: right (left=-right) and top (bottom=-top)
+	vec2 frustum;
+
+	// the model-matrix of the camera (orienation within world-space)
+	mat4 modelMatrix;
+	// the view-matrix of the camera to apply to the objects to transform to view/eye/camera-space (is its inverse model-matrix)
+	mat4 viewMatrix;
+	// the projection-matrix of the camera
+	mat4 projectionMatrix;
+} Camera;
 
 void main()
 {
-    float ratio = F + ( 1.0 - F ) * pow( 1.0 - dot( -IN_OUT.incident, IN_OUT.normal ), fresnelPower );
+	// calculate texture-coordinates in screen-space
+	vec2 screenTexCoord = vec2( gl_FragCoord.x * Camera.viewport.z, gl_FragCoord.y * Camera.viewport.w );
 
-    vec3 refractR = vec3( refract( IN_OUT.incident, IN_OUT.normal, etaR ) );
-    vec3 refractG = vec3( refract( IN_OUT.incident, IN_OUT.normal, etaG) );
-    vec3 refractB = vec3( refract( IN_OUT.incident, IN_OUT.normal, etaB ) );
+	// lookup the background-color
+	vec3 bgColorScreen = texture( PlanarEnvMap, screenTexCoord ).rgb;
 
-    vec3 reflectDir = vec3( reflect( IN_OUT.incident, IN_OUT.normal ) );
-
-    vec3 refractColor;
-    refractColor.r = texture( EnvironmentMap, refractR ).r;
-    refractColor.g  = texture( EnvironmentMap, refractG ).g;
-    refractColor.b  = texture( EnvironmentMap, refractB ).b;
-
-    vec3 reflectColor = texture(EnvironmentMap, reflectDir).rgb;
-
-	// TODO: something is still wrong when objects are scaled
-
-	out_color.rgb = mix(refractColor, reflectColor, ratio);
+	out_color.rgb = bgColorScreen;
     out_color.a = 0.0;
 }

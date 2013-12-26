@@ -86,6 +86,7 @@ FrameBufferObject::attachTarget( RenderTarget* renderTarget )
 	}
 	else if ( RenderTarget::RT_COLOR == renderTarget->getType() )
 	{
+		// TODO: problem: this only works when color-attachments are attached bevore any depth-attachment
 		GLuint id = renderTarget->getId();
 		GLenum colorAttachment = GL_COLOR_ATTACHMENT0 + this->m_colorBufferTargets.size();
 
