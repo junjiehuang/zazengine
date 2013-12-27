@@ -24,6 +24,8 @@ class DRRenderer
 		bool renderFrame( std::list<ZazenGraphicsEntity*>& instances );
 
 	private:
+		long long m_frameCounter;
+
 		// Multiple-Render-Targes & Framebuffer for Deferred Rendering
 		FrameBufferObject* m_fbo;
 		FrameBufferObject* m_helperFbo;

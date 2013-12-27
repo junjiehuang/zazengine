@@ -56,6 +56,8 @@ DRRenderer::DRRenderer()
 
 	this->m_envPlanarTarget = NULL;
 	this->m_envCubeTarget = NULL;
+
+	this->m_frameCounter = 0;
 }
 
 DRRenderer::~DRRenderer()
@@ -614,6 +616,8 @@ DRRenderer::renderFrame( std::list<ZazenGraphicsEntity*>& entities )
 		}
 	}
 	
+	this->m_frameCounter++;
+
 	// NOTE: in release-build gl-errors are detected through GL ARB debug output, see RenderingContext
 
 	return true;
@@ -1383,12 +1387,8 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
 	// NOTE: we don't need to copy the final gather as we bind a helper-target to color-attachment 4
 	//		 this will receive the rendering while the original render-target will remain untouched
-
-
-	// TODO: optimize: only render it every 2nd frame
+		
 	// TODO: optimize: no need to re-render all shadow-maps again
-
-	// TODO: fix - there is a problem when using point-light with shadow: seems to lead to incomplete framebuffer
 
 	if ( Material::MATERIAL_ENVIRONMENT_CUBE == entity->getMaterial()->getType() )
 	{
@@ -1425,10 +1425,11 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 		v.setFov( this->m_currentCamera->getFov() );
 		v.setupPerspective();
 
-		// TODO: create a mirrored matrix
-		// mirrored around the position of the entity and its up-vector
-		v.setModelMatrix( this->m_currentCamera->getModelMatrix() );
-		v.changeRoll( 180.0 )
+		glm::mat4 mirrorYAchsis = glm::scale( glm::vec3( 1.0, -1.0, 1.0 ) );
+		glm::mat4 viewMatrix = this->m_currentCamera->getViewMatrix();
+		viewMatrix *= mirrorYAchsis;
+
+		v.setModelMatrix( glm::inverse( viewMatrix ) );
 
 		this->m_fbo->attachColorTargetTemp( this->m_envPlanarTarget, 4 );
 	
@@ -1462,7 +1463,7 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 	this->m_helperFbo->restoreDepthTarget();
 	this->m_helperFbo->blitDepthToFBO( this->m_fbo );
 	this->m_helperFbo->drawNone();
-
+	
 	NVTX_RANGE_PUSH( "Render Obj" );
 
 	this->m_fbo->bind();
