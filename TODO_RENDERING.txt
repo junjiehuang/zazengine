@@ -11,14 +11,9 @@ Read
 		-> chapter 21 programmable vertex pulling
 		-> chapter 23 performance tuning tile-based architectures
 
-Transparency-Stage
-	-> implement planar reflection/refraction: find viewing direction!
-		-> waves
-			-> tesselation
-			-> geometry-shader
-		-> fresnel
-		-> refraction
-		-> reflections
+Todo
+	-> fix artifacts of planar reflections: normals must not be reflected and stay untouched by the scale-operation. this is now not the case which leads to the artifacts
+	-> remove extensive comments on shadow-mapping in Lighting-stage shader and move to blog-notes
 	-> pull configuration-parameters in the material-class and make it configurable through xml-config
 	-> there is no need to render the shadow-maps multiple times because it won't change => keep all shadow-maps in memory but then no sharing can be used
 		-> make a scene-config in xml: share shadow-maps on/off.
@@ -26,10 +21,20 @@ Transparency-Stage
 			-> if off => shadow-maps can be reused
 			=> user can decide tradeoff
 	-> scaled objects seem to be fucked up
-	-> FrameBuffer-Class is a mess... refactor it when environmental cube & planar is finished
 	-> shadows of environment transparents ??
 		-> make flag: for all objects if they cast a shadow or not
 			-> then a shadow-map could have no affecting objects => no need for shadowing => don't render => leave for further implementations 
+	-> Implement Depth-Map SSS
+
+Transparency-Stage
+	-> implement planar reflection/refraction
+		-> arbitary reflection around a plane, not only origin with +y
+		-> waves
+			-> tesselation
+			-> geometry-shader
+			-> fresnel
+			-> refraction
+			-> reflections
 	-> Do Colored Shadow-Rendering for Transparent objects
 		-> render transparent object in shadow-map generation AND write color of transparent object to additional color-texture in shadow-fbo
 			-> optimization: when material is transparent write to 1.0 to alpha-channel, else 0.0
@@ -39,6 +44,18 @@ Transparency-Stage
 		-> for better quality: do multisampling texture lookups
 
 Blog
+	-> update time-line: until end of 2013 implemented features:
+		-> cube-map shadows for point-lights both single-pass & multi-pass implementation
+		-> soft-shadows using PCF
+		-> normal-mapping
+		-> keyframe-animation
+		-> reduction of channels in render-targets (encoding/decoding of directions, reconstruction of EC)
+		-> light bounding-meshes
+		-> dynamic environmental cube-mapping
+		-> planar reflections
+		-> classic transparency
+		-> depth map sss
+		-> lots of small optimizations 		
 	-> write lighting-stage draft https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
 
 Lighting-Stage
@@ -56,8 +73,6 @@ Lighting-Stage
 	-> directional-light shadow-artifacts?
 	-> point-light shadow-artifacts?	
 		
-Material
-	-> implement Depth-Map SSS
 
 Msaa
 	-> do sampling in geometry fragment-shader (centroid)
@@ -100,6 +115,7 @@ Menu-selection
 	-> implement menu
 
 For Software-Architecture in Renderer
+	-> FrameBuffer-Class is a mess... refactor it
 	-> check if this bool-for-every method makes really sense 
 	-> draw-calls are very expensive in my current architecture
 	-> split into frontend & backend

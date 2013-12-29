@@ -1350,6 +1350,8 @@ DRRenderer::renderTransparentRefractiveInstance( ZazenGraphicsEntity* entity, un
 	
 	// copy depth of g-buffer to intermediate depth-fbo, because we need to access the depth in transparency-rendering
 	// to prevent artifacts. at the same time we write depth when rendering transparency so we cannot bind the g-buffer depth => need to copy
+	// TODO: alternative would be to render the entity without depth-write (see light FSQ rendering) and then to render the entity again with depth-only write
+	// => saves the depth-blit. optimize re-rendering: don't need to calculate transform/viewing-matrices again & don't render material
 	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
 	// copy background-color to combination-target => spare one whole FSQ blending pass
 	this->m_fbo->blitColorFromTo( backgroundIndex, combinationTarget );
@@ -1384,6 +1386,7 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 
 	// TODO: try to get rid of this bind
 	this->m_fbo->bind();
+	// TODO: no need to copy - just attach the helperFbo-depth attachment => internal frames will render there and won't touch the original depth/stencil target
 	this->m_fbo->blitDepthToFBO( this->m_helperFbo );
 	// NOTE: we don't need to copy the final gather as we bind a helper-target to color-attachment 4
 	//		 this will receive the rendering while the original render-target will remain untouched
@@ -1421,6 +1424,15 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 	}
 	else
 	{
+		// TODO: optimize: render a stencil-mask to reduce rendering on only the mirror-mesh 
+		// => allow the renderFrameInternal-pipeline to work with an already present mask
+
+		// reflection inverts face-winding => need to redefine what a front-face is
+		//glFrontFace( GL_CW );
+		// don't do culling becaus the reflection inverted the front/back face winding
+		// TODO: should be possible by changing only the winding but seems not to work
+		glDisable( GL_CULL_FACE );
+
 		Viewer v( this->m_currentCamera->getWidth(), this->m_currentCamera->getHeight() );
 		v.setFov( this->m_currentCamera->getFov() );
 		v.setupPerspective();
@@ -1442,6 +1454,11 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 		}
 		NVTX_RANGE_POP
 
+		// restore default face-winding
+		//glFrontFace( GL_CCW );
+		// do culling again
+		glEnable( GL_CULL_FACE );
+
 		this->m_fbo->detachColorTargetTemp( this->m_envPlanarTarget, 4 );
 	}
 
@@ -1459,6 +1476,8 @@ DRRenderer::renderEnvironmentInstance( ZazenGraphicsEntity* entity )
 	this->m_fbo->restoreColorTarget( 4 );
 
 	// copy backup of depth back to main fbo & reset state of helper-fbo to be able to render shadow-maps again
+	// TODO: no need to copy - just attach the helperFbo-depth attachment => internal frames will render there and won't touch the original depth/stencil target
+	// => we can get completely get rid of this helperFbo binding for rendering environment instances!
 	this->m_helperFbo->bind();
 	this->m_helperFbo->restoreDepthTarget();
 	this->m_helperFbo->blitDepthToFBO( this->m_fbo );
