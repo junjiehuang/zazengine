@@ -12,19 +12,16 @@ Read
 		-> chapter 23 performance tuning tile-based architectures
 
 Todo
-	-> fix artifacts of planar reflections: normals must not be reflected and stay untouched by the scale-operation. this is now not the case which leads to the artifacts
-	-> remove extensive comments on shadow-mapping in Lighting-stage shader and move to blog-notes
-	-> pull configuration-parameters in the material-class and make it configurable through xml-config
+	-> shadows of environment transparents ??
+		-> make flag: for all objects if they cast a shadow or not
+			-> then a shadow-map could have no affecting objects => no need for shadowing => don't render => leave for further implementations 
 	-> there is no need to render the shadow-maps multiple times because it won't change => keep all shadow-maps in memory but then no sharing can be used
 		-> make a scene-config in xml: share shadow-maps on/off.
 			-> if on => shadow-maps need to be rerendered every time
 			-> if off => shadow-maps can be reused
 			=> user can decide tradeoff
 	-> scaled objects seem to be fucked up
-	-> shadows of environment transparents ??
-		-> make flag: for all objects if they cast a shadow or not
-			-> then a shadow-map could have no affecting objects => no need for shadowing => don't render => leave for further implementations 
-	-> Implement Depth-Map SSS
+	-> pull configuration-parameters in the material-class and make it configurable through xml-config
 
 Transparency-Stage
 	-> implement planar reflection/refraction
@@ -54,9 +51,37 @@ Blog
 		-> dynamic environmental cube-mapping
 		-> planar reflections
 		-> classic transparency
-		-> depth map sss
 		-> lots of small optimizations 		
 	-> write lighting-stage draft https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
+		-> info about shadow-texture lookup
+		// IMPORTANT: we are only in clip-space, need to divide by w to reach projected NDC.
+		// normally the forward-rendering shadow-mapping calculates the shadow-coord
+		// in the vertex-shader, which is not possible in the deferred renderer without using 
+		// an additional render-target. in forward-rendering between the vertex-shader
+		// and the fragment-shader where the shadow-map lookup happens
+		// interpolation is carried out by the fixed-function but no perspective division
+		// the shadowcoord is in our case already multiplied with the projection-transform
+		// but we still need to do the projective-division to reach the according space 0-1
+		// because this is not done when applying the projection transform
+		// ADDITION: either use 	
+		//		vec3 shadowCoordPersp = shadowCoord.xyz / shadowCoord.w; with texture( ShadowPlanarMap, shadowCoordPersp ) lookup 
+		//		OR use textureProj( ShadowPlanarMap, shadowCoord ); directly
+		
+		// IMPORTANT: because we installed a compare-function on this shadow-sampler
+		// we don't need to compare it anymore to the z-value of the shadow-coord
+
+		// IMPORTANT: directionaly light uses orthogonal shadow-map so 
+		// transformation of position to shadow-coord is orthgonal projection too
+		// so no need for perspective lookup (or divide) because orthogonal 
+		// projection has 1 at w so there won't be a foreshortening of values
+		// IMPORTANT: because we installed a compare-function on this shadow-sampler
+		// we don't need to compare it anymore to the z-value of the shadow-coord
+
+		// for shadow-mapping we need to transform the position of the fragment to light-space
+		// before we can apply the light-space transformation we first need to apply
+		// the inverse view-matrix of the camera to transform the position back to world-coordinates (WC)
+		// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
+
 
 Lighting-Stage
 	-> get rid of immediate-depth buffer usage until post-processing stage!
@@ -101,9 +126,52 @@ Particle System
 	-> no poing-lights
 		-> don't illuminate scene
 	
-Lighting
-	-> make z-bias configurable/light - directional lights need a higher bias
-	-> make filter-width of PCF configurable and filtering on/off possible
+Material
+	-> Depth-Map SSS from OglPlus example 28
+		-> problem: DepthLightMap must store distance-from light values in NDC => no more depth-comparison function possible, switch all shadow-maps
+		-> cube-map is handled different than planar
+		-> directional-light is another special case too because parallel-projection
+		vec3 calculateDepthSSSMaterial( vec3 baseColor, vec3 fragPosEC, vec3 normalEC, vec3 lightDirEC )
+		{
+			vec3 eyeDirToFragEC = normalize( -fragPosEC );
+
+			vec4 fragPosWS = Camera.modelMatrix * vec4( fragPosEC, 1.0 );
+			vec4 fragPosLightClipSpace = Light.viewProj * fragPosWS;
+
+			float LightDist = fragPosLightClipSpace.z / fragPosLightClipSpace.w;
+			vec3 Normal = normalize(normalEC);
+			vec3 LightDir = normalize(lightDirEC);
+			vec3 LightRefl = reflect(-LightDir, Normal);
+			vec3 ViewDir = normalize(eyeDirToFragEC);
+
+			float inv_w = 1.0/fragPosLightClipSpace.w;
+
+			float Depth = 0.0;
+			for(int s=0; s!=DepthSamples; ++s)
+			{
+				vec2 SampleCoord = DepthOffs[s]+fragPosLightClipSpace.xy;
+				SampleCoord *= inv_w;
+				SampleCoord *= 0.5;
+				SampleCoord += 0.5;
+				float Sample = texture(DepthLightMap, SampleCoord).r;
+				if(Sample < 0.95)
+					Depth += Sample;
+				else Depth += 0.5;
+			}
+			Depth *= InvDepthSamples;
+
+			float Ambi = 0.15;
+			float BkLt = (dot(-LightDir, ViewDir)+3.0)*0.25;
+			float SuSS = pow(abs(Depth-LightDist), 2.0)*BkLt*1.2;
+			float Shdw = min(pow(abs(Depth-LightDist)*2.0, 8.0), 1.0);
+			float Diff  = sqrt(max(dot(LightDir, Normal)+0.1, 0.0))*0.4;
+			float Spec  = pow(max(dot(LightRefl, ViewDir), 0.0), 64.0);
+
+			vec3 fragColor = (Ambi + Shdw*Diff + SuSS) * baseColor;
+			fragColor += Shdw*Spec * vec3(1.0, 1.0, 1.0);
+	
+			return fragColor;
+		}
 
 Text-rendering
 	-> use OGLFT

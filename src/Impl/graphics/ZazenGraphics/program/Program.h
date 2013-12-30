@@ -36,6 +36,8 @@ class Program
 		bool setUniformMatrix( const std::string& name, const glm::mat4& );
 		bool setUniformMatrices( const std::string& name, const std::vector<glm::mat4>& );
 
+		bool setUniformVec( const std::string& name, const std::vector<glm::vec2>& );
+
 		bool bindUniformBlock( UniformBlock* );
 
 		bool bindAttribLocation( GLuint index, const std::string& name );

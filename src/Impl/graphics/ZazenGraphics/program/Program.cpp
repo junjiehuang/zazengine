@@ -337,6 +337,21 @@ Program::setUniformMatrices( const std::string& name, const std::vector<glm::mat
 	return true;
 }
 
+bool
+Program::setUniformVec( const std::string& name, const std::vector<glm::vec2>& vecs )
+{
+	UniformField* field = this->getUniformField( name );
+	if ( NULL == field )
+	{
+		return false;
+	}
+
+	glUniform2fv( field->m_location, vecs.size(), glm::value_ptr( vecs[ 0 ] ) );
+	GL_PEEK_ERRORS_AT_DEBUG
+
+	return true;
+}
+
 GLuint
 Program::getUniformBlockIndex( const std::string& name )
 {
