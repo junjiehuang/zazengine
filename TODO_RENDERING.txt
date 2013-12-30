@@ -41,19 +41,19 @@ Transparency-Stage
 		-> for better quality: do multisampling texture lookups
 
 Blog
-	-> update time-line: until end of 2013 implemented features:
-		-> cube-map shadows for point-lights both single-pass & multi-pass implementation
-		-> soft-shadows using PCF
-		-> normal-mapping
-		-> keyframe-animation
-		-> reduction of channels in render-targets (encoding/decoding of directions, reconstruction of EC)
-		-> light bounding-meshes
-		-> dynamic environmental cube-mapping
-		-> planar reflections
-		-> classic transparency
-		-> lots of small optimizations 		
 	-> write lighting-stage draft https://www.opengl.org/discussion_boards/showthread.php/177724-Reconstructing-depth-from-depth-buffer-texture
-		-> info about shadow-texture lookup
+	-> get rid of immediate-depth buffer usage until post-processing stage!
+		-> it seems we cannot get rid of it without attaching/detaching targets all the time
+		-> FrameBuffer-Class is a mess... refactor it when environmental cube & planar is finished
+	-> understand math behind
+		-> normal mapping
+			1: why do we need to perform lighting in tangent-space? Could we not transform the local normal-vector in the geometry-stage to view-space?
+			2. what are we actually doing here with those dot-products?
+			3. what is the math behind normal-mapping?
+		-> reconstructing eye coord
+	-> directional-light shadow-artifacts?
+	-> point-light shadow-artifacts?	
+	-> info about shadow-texture lookup
 		// IMPORTANT: we are only in clip-space, need to divide by w to reach projected NDC.
 		// normally the forward-rendering shadow-mapping calculates the shadow-coord
 		// in the vertex-shader, which is not possible in the deferred renderer without using 
@@ -83,21 +83,6 @@ Blog
 		// note that world-coordinates is the position after the modeling-matrix was applied to the vertex
 
 
-Lighting-Stage
-	-> get rid of immediate-depth buffer usage until post-processing stage!
-		-> it seems we cannot get rid of it without attaching/detaching targets all the time
-		-> FrameBuffer-Class is a mess... refactor it when environmental cube & planar is finished
-
-	-> understand math behind
-		-> normal mapping
-			1: why do we need to perform lighting in tangent-space? Could we not transform the local normal-vector in the geometry-stage to view-space?
-			2. what are we actually doing here with those dot-products?
-			3. what is the math behind normal-mapping?
-		-> reconstructing eye coord
-
-	-> directional-light shadow-artifacts?
-	-> point-light shadow-artifacts?	
-		
 
 Msaa
 	-> do sampling in geometry fragment-shader (centroid)
