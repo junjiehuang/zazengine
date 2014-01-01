@@ -381,23 +381,6 @@ FrameBufferObject::drawAllBuffers()
 }
 
 bool
-FrameBufferObject::drawBuffers( std::vector<unsigned int> indices )
-{
-	std::vector<GLenum> colorBufferTargets;
-
-	for ( unsigned int i = 0; i < indices.size(); i++ )
-	{
-		colorBufferTargets.push_back( this->m_colorBufferTargets[ indices[ i ] ] );
-	}
-
-	// activate multiple drawing to our color targets targets
-	glDrawBuffers( colorBufferTargets.size(), &colorBufferTargets[ 0 ] );
-	GL_PEEK_ERRORS_AT_DEBUG
-
-	return true;
-}
-
-bool
 FrameBufferObject::drawBuffer( unsigned int index )
 {
 	// activate multiple drawing to our color targets targets
@@ -412,8 +395,6 @@ FrameBufferObject::drawNone()
 {
 	glDrawBuffer( GL_NONE );
 	GL_PEEK_ERRORS_AT_DEBUG
-	glReadBuffer( GL_NONE );
-	GL_PEEK_ERRORS_AT_DEBUG
 
 	return true;
 }
@@ -421,13 +402,7 @@ FrameBufferObject::drawNone()
 bool
 FrameBufferObject::clearAll()
 {
-	if ( false == this->drawAllBuffers() )
-	{
-		return false;
-	}
-
-	// turn on color drawing ( was turned off in shadowmaping )
-	// clear the colorbuffers AND our depth-buffer ( m_geometryDepth );
+	// clear all the attached buffers
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 	GL_PEEK_ERRORS_AT_DEBUG
 

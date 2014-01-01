@@ -1,11 +1,5 @@
 #version 430 core
 
-// defines the input-interface block from the vertex-shader
-in IN_OUT_BLOCK
-{
-	vec3 normal;
-} IN_OUT;
-
 layout( location = 0 ) out vec4 out_color;
 
 layout( binding = 1 ) uniform sampler2D PlanarEnvMap;

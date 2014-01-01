@@ -559,12 +559,6 @@ DRRenderer::initializeStaticData()
 	this->m_viewerModelMatrices.push_back( glm::mat4( glm::vec4( 1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, -1.0, 0.0 ), glm::vec4( 1.0 ) ) );	// POS Z
 	this->m_viewerModelMatrices.push_back( glm::mat4( glm::vec4( -1.0, 0.0, 0.0, 0.0 ), glm::vec4( 0.0, -1.0, 0.0, 0.0 ), glm::vec4( 0.0, 0.0, 1.0, 0.0 ), glm::vec4( 1.0 ) ) );	// NEG Z 
 
-	this->m_gBufferDrawBufferIndices.clear();
-	this->m_gBufferDrawBufferIndices.push_back( 0 );	// diffuse
-	this->m_gBufferDrawBufferIndices.push_back( 1 );	// normal
-	this->m_gBufferDrawBufferIndices.push_back( 2 );	// tangents
-	this->m_gBufferDrawBufferIndices.push_back( 3 );	// bi-tangents
-
 	this->m_gBufferBindTargetIndices.clear();
 	this->m_gBufferBindTargetIndices.push_back( 0 );	// diffuse
 	this->m_gBufferBindTargetIndices.push_back( 1 );	// normal
@@ -657,16 +651,23 @@ DRRenderer::renderFrameInternal( Viewer* viewer )
 bool
 DRRenderer::doGeometryStage()
 {
+	// IMPORTANT: need to re-set the viewport for each FBO
+	// could have changed due to shadow-map or other rendering happend in the frame before
+	this->m_currentCamera->restoreViewport();
+
 	// render to g-buffer FBO
 	if ( false == this->m_fbo->bind() )
 	{
 		return false;
 	}
 
-	// IMPORTANT: need to re-set the viewport for each FBO
-	// could have changed due to shadow-map or other rendering happend in the frame before
-	this->m_currentCamera->restoreViewport();
+	// enable rendering to all render-targets in geometry-stage
+	if ( false == this->m_fbo->drawAllBuffers() )
+	{
+		return false;
+	}
 
+	
 	// clear all targets for the new frame
 	if ( false == this->m_fbo->clearAll() )
 	{
@@ -677,12 +678,6 @@ DRRenderer::doGeometryStage()
 	if ( false == this->m_progGeomStage->use() )
 	{
 		ZazenGraphics::getInstance().getLogger().logError( "DRRenderer::doGeometryStage: using program failed - exit" );
-		return false;
-	}
-
-	// enable rendering to all render-targets in geometry-stage
-	if ( false == this->m_fbo->drawBuffers( this->m_gBufferDrawBufferIndices ) )
-	{
 		return false;
 	}
 
@@ -728,15 +723,6 @@ DRRenderer::renderSkyBox()
 		return true;
 	}
 
-	// render to target 4 which gathers the final result before post-processing
-	if ( false == this->m_fbo->drawBuffer( 4 ) )
-	{
-		return false;
-	}
-
-	// check FBO-status
-	CHECK_FRAMEBUFFER_DEBUG
-		
 	// sky-box rendering uses its own program
 	if ( false == this->m_progSkyBox->use() )
 	{
@@ -829,12 +815,6 @@ DRRenderer::markLightVolume( Light* light, unsigned int lightMarker )
 		return true;
 	}
 
-	// only update stencil-buffer => glDrawBuffer( GL_NONE )
-	this->m_fbo->drawNone();
-
-	// check status of FBO, IMPORANT: not before, would have failed
-	CHECK_FRAMEBUFFER_DEBUG
-
 	if ( false == this->m_progLightingStageStencilVolume->use() )
 	{
 		return false;
@@ -844,8 +824,7 @@ DRRenderer::markLightVolume( Light* light, unsigned int lightMarker )
 	glm::mat4 lightBoundingMeshMVP = this->m_currentCamera->getVPMatrix() * light->getModelMatrix() * glm::scale( glm::vec3( scaleRadius, scaleRadius, scaleRadius ) );
 	this->m_progLightingStageStencilVolume->setUniformMatrix( "LightBoundingMeshMVP", lightBoundingMeshMVP );
 
-	// no culling of faces because we need to mark the volume by 
-	// incrementing/decrementing the stencil-values when entering/exiting
+	// no culling of faces because we need to mark the volume by  incrementing/decrementing the stencil-values when entering/exiting
 	glDisable( GL_CULL_FACE );
 
 	// set ref to the current lightMarker
@@ -875,7 +854,7 @@ DRRenderer::renderLight( Light* light, unsigned int lightMarker )
 	{
 		return false;
 	}
-
+	
 	// check status of FBO, IMPORANT: not before, would have failed
 	CHECK_FRAMEBUFFER_DEBUG
 

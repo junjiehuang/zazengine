@@ -286,6 +286,8 @@ Program::setUniformInt( const std::string& name, int value )
 		return false;
 	}
 
+	// TODO in DEBUG-BUILD ONLY: check if type matches 
+
 	glUniform1i( field->m_location, value );
 	GL_PEEK_ERRORS_AT_DEBUG
 
@@ -300,6 +302,8 @@ Program::setUniformFloat( const std::string& name, float value )
 	{
 		return false;
 	}
+
+	// TODO in DEBUG-BUILD ONLY: check if type matches 
 
 	glUniform1f( field->m_location, value );
 	GL_PEEK_ERRORS_AT_DEBUG
@@ -316,6 +320,8 @@ Program::setUniformMatrix( const std::string& name, const glm::mat4& matrix )
 		return false;
 	}
 
+	// TODO in DEBUG-BUILD ONLY: check if type matches 
+
 	glUniformMatrix4fv( field->m_location, 1, GL_FALSE, glm::value_ptr( matrix ) );
 	GL_PEEK_ERRORS_AT_DEBUG
 
@@ -331,6 +337,8 @@ Program::setUniformMatrices( const std::string& name, const std::vector<glm::mat
 		return false;
 	}
 
+	// TODO in DEBUG-BUILD ONLY: check if type matches 
+
 	glUniformMatrix4fv( field->m_location, matrices.size(), GL_FALSE, glm::value_ptr( matrices[ 0 ] ) );
 	GL_PEEK_ERRORS_AT_DEBUG
 
@@ -345,6 +353,8 @@ Program::setUniformVec( const std::string& name, const std::vector<glm::vec2>& v
 	{
 		return false;
 	}
+
+	// TODO in DEBUG-BUILD ONLY: check if type matches 
 
 	glUniform2fv( field->m_location, vecs.size(), glm::value_ptr( vecs[ 0 ] ) );
 	GL_PEEK_ERRORS_AT_DEBUG

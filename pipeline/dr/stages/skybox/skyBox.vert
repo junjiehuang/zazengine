@@ -6,7 +6,7 @@ layout( location = 0 ) in vec3 in_vertPos;
 out IN_OUT_BLOCK
 {
 	vec3 texCoord;
-} IN_OUT;
+} OUT;
 
 // TRANSFORMATIONS FOR THE CURRENT MESH/VERTEX-STREAM
 layout( shared ) uniform TransformUniforms
@@ -22,7 +22,7 @@ layout( shared ) uniform TransformUniforms
 void main()
 {
 	// just write through tex-coords from vertex-position because vertex position is specified as unit-cube in ranges [-1.0, +1.0]
-	IN_OUT.texCoord = in_vertPos;
+	OUT.texCoord = in_vertPos;
 
 	gl_Position = Transforms.modelViewProjMatrix * vec4( in_vertPos, 1.0 );
 }

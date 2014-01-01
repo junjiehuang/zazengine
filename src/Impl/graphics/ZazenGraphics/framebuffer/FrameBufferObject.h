@@ -37,7 +37,6 @@ class FrameBufferObject
 
 		bool drawAllBuffers();
 		bool drawBuffer( unsigned int );
-		bool drawBuffers( std::vector<unsigned int> );
 		bool drawNone();
 
 		bool copyDepthToTarget( RenderTarget* );

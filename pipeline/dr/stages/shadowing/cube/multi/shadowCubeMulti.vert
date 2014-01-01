@@ -13,7 +13,7 @@ layout( location = 6 ) in vec4 in_bone_weights;
 out IN_OUT_BLOCK
 {
 	vec3 lightDirWorld;
-} IN_OUT;
+} OUT;
 
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 // THIS CORRESPONDS TO THE CAMERA USED FOR RENDERING THE SHADOW-MAP IN THE CASE OF SHADOW-RENDERING IT IS THE LIGHT ITSELF
@@ -79,7 +79,7 @@ void main()
 	// the Camera IS the Light, so take the translation-vector of the modelmatrix to obtain world-space position of light
 	vec3 lightPosWorld = Camera.modelMatrix[ 3 ].xyz;
 	// calculate light-direction in vertex-shader - will be interpolated across vertices, so no need to calculate it in fragment-shader
-	IN_OUT.lightDirWorld = vertexPositionWorld.xyz - lightPosWorld;
+	OUT.lightDirWorld = vertexPositionWorld.xyz - lightPosWorld;
 
 	// TODO: upload MV-matrix
 	gl_Position = Camera.projectionMatrix * Camera.viewMatrix * vertexPositionWorld;

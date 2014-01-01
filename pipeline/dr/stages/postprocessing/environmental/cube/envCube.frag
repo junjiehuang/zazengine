@@ -5,7 +5,7 @@ in IN_OUT_BLOCK
 {
 	vec3 normal;
 	vec3 incident;
-} IN_OUT;
+} IN;
 
 layout( location = 0 ) out vec4 out_color;
 
@@ -27,13 +27,13 @@ const float F = ( ( 1.0 - etaG ) * ( 1.0 - etaG ) ) / ( ( 1.0 + etaG ) * ( 1.0 +
 
 void main()
 {
-    float ratio = F + ( 1.0 - F ) * pow( 1.0 - dot( -IN_OUT.incident, IN_OUT.normal ), fresnelPower );
+    float ratio = F + ( 1.0 - F ) * pow( 1.0 - dot( -IN.incident, IN.normal ), fresnelPower );
 
-    vec3 refractR = vec3( refract( IN_OUT.incident, IN_OUT.normal, etaR ) );
-    vec3 refractG = vec3( refract( IN_OUT.incident, IN_OUT.normal, etaG) );
-    vec3 refractB = vec3( refract( IN_OUT.incident, IN_OUT.normal, etaB ) );
+    vec3 refractR = vec3( refract( IN.incident, IN.normal, etaR ) );
+    vec3 refractG = vec3( refract( IN.incident, IN.normal, etaG) );
+    vec3 refractB = vec3( refract( IN.incident, IN.normal, etaB ) );
 
-    vec3 reflectDir = vec3( reflect( IN_OUT.incident, IN_OUT.normal ) );
+    vec3 reflectDir = vec3( reflect( IN.incident, IN.normal ) );
 
     vec3 refractColor;
     refractColor.r = texture( EnvironmentMap, refractR ).r;

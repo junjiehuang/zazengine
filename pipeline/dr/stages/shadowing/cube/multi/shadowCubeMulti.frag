@@ -4,7 +4,7 @@
 in IN_OUT_BLOCK
 {
 	vec3 lightDirWorld;
-} IN_OUT;
+} IN;
 
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 // THIS CORRESPONDS TO THE CAMERA USED FOR RENDERING THE SHADOW-MAP IN THE CASE OF SHADOW-RENDERING IT IS THE LIGHT ITSELF
@@ -28,7 +28,7 @@ layout( shared ) uniform CameraUniforms
 void main()
 {
 	// calculate distance 
-	float ws_dist = length( IN_OUT.lightDirWorld ); 
+	float ws_dist = length( IN.lightDirWorld ); 
  
 	// map value to [0;1] by dividing by far plane distance 
 	float ws_dist_normalized = ws_dist / Camera.nearFar.y; 

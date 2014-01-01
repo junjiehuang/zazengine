@@ -7,7 +7,7 @@ layout ( triangle_strip, max_vertices = 18 ) out;
 out IN_OUT_BLOCK
 {
 	vec4 posWorld;
-} IN_OUT;
+} OUT;
 
 // transforms the vertex from world-space to the according cube-face model-view-projection
 uniform mat4 u_cubeMVPTransforms[ 6 ];
@@ -22,9 +22,9 @@ void main()
 			gl_Layer = i;
 
 			// pass through
-			IN_OUT.posWorld = gl_in[ j ].gl_Position;
+			OUT.posWorld = gl_in[ j ].gl_Position;
 			// transform vertex from world-position to clip-space of i. cube-face
-			gl_Position = u_cubeMVPTransforms[ i ] * IN_OUT.posWorld;
+			gl_Position = u_cubeMVPTransforms[ i ] * OUT.posWorld;
 
 			EmitVertex();
 		}

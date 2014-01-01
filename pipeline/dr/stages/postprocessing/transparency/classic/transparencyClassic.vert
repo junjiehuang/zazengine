@@ -7,7 +7,7 @@ layout( location = 2 ) in vec2 in_texCoord;
 out IN_OUT_BLOCK
 {
 	vec2 texCoord;
-} IN_OUT;
+} OUT;
 
 // TRANSFORMATIONS FOR THE CURRENT MESH/VERTEX-STREAM
 layout( shared ) uniform TransformUniforms
@@ -23,7 +23,7 @@ layout( shared ) uniform TransformUniforms
 void main()
 {
 	// just write-through texture-coordinates
-	IN_OUT.texCoord = in_texCoord;
+	OUT.texCoord = in_texCoord;
 
 	gl_Position = Transforms.modelViewProjMatrix * vec4( in_vertPos, 1.0 );
 }

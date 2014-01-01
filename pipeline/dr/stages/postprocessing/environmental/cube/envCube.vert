@@ -8,7 +8,7 @@ out IN_OUT_BLOCK
 {
 	vec3 normal;
 	vec3 incident;
-} IN_OUT;
+} OUT;
 
 // THE CAMERA CONFIGURATION FOR THE CURRENT VIEW
 // NOTE: THIS HAS TO BE THE CAMERA THE GEOMETRY-STAGE WAS RENDERED WITH
@@ -44,8 +44,8 @@ void main()
 {
 	vec3 vertPosWS = vec4( Transforms.modelMatrix * vec4( in_vertPos, 1.0 ) ).xyz;
 
-	IN_OUT.incident = normalize( vertPosWS - Camera.modelMatrix[ 3 ].xyz );
-	IN_OUT.normal = vec4( Transforms.modelMatrix * vec4( in_vertNorm, 0.0 ) ).xyz;
+	OUT.incident = normalize( vertPosWS - Camera.modelMatrix[ 3 ].xyz );
+	OUT.normal = vec4( Transforms.modelMatrix * vec4( in_vertNorm, 0.0 ) ).xyz;
 
 	gl_Position = Transforms.modelViewProjMatrix * vec4( in_vertPos, 1.0 );
 }

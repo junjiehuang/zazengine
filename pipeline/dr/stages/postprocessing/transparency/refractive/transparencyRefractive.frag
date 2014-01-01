@@ -4,7 +4,7 @@
 in IN_OUT_BLOCK
 {
 	vec2 texCoord;
-} IN_OUT;
+} IN;
 
 layout( location = 0 ) out vec4 out_color;
 
@@ -46,7 +46,7 @@ layout( binding = 3 ) uniform sampler2DShadow BackgroundDepth;
 void main()
 {
 	// transform normal from texture-space [0.0, 1.0] into tangent-space [-1.0, 1.0]
-	vec4 refractNormal = 2.0 * texture( NormalTexture, IN_OUT.texCoord ) - 1.0;
+	vec4 refractNormal = 2.0 * texture( NormalTexture, IN.texCoord ) - 1.0;
 
 	// calculate texture-coordinates in screen-space
 	vec2 screenTexCoord = vec2( gl_FragCoord.x * Camera.viewport.z, gl_FragCoord.y * Camera.viewport.w );
@@ -58,7 +58,7 @@ void main()
 	// lookup the background-color
 	vec4 bgColorScreen = texture( Background, screenTexCoord );
 	// lookup the material-color
-    vec4 materialColor = texture( DiffuseTexture, IN_OUT.texCoord );
+    vec4 materialColor = texture( DiffuseTexture, IN.texCoord );
 	
 	vec3 depthTexCoord = vec3( refractTexCoord, gl_FragCoord.z );
 	float refractFragDepthComparison = texture( BackgroundDepth, depthTexCoord );

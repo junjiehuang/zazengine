@@ -7,7 +7,7 @@ in IN_OUT_BLOCK
 	vec2 texCoord;
 	vec4 tangent;
 	vec4 biTangent;
-} IN_OUT;
+} IN;
 
 // write to 4 render-targetsdepth and stencil will be written implicitly
 layout( location = 0 ) out vec4 out_diffuse;
@@ -55,7 +55,7 @@ subroutine ( storeMaterialProperties ) void classicMaterial()
 	// store base-color of material
 	out_diffuse.rgb = GStageMaterial.color.rgb;
 	// encode normal
-	out_normal.rg = encodeDirection( IN_OUT.normal.xyz );
+	out_normal.rg = encodeDirection( IN.normal.xyz );
 
 	// RFU - no need to set it to 0.0 but here for explicit clarity
 	out_normal.b = 0.0;
@@ -72,7 +72,7 @@ subroutine ( storeMaterialProperties ) void classicMaterialTextured()
 	// set classic material first
 	classicMaterial();
 	// then just add diffuse-texture color
-	out_diffuse.rgb += texture( DiffuseTexture, IN_OUT.texCoord ).rgb;
+	out_diffuse.rgb += texture( DiffuseTexture, IN.texCoord ).rgb;
 }
 
 // DOOM3 Material-Type
@@ -82,17 +82,17 @@ subroutine ( storeMaterialProperties ) void doom3Material()
 	out_diffuse.a = 3.0;
 
 	// store base-color of material
-	out_diffuse.rgb = texture( DiffuseTexture, IN_OUT.texCoord ).rgb;
+	out_diffuse.rgb = texture( DiffuseTexture, IN.texCoord ).rgb;
 
 	// doom3 pulls its normals from normal-maps
-	vec3 normal = texture( NormalMap, IN_OUT.texCoord).rgb;
+	vec3 normal = texture( NormalMap, IN.texCoord).rgb;
 	// need to scale light into range [-1, +1] because was stored in normal-map in range [0, 1] 
 	normal = 2.0 * normal.xyz - 1.0;
 	// encode normal
 	out_normal.rg = encodeDirection( normal );
 
 	// fetch specular and store it in alpha-channels of directions
-	vec3 specular = texture( SpecularTexture, IN_OUT.texCoord ).rgb;
+	vec3 specular = texture( SpecularTexture, IN.texCoord ).rgb;
 	// store specular material in the 3 unused b-channels
 	out_normal.b = specular.r;
 	out_tangent.b = specular.g;
@@ -108,8 +108,8 @@ void main()
 {
 	// encode both tangent and bi-tanget to save one channel each
 	// works the same way as normals because tangent&bitangent are directions
-	out_tangent.rg = encodeDirection( IN_OUT.tangent.xyz );
-	out_biTangent.rg = encodeDirection( IN_OUT.biTangent.xyz );
+	out_tangent.rg = encodeDirection( IN.tangent.xyz );
+	out_biTangent.rg = encodeDirection( IN.biTangent.xyz );
 
 	// subroutine-call based on the selection from application
 	storeMaterialPropertiesSelection();

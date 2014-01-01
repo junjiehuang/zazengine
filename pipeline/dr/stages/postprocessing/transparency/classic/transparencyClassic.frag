@@ -4,7 +4,7 @@
 in IN_OUT_BLOCK
 {
 	vec2 texCoord;
-} IN_OUT;
+} IN;
 
 layout( location = 0 ) out vec4 out_color;
 
@@ -20,6 +20,6 @@ layout( shared ) uniform TransparentClassicMaterialUniforms
 
 void main()
 {
-	out_color.rgb = texture( DiffuseTexture, IN_OUT.texCoord ).rgb;
+	out_color.rgb = texture( DiffuseTexture, IN.texCoord ).rgb;
     out_color.a = TransparentClassicMaterial.params.x;
 }

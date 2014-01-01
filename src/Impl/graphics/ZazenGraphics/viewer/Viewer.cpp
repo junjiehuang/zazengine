@@ -31,6 +31,8 @@ Viewer::~Viewer()
 void
 Viewer::restoreViewport()
 {
+	// TODO: implement a guard: only do api-call when width or height changes
+
 	glViewport( 0, 0, this->getWidth(), this->getHeight() );
 }
 
