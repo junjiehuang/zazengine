@@ -1127,7 +1127,6 @@ DRRenderer::renderShadowCubeMultiPass( Light* light )
 			return false;
 		}
 
-		this->m_cubeViewDirections[ face ][ 3 ] = glm::vec4( light->getPosition(), 1.0 );
 		// update viewing-matrix for the according cube-face
 		this->m_cameraBlock->updateField( "CameraUniforms.viewMatrix", cubeViewTransforms[ face ] );
 

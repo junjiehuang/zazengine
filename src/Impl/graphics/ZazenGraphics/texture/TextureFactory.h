@@ -17,6 +17,7 @@ class TextureFactory
 		static void init( const boost::filesystem::path& );
 		static void freeAll();
 	
+		static Texture* getNoiseTexture();
 		static Texture* get( const std::string& );
 		static Texture* getCube( const boost::filesystem::path&, const std::string& );
 
@@ -30,6 +31,8 @@ class TextureFactory
 
 		static GLuint createTexture( const std::string& fullFileName );
 		static GLuint createCubeTexture( const std::vector<std::string>& fileNames );
+
+		static GLuint createPerlinNoise2dTexture();
 
 		static bool createImages( const std::vector<std::string>&, ILuint* );
 		static bool createImage( const std::string&, ILuint* );
