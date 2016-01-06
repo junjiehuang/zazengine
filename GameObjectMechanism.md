@@ -1,0 +1,1 @@
+This page describes how GameObjecs (GO) are loaded and handled by the engine.

@@ -1,0 +1,14 @@
+http://mynameismjp.wordpress.com/2010/03/22/attack-of-the-depth-buffer/
+http://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/
+http://www.sjbaker.org/steve/omniv/love_your_z_buffer.html
+http://www.opengl.org/wiki/FAQ
+http://www.gamedev.net/topic/481970-deferred-shading--foliage-possible/
+http://www.gamedev.net/topic/469165-deferred-shading--shadowing--transparency/
+http://www.gamedev.net/topic/474166-reconstructing-pixel-3d-position-from-depth/page__PageSize__25__WhichPage__1
+http://www.gamedev.net/topic/506573-reconstructing-position-from-depth-data/
+http://www.gamedev.net/topic/482654-lighting-in-deferred-shading/
+http://forum.quest3d.com/index.php?topic=66095.0
+http://www.opengl.org/wiki/Rendering_Pipeline_Overview
+http://www.opengl.org/wiki/Viewing_and_Transformations
+http://www.slideshare.net/Mark_Kilgard/anatomy-of-atexturefetch
+http://www.opengl.org/wiki/GLSL_:_common_mistakes
